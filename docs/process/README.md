@@ -39,7 +39,7 @@ Every change has one maintenance category from ISO/IEC/IEEE 14764:2022. The cate
 
 A change that comes from Apache Cassandra follows [upstream.md](upstream.md). A whole Apache release import and the weekly Apache branch merge are adaptive maintenance: they keep ChronitonDB current with upstream. A single cherry-picked Apache fix takes the category of the fix it brings, usually corrective. Work that changes no code, such as the scheduled checks, release runs and reviews, has no category.
 
-If you are not sure of the category, open an issue and say what you want to change. The maintainers set the category.
+When the category is unclear, open an issue that says what should change. The maintainers set the category.
 
 ## Roles
 

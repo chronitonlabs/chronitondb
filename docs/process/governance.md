@@ -54,4 +54,4 @@ Rights are removed for a breach of the [code of conduct](contributing.md#code-of
 
 ## Changes to this page
 
-Changes to the governance and the process are decided by the maintainers and follow the documentation only path in [maintenance.md](maintenance.md#documentation-only-changes).
+Changes to the governance and the process are decided by the maintainers and follow the documentation only path in [maintenance.md](maintenance.md#documentation-only-changes). `.github/CODEOWNERS` assigns `docs/process/` and `docs/governance/` to the maintainers team, so a change there needs a maintainer's review.

@@ -28,7 +28,7 @@ The maintainers own stakeholder needs and every approval.
 3. They answer questions that change or settle behaviour, scope or process. Each answer becomes a [decision record](../decisions/README.md).
 4. They decide everything about a security vulnerability: whether it is valid, its severity, the CVE, the disclosure date and the advisory. See [security.md](security.md).
 5. They decide which features are offered to Apache Cassandra, case by case, and file the Apache JIRA and patch for each stock bug fix.
-6. They approve each release twice, both times by merging a pull request: the release proposal before its candidate is built, and the promotion after the soak and verification. See [release.md](release.md).
+6. They approve each release twice, both times by merging a pull request: the release proposal before its candidate is built, and the promotion after the soak and verification. Between the two, a maintainer starts the candidate run by hand, since it is expensive. See [release.md](release.md).
 7. They decide commit rights and changes to the process. Maintainers are appointed by AxonOps Limited as copyright owner. See [governance.md](governance.md).
 
 ## Architect
@@ -46,7 +46,7 @@ The architect owns requirements and architecture for a feature that needs severa
 The designer owns the design of one item.
 
 1. Opens the item's public GitHub issue when the item starts.
-2. Writes the item's design record, or for a corrective change the fix record together with the test that reproduces the fault, from the [templates](templates/).
+2. Writes the item's design record, or for a corrective change the fix record and the test that reproduces the fault, from the [templates](templates/). The test goes on the item's code branch, not in the fix record pull request.
 3. Checks each requirement against the ISO/IEC/IEEE 29148 qualities and checks the design against the code before asking for approval.
 4. Stops and asks the maintainers when a one-item change turns out to need several items or a design decision across components.
 
@@ -54,7 +54,7 @@ The designer owns the design of one item.
 
 The developer owns the implementation of one approved item.
 
-1. Works test first: for a fix, against the reproducing test the designer wrote with the fix record, for a new feature, with tests for each requirement.
+1. Works test first: for a fix, against the reproducing test the designer wrote on the code branch, for a new feature, with tests for each requirement.
 2. Writes the code, the user and operator documentation, the runbook entries and the delta entry the item needs, in the same pull request.
 3. Opens the pull request as a draft and answers each review finding.
 4. Edits only the files the approved design record lists. A file outside the list needs the design record updated first.
@@ -96,8 +96,8 @@ The security engineer watches for vulnerabilities in what ChronitonDB ships. See
 The release engineer turns the lines into releases, after the transition process of ISO/IEC/IEEE 12207. See [release.md](release.md).
 
 1. Runs a daily scheduled check of the latest CI results and opens a corrective item for each real failure.
-2. Proposes each release in a release proposal pull request: what goes in, from the commits, the milestone gates passed and the security fixes due.
-3. After a maintainer merges the proposal, runs the release pipeline and publishes the release candidate.
+2. Proposes each release in a release proposal pull request: the exact commit it is built from, what goes in, from the commits, the milestone gates passed and the security fixes due.
+3. Once a maintainer has merged the proposal and started the candidate run, follows the pipeline to the published release candidate.
 4. Runs the verification pass: signatures, installs, upgrade and rollback tests, the parity suite.
 5. Opens the promotion pull request with the verification results, and promotes the candidate unchanged once a maintainer merges it.
 6. Coordinates security releases with the security engineer and the disclosure date the maintainers set.

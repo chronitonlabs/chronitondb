@@ -55,7 +55,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## 6. The reproducing test
 
-{The test the designer wrote with this record: its class and method, and its failing result on each affected line before the fix. The developer fixes against it, and the code pull request shows it passing.}
+{The test the designer wrote on the item's code branch: its class and method, and its failing result on each affected line before the fix. The developer fixes against it on the same branch, and the code pull request shows it passing.}
 
 ## 7. Compatibility impact
 
@@ -68,3 +68,11 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 ## 9. Order of pull requests
 
 {One pull request per affected line, oldest line first. The item is done when all are merged.}
+
+## 10. Tests the change runs
+
+{The five lists of the design record's Testing section, with the same headings and format: Tests for this change (the reproducing test first), Existing suites at risk, Stock suites run unchanged, Tracing test, Formats and configurations. See [design-record.md](design-record.md#14-testing).}
+
+## Planned file list
+
+{The same format as the design record's planned file list: one file per line, the exact path, a space, then `new`, `edit`, `test` or `stock`. The reproducing test is listed as `test`. See [design-record.md](design-record.md#planned-file-list).}

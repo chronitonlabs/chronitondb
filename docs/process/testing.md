@@ -22,7 +22,7 @@ This page is the ChronitonDB test policy and test strategy in the sense of ISO/I
 ## Policy
 
 1. Every requirement has at least one test that proves it. A requirement without a test is not done.
-2. A fix starts with a test that reproduces the fault, written by the designer with the fix record. It MUST fail before the fix and pass after it.
+2. A fix starts with a test that reproduces the fault, written by the designer on the item's code branch. It MUST fail before the fix and pass after it. The test and the fix merge together, so the line never carries a failing test.
 3. With every fork feature off, every line MUST behave exactly as stock Apache Cassandra. The parity suite proves it.
 4. A test that existed before a change MUST NOT be weakened. A change to a pre-existing test is additive and named in the design record.
 5. Tests MUST NOT depend on wall clock timing. Seeds are printed so a run can be repeated.

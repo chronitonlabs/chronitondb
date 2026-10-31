@@ -33,3 +33,9 @@
 /.github/                                             @chronitonlabs/sensitive-reviewers
 /debian/                                              @chronitonlabs/sensitive-reviewers
 /redhat/                                              @chronitonlabs/sensitive-reviewers
+
+# The process and governance are the maintainers' decision (governance.md).
+# The kit lint reads its rules from docs/process/, so changes there need a
+# maintainer too.
+/docs/process/                                        @chronitonlabs/maintainers
+/docs/governance/                                     @chronitonlabs/maintainers

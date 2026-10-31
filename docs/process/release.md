@@ -19,7 +19,7 @@ limitations under the License.
 
 This page says when ChronitonDB releases, what a release may contain, how long each line is supported, how a release is tested before it ships, and how versions are numbered. It follows the transition process of ISO/IEC/IEEE 12207 and the release model Ubuntu uses.
 
-The release engineer proposes and runs each release. A maintainer approves every release. See [roles.md](roles.md#release-engineer).
+The release engineer proposes each release and verifies its candidate. A maintainer approves every release and starts each candidate run. See [roles.md](roles.md#release-engineer).
 
 ## Cadence
 
@@ -50,9 +50,9 @@ A feature becomes switchable at its final milestone gate. Before that, its switc
 
 Every release takes two maintainer approvals, and each one is the merge of a pull request, like every approval in this project: the release proposal, before the candidate is built, and the promotion, after the soak and verification. The reviewer reviews both pull requests first.
 
-1. **Proposal.** The release engineer opens a release proposal pull request that adds `docs/releases/<version>.md`: the version, what goes in, from the commits on the line, the milestone gates passed and the security fixes due.
+1. **Proposal.** The release engineer opens a release proposal pull request that adds `docs/releases/<version>.md`: the version, the exact commit on the line it is built from, what goes in, from the commits on the line, the milestone gates passed and the security fixes due.
 2. **First approval.** A maintainer merges the proposal pull request. Nothing is built, tagged or published before that merge.
-3. **Release candidate.** The release engineer runs the release pipeline and publishes a release candidate: a GitHub pre-release, and packages in a separate proposed package repository for Debian and Red Hat.
+3. **Release candidate.** A maintainer starts the release workflow by hand when the candidate is wanted, giving the version. Building and testing a candidate is expensive, so a maintainer chooses the moment. The workflow refuses to run unless that version's proposal is merged. The candidate tag is signed at the commit the proposal names, so anything merged later stays out. The pipeline then builds, tests and publishes the release candidate: a GitHub pre-release, and packages in a separate proposed package repository for Debian and Red Hat.
 4. **Verification.** The release engineer verifies the candidate: signatures, installs, upgrade and rollback from the previous ChronitonDB release and from Apache Cassandra, and the parity suite.
 5. **Soak.** The candidate stays in the proposed channel for 7 days.
 6. **Second approval and promotion.** If the verification passed and no problem is reported during the soak, the release engineer opens a promotion pull request that adds the verification results to `docs/releases/<version>.md`. A maintainer merges it, and the candidate is then promoted unchanged to the official release.
@@ -81,7 +81,16 @@ ChronitonDB versions follow the pattern Ubuntu uses for packages it takes from D
 1. The git tag of a release is the version itself, for example `5.0.10-chronitondb1`, next to Apache's own `cassandra-5.0.10` tag. The git tag of a release candidate uses `-rc<k>` in place of `~rc<k>`, since git does not allow `~` in a tag name.
 2. Release and release candidate tags are signed with the dedicated ChronitonDB release key, not with a person's key. Its public key is published so users can verify the tags.
 3. Debian and Red Hat package tools order these versions correctly, release candidates before their release.
-4. In strict Semantic Versioning the hyphen marks a pre-release. We accept that, as Ubuntu does.
+4. In strict Semantic Versioning the hyphen marks a pre-release. We accept that for packages and tags, as Ubuntu does.
+
+### The version a running node reports
+
+A running node reports a different string from its package version, in `nodetool version`, `system.local`, `system.peers_v2`, gossip and the drivers: `<Apache version>+chronitondb.<feature level>`, for example `5.0.10+chronitondb.1`.
+
+1. Apache Cassandra and its drivers read a hyphen in a node's version as a pre-release, so `5.0.10-chronitondb1` would compare as older than Apache Cassandra 5.0.10. They read the part after `+` as build information, so `5.0.10+chronitondb.1` compares as 5.0.10.
+2. The feature level is a number in the code, raised only when a release changes how nodes work together. Features that need every node to cooperate turn on once every node reports their level.
+3. A node in Apache compatibility mode reports the plain Apache version, for example `5.0.10`.
+4. The package version and the git tag say which build is installed. The node's version says which Apache version it carries and its feature level.
 
 ## Packaging
 

@@ -59,7 +59,11 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 
 ## 3. Stock behaviour preservation
 
-{For each departure from stock: stock behaviour today with file and line, this change, the switch that controls it, and the error text naming the switch. Code defaults in stock classes unchanged.}
+{One row per departure from stock, in this table. Write "No departures from stock." in place of the table when there are none. Code defaults in stock classes unchanged. Tooling reads this table, so keep its columns.}
+
+| Stock behaviour today (file and line) | This change | Switch that controls it | Error text naming the switch |
+|---|---|---|---|
+| {stock behaviour} | {change} | {switch} | {error text} |
 
 ## 4. Prior art reviewed
 
@@ -133,7 +137,29 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 
 ## 14. Testing
 
-{The test levels required and the test class names. RF 1 and RF 3 for anything multi node. Both sstable formats and both unit test configurations for anything touching compaction or formats. What the parity suite will check. See [testing.md](../testing.md).}
+{The test levels required. RF 1 and RF 3 for anything multi node. Both sstable formats and both unit test configurations for anything touching compaction or formats. What the parity suite will check. See [testing.md](../testing.md).}
+
+{Then these five lists. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry.}
+
+### Tests for this change
+
+{The new and changed tests that prove each requirement.}
+
+### Existing suites at risk
+
+{Unit test suites and in-JVM distributed test suites this change could break.}
+
+### Stock suites run unchanged
+
+{Apache Cassandra's own suites that MUST pass without modification.}
+
+### Tracing test
+
+{The test that shows the change in query tracing, or "does not apply, because" with the reason.}
+
+### Formats and configurations
+
+{`yes` when the change touches compaction or an on-disk format, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
 
 ## 15. Not covered and follow-ups
 
@@ -141,7 +167,16 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 
 ## Planned file list
 
-{Exact paths, one per line, each marked new, edit, test or stock. The developer edits only these files. Any waiver of a shape limit is recorded here with the method, the rule and the reason.}
+{One file per line: the exact path from the repository root, a space, then one word: `new`, `edit`, `test` or `stock`. No wildcards. The developer edits only these files, and tooling enforces the list as written here.}
+
+```
+src/java/org/apache/cassandra/example/Example.java stock
+test/unit/org/apache/cassandra/example/ExampleTest.java test
+```
+
+### Waivers
+
+{Any waiver of a shape limit, with the method, the rule and the reason. Write "None." when there are none.}
 
 ## Requirement quality checklist (ISO/IEC/IEEE 29148)
 

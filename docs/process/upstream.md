@@ -49,7 +49,7 @@ Until Apache releases `x.0.0` of a major version, the matching line follows the 
 
 ## Single fixes taken early
 
-The maintainers MAY choose a single Apache fix to be cherry-picked into a line ahead of the Apache release that contains it, when it is needed early: a security fix, a fix our own work depends on, or a fault our users hit. The integrator prepares the import pull request.
+A single Apache fix MAY be cherry-picked into a line ahead of the Apache release that contains it, when it is needed early. The integrator decides against these criteria: a security fix, a fix our own work depends on, or a fault our users hit. It opens the import pull request with the criterion that applies. The maintainers decide by merging it, and closing it declines the fix.
 
 1. The cherry-picked commit keeps its original Apache author and message, with the `(cherry picked from commit <full hash>)` line added by `git cherry-pick -x`.
 2. The import carries the regression test of the original fix.
@@ -92,7 +92,7 @@ The upstream radar is the integrator's daily watch of Apache Cassandra, summed u
 4. Apache fixes worth taking early, as single cherry-picks.
 5. Delta entries that Apache has since fixed.
 
-The security engineer watches Apache security announcements and dependency advisories with the integrator. See [security.md](security.md). Whole releases and the weekly branch merges are always imported. The maintainers choose which single fixes to take early. Each chosen import gets a public GitHub issue and follows this page.
+The security engineer watches Apache security announcements and dependency advisories with the integrator. See [security.md](security.md). Whole releases and the weekly branch merges are always imported. The integrator proposes single fixes to take early against the criteria in [Single fixes taken early](#single-fixes-taken-early), and the maintainers decide by merging. Each import gets a public GitHub issue and follows this page.
 
 ## Security coordination with Apache
 

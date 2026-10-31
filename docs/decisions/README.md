@@ -79,4 +79,4 @@ Chosen option: "<option>", because <reason>.
 
 ## Index
 
-No records yet.
+1. [0001. The first maintainers](0001-initial-maintainers.md), 2026-11-01, Accepted.

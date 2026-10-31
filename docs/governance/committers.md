@@ -21,10 +21,12 @@ This is the public record of who may merge into the ChronitonDB lines. How right
 
 ## Maintainers
 
-The maintainers are listed here by name once the list is published.
+Appointed by AxonOps Limited, as copyright owner. See [decision record 0001](../decisions/0001-initial-maintainers.md).
 
 | Name | GitHub username | Since |
 |---|---|---|
+| Johnny Miller | `millerjp` | 2026-11-01 |
+| Hayato Shimizu | `hshimizu` | 2026-11-01 |
 
 ## Committers
 

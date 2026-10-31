@@ -35,6 +35,14 @@ ChronitonDB is built on Apache Cassandra 5.0 and later. A cluster on an earlier 
 
 Contributions are made under the Chroniton Labs contributor agreements. Before your first pull request is merged, you sign the agreement through the CLA Assistant check on that pull request. The agreements, a plain English summary and how to sign are at https://github.com/chronitonlabs/contributor-agreements. Contribution guidelines are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## How we work
+
+- [Development process](../docs/process/README.md): how a change goes from an idea to a merged commit.
+- [Contributing](../docs/process/contributing.md): raising issues and contributing changes.
+- [Security](../docs/process/security.md): reporting a vulnerability privately.
+- [Governance](../docs/process/governance.md): maintainers, committers and commit rights.
+- [Releases](../docs/process/release.md): release cadence, support lifetime and version numbers.
+
 ## License and notices
 
 ChronitonDB is licensed under the [Apache License, Version 2.0](../LICENSE.txt).

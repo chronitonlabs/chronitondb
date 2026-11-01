@@ -57,11 +57,19 @@ A change to documentation only is perfective. It needs no design record. The rev
 A patch-version update of an approved library, under the same licence, for a bug fix or a security fix:
 
 1. Needs no fix record and no design record.
-2. MAY be made inside the item that needs it, or as an item of its own.
+2. MUST be an item of its own, through the security engineer, never made inside the item that needs it. An item that needs the update depends on it.
 3. MUST give its reason in the pull request description. The SBOM and the VEX statements of the next release record the change.
-4. Inside an item of a feature, it is also recorded in the feature spec's Dependencies section in the same pull request.
+4. When a feature needs it, the feature spec's Dependencies section names the update and its item.
 5. MUST keep the library's licence category and NOTICE lines correct. See [compliance.md](compliance.md).
+6. MUST go through the security engineer before it merges, whoever asks for it.
 
-When a vulnerability in a shipped library is fixed by a patch-version update, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. The item goes straight to the developer, with no fix record. The security engineer names in the item the test classes that cover the code that calls the library. Those tests MUST pass before the update merges. See [security.md](security.md#watching-shipped-libraries-and-apache).
+Every library update takes the same path through the security engineer, also one a maintainer asks for that is not a security fix. The security engineer:
 
-Any other dependency change, a new library or a minor or major version change, needs approval in a feature spec or a design record before use.
+1. Checks the new version: its licence, the new dependencies it brings in, and its known vulnerabilities.
+2. Updates `NOTICE.txt`, `LICENSE.txt`, the SBOM records and the VEX statements as needed.
+3. Names the test classes that cover every use of the library in ChronitonDB, not only the code a vulnerability touches.
+4. Hands the item to the developer, with no fix record. The named tests MUST run and pass before the update merges.
+
+When a vulnerability in a shipped library is fixed by a patch-version update, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. When a maintainer wants an update that is not a security fix, the maintainer opens the item and assigns it to the security engineer. See [security.md](security.md#watching-shipped-libraries-and-apache).
+
+Any other dependency change, a new library or a minor or major version change, needs approval in a feature spec or a design record before use. Once approved, it too is made as an item of its own through the security engineer, never inside the item that needs it.

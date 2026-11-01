@@ -49,11 +49,11 @@ Location: `docs/imports/<apache-version-or-range>.md`, added in the import pull 
 
 ## 5. Tests run
 
-{The tests this import runs, in the five lists of the design record's Testing section, with the same headings and format. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry. The results go in the evidence of the import pull request, not in this record. See [design-record.md](design-record.md#14-testing).}
+{The tests this import runs, in the five lists of the design record's Testing section, with the same headings and format. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry, except Tests for this change, which takes a written reason. The results go in the evidence of the import pull request, not in this record. See [design-record.md](design-record.md#14-testing).}
 
 ### Tests for this change
 
-{The regression tests of the imported fixes.}
+{The regression tests of the imported fixes. When there are none, one line `none, because` with the reason, for example `none, because this range changes only build files and documentation`, or `none, because CASSANDRA-n merged without a test and the suites at risk cover the changed code`. A bare `none` is refused. The suites at risk and the stock suites still run, and the reviewer checks the reason.}
 
 ### Existing suites at risk
 
@@ -78,3 +78,11 @@ Location: `docs/imports/<apache-version-or-range>.md`, added in the import pull 
 ## 7. Security
 
 {Apache security fixes in this import, by Apache JIRA once public, and the VEX updates they need.}
+
+## 8. Configuration changes
+
+{Every setting that changed over the imported range in Apache's `conf/cassandra.yaml` or `conf/cassandra_latest.yaml`: added, removed, or changed in value or comment. Then every default in Apache's `Config.java` that changed over the same range. One row each, mapped to ChronitonDB's own `conf/cassandra_chronitondb.yaml`. Write "None." in place of the table when neither file and no default changed. See [upstream.md](../upstream.md#configuration-changes).}
+
+| Setting | Changed in | Apache change | Our file |
+|---|---|---|---|
+| {setting name} | {`cassandra.yaml`, `cassandra_latest.yaml` or `Config.java`} | {added, removed, the old and new value, or the comment change} | {`taken`, `taken with a different value` and the value with the reason, or `not taken` with the reason} |

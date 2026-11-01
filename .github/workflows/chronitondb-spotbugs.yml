@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# SpotBugs with FindSecBugs on the compiled org/chronitondb classes (decision
-# E13, build plan step 1.4). Report only: findings are printed and never fail
-# the check, a missed planted bug in the self-test does. The jars are pinned
+# SpotBugs with FindSecBugs on the compiled org/chronitondb classes. Report
+# only: findings are printed and never fail the check, a missed planted bug
+# in the self-test does. The jars are pinned
 # by sha256 in tools/chronitondb/spotbugs-check.sh. The build runs only when
 # the line has org/chronitondb sources. Every action is pinned to a commit.
 name: ChronitonDB SpotBugs
@@ -38,7 +38,7 @@ jobs:
           persist-credentials: false
           submodules: true
 
-      # Java 21 for the 6.0 line (decision J1).
+      # Java 21 for the 6.0 line.
       - name: JDK 21
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:

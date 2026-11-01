@@ -15,8 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Semgrep check for ChronitonDB: the house rules in tools/chronitondb/semgrep
-# (owner decision E13, build plan step 1.4).
+# Semgrep check for ChronitonDB: the house rules in tools/chronitondb/semgrep.
 #
 #   tools/chronitondb/semgrep-check.sh [FILE...]     scan these files
 #   tools/chronitondb/semgrep-check.sh               scan the staged files

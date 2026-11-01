@@ -20,7 +20,7 @@ name: Build Scripts
 # No JDK build runs here: a stub `ant` replays canned output.
 # The real toolchain jobs are in code-check.yaml, and the full test matrix is Jenkins.
 
-# ChronitonDB (AC1): runs on pull requests, also from forks, and on pushes to
+# ChronitonDB: runs on pull requests, also from forks, and on pushes to
 # the lines only. The path filter stays, so the check is advisory.
 on:
     pull_request:

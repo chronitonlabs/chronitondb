@@ -16,8 +16,7 @@
 # limitations under the License.
 #
 # SpotBugs with the FindSecBugs plugin on the compiled org/chronitondb
-# classes (owner decision E13, build plan step 1.4). Report only: findings
-# are printed and never fail the check.
+# classes. Report only: findings are printed and never fail the check.
 #
 #   tools/chronitondb/spotbugs-check.sh [CLASSES]    analyse the org.chronitondb classes under CLASSES
 #                                                    (default build/classes/main, run `ant jar` first)

@@ -17,7 +17,7 @@
 #
 # Format check for ChronitonDB code: Google Java Style, enforced with
 # google-java-format on Java files under org/chronitondb, never on Apache
-# code (owner decision G1).
+# code.
 #
 #   tools/chronitondb/format-check.sh [FILE...]        report the files that are not formatted
 #   tools/chronitondb/format-check.sh                  same, on the staged files

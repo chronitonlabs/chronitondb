@@ -57,7 +57,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 {The test the designer wrote on the item's code branch: its class and method, and its failing result on each affected line before the fix. The developer fixes against it on the same branch, and the code pull request shows it passing.}
 
-{A fix to a fork feature MAY use a scenario as its reproducing test: a new scenario, or the feature's existing scenario updated, tagged with the feature's requirement id. Name its feature file and scenario. It MUST fail before the fix and pass after it. A fix to stock Apache Cassandra code uses a plain JUnit test. See [testing.md](../testing.md#scenarios).}
+{A fix to a fork feature MAY use a scenario as its reproducing test: a new scenario, or the feature's existing scenario updated. It carries the tag of the feature's requirement id and the tag `@fix-<issue>`, with the issue number of this record, for example `@fix-142`. Name its feature file and scenario. It MUST fail before the fix and pass after it. A fix to stock Apache Cassandra code uses a plain JUnit test. See [testing.md](../testing.md#scenarios).}
 
 ## 7. Compatibility impact
 
@@ -75,9 +75,9 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 Scenario runner: {the command that runs the scenarios, with {tags} once}
 
-Scenario tags: {the tag expression for this item's scenarios}
+Scenario tags: {the feature's requirement tag and this record's fix tag, joined with `and`, for example `@REQ-LUC-012 and @fix-142`}
 
-{The two scenario lines and their rules are those of the design record's Testing section. A fix with no scenarios leaves out both lines. A fix whose reproducing test is a scenario keeps them.}
+{The two scenario lines and their rules are those of the design record's Testing section. A fix with no scenarios leaves out both lines. A fix whose reproducing test is a scenario keeps them. Its tags line MUST require `@fix-<issue>` with the issue number of this record, joined to the rest with `and`, never with `or`. So only the reproducing scenario runs before the fix and after it.}
 
 {Then the five lists of the design record's Testing section, with the same headings and format. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry. See [design-record.md](design-record.md#14-testing).}
 

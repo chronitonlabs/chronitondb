@@ -116,9 +116,10 @@ An item is not done until the user documentation, operator documentation and run
 Only the current milestone is in progress. When all its items are merged:
 
 1. The architect writes the milestone report in `docs/design/<KEY>-<slug>/milestones/` from [templates/milestone-report.md](templates/milestone-report.md). It is the ISO/IEC/IEEE 29119 test completion report for the milestone: what was tested and at which levels, results against the exit criteria, deviations, remaining risks, and a go or no-go recommendation.
-2. The report reviews every risk in the feature spec as open, reduced, closed or happened. It adds new risks with likelihood, impact and mitigation. It says whether the remaining milestones should be re-ordered.
-3. A maintainer approves the gate by merging the report's pull request.
-4. The next milestone starts only after that merge.
+2. The report's Requirements delivered section lists each feature requirement of the milestone, the items and pull requests that deliver it, the scenarios or tests that prove it, and whether it is delivered. It also lists any behaviour nobody asked for, expected to read "None found." A fresh check of the merged code against the feature requirements fills it, and the reviewer checks it.
+3. The report reviews every risk in the feature spec as open, reduced, closed or happened. It adds new risks with likelihood, impact and mitigation. It says whether the remaining milestones should be re-ordered.
+4. A maintainer approves the gate by merging the report's pull request.
+5. The next milestone starts only after that merge.
 
 Until its final milestone gate, the feature's switch refuses to turn on, whatever its default. The final gate makes the feature switchable with yaml or nodetool. From then on the switch starts from the default the feature spec sets for the line, and that default never changes within the line. A feature that passes its final gate after its line's first release ships with its default off on that line. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults) and [release.md](release.md#what-a-release-may-contain).
 

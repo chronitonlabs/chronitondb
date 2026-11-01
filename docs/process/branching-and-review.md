@@ -30,15 +30,17 @@ ChronitonDB uses trunk-based development. Each line is a trunk. Work reaches a l
 2. The lines are protected. A change reaches a line only by pull request. Every required check MUST pass. Every commit MUST be signed. Only maintainers and committers merge, each within their rights. See [governance.md](governance.md). Nobody force pushes. A line is never deleted.
 3. There are no feature branches and no milestone branches. Every item merges into its line once reviewed.
 
-## Every fork feature is off by default
+## Feature switches and defaults
 
 1. Every fork feature sits behind its feature switch: a yaml setting and a nodetool toggle.
-2. Before the feature's final milestone gate, the switch refuses to turn on.
-3. After the gate, operators MAY turn the feature on with yaml or nodetool. Its default stays off for the life of the line.
-4. A feature's default MAY be on only in a new line. Upgrading within a line never changes behaviour by itself. See [release.md](release.md#what-a-release-may-contain).
-5. With a feature off, the line MUST behave exactly as stock Apache Cassandra: new CQL syntax is refused, no new files are written, no new threads start and no new memory is used.
-6. "Stock behaviour unchanged with the feature off" is a required property of every line. The parity suite proves it. See [testing.md](testing.md).
-7. Every merged item keeps the line releasable. The switch hides unfinished work.
+2. Before the feature's final milestone gate, the switch refuses to turn on, whatever its default.
+3. A purely additive feature is reachable only through new syntax, new index types or new settings that stock Apache Cassandra rejects. Its default MAY be on from a line's first release. A cluster that does not use it behaves exactly as Apache Cassandra.
+4. A behaviour-changing feature changes something stock Apache Cassandra already does: results, errors, warnings or the performance of existing operations. Its default MUST be off on every line. Operators opt in.
+5. A feature's default never changes within a line. Upgrading within a line never changes behaviour by itself. A feature that passes its final milestone gate after its line's first release ships with its default off on that line. See [release.md](release.md#what-a-release-may-contain).
+6. The feature spec states the class of the feature and of each switch, with the reason, the default on each line and, for a behaviour-changing feature, the stock operations it changes. A maintainer approves the class with the spec. A feature that fits one item states the same in its design record.
+7. With a feature off, the line MUST behave exactly as stock Apache Cassandra: stock operations behave as Apache's do, the feature's syntax is refused with an error that names the switch, no new files are written, no new threads start and no new memory is used.
+8. "Stock behaviour unchanged with the feature off" is a required property of every line. The parity suite proves it. See [testing.md](testing.md).
+9. Every merged item keeps the line releasable. The switch hides unfinished work.
 
 ## Work branches
 
@@ -85,6 +87,8 @@ These checks run on every pull request to a line. Each MUST pass before a mainta
 Apache's Build Scripts check also runs on pull requests that touch `.build/` or the workflows. It is advisory, since a check filtered by path cannot be required.
 
 The parity suite becomes a required check once it exists.
+
+The requirement id check becomes a required check once it exists. It enforces the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids).
 
 Workflow runs on pull requests from first time and outside contributors wait for a maintainer's approval before they start.
 

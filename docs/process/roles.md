@@ -46,7 +46,7 @@ The architect owns requirements and architecture for a feature that needs severa
 The designer owns the design of one item.
 
 1. Opens the item's public GitHub issue when the item starts.
-2. Writes the item's design record, or for a corrective change the fix record and the test that reproduces the fault, from the [templates](templates/). The test goes on the item's code branch, not in the fix record pull request.
+2. Writes the item's design record, or for a corrective change the fix record and the test that reproduces the fault, from the [templates](templates/). The test goes on the item's code branch, not in the fix record pull request. For an item of a fork feature, the scenarios of its requirements go in the design record pull request, tagged `@wip`. See [testing.md](testing.md#scenarios).
 3. Checks each requirement against the ISO/IEC/IEEE 29148 qualities and checks the design against the code before asking for approval.
 4. Stops and asks the maintainers when a one-item change turns out to need several items or a design decision across components.
 
@@ -54,7 +54,7 @@ The designer owns the design of one item.
 
 The developer owns the implementation of one approved item.
 
-1. Works test first: for a fix, against the reproducing test the designer wrote on the code branch, for a new feature, with tests for each requirement.
+1. Works test first: for a fix, against the reproducing test the designer wrote on the code branch, for a new feature, against the approved scenarios, removing `@wip` from each as it passes, and with tests for each requirement no scenario proves.
 2. Writes the code, the user and operator documentation, the runbook entries and the delta entry the item needs, in the same pull request.
 3. Opens the pull request as a draft and answers each review finding.
 4. Edits only the files the approved design record lists. A file outside the list needs the design record updated first.

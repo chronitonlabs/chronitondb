@@ -29,7 +29,7 @@ limitations under the License.
 
 Change history: the git history of this file.
 
-Location: `docs/design/<feature>/delivery-plan.md`. Process: [additive.md](../additive.md).
+Location: `docs/design/<KEY>-<slug>/delivery-plan.md`. Process: [additive.md](../additive.md).
 
 ## 1. Milestones
 
@@ -40,7 +40,7 @@ Location: `docs/design/<feature>/delivery-plan.md`. Process: [additive.md](../ad
 - **Items:** {item numbers from the plan, build and validation}
 - **What it makes testable:** {one or two lines}
 - **Exit criteria:** {numbered, each checkable. Upgrade and rollback tests for any on-disk format change this milestone introduces}
-- **Release and line:** {the line, and the release it is planned to ship in. The feature becomes switchable at the final gate and its default stays off for the life of the line}
+- **Release and line:** {the line, and the release it is planned to ship in. The feature becomes switchable at the final gate, with the default the feature spec sets for the line, or off when the final gate passes after the line's first release}
 
 ## 2. Order rationale
 

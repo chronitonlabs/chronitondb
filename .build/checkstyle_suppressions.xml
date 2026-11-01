@@ -23,7 +23,7 @@
 <suppressions>
   <!--
     ChronitonDB code under org/chronitondb follows Google Java Style, whose
-    import order differs from Cassandra's ImportOrder (decision G1).
+    import order differs from Cassandra's ImportOrder.
   -->
   <suppress checks="ImportOrder" files="[\\/]org[\\/]chronitondb[\\/]"/>
 </suppressions>

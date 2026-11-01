@@ -58,7 +58,7 @@ ChronitonDB code follows Google Java Style, enforced with google-java-format. Pr
 
 The `.editorconfig` at the repository root carries the matching editor settings (2 space indent, 100 columns) for `src/java/org/chronitondb/**` and `test/**/org/chronitondb/**` only. Other paths are not affected.
 
-Apache's own checkstyle (`.build/checkstyle.xml` and `.build/checkstyle_test.xml`) runs over the whole tree. The 6.0 line enforces `ImportOrder` with Cassandra's groups and static imports at the bottom, which Google style contradicts (one ASCII sorted block, static imports first). So `.build/checkstyle_suppressions.xml`, which both configs read, carries one `ImportOrder` suppression for `org/chronitondb` paths, with a comment naming decision G1. `AvoidStarImport` stays on for ChronitonDB code, Google style forbids wildcard imports too. The 5.0 line has no `ImportOrder` rule and needs no suppression.
+Apache's own checkstyle (`.build/checkstyle.xml` and `.build/checkstyle_test.xml`) runs over the whole tree. The 6.0 line enforces `ImportOrder` with Cassandra's groups and static imports at the bottom, which Google style contradicts (one ASCII sorted block, static imports first). So `.build/checkstyle_suppressions.xml`, which both configs read, carries one `ImportOrder` suppression for `org/chronitondb` paths, with a comment giving the reason. `AvoidStarImport` stays on for ChronitonDB code, Google style forbids wildcard imports too. The 5.0 line has no `ImportOrder` rule and needs no suppression.
 
 ## Running
 

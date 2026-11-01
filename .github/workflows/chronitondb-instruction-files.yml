@@ -16,9 +16,8 @@
 # Fails when an agent instruction file is in the tree a pull request would
 # merge: AGENTS.md, CLAUDE.md, GEMINI.md, .mcp.json or a .claude/ directory,
 # at any depth. An Apache merge can bring them, and an agent working on the
-# line would read them as instructions (security design rev 2, F11, build
-# plan step 1.4, acceptance test AT-37). Advisory until the owner makes it
-# required. Every action is pinned to a commit.
+# line would read them as instructions. A required check on every line.
+# Every action is pinned to a commit.
 name: ChronitonDB instruction files
 
 on:

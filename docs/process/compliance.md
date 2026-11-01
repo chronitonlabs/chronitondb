@@ -42,7 +42,7 @@ Every third party component is checked against the Apache Software Foundation li
 1. Every new dependency, and every version change of an existing one, MUST be declared before use. For a feature it goes in the feature spec's Dependencies section. For a one-item change it goes in the design record's Dependencies section.
 2. Each declaration gives the library and version, its ASF licence category, the NOTICE and credit lines it needs, its known vulnerabilities and why it is needed.
 3. The maintainers approve the declaration by merging the document. A library that no merged document declares is refused at review.
-4. `build.xml`, `lib/`, `packaging/` and the other build inputs are sensitive paths with code owner review. See [branching-and-review.md](branching-and-review.md#sensitive-paths).
+4. `build.xml`, `lib/`, `packaging/` and the other build inputs are sensitive paths with code owner review. `packaging/` joins `.github/CODEOWNERS` in the pull request that creates it. See [branching-and-review.md](branching-and-review.md#sensitive-paths).
 5. A patch-version update of an approved library, under the same licence, for a bug or security fix, MAY be made without a fix record or design record. The pull request description gives the reason, and the SBOM and VEX record the change. See [maintenance.md](maintenance.md#dependency-patch-version-updates).
 
 ## NOTICE and credits

@@ -15,8 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Shape check for ChronitonDB code: the measured limits of owner decisions
-# M2 to M6 on Java files under org/chronitondb, never on Apache code.
+# Shape check for ChronitonDB code: the measured limits in
+# docs/process/conventions.md on Java files under org/chronitondb, never on
+# Apache code.
 #
 #   tools/chronitondb/shape-check.sh [FILE...]   check these files
 #   tools/chronitondb/shape-check.sh             check the staged files

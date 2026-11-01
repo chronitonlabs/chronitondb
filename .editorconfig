@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Editor settings for ChronitonDB code only (owner decision G1): Google Java
+# Editor settings for ChronitonDB code only: Google Java
 # Style, checked by tools/chronitondb/format-check.sh. Apache code keeps its
 # own conventions, so there is no section for any other path and no root
 # marker.

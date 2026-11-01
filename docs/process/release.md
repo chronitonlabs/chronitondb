@@ -103,6 +103,17 @@ ChronitonDB is a fork, so it has its own packaging and its own names, separate f
 4. The package is declared as replacing Apache's `cassandra` package.
 5. Apache's `debian/` and `redhat/` folders stay untouched, as the upstream reference.
 
+### The configuration file
+
+1. ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`. It started from Apache's `conf/cassandra_latest.yaml` and carries ChronitonDB's own settings and values.
+2. A fresh install gets it as its `cassandra.yaml`, in `/etc/chronitondb`.
+3. Apache's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched, as the upstream reference.
+4. A node switched from Apache Cassandra keeps the operator's own file.
+5. Each line's upgrade runbook states the minimum setup an existing Apache Cassandra cluster MUST reach before it switches. The list is published with the line's first release.
+6. A node checks the minimum setup at every start. It refuses to start when the setup is not met, and names each unmet setting and the runbook step that sets it.
+
+How Apache's configuration changes reach our file is in [upstream.md](upstream.md#configuration-changes).
+
 ### Switching a node from Apache's package
 
 1. The operator drains and stops the node first, as in any rolling upgrade.
@@ -111,7 +122,7 @@ ChronitonDB is a fork, so it has its own packaging and its own names, separate f
 4. They reuse the existing data directory in place. No data is copied or moved.
 5. They report what else on the machine still refers to `cassandra`.
 
-A runbook covers the order of nodes, the checks before and after each node, and the rollback to Apache's package.
+A runbook covers the minimum setup to reach first, the order of nodes, the checks before and after each node, and the rollback to Apache's package.
 
 ## Release outputs
 

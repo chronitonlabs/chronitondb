@@ -122,7 +122,7 @@ Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer fir
 
 ### Two review standards, picked by file
 
-1. **Stock Apache Cassandra files** get the strict Apache review: the smallest diff that does the job, no new helpers, existing tests extended in place, every behaviour change behind a switch.
+1. **Stock Apache Cassandra files** get the strict Apache review: the smallest diff that does the job, no new helpers, existing tests extended in place, every behaviour change behind a switch. A stock file that imports ChronitonDB code is a hook point: it MUST be listed in the feature spec with its delta entry.
 2. **New ChronitonDB files** are reviewed against their approved design. Every other check still applies.
 
 ### Review rounds

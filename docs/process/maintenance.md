@@ -46,7 +46,7 @@ Preventive work fixes a latent fault before it causes a failure. Adaptive work k
 3. **Lines.** A change that belongs on every line follows the corrective pattern: one pull request per line, oldest line first. An adaptive change specific to one line touches only that line.
 4. **Approval.** A maintainer approves the design record by merging. Implementation starts after that merge. A maintainer merges the code pull request after review.
 
-An additive feature small enough for one item takes this same path.
+An additive feature small enough for one item takes this same path. It has a feature key: its design record goes in `docs/design/<KEY>-<slug>/`, its requirements are `REQ-<KEY>-nnn`, and the record states the feature class. See [additive.md](additive.md#feature-keys-and-requirement-ids).
 
 ### Documentation only changes
 

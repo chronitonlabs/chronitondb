@@ -22,13 +22,28 @@ This register lists every change ChronitonDB carries on top of Apache Cassandra 
 ## Entries
 
 1. Each entry is one Markdown file in this folder, written from [the delta entry template](../process/templates/delta-entry.md).
-2. Each entry says what the change is, why we carry it, the area it touches, the lines that carry it, its upstream status and the date of its last change.
-3. The upstream status is one of: offered (with the Apache JIRA), declined upstream, or ours only.
+2. The file name is a short descriptive name. It is the entry's id and does not change. Entries are not numbered.
+3. Each entry has a header that follows Debian's [DEP-3 patch header convention](https://dep-team.pages.debian.net/deps/dep3/), adapted to a change ChronitonDB carries on top of Apache Cassandra. Most fields keep their DEP-3 names. Added, Pull requests, Status, Area and Lines are the register's own.
+
+### Fields
+
+1. **Description**: one line saying what we carry. The What and Why sections of the entry are the long description.
+2. **Origin**: where the change came from. ChronitonDB, an Apache commit taken whole, a backport of part of an Apache commit, or another fork, with a link to the commit.
+3. **Bug**: the Apache JIRA, `CASSANDRA-<n>`, as a link, or none.
+4. **Bug-ChronitonDB**: our GitHub issue in this repository, or none. This is the Bug-Vendor field of DEP-3.
+5. **Forwarded**: whether the change has gone to Apache Cassandra. Offered, with the Apache JIRA. Declined, with the Apache JIRA and a one line reason. Not needed, with the reason. Offered and Declined both mean DEP-3's forwarded. Not needed is DEP-3's `not-needed`.
+6. **Author**: who wrote the entry, and the change when its Origin is ChronitonDB. A change from Apache or another fork keeps its author in its Origin commit. Author sits in the document control table.
+7. **Last-Update**: the date of the last change to the entry, written YYYY-MM-DD.
+8. **Added**: the date ChronitonDB first carried the change on a line, written YYYY-MM-DD. Ours, not in DEP-3.
+9. **Pull requests**: the pull requests that carry the change on each line, with their commits. Ours, not in DEP-3.
+10. **Status**: Current or Dropped. It sits in the document control table. Ours, not in DEP-3.
+11. **Area**: the part of the tree and the behaviour the change touches. Ours, not in DEP-3.
+12. **Lines**: the lines that carry the change. Ours, not in DEP-3.
 
 ## Keeping it current
 
 1. Every pull request that changes stock code or stock behaviour adds or updates its entry. The reviewer checks this.
-2. Every fix to stock code gets an Apache JIRA, filed by the maintainers, and its entry records it.
+2. Every fix to stock code gets an Apache JIRA, filed by the maintainers. Its entry records it in Bug and Forwarded.
 3. Features are offered to Apache Cassandra only when the maintainers decide, case by case.
 4. The integrator keeps the register current. Its upstream radar flags entries that Apache Cassandra has since fixed. Those entries are dropped at the next import, and its import record in `docs/imports/` lists them.
 
@@ -36,11 +51,13 @@ See [upstream.md](../process/upstream.md) for how imports and upstreaming work.
 
 ## Index
 
-| Entry | Area | Lines | Upstream status |
-|---|---|---|---|
-| [One Java version per line](java-version-per-line.md) | Build and packaging | 5.0, 6.0 | Ours only |
-| [Apache GitHub checks run on pull requests to the lines](github-checks-on-pull-requests.md) | Continuous integration | 5.0, 6.0 | Ours only |
-| [Apache workflow actions pinned to commits](github-actions-pinned.md) | Continuous integration | 5.0, 6.0 | Ours only |
-| [run-ci accepts this repository](run-ci-accepts-chronitondb.md) | Build scripts | 5.0, 6.0 | Ours only |
-| [Import order check suppressed for ChronitonDB code](checkstyle-import-order-suppression.md) | Build | 6.0 | Ours only |
-| [run-ci routes 6.0 versions on the 5.0 line](run-ci-6.0-version-routing.md) | Build scripts | 5.0 | Ours only, until an Apache 5.0 release brings it |
+Ordered by area, then by name.
+
+| Entry | Area | Lines | Forwarded | Added | Last update | Issue |
+|---|---|---|---|---|---|---|
+| [Import order check suppressed for ChronitonDB code](checkstyle-import-order-suppression.md) | Build | 6.0 | Not needed | 2026-10-30 | 2026-11-01 | none |
+| [One Java version per line](java-version-per-line.md) | Build and packaging | 5.0, 6.0 | Not needed | 2026-10-30 | 2026-11-01 | none |
+| [run-ci accepts this repository](run-ci-accepts-chronitondb.md) | Build scripts | 5.0, 6.0 | Not needed | 2026-10-30 | 2026-11-01 | none |
+| [run-ci routes 6.0 versions on the 5.0 line](run-ci-6.0-version-routing.md) | Build scripts | 5.0 | Not needed, Apache has it on 6.0 | 2026-10-30 | 2026-11-01 | none |
+| [Apache GitHub checks run on pull requests to the lines](github-checks-on-pull-requests.md) | Continuous integration | 5.0, 6.0 | Not needed | 2026-10-31 | 2026-11-01 | none |
+| [Apache workflow actions pinned to commits](github-actions-pinned.md) | Continuous integration | 5.0, 6.0 | Not needed | 2026-10-30 | 2026-11-01 | none |

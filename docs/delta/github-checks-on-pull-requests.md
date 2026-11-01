@@ -22,12 +22,27 @@ limitations under the License.
 | Title | Apache GitHub checks run on pull requests to the lines |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 1 |
+| Version | 2 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
-| References | Pull requests #47, #50 and #51 (`chronitondb-5.0`, commits `47c549d102`, `757e5bba84`, `11a4cd80c8`) and #48 and #52 (`chronitondb-6.0`, commits `9c9cb0b00b`, `6363396f38`). |
+| References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
 Change history: the git history of this file.
+
+## Header
+
+The fields follow Debian's [DEP-3 patch header convention](https://dep-team.pages.debian.net/deps/dep3/). See [the delta register](README.md#fields).
+
+| Field | Value |
+|---|---|
+| Description | Apache's Ant Check and Build Scripts workflows run on pull requests to the lines. |
+| Origin | ChronitonDB. |
+| Bug | none |
+| Bug-ChronitonDB | none |
+| Forwarded | Not needed. The triggers and job name fit this repository's branch names and required checks. |
+| Added | 2026-10-31 |
+| Last-Update | 2026-11-01 |
+| Pull requests | `chronitondb-5.0`: [#47](https://github.com/chronitonlabs/chronitondb/pull/47), [#50](https://github.com/chronitonlabs/chronitondb/pull/50) and [#51](https://github.com/chronitonlabs/chronitondb/pull/51), commits `47c549d102`, `757e5bba84` and `11a4cd80c8`. `chronitondb-6.0`: [#48](https://github.com/chronitonlabs/chronitondb/pull/48) and [#52](https://github.com/chronitonlabs/chronitondb/pull/52), commits `9c9cb0b00b` and `6363396f38`. |
 
 ## What
 
@@ -44,11 +59,3 @@ Continuous integration: `.github/workflows/code-check.yaml` and `.github/workflo
 ## Lines
 
 `chronitondb-5.0` and `chronitondb-6.0`.
-
-## Upstream status
-
-Ours only. The triggers and job name fit this repository's branch names and required checks.
-
-## Date
-
-2026-10-31

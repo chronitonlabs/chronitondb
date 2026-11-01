@@ -21,7 +21,7 @@ This page is the ChronitonDB test policy and test strategy in the sense of ISO/I
 
 ## Policy
 
-1. Every requirement has at least one test that proves it. A requirement without a test is not done, unless the item's coverage file records why it is deliberately not tested.
+1. Every requirement has at least one test that proves it. A requirement without a test is not done, unless the item's coverage file records why it is deliberately not tested. That reason is part of the design record and is approved with it.
 2. A fix starts with a test that reproduces the fault, written by the designer on the item's code branch. It MUST fail before the fix and pass after it. The test and the fix merge together, so the line never carries a failing test.
 3. With every fork feature off, every line MUST behave exactly as stock Apache Cassandra. The parity suite proves it.
 4. A test that existed before a change MUST NOT be weakened. A change to a pre-existing test is additive and named in the design record.
@@ -49,7 +49,7 @@ Changes that touch compaction or on-disk formats run on both sstable formats and
 Scenarios are written in Gherkin and run with Cucumber, in the fork's own test module `test/bdd/`. Each one is the executable form of one or more EARS requirements of a fork feature.
 
 1. Every scenario uses the shared library of CQL and cluster steps. A feature that needs a new step adds it to the library with tests of its own. There is no glue code per feature.
-2. Every scenario carries a tag with the id of each requirement it proves. These tags map requirements to their scenarios.
+2. Every scenario carries a tag with the id of each requirement it proves, the id itself with `@` in front, for example `@REQ-LUC-012`. These tags map requirements to their scenarios.
 3. Every scenario carries exactly one of `@switch-off` and `@switch-on`, for the state of the feature switch it runs with.
 4. `@switch-off` scenarios check both parts of the switch off rule: stock operations behave exactly as Apache Cassandra, and the feature's syntax is refused with an error that names the switch.
 5. `@stock` marks a scenario that asserts Apache Cassandra's own behaviour. A `@stock` scenario MUST pass before the change and after it. Every other new or changed scenario MUST fail before the change and pass after it.

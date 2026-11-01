@@ -16,8 +16,8 @@
   limitations under the License.
 -->
 <!--
-  PMD rules for ChronitonDB code under org/chronitondb. Owner decision M6:
-  PMD runs in CI and in the commit gate only, it is never shipped and never
+  PMD rules for ChronitonDB code under org/chronitondb.
+  PMD runs in CI and before a commit only, it is never shipped and never
   added to lib/ or build.xml. shape-check.sh downloads the pinned release
   into build/ on first use and refuses it unless the sha256 below matches.
 
@@ -39,8 +39,8 @@
 
   Duplication (CPD) is a command line tool in PMD 7, not a rule, so its only
   setting lives in this block: cpd.minimum-tokens, the smallest duplicated
-  block reported, about 50 tokens (M6). Production findings block, test
-  findings warn (M5), the script applies the severity.
+  block reported, about 50 tokens. Production findings block, test
+  findings warn, the script applies the severity.
 -->
 <ruleset name="ChronitonDB shape"
          xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
@@ -49,10 +49,10 @@
 
   <description>
     Cognitive complexity for ChronitonDB code. Production code blocks above 15,
-    tests and benchmarks warn above 15 (owner decisions M5 and M6).
+    tests and benchmarks warn above 15.
   </description>
 
-  <!-- M6: cognitive complexity 15. PMD reports a method at or above
+  <!-- Cognitive complexity 15. PMD reports a method at or above
        reportLevel, so 16 reports everything above the limit of 15. -->
   <rule ref="category/java/design.xml/CognitiveComplexity">
     <properties>

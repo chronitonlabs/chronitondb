@@ -22,7 +22,7 @@
 <!--
   Shape limits for ChronitonDB tests and benchmarks under org/chronitondb
   (test/unit, test/distributed, test/microbench, test/burn and the rest of
-  test/). Owner decision M5: measured, shown in the PR evidence, warnings
+  test/). Measured, shown in the PR evidence, warnings
   only. Nothing in this file blocks a commit or a PR. Testing a database
   needs clusters, flushes, compactions and failure injection, so long
   setup is expected here.
@@ -34,20 +34,20 @@
   <property name="severity" value="warning"/>
   <property name="fileExtensions" value="java"/>
 
-  <!-- M5: file length 1,000 lines -->
+  <!-- File length 1,000 lines -->
   <module name="FileLength">
     <property name="max" value="1000"/>
   </module>
 
   <module name="TreeWalker">
 
-    <!-- M5: cyclomatic complexity 5 per test method, a switch counts once -->
+    <!-- Cyclomatic complexity 5 per test method, a switch counts once -->
     <module name="CyclomaticComplexity">
       <property name="max" value="5"/>
       <property name="switchBlockAsSingleDecisionPoint" value="true"/>
     </module>
 
-    <!-- M5: method length 150 lines, blank and comment lines included -->
+    <!-- Method length 150 lines, blank and comment lines included -->
     <module name="MethodLength">
       <property name="max" value="150"/>
       <property name="countEmpty" value="true"/>

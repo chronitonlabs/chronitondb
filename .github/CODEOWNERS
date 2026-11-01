@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# The sensitive paths (decision E15). A change to any of them requests a
-# review from the team. /.github/ covers this file too. Query parsing and
-# analyzers are not on the list. Until the no-bypass ruleset is on
-# (decision CO1, build plan step 1.8), this file only requests the review.
+# The sensitive paths (branching-and-review.md). A change to any of them
+# requests a review from the team. /.github/ covers this file too. Query
+# parsing and analyzers are not on the list. Until the line rulesets require
+# code owner review, this file only requests the review.
 /src/java/org/apache/cassandra/auth/                  @chronitonlabs/sensitive-reviewers
 /src/java/org/apache/cassandra/transport/             @chronitonlabs/sensitive-reviewers
 /src/java/org/apache/cassandra/net/                   @chronitonlabs/sensitive-reviewers
@@ -34,8 +34,7 @@
 /debian/                                              @chronitonlabs/sensitive-reviewers
 /redhat/                                              @chronitonlabs/sensitive-reviewers
 
-# The process and governance are the maintainers' decision (governance.md).
-# The kit lint reads its rules from docs/process/, so changes there need a
-# maintainer too.
+# The process and governance are the maintainers' decision (governance.md),
+# so changes there need a maintainer.
 /docs/process/                                        @chronitonlabs/maintainers
 /docs/governance/                                     @chronitonlabs/maintainers

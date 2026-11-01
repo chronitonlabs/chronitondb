@@ -14,11 +14,11 @@
 # limitations under the License.
 
 # Semgrep CE with the house rules in tools/chronitondb/semgrep on the files a
-# pull request changes, without the findings already on the merge base
-# (decision E13, build plan step 1.4). Semgrep runs from its container image
-# pinned by digest in tools/chronitondb/semgrep-check.sh, without network.
-# Advisory: a finding fails this check, which blocks nothing until the owner
-# makes it required. Every action is pinned to a commit.
+# pull request changes, without the findings already on the merge base.
+# Semgrep runs from its container image pinned by digest in
+# tools/chronitondb/semgrep-check.sh, without network. A finding fails this
+# check, and the check is required on every line, so a finding blocks the
+# merge. Every action is pinned to a commit.
 name: ChronitonDB Semgrep
 
 on:

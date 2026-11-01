@@ -82,6 +82,7 @@ These checks run on every pull request to a line. Each MUST pass before a mainta
 | `semgrep` | Banned APIs, unsafe process and deserialisation calls, non-ASCII identifiers and bidirectional control characters |
 | `spotbugs` | SpotBugs with FindSecBugs on the compiled ChronitonDB classes. Findings are reported. The check fails when its self-test fails |
 | `instruction-files` | No instruction files for automated coding tools anywhere in the tree, such as `AGENTS.md` |
+| `license/cla` | Every contributor to the pull request has signed the contributor agreement. See [contributing.md](contributing.md) |
 | CodeQL | Code scanning. Blocks on high or critical security alerts and on errors |
 
 Apache's Build Scripts check also runs on pull requests that touch `.build/` or the workflows. It is advisory, since a check filtered by path cannot be required.
@@ -98,7 +99,7 @@ A change to a sensitive path requests a review from the code owners in `.github/
 
 1. Authentication, transport, network and security code: `src/java/org/apache/cassandra/auth/`, `transport/`, `net/`, `security/`, `service/ClientState.java`, and the authentication and network code under `org/chronitondb/`.
 2. The build and its inputs: `build.xml`, `.build/`, `lib/`.
-3. Configuration and packaging: `conf/`, `bin/`, `packaging/`, `debian/`, `redhat/`.
+3. Configuration and packaging: `conf/`, `bin/`, `packaging/`, `debian/`, `redhat/`. `packaging/` does not exist yet. The pull request that creates it adds it to `.github/CODEOWNERS`.
 4. The project's own tooling and automation: `tools/chronitondb/`, `.github/`, `CODEOWNERS`.
 
 Query parsing and analyzers are not sensitive paths.

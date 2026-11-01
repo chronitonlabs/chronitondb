@@ -57,6 +57,8 @@ A security fix follows the corrective path in [maintenance.md](maintenance.md), 
 2. The fix, made against that test, on every affected supported line, each carrying the same test.
 3. The fixed releases on all affected lines, released together.
 
+An urgent fix is an emergency and goes first in the queue. See [maintenance.md](maintenance.md#emergency-urgent-corrective-work). Only a security fix with a security advisory is private. Any other urgent fix, for example a data loss fault, takes the public corrective path.
+
 ## Response times
 
 | Step | Target |
@@ -105,5 +107,5 @@ ChronitonDB inherits every Apache Cassandra vulnerability on its base and every 
 
 1. Every day the security engineer checks every library in the SBOM against OSV, the GitHub advisory database and NVD.
 2. For each match it works out whether ChronitonDB is affected: whether the vulnerable code is shipped and reachable. It writes the VEX statement.
-3. When a patch-version update of the library fixes it, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. The item goes straight to the developer with no fix record, as [maintenance.md](maintenance.md#dependency-patch-version-updates) describes. Anything else goes to the maintainers as a decision.
+3. When a patch-version update of the library fixes it, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. The item goes straight to the developer with no fix record, as [maintenance.md](maintenance.md#dependency-patch-version-updates) describes. The security engineer names in the item the test classes that cover the code that calls the library, and those tests run before the update merges. Anything else goes to the maintainers as a decision.
 4. The security engineer watches Apache Cassandra security announcements with the integrator. See [upstream.md](upstream.md).

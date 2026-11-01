@@ -31,9 +31,10 @@ Each line releases on its own rhythm:
 
 ## Support lifetime
 
-1. Each line is supported for 5 years from its first ChronitonDB release, whatever Apache Cassandra does with its major version.
-2. The support end date of each line is published with its first release.
-3. After Apache's own end of life for a major version, security fixes and critical fixes are carried back to the line from newer Apache Cassandra versions.
+1. The maintainers designate a line as long-term support (LTS) when its first release ships. An LTS line is supported for 5 years from its first ChronitonDB release, whatever Apache Cassandra does with its major version. This follows the default support period of the EU Cyber Resilience Act.
+2. A line that is not designated LTS is supported until 12 months after the next line's first release.
+3. The support period and end date of each line, and whether it is LTS, are published with its first release.
+4. After Apache's own end of life for a major version, security fixes and critical fixes are carried back to a supported line from newer Apache Cassandra versions.
 
 Supported versions are listed in the README of the repository.
 

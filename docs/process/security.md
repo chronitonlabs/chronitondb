@@ -71,7 +71,7 @@ An urgent fix is an emergency and goes first in the queue. See [maintenance.md](
 | Fix released, Low | The next regular release |
 | Public disclosure | When the fix ships, at most 90 days after the report unless agreed with the reporter |
 
-The CVSS version is not defined yet. Each line is supported for 5 years from its first ChronitonDB release, see [release.md](release.md#support-lifetime). Supported versions are listed in the README of the repository. A line with no releases yet has no supported versions.
+The CVSS version is not defined yet. Each line's support period is published with its first release: 5 years for a line designated long-term support, otherwise until 12 months after the next line's first release, see [release.md](release.md#support-lifetime). Supported versions are listed in the README of the repository. A line with no releases yet has no supported versions.
 
 ## When stock Apache Cassandra is affected
 

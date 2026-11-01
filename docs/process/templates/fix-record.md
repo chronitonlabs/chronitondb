@@ -57,6 +57,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 {The test the designer wrote on the item's code branch: its class and method, and its failing result on each affected line before the fix. The developer fixes against it on the same branch, and the code pull request shows it passing.}
 
+{A fix to a fork feature MAY use a scenario as its reproducing test: a new scenario, or the feature's existing scenario updated, tagged with the feature's requirement id. Name its feature file and scenario. It MUST fail before the fix and pass after it. A fix to stock Apache Cassandra code uses a plain JUnit test. See [testing.md](../testing.md#scenarios).}
+
 ## 7. Compatibility impact
 
 {On-disk, wire, schema, settings, client visible behaviour. Mixed-version behaviour during a rolling upgrade. Or "does not apply, because".}
@@ -75,14 +77,43 @@ Scenario runner: {the command that runs the scenarios, with {tags} once}
 
 Scenario tags: {the tag expression for this item's scenarios}
 
-{The two scenario lines and their rules are those of the design record's Testing section. A fix with no scenarios leaves out both lines.}
+{The two scenario lines and their rules are those of the design record's Testing section. A fix with no scenarios leaves out both lines. A fix whose reproducing test is a scenario keeps them.}
 
-{The five lists of the design record's Testing section, with the same headings and format: Tests for this change (the reproducing test first), Existing suites at risk, Stock suites run unchanged, Tracing test, Formats and configurations. See [design-record.md](design-record.md#14-testing).}
+{Then the five lists of the design record's Testing section, with the same headings and format. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry. See [design-record.md](design-record.md#14-testing).}
+
+### Tests for this change
+
+{The reproducing test first, when it is a JUnit test, then the other new and changed tests.}
+
+### Existing suites at risk
+
+{Unit test suites and in-JVM distributed test suites this fix could break.}
+
+### Stock suites run unchanged
+
+{Apache Cassandra's own suites that MUST pass without modification.}
+
+### Tracing test
+
+{The test that shows the fix in query tracing, or "does not apply, because" with the reason.}
+
+### Formats and configurations
+
+{`yes` when the fix touches compaction or an on-disk format, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
 
 ## Planned file list
 
-{The same format as the design record's planned file list: one file per line, the exact path, a space, then `new`, `edit`, `test` or `stock`. The reproducing test is listed as `test`. See [design-record.md](design-record.md#planned-file-list).}
+{The same format as the design record's planned file list: one file per line, the exact path from the repository root, a space, then `new`, `edit`, `test` or `stock`, all in one fenced block. No wildcards. The reproducing test is listed as `test`. Tooling enforces the list as written here. See [design-record.md](design-record.md#planned-file-list).}
+
+```
+src/java/org/apache/cassandra/example/Example.java stock
+test/unit/org/apache/cassandra/example/ExampleTest.java test
+```
 
 ### Shared with open items
 
-{The same table as the design record's: one row per open item whose pull request changes a planned file, with the kind `soft` or `hard`, or "None.". A hard overlap stops the work, and the maintainers decide which item goes first. See [design-record.md](design-record.md#shared-with-open-items).}
+{The same table as the design record's: one row per open item whose pull request changes a planned file, with the kind `soft` or `hard`. Write "None." in place of the table when no open item shares a file. A hard overlap stops the work, and the maintainers decide which item goes first. Tooling reads this table, so keep its columns. See [design-record.md](design-record.md#shared-with-open-items).}
+
+| Item | Shared file | Kind |
+|---|---|---|
+| {#issue of the open item} | {path} | {soft or hard} |

@@ -41,7 +41,7 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Bug-ChronitonDB | none |
 | Forwarded | Not needed. The triggers and job name fit this repository's branch names and required checks. |
 | Added | 2026-10-31 |
-| Last-Update | 2026-10-31 |
+| Last-Update | 2026-11-01 |
 | Pull requests | `chronitondb-5.0`: [#47](https://github.com/chronitonlabs/chronitondb/pull/47), [#50](https://github.com/chronitonlabs/chronitondb/pull/50) and [#51](https://github.com/chronitonlabs/chronitondb/pull/51), commits `47c549d102`, `757e5bba84` and `11a4cd80c8`. `chronitondb-6.0`: [#48](https://github.com/chronitonlabs/chronitondb/pull/48) and [#52](https://github.com/chronitonlabs/chronitondb/pull/52), commits `9c9cb0b00b` and `6363396f38`. |
 
 ## What

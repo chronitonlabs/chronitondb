@@ -55,9 +55,9 @@ Ordered by area, then by name.
 
 | Entry | Area | Lines | Forwarded | Added | Last update | Issue |
 |---|---|---|---|---|---|---|
-| [Import order check suppressed for ChronitonDB code](checkstyle-import-order-suppression.md) | Build | 6.0 | Not needed | 2026-10-30 | 2026-10-31 | none |
-| [One Java version per line](java-version-per-line.md) | Build and packaging | 5.0, 6.0 | Not needed | 2026-10-30 | 2026-10-31 | none |
-| [run-ci accepts this repository](run-ci-accepts-chronitondb.md) | Build scripts | 5.0, 6.0 | Not needed | 2026-10-30 | 2026-10-31 | none |
-| [run-ci routes 6.0 versions on the 5.0 line](run-ci-6.0-version-routing.md) | Build scripts | 5.0 | Not needed, Apache has it on 6.0 | 2026-10-30 | 2026-10-31 | none |
-| [Apache GitHub checks run on pull requests to the lines](github-checks-on-pull-requests.md) | Continuous integration | 5.0, 6.0 | Not needed | 2026-10-31 | 2026-10-31 | none |
-| [Apache workflow actions pinned to commits](github-actions-pinned.md) | Continuous integration | 5.0, 6.0 | Not needed | 2026-10-30 | 2026-10-31 | none |
+| [Import order check suppressed for ChronitonDB code](checkstyle-import-order-suppression.md) | Build | 6.0 | Not needed | 2026-10-30 | 2026-11-01 | none |
+| [One Java version per line](java-version-per-line.md) | Build and packaging | 5.0, 6.0 | Not needed | 2026-10-30 | 2026-11-01 | none |
+| [run-ci accepts this repository](run-ci-accepts-chronitondb.md) | Build scripts | 5.0, 6.0 | Not needed | 2026-10-30 | 2026-11-01 | none |
+| [run-ci routes 6.0 versions on the 5.0 line](run-ci-6.0-version-routing.md) | Build scripts | 5.0 | Not needed, Apache has it on 6.0 | 2026-10-30 | 2026-11-01 | none |
+| [Apache GitHub checks run on pull requests to the lines](github-checks-on-pull-requests.md) | Continuous integration | 5.0, 6.0 | Not needed | 2026-10-31 | 2026-11-01 | none |
+| [Apache workflow actions pinned to commits](github-actions-pinned.md) | Continuous integration | 5.0, 6.0 | Not needed | 2026-10-30 | 2026-11-01 | none |

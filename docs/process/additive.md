@@ -31,22 +31,35 @@ Each level is approved by a merged pull request before the next level starts. Lo
 
 | Level | Document | Author | Location |
 |---|---|---|---|
-| 1 | Feature spec | Architect | `docs/design/<feature>/feature-spec.md` |
-| 2 | Plan and delivery plan | Architect | `docs/design/<feature>/plan.md` and `docs/design/<feature>/delivery-plan.md` |
+| 1 | Feature spec | Architect | `docs/design/<KEY>-<slug>/feature-spec.md` |
+| 2 | Plan and delivery plan | Architect | `docs/design/<KEY>-<slug>/plan.md` and `docs/design/<KEY>-<slug>/delivery-plan.md` |
 | 3 | Item design record | Designer | `docs/design/<issue>-<slug>/` |
-| Gates | Milestone reports | Architect | `docs/design/<feature>/milestones/` |
+| Gates | Milestone reports | Architect | `docs/design/<KEY>-<slug>/milestones/` |
 
 All three live on the line the feature targets.
 
 Each large feature has its own public GitHub issue, opened by the architect. Its number names the branches of the feature spec, plan, delivery plan, milestone report and change control pull requests. Each item then has its own issue, opened by the designer.
+
+## Feature keys and requirement ids
+
+Every fork feature has a feature key: 3 to 5 capital letters, for example `LUC`. The key names the feature's directory and its requirement ids.
+
+1. The feature's directory is `docs/design/<KEY>-<slug>/`, for example `docs/design/LUC-fulltext-search/`.
+2. The merge of the pull request that creates the directory reserves the key. For a feature that needs several items, that is the feature spec pull request. For a feature that fits one item, it is the design record pull request.
+3. A key is never reused. A withdrawn feature keeps its directory.
+4. Feature requirements in the feature spec have ids `FREQ-<KEY>-nnn`. Requirements in the feature's design records have ids `REQ-<KEY>-nnn`, numbered across the whole feature. `nnn` is three digits, for example `FREQ-LUC-001` and `REQ-LUC-014`.
+5. The item design records of a feature that needs several items stay in `docs/design/<issue>-<slug>/`.
+6. A feature that fits one item has no feature spec. Its design record lives in the feature's directory and states the feature class. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
+7. Fix records and other items that are not feature work keep `docs/design/<issue>-<slug>/` and plain ids `REQ-n`.
+8. A required pull request check enforces these rules: directory names are well formed and keys are unique, every keyed id uses a reserved key, each id is defined exactly once (a FREQ in its feature spec, a REQ in one design record of its feature), every requirement tag on a scenario names a defined id, and removing a feature directory fails the check.
 
 ### Level 1: the feature spec
 
 The feature spec says what the feature is and why. It is written from [templates/feature-spec.md](templates/feature-spec.md) and contains:
 
 1. Purpose and scope, with non-goals.
-2. Architecture in short arc42 form: context, building blocks, interfaces, on-disk and wire formats, runtime behaviour, observability, limits.
-3. Feature requirements, each with an id `FREQ-n`, one EARS shape, one BCP 14 key word and a source.
+2. Architecture in short arc42 form: context, building blocks, interfaces, on-disk and wire formats, runtime behaviour, observability, limits. It states the class of the feature and of each switch, with the reason, the default on each line and, for a behaviour-changing feature, the stock operations it changes. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
+3. Feature requirements, each with an id `FREQ-<KEY>-nnn`, one EARS shape, one BCP 14 key word and a source.
 4. Quality requirements, answering every line of [quality-requirements.md](quality-requirements.md).
 5. Threat model: every new entry point checked with STRIDE, each mitigation a FREQ, or the statement that there is no new entry point.
 6. Compatibility: on-disk format changes with their version markers, behaviour in a mixed-version cluster during a rolling upgrade, the upgrade path and prerequisites, the rollback path, and the runbook entries. A feature with no format, schema or protocol change says so.
@@ -54,6 +67,7 @@ The feature spec says what the feature is and why. It is written from [templates
 8. Risks, each with likelihood, impact and mitigation.
 9. Decisions, as links to decision records.
 10. A milestone outline.
+11. Prior art: how other systems and projects solved the problem, what each got right and wrong, and why ChronitonDB chooses differently where it does. The template sets the rules for sources, licences and patents.
 
 A maintainer approves the feature spec by merging its pull request.
 
@@ -83,7 +97,7 @@ The plan and the delivery plan are each approved by a merged pull request before
 
 ### Level 3: the item design record
 
-Each item gets a design record from [templates/design-record.md](templates/design-record.md), written by the designer. Each requirement `REQ-n` cites an acceptance criterion in the plan, and through it a feature requirement. A maintainer approves the design record by merging its pull request. Only then does implementation start.
+Each item gets a design record from [templates/design-record.md](templates/design-record.md), written by the designer. Each requirement `REQ-<KEY>-nnn` cites an acceptance criterion in the plan, and through it a feature requirement. The designer writes the item's scenarios in the same pull request, tagged `@wip`, so they are approved with the requirements. See [testing.md](testing.md#scenarios). A maintainer approves the design record by merging its pull request. Only then does implementation start.
 
 ## The line for a feature
 
@@ -101,12 +115,12 @@ An item is not done until the user documentation, operator documentation and run
 
 Only the current milestone is in progress. When all its items are merged:
 
-1. The architect writes the milestone report in `docs/design/<feature>/milestones/` from [templates/milestone-report.md](templates/milestone-report.md). It is the ISO/IEC/IEEE 29119 test completion report for the milestone: what was tested and at which levels, results against the exit criteria, deviations, remaining risks, and a go or no-go recommendation.
+1. The architect writes the milestone report in `docs/design/<KEY>-<slug>/milestones/` from [templates/milestone-report.md](templates/milestone-report.md). It is the ISO/IEC/IEEE 29119 test completion report for the milestone: what was tested and at which levels, results against the exit criteria, deviations, remaining risks, and a go or no-go recommendation.
 2. The report reviews every risk in the feature spec as open, reduced, closed or happened. It adds new risks with likelihood, impact and mitigation. It says whether the remaining milestones should be re-ordered.
 3. A maintainer approves the gate by merging the report's pull request.
 4. The next milestone starts only after that merge.
 
-Until its final milestone gate, the feature's switch refuses to turn on. The final gate makes the feature switchable: operators MAY then turn it on with yaml or nodetool. Its default stays off for the life of the line. A default MAY be on only in a new line. See [branching-and-review.md](branching-and-review.md#every-fork-feature-is-off-by-default) and [release.md](release.md#what-a-release-may-contain).
+Until its final milestone gate, the feature's switch refuses to turn on, whatever its default. The final gate makes the feature switchable with yaml or nodetool. From then on the switch starts from the default the feature spec sets for the line, and that default never changes within the line. A feature that passes its final gate after its line's first release ships with its default off on that line. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults) and [release.md](release.md#what-a-release-may-contain).
 
 ## Change control after a merge
 

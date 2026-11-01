@@ -29,7 +29,7 @@ limitations under the License.
 
 Change history: the git history of this file.
 
-Location: `docs/design/<feature>/feature-spec.md` on the line the feature targets. Process: [additive.md](../additive.md).
+Location: `docs/design/<KEY>-<slug>/feature-spec.md` on the line the feature targets, with the [feature key](../additive.md#feature-keys-and-requirement-ids) in the directory name. Process: [additive.md](../additive.md).
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
@@ -73,11 +73,21 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 {For each ChronitonDB package under `org/chronitondb`: the packages it MAY import. A check refuses any other import, and changing these rules is a change to this spec. Then the hook points: each stock Apache Cassandra file that imports ChronitonDB code, why it must, and its [delta entry](../../delta/README.md). Keep the hook points few, since each one is a place where an Apache import can conflict.}
 
+### 2.8 Feature class and switches
+
+{Mandatory. The class of the feature and of each switch, each with its reason. A purely additive feature or switch is reachable only through new syntax, new index types or new settings that stock Apache Cassandra rejects. Its default MAY be on from a line's first release. A behaviour-changing feature or switch changes something stock Apache Cassandra already does: results, errors, warnings or the performance of existing operations. Its default MUST be off on every line. A default never changes within a line. A feature that passes its final milestone gate after a line's first release is off by default on that line. Name the stock operations each behaviour-changing switch changes. Each departure in a design record's stock behaviour table links to its switch's row here. See [branching-and-review.md](../branching-and-review.md#feature-switches-and-defaults).}
+
+Feature class: {purely additive or behaviour-changing}, because {reason}.
+
+| Switch | Class | Reason | Default per line | Stock operations it changes |
+|---|---|---|---|---|
+| {yaml setting and nodetool toggle} | {class} | {reason} | {line: on or off} | {operations, or none} |
+
 ## 3. Feature requirements
 
-{One requirement per entry: an id `FREQ-n`, one EARS shape, one BCP 14 key word, and a source. Each requirement passes the ISO/IEC/IEEE 29148 checklist in [design-record.md](design-record.md).}
+{One requirement per entry: an id `FREQ-<KEY>-nnn` with the feature key and three digits, one EARS shape, one BCP 14 key word, and a source. Each requirement passes the ISO/IEC/IEEE 29148 checklist in [design-record.md](design-record.md).}
 
-FREQ-1 ({shape}): {requirement}. Source: {issue, decision record, risk or stakeholder need}.
+FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, risk or stakeholder need}.
 
 ## 4. Quality requirements
 
@@ -133,6 +143,16 @@ FREQ-1 ({shape}): {requirement}. Source: {issue, decision record, risk or stakeh
 ## 10. Milestones outline
 
 {The milestones in order, one line each, with what each makes testable. The delivery plan gives the detail.}
+
+## 11. Prior art
+
+{Mandatory. How other systems and projects solved this problem, what each got right and wrong, and why ChronitonDB chooses differently where it does. Cite each source.}
+
+These rules apply to every source:
+
+1. Describe and cite behaviour, published designs, papers, public documentation and code under licences compatible with the Apache License 2.0.
+2. Code or text under an incompatible licence, for example the Elastic License, SSPL, BUSL or a proprietary licence, MUST NOT be copied. The behaviour of such a system is taken only from its public documentation. Code under a compatible licence MAY be used only with credit. See [conventions.md](../conventions.md#code-from-elsewhere).
+3. Contributors working on the project's behalf MUST NOT search for or read patents for design work. Any patent concern goes to the maintainers.
 
 ## Glossary
 

@@ -29,7 +29,7 @@ limitations under the License.
 
 Change history: the git history of this file.
 
-Location: `docs/design/<issue>-<slug>/`, with the coverage file `ac-coverage.md` next to it. Every section is filled, or carries a waiver with its reason. An empty section blocks approval.
+Location: `docs/design/<issue>-<slug>/`, or `docs/design/<KEY>-<slug>/` for a fork feature that fits one item (see [feature keys](../additive.md#feature-keys-and-requirement-ids)), with the coverage file `ac-coverage.md` next to it. Every section is filled, or carries a waiver with its reason. An empty section blocks approval.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
@@ -39,7 +39,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### Requirements
 
-{One requirement per entry: an id `REQ-n`, one EARS shape, one BCP 14 key word, and its source. For an item of a feature, the source is an acceptance criterion in the plan, and through it a FREQ. Otherwise it is an acceptance criterion in the issue, a risk this record names, or a decision record. Each id has exactly one row and one test in `ac-coverage.md`.}
+{One requirement per entry: an id, one EARS shape, one BCP 14 key word, and its source. The id is `REQ-<KEY>-nnn` for feature work, with the feature key and three digits numbered across the whole feature, and `REQ-n` for any other item. For an item of a feature, the source is an acceptance criterion in the plan, and through it a FREQ. Otherwise it is an acceptance criterion in the issue, a risk this record names, or a decision record. Each id is proven by a scenario that carries it as a tag, or has exactly one row in `ac-coverage.md` naming its test or the reason it is deliberately not tested.}
 
 The five EARS shapes, one example each:
 
@@ -59,7 +59,7 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 
 ## 3. Stock behaviour preservation
 
-{One row per departure from stock, in this table. Write "No departures from stock." in place of the table when there are none. Code defaults in stock classes unchanged. Tooling reads this table, so keep its columns.}
+{One row per departure from stock, in this table. Write "No departures from stock." in place of the table when there are none. Code defaults in stock classes unchanged. In the switch column, link each departure to its switch's row in the feature spec's section 2.8. A fork feature that fits one item has no feature spec: state its class and the class of each switch above the table, in the form of [section 2.8 of the feature spec](feature-spec.md#28-feature-class-and-switches), and link to that. Tooling reads this table, so keep its columns.}
 
 | Stock behaviour today (file and line) | This change | Switch that controls it | Error text naming the switch |
 |---|---|---|---|
@@ -72,6 +72,12 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 ## 4. Prior art reviewed
 
 {Stock code on each line with file and line. Other projects by behaviour. Apache JIRA tickets read with their comments. What each got right or wrong for this problem.}
+
+These rules apply to every source:
+
+1. Describe and cite behaviour, published designs, papers, public documentation and code under licences compatible with the Apache License 2.0.
+2. Code or text under an incompatible licence, for example the Elastic License, SSPL, BUSL or a proprietary licence, MUST NOT be copied. The behaviour of such a system is taken only from its public documentation. Code under a compatible licence MAY be used only with credit. See [conventions.md](../conventions.md#code-from-elsewhere).
+3. Contributors working on the project's behalf MUST NOT search for or read patents for design work. Any patent concern goes to the maintainers.
 
 ## 5. Idiom and consistency
 
@@ -143,6 +149,8 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 
 {The test levels required. RF 1 and RF 3 for anything multi node. Both sstable formats and both unit test configurations for anything touching compaction or formats. What the parity suite will check. See [testing.md](../testing.md).}
 
+{For an item of a fork feature: the scenarios this pull request adds under `test/bdd/`, tagged `@wip` and with their requirement tags. See [testing.md](../testing.md#scenarios).}
+
 {Then these five lists. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry.}
 
 ### Tests for this change
@@ -193,9 +201,9 @@ Check every requirement against these seven qualities before asking for approval
 1. **Necessary:** it traces to an acceptance criterion, a named risk or a decision record. Removing it would lose something the issue asks for.
 2. **Unambiguous:** it has one reading. No "fast", "large", "quickly" or "efficient" without a number and a unit.
 3. **Singular:** one requirement, one BCP 14 key word, one EARS shape. Two requirements joined by "and" are split into two ids.
-4. **Verifiable:** one test or benchmark can prove it, and `ac-coverage.md` names it.
+4. **Verifiable:** one scenario, test or benchmark can prove it, and a scenario tag or `ac-coverage.md` names it.
 5. **Feasible:** the mechanism exists in the tree or in this design, cited with file and line.
 6. **Consistent:** it contradicts no other requirement, no decision record and no stock behaviour rule.
-7. **Traceable:** it has an id, a source and exactly one coverage row.
+7. **Traceable:** it has an id, a source, and a scenario tag or exactly one coverage row.
 
 A requirement that fits none of the five EARS shapes is rewritten until it fits one.

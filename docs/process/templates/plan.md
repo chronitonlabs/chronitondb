@@ -29,7 +29,7 @@ limitations under the License.
 
 Change history: the git history of this file.
 
-Location: `docs/design/<feature>/plan.md`. Process: [additive.md](../additive.md).
+Location: `docs/design/<KEY>-<slug>/plan.md`. Process: [additive.md](../additive.md).
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 

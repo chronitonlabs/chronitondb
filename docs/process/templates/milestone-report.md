@@ -44,15 +44,29 @@ Location: `docs/design/<KEY>-<slug>/milestones/`. Process: [additive.md](../addi
 | Exit criterion | Result | Evidence |
 |---|---|---|
 
-## 4. Deviations
+## 4. Requirements delivered
+
+{The architect fills this section from a fresh check of the merged code against the feature requirements. The reviewer checks it. One row per feature requirement of the milestone: its id, the items and pull requests that deliver it, the scenarios or tests that prove it, and its status, delivered or not delivered. A requirement not delivered has its reason in Deviations.}
+
+| Requirement | Delivered by | Proven by | Status |
+|---|---|---|---|
+| {FREQ-<KEY>-nnn} | {items #issue, pull requests #n} | {scenarios by feature file and name, or test classes} | {delivered or not delivered} |
+
+### Behaviour nobody asked for
+
+{Behaviour of the merged code that no feature requirement asks for, found by the same check. Expected to read "None found." Otherwise list each finding: what the code does and where.}
+
+None found.
+
+## 5. Deviations
 
 {Every difference from the test plan or the delivery plan, with the reason.}
 
-## 5. Documentation
+## 6. Documentation
 
 {Whether the feature's documentation reads as one whole so far, and the gaps.}
 
-## 6. Risk review
+## 7. Risk review
 
 {Every risk in the feature spec, with its status now.}
 
@@ -68,10 +82,10 @@ Location: `docs/design/<KEY>-<slug>/milestones/`. Process: [additive.md](../addi
 
 {Whether the remaining milestones should be re-ordered, and why. A change follows the change control path in [additive.md](../additive.md#change-control-after-a-merge).}
 
-## 7. Remaining risks
+## 8. Remaining risks
 
 {What is still unproven after this milestone.}
 
-## 8. Recommendation
+## 9. Recommendation
 
 {Go or no-go for the next milestone, with the reason.}

@@ -71,8 +71,18 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## 10. Tests the change runs
 
+Scenario runner: {the command that runs the scenarios, with {tags} once}
+
+Scenario tags: {the tag expression for this item's scenarios}
+
+{The two scenario lines and their rules are those of the design record's Testing section. A fix with no scenarios leaves out both lines.}
+
 {The five lists of the design record's Testing section, with the same headings and format: Tests for this change (the reproducing test first), Existing suites at risk, Stock suites run unchanged, Tracing test, Formats and configurations. See [design-record.md](design-record.md#14-testing).}
 
 ## Planned file list
 
 {The same format as the design record's planned file list: one file per line, the exact path, a space, then `new`, `edit`, `test` or `stock`. The reproducing test is listed as `test`. See [design-record.md](design-record.md#planned-file-list).}
+
+### Shared with open items
+
+{The same table as the design record's: one row per open item whose pull request changes a planned file, with the kind `soft` or `hard`, or "None.". A hard overlap stops the work, and the maintainers decide which item goes first. See [design-record.md](design-record.md#shared-with-open-items).}

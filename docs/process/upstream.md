@@ -63,7 +63,7 @@ Each import has a short import record at `docs/imports/<apache-version-or-range>
 1. What came in: the Apache release or commit, and the range of commits.
 2. Conflicts with ChronitonDB changes, and how each was resolved.
 3. Delta entries that Apache has now fixed, which are dropped in the same import.
-4. Tests run, with results.
+4. Tests run, in the five test lists of a design record's Testing section. The results go in the evidence of the import pull request.
 5. Confirmation that stock behaviour is unchanged with every fork feature off: the parity suite passes.
 
 ## The delta register

@@ -28,6 +28,7 @@ This page is the ChronitonDB test policy and test strategy in the sense of ISO/I
 5. Tests MUST NOT depend on wall clock timing. Seeds are printed so a run can be repeated.
 6. Results that depend on cluster topology are a fault. Multi node behaviour is tested at replication factor 1 and replication factor 3. See [quality-requirements.md](quality-requirements.md).
 7. Scenarios are the executable form of a fork feature's EARS requirements. They are for fork features only. Apache Cassandra's own tests stay as they are. See [Scenarios](#scenarios).
+8. A dependency patch-version update for a vulnerability has no design record. The security engineer who finds the vulnerable library names the test classes that cover the code that calls it. Those tests MUST pass before the update merges. See [maintenance.md](maintenance.md#dependency-patch-version-updates).
 
 ## Test levels
 

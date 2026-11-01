@@ -49,7 +49,27 @@ Location: `docs/imports/<apache-version-or-range>.md`, added in the import pull 
 
 ## 5. Tests run
 
-{The suites and results: the stock suites with every fork feature off, the suites around the changed areas, and the regression tests of imported fixes.}
+{The tests this import runs, in the five lists of the design record's Testing section, with the same headings and format. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry. The results go in the evidence of the import pull request, not in this record. See [design-record.md](design-record.md#14-testing).}
+
+### Tests for this change
+
+{The regression tests of the imported fixes.}
+
+### Existing suites at risk
+
+{Unit test suites and in-JVM distributed test suites around the changed areas.}
+
+### Stock suites run unchanged
+
+{Apache Cassandra's own suites, which run with every fork feature off and pass without modification.}
+
+### Tracing test
+
+{The test that shows the imported change in query tracing, or "does not apply, because" with the reason.}
+
+### Formats and configurations
+
+{`yes` when the import touches compaction or an on-disk format, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
 
 ## 6. Stock behaviour confirmed
 

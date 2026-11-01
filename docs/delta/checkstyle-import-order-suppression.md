@@ -41,7 +41,7 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Bug-ChronitonDB | none |
 | Forwarded | Not needed. It applies to ChronitonDB code only. |
 | Added | 2026-10-30 |
-| Last-Update | 2026-10-31 |
+| Last-Update | 2026-11-01 |
 | Pull requests | `chronitondb-6.0`: [#36](https://github.com/chronitonlabs/chronitondb/pull/36), commit `bd0a4f3a85`. |
 
 ## What

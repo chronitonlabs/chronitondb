@@ -41,7 +41,7 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Bug-ChronitonDB | none |
 | Forwarded | Not needed. The change is Apache's own, on its 6.0 branch but not on `cassandra-5.0`. We carry it until an Apache 5.0 release brings it. |
 | Added | 2026-10-30 |
-| Last-Update | 2026-10-31 |
+| Last-Update | 2026-11-01 |
 | Pull requests | `chronitondb-5.0`: [#37](https://github.com/chronitonlabs/chronitondb/pull/37), commit `b8c7408a5f`. |
 
 ## What

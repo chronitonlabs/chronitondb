@@ -22,12 +22,27 @@ limitations under the License.
 | Title | One Java version per line |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 1 |
+| Version | 2 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
-| References | Pull requests #46 (`chronitondb-5.0`, commit `af8deb8da7`) and #49 (`chronitondb-6.0`, commit `2cffdd4d91`). |
+| References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
 Change history: the git history of this file.
+
+## Header
+
+The fields follow Debian's [DEP-3 patch header convention](https://dep-team.pages.debian.net/deps/dep3/). See [the delta register](README.md#fields).
+
+| Field | Value |
+|---|---|
+| Description | Each line builds, packages and installs on one Java version. |
+| Origin | ChronitonDB. |
+| Bug | none |
+| Bug-ChronitonDB | none |
+| Forwarded | Not needed. The Java versions Apache Cassandra supports are Apache's choice for its own users. |
+| Added | 2026-10-30 |
+| Last-Update | 2026-11-01 |
+| Pull requests | `chronitondb-5.0`: [#46](https://github.com/chronitonlabs/chronitondb/pull/46), commit `af8deb8da7`. `chronitondb-6.0`: [#49](https://github.com/chronitonlabs/chronitondb/pull/49), commit `2cffdd4d91`. |
 
 ## What
 
@@ -44,11 +59,3 @@ Build and packaging: `build.xml`, `debian/control`, `redhat/cassandra.spec`, `re
 ## Lines
 
 `chronitondb-5.0` (Java 17) and `chronitondb-6.0` (Java 21).
-
-## Upstream status
-
-Ours only. The Java versions Apache Cassandra supports are Apache's choice for its own users.
-
-## Date
-
-2026-10-31

@@ -22,12 +22,27 @@ limitations under the License.
 | Title | run-ci routes 6.0 versions on the 5.0 line |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 1 |
+| Version | 2 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
-| References | Commit `b8c7408a5f` on `chronitondb-5.0`, taken from Apache commit `3f1593064cc89f3884e982dd74cb41b9d825bc1f`, CASSANDRA-21319. |
+| References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
 Change history: the git history of this file.
+
+## Header
+
+The fields follow Debian's [DEP-3 patch header convention](https://dep-team.pages.debian.net/deps/dep3/). See [the delta register](README.md#fields).
+
+| Field | Value |
+|---|---|
+| Description | The `.build/run-ci` part of an Apache change that sends 6.0 versions to the `cassandra-6.0` job. |
+| Origin | Backport of Apache commit [`3f1593064c`](https://github.com/apache/cassandra/commit/3f1593064cc89f3884e982dd74cb41b9d825bc1f). Only the `.build/run-ci` part is taken. |
+| Bug | [CASSANDRA-21319](https://issues.apache.org/jira/browse/CASSANDRA-21319) |
+| Bug-ChronitonDB | none |
+| Forwarded | Not needed. The change is Apache's own, on its 6.0 branch but not on `cassandra-5.0`. We carry it until an Apache 5.0 release brings it. |
+| Added | 2026-10-30 |
+| Last-Update | 2026-11-01 |
+| Pull requests | `chronitondb-5.0`: [#37](https://github.com/chronitonlabs/chronitondb/pull/37), commit `b8c7408a5f`. |
 
 ## What
 
@@ -44,11 +59,3 @@ Build scripts: `.build/run-ci`.
 ## Lines
 
 `chronitondb-5.0`. The 6.0 line has it from Apache.
-
-## Upstream status
-
-Ours only, until an Apache 5.0 release brings it. Apache has this change on its 6.0 branch, CASSANDRA-21319, but not on `cassandra-5.0`.
-
-## Date
-
-2026-10-30

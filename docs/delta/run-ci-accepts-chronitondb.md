@@ -22,12 +22,27 @@ limitations under the License.
 | Title | run-ci accepts this repository |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 1 |
+| Version | 2 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
-| References | Commits `1fc1183e4c` (`chronitondb-5.0`) and `d2b5abc401` (`chronitondb-6.0`). |
+| References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
 Change history: the git history of this file.
+
+## Header
+
+The fields follow Debian's [DEP-3 patch header convention](https://dep-team.pages.debian.net/deps/dep3/). See [the delta register](README.md#fields).
+
+| Field | Value |
+|---|---|
+| Description | The repository check in `.build/run-ci` accepts this repository. |
+| Origin | ChronitonDB. |
+| Bug | none |
+| Bug-ChronitonDB | none |
+| Forwarded | Not needed. The change names this repository. |
+| Added | 2026-10-30 |
+| Last-Update | 2026-10-31 |
+| Pull requests | `chronitondb-5.0`: [#37](https://github.com/chronitonlabs/chronitondb/pull/37), commit `1fc1183e4c`. `chronitondb-6.0`: [#38](https://github.com/chronitonlabs/chronitondb/pull/38), commit `d2b5abc401`. |
 
 ## What
 
@@ -44,11 +59,3 @@ Build scripts: `.build/run-ci` and `.build/run-ci.d/run-ci-test.py`.
 ## Lines
 
 `chronitondb-5.0` and `chronitondb-6.0`.
-
-## Upstream status
-
-Ours only. The change names this repository.
-
-## Date
-
-2026-10-30

@@ -68,11 +68,11 @@ Each import has a short import record at `docs/imports/<apache-version-or-range>
 
 ## The delta register
 
-The [delta register](../delta/README.md) lists every change ChronitonDB carries on top of Apache Cassandra: features, fixes to stock code, and build changes. Each entry says what the change is, why we carry it, and its upstream status:
+The [delta register](../delta/README.md) lists every change ChronitonDB carries on top of Apache Cassandra: features, fixes to stock code, and build changes. Each entry has a header that follows Debian's [DEP-3 patch header convention](https://dep-team.pages.debian.net/deps/dep3/). It says what the change is, why we carry it, where it came from, and in its Forwarded field whether it has gone to Apache Cassandra:
 
 1. **Offered,** with the Apache JIRA.
-2. **Declined** upstream.
-3. **Ours only.**
+2. **Declined,** with the Apache JIRA and a one line reason.
+3. **Not needed,** with the reason.
 
 Every pull request that changes stock code or stock behaviour adds or updates its entry. The reviewer checks this. Entries that Apache has since fixed are dropped at the next import.
 

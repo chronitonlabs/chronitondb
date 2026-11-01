@@ -63,7 +63,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## 8. Upstream
 
-{For a stock fault: the Apache JIRA and the delta entry with its upstream status. Otherwise "ChronitonDB code only".}
+{For a stock fault: the Apache JIRA and the delta entry that records it in its Bug and Forwarded fields. Otherwise "ChronitonDB code only".}
 
 ## 9. Order of pull requests
 

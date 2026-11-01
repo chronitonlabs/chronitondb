@@ -22,12 +22,27 @@ limitations under the License.
 | Title | Apache workflow actions pinned to commits |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 1 |
+| Version | 2 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
-| References | Pull requests #39 (`chronitondb-5.0`, commit `fb50ef9a74`) and #40 (`chronitondb-6.0`, commit `7306c3f56e`). |
+| References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
 Change history: the git history of this file.
+
+## Header
+
+The fields follow Debian's [DEP-3 patch header convention](https://dep-team.pages.debian.net/deps/dep3/). See [the delta register](README.md#fields).
+
+| Field | Value |
+|---|---|
+| Description | Every GitHub Action in Apache's own workflows is pinned to a commit hash. |
+| Origin | ChronitonDB. |
+| Bug | none |
+| Bug-ChronitonDB | none |
+| Forwarded | Not needed. The maintainers may decide later to offer it to Apache Cassandra. |
+| Added | 2026-10-30 |
+| Last-Update | 2026-10-31 |
+| Pull requests | `chronitondb-5.0`: [#39](https://github.com/chronitonlabs/chronitondb/pull/39), commit `fb50ef9a74`. `chronitondb-6.0`: [#40](https://github.com/chronitonlabs/chronitondb/pull/40), commit `7306c3f56e`. |
 
 ## What
 
@@ -44,11 +59,3 @@ Continuous integration: `.github/workflows/build-scripts.yaml`, `.github/workflo
 ## Lines
 
 `chronitondb-5.0` and `chronitondb-6.0`.
-
-## Upstream status
-
-Ours only. The maintainers may decide later to offer it to Apache Cassandra.
-
-## Date
-
-2026-10-30

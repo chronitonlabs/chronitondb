@@ -22,12 +22,27 @@ limitations under the License.
 | Title | Import order check suppressed for ChronitonDB code |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 1 |
+| Version | 2 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
-| References | Pull request #36 (`chronitondb-6.0`, commit `bd0a4f3a85`). |
+| References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
 Change history: the git history of this file.
+
+## Header
+
+The fields follow Debian's [DEP-3 patch header convention](https://dep-team.pages.debian.net/deps/dep3/). See [the delta register](README.md#fields).
+
+| Field | Value |
+|---|---|
+| Description | Apache's checkstyle suppressions skip the import order check for ChronitonDB code. |
+| Origin | ChronitonDB. |
+| Bug | none |
+| Bug-ChronitonDB | none |
+| Forwarded | Not needed. It applies to ChronitonDB code only. |
+| Added | 2026-10-30 |
+| Last-Update | 2026-10-31 |
+| Pull requests | `chronitondb-6.0`: [#36](https://github.com/chronitonlabs/chronitondb/pull/36), commit `bd0a4f3a85`. |
 
 ## What
 
@@ -44,11 +59,3 @@ Build: `.build/checkstyle_suppressions.xml`.
 ## Lines
 
 `chronitondb-6.0`.
-
-## Upstream status
-
-Ours only. It applies to ChronitonDB code only.
-
-## Date
-
-2026-10-30

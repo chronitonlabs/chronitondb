@@ -98,7 +98,7 @@ The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. 
 12. **Feature switch**: the yaml setting and nodetool toggle that turn a fork feature on or off. Before the feature's final milestone gate the switch refuses to turn on. After it, operators may turn the feature on or off. Its default depends on the feature class and never changes within a line.
 13. **Parity suite**: the tests that prove a line behaves as stock with every fork feature off.
 14. **Import**: bringing an Apache Cassandra release or fix into a line.
-15. **Delta entry**: one record in the delta register for a change ChronitonDB carries on top of Apache Cassandra.
+15. **Delta entry**: one record in the delta register for a change ChronitonDB carries on top of Apache Cassandra. Its header follows Debian's DEP-3 patch header convention.
 16. **Upstream radar**: the integrator's daily watch of Apache Cassandra releases, branches, JIRAs and commits, summed up in a weekly digest for the maintainers.
 17. **Decision record**: a short record, in MADR format, of an answered question.
 18. **Release candidate**: a release published as a GitHub pre-release and in the proposed package repositories for verification and a soak before it is promoted unchanged.

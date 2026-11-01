@@ -93,6 +93,7 @@ An item is done when:
 2. For a fix, the regression test failed before the fix and passes after it.
 3. The required checks pass.
 4. The parity suite passes with every fork feature off.
+5. The evidence carries line and branch coverage for every changed method, and a CRAP score for each changed ChronitonDB method: its complexity weighed against how much of it the tests cover. A score above 30 is a finding the reviewer addresses. Changed stock methods get coverage only.
 
 A milestone is done when, in addition:
 

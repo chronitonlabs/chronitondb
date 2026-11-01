@@ -65,6 +65,10 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 |---|---|---|---|
 | {stock behaviour} | {change} | {switch} | {error text} |
 
+### Stock hook points
+
+{Each stock Apache Cassandra file this item makes import ChronitonDB code, with its hook point in the feature spec (section 2.7) and its delta entry. Write "None." when there are none. A hook point not in the spec needs the spec changed first.}
+
 ## 4. Prior art reviewed
 
 {Stock code on each line with file and line. Other projects by behaviour. Apache JIRA tickets read with their comments. What each got right or wrong for this problem.}
@@ -164,6 +168,10 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 ## 15. Not covered and follow-ups
 
 {What stays out, each with the decision that put it out, stated cleanly. Candidate issues for anything found on the way.}
+
+## New terms
+
+{Terms this item needs that are not in the feature spec's glossary, each with a one line definition and its name in code, CQL and docs. The architect adds them to the glossary. Write "None." when there are none.}
 
 ## Planned file list
 

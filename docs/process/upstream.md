@@ -65,6 +65,24 @@ Each import has a short import record at `docs/imports/<apache-version-or-range>
 3. Delta entries that Apache has now fixed, which are dropped in the same import.
 4. Tests run, in the five test lists of a design record's Testing section. The results go in the evidence of the import pull request.
 5. Confirmation that stock behaviour is unchanged with every fork feature off: the parity suite passes.
+6. Configuration changes: every changed setting in Apache's two yaml files and every changed default in `Config.java`, each mapped to our own file. See [Configuration changes](#configuration-changes).
+
+Tests for this change MAY be none only with a written reason in the record. For example, the range changes only build files and documentation, or an Apache fix merged without a test and the suites at risk cover the changed code. A bare none is refused. The suites at risk and the stock suites still run, and the reviewer checks the reason.
+
+## Configuration changes
+
+ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`. Apache's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched. See [release.md](release.md#the-configuration-file). Every import, a whole release, a weekly branch merge or a single fix, is checked for configuration changes over the imported range:
+
+1. Every setting in Apache's two yaml files that was added, removed, or changed in value or comment.
+2. Every default in Apache's `Config.java` that changed. A setting a cluster's yaml file leaves out takes its code default, so a changed default changes running clusters too.
+
+The integrator lists each change in the import record's Configuration changes section and maps it to our file:
+
+1. **Taken:** our file follows Apache.
+2. **Taken with a different value:** our file has the setting with our value, and the record gives the value and the reason.
+3. **Not taken:** our file leaves it out or keeps its old value, and the record gives the reason.
+
+A change to a setting of the line's minimum setup is also flagged for the line's upgrade runbook. The reviewer checks the mapping, and a maintainer approves it by merging the import. Within a line, the values our file ships change only for a fix. Upgrading within a line never changes behaviour by itself, so any other value change waits for the next line.
 
 ## The delta register
 

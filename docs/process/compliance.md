@@ -39,7 +39,7 @@ Every third party component is checked against the Apache Software Foundation li
 
 ## Declaring dependencies
 
-1. Every new dependency, and every version change of an existing one, MUST be declared before use. For a feature it goes in the feature spec's Dependencies section. For a one-item change it goes in the design record's Dependencies section.
+1. Every new dependency, and every version change of an existing one, MUST be declared before use. For a feature it goes in the feature spec's Dependencies section. For a one-item change it goes in the design record's Dependencies section. The change itself is then made as an item of its own through the security engineer. See [maintenance.md](maintenance.md#dependency-patch-version-updates).
 2. Each declaration gives the library and version, its ASF licence category, the NOTICE and credit lines it needs, its known vulnerabilities and why it is needed.
 3. The maintainers approve the declaration by merging the document. A library that no merged document declares is refused at review.
 4. `build.xml`, `lib/`, `packaging/` and the other build inputs are sensitive paths with code owner review. `packaging/` joins `.github/CODEOWNERS` in the pull request that creates it. See [branching-and-review.md](branching-and-review.md#sensitive-paths).

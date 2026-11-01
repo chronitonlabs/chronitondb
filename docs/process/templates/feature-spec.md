@@ -114,7 +114,7 @@ FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, risk o
 
 ### 6.3 Upgrade path and prerequisites
 
-{Supported upgrade paths and what MUST be true before each starts.}
+{Supported upgrade paths and what MUST be true before each starts. Each setting the feature needs in the line's minimum setup, the setup an existing Apache Cassandra cluster MUST reach before it switches, is stated here with its evidence: what the setting changes, its record in Apache's releases and JIRA, and how it was tested. The line's upgrade runbook takes the list from here. See [release.md](../release.md#the-configuration-file).}
 
 ### 6.4 Rollback path
 

@@ -32,7 +32,7 @@ Every change has one maintenance category from ISO/IEC/IEEE 14764:2022. The cate
 | Additive, several items | A new feature that needs more than one item | Feature spec, plan with delivery plan, item design records | [additive.md](additive.md) |
 | Additive, one item | A new feature small enough for one item | One item with a design record | [additive.md](additive.md) |
 | Corrective | A fix for a fault someone found | Fix record with its reproducing test, one pull request per affected line | [maintenance.md](maintenance.md) |
-| Emergency | Urgent corrective work, security fixes among them. The standard counts it as corrective, it has its own path because security work stays private | Corrective order, ahead of the queue, private for security | [maintenance.md](maintenance.md), [security.md](security.md) |
+| Emergency | Any urgent corrective work, security fixes among them. The standard counts it as corrective. It goes ahead of the queue, and a security fix with a security advisory is also worked on in private | Corrective order, ahead of the queue, private only for a security fix with an advisory | [maintenance.md](maintenance.md), [security.md](security.md) |
 | Preventive | A fix for a latent fault before it causes a failure | One item with a design record | [maintenance.md](maintenance.md) |
 | Adaptive | A change that keeps ChronitonDB working in a changed environment | One item with a design record | [maintenance.md](maintenance.md) |
 | Perfective | An improvement to performance, maintainability or documentation | One item with a design record, documentation only changes without one | [maintenance.md](maintenance.md) |

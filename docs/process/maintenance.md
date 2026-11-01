@@ -30,10 +30,10 @@ Every change is one item with one public GitHub issue. A security fix has no pub
 
 ## Emergency: urgent corrective work
 
-Emergency changes follow the corrective order, ahead of the queue.
+An emergency is any urgent fix. Emergency changes follow the corrective order, ahead of the queue. Only a security fix with a security advisory is worked on in private.
 
-1. **Security fixes** follow [security.md](security.md). They are worked on in private until disclosure and released on every affected supported line together.
-2. **Other urgent fixes,** such as a data loss fault, take the corrective path above, first in the queue. They are released once merged on every affected line.
+1. **Security fixes** follow [security.md](security.md). A security fix is worked on in private, in its security advisory, until disclosure. Before then nothing about it appears in public commits, titles, branch names or pull requests. It is released on every affected supported line together.
+2. **Other urgent fixes,** such as a data loss fault, take the public corrective path above, first in the queue. They are released once merged on every affected line.
 
 ## Preventive, adaptive and perfective
 
@@ -46,7 +46,7 @@ Preventive work fixes a latent fault before it causes a failure. Adaptive work k
 3. **Lines.** A change that belongs on every line follows the corrective pattern: one pull request per line, oldest line first. An adaptive change specific to one line touches only that line.
 4. **Approval.** A maintainer approves the design record by merging. Implementation starts after that merge. A maintainer merges the code pull request after review.
 
-An additive feature small enough for one item takes this same path. It has a feature key: its design record goes in `docs/design/<KEY>-<slug>/`, its requirements are `REQ-<KEY>-nnn`, and the record states the feature class. See [additive.md](additive.md#feature-keys-and-requirement-ids).
+An additive feature small enough for one item takes this same path. It has a feature key. The designer proposes a free key in the design record pull request, and the key is reserved when a maintainer merges it. The design record goes in `docs/design/<KEY>-<slug>/`, its requirements are `REQ-<KEY>-nnn`, and the record states the feature class. See [additive.md](additive.md#feature-keys-and-requirement-ids).
 
 ### Documentation only changes
 
@@ -62,6 +62,6 @@ A patch-version update of an approved library, under the same licence, for a bug
 4. Inside an item of a feature, it is also recorded in the feature spec's Dependencies section in the same pull request.
 5. MUST keep the library's licence category and NOTICE lines correct. See [compliance.md](compliance.md).
 
-When a vulnerability in a shipped library is fixed by a patch-version update, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. The item goes straight to the developer, with no fix record. See [security.md](security.md#watching-shipped-libraries-and-apache).
+When a vulnerability in a shipped library is fixed by a patch-version update, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. The item goes straight to the developer, with no fix record. The security engineer names in the item the test classes that cover the code that calls the library. Those tests MUST pass before the update merges. See [security.md](security.md#watching-shipped-libraries-and-apache).
 
 Any other dependency change, a new library or a minor or major version change, needs approval in a feature spec or a design record before use.

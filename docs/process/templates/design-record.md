@@ -29,7 +29,7 @@ limitations under the License.
 
 Change history: the git history of this file.
 
-Location: `docs/design/<issue>-<slug>/`, or `docs/design/<KEY>-<slug>/` for a fork feature that fits one item (see [feature keys](../additive.md#feature-keys-and-requirement-ids)), with the coverage file `ac-coverage.md` next to it. Every section is filled, or carries a waiver with its reason. An empty section blocks approval.
+Location: `docs/design/<issue>-<slug>/`, or `docs/design/<KEY>-<slug>/` for a fork feature that fits one item (see [feature keys](../additive.md#feature-keys-and-requirement-ids)), with the coverage file `ac-coverage.md` next to it. For a fork feature that fits one item, the designer proposes a free key in this record's pull request, and the key is reserved when a maintainer merges it. Every section is filled, or carries a waiver with its reason. An empty section blocks approval.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
@@ -151,6 +151,12 @@ These rules apply to every source:
 
 {For an item of a fork feature: the scenarios this pull request adds under `test/bdd/`, tagged `@wip` and with their requirement tags. See [testing.md](../testing.md#scenarios).}
 
+Scenario runner: {the command that runs the scenarios, with {tags} once}
+
+Scenario tags: {the tag expression for this item's scenarios}
+
+{Tooling reads these two lines, so keep their names and write each on one line. The runner is `ant` or a script under `tools/chronitondb/`, and it runs as plain words, never through a shell. Without the tags line, the item's scenarios are those tagged with the requirement ids this record defines. An item with no scenarios leaves out both lines.}
+
 {Then these five lists. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry.}
 
 ### Tests for this change
@@ -185,10 +191,25 @@ These rules apply to every source:
 
 {One file per line: the exact path from the repository root, a space, then one word: `new`, `edit`, `test` or `stock`. No wildcards. The developer edits only these files, and tooling enforces the list as written here.}
 
+The four words:
+
+1. `new`: a file the line does not have yet.
+2. `edit`: an existing ChronitonDB file.
+3. `stock`: an existing Apache Cassandra file that is not a test.
+4. `test`: any test file, new or existing. A stock test stays add only: its existing tests are not changed.
+
 ```
 src/java/org/apache/cassandra/example/Example.java stock
 test/unit/org/apache/cassandra/example/ExampleTest.java test
 ```
+
+### Shared with open items
+
+{One row per open item whose pull request changes a file in the list above. The designer checks the open pull requests for changes to the planned files. The kind is `soft` when the open item changes other lines of the same file, and `hard` when it changes the same lines. A hard overlap stops the work, and the maintainers decide which item goes first. Write "None." in place of the table when no open item shares a file. Tooling reads this table, so keep its columns.}
+
+| Item | Shared file | Kind |
+|---|---|---|
+| {#issue of the open item} | {path} | {soft or hard} |
 
 ### Waivers
 

@@ -101,12 +101,13 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | ChronitonDB Java code | `src/java/org/chronitondb/<area>/` |
 | ChronitonDB tests | `test/unit/org/chronitondb/`, `test/distributed/org/chronitondb/`, in the same packages as the code they test |
 | ChronitonDB tooling and code checks | `tools/chronitondb/` |
+| Scenarios of fork features and their shared step library | `test/bdd/` |
 | Parity suite tooling | `test/parity/` |
 | Benchmark results per release | `bench/` |
 | Process documentation | `docs/process/` |
-| Feature spec, plan and delivery plan of a feature | `docs/design/<feature>/` |
-| Milestone reports of a feature | `docs/design/<feature>/milestones/` |
-| Design record or fix record of one item, with its coverage file | `docs/design/<issue>-<slug>/` |
+| Feature spec, plan and delivery plan of a feature | `docs/design/<KEY>-<slug>/` |
+| Milestone reports of a feature | `docs/design/<KEY>-<slug>/milestones/` |
+| Design record or fix record of one item, with its coverage file | `docs/design/<issue>-<slug>/`, or `docs/design/<KEY>-<slug>/` for a fork feature that fits one item |
 | Decision records | `docs/decisions/NNNN-<slug>.md` |
 | Import records | `docs/imports/<apache-version-or-range>.md` |
 | Release proposals and their verification results | `docs/releases/<version>.md` |

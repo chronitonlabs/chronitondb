@@ -21,12 +21,13 @@ This page is the ChronitonDB test policy and test strategy in the sense of ISO/I
 
 ## Policy
 
-1. Every requirement has at least one test that proves it. A requirement without a test is not done.
+1. Every requirement has at least one test that proves it. A requirement without a test is not done, unless the item's coverage file records why it is deliberately not tested. That reason is part of the design record and is approved with it.
 2. A fix starts with a test that reproduces the fault, written by the designer on the item's code branch. It MUST fail before the fix and pass after it. The test and the fix merge together, so the line never carries a failing test.
 3. With every fork feature off, every line MUST behave exactly as stock Apache Cassandra. The parity suite proves it.
 4. A test that existed before a change MUST NOT be weakened. A change to a pre-existing test is additive and named in the design record.
 5. Tests MUST NOT depend on wall clock timing. Seeds are printed so a run can be repeated.
 6. Results that depend on cluster topology are a fault. Multi node behaviour is tested at replication factor 1 and replication factor 3. See [quality-requirements.md](quality-requirements.md).
+7. Scenarios are the executable form of a fork feature's EARS requirements. They are for fork features only. Apache Cassandra's own tests stay as they are. See [Scenarios](#scenarios).
 
 ## Test levels
 
@@ -34,6 +35,7 @@ This page is the ChronitonDB test policy and test strategy in the sense of ISO/I
 |---|---|---|
 | Unit tests | One class or component behaves as its requirements say | `test/unit/` |
 | In-JVM distributed tests | Behaviour across several nodes in one JVM: replication, consistency, upgrade paths in process | `test/distributed/` |
+| Scenarios | A fork feature's requirements hold as written, with its switch off and on | `test/bdd/` |
 | Python distributed tests | Behaviour of real node processes and tools, where in-JVM tests cannot reach | Apache Cassandra's Python dtest suite |
 | Upgrade and rollback tests | A node moves from Apache Cassandra to ChronitonDB and back, and from one ChronitonDB release to the next, with data and queries intact during and after the roll | Upgrade tests for the supported paths |
 | Benchmarks | Performance claims in a design record hold, and stock performance does not move | `test/microbench/` and the load tests the design names |
@@ -41,6 +43,21 @@ This page is the ChronitonDB test policy and test strategy in the sense of ISO/I
 | Parity suite | Stock behaviour is unchanged with every fork feature off | `test/parity/` and the normal build |
 
 Changes that touch compaction or on-disk formats run on both sstable formats and both unit test configurations.
+
+## Scenarios
+
+Scenarios are written in Gherkin and run with Cucumber, in the fork's own test module `test/bdd/`. Each one is the executable form of one or more EARS requirements of a fork feature.
+
+1. Every scenario uses the shared library of CQL and cluster steps. A feature that needs a new step adds it to the library with tests of its own. There is no glue code per feature.
+2. Every scenario carries a tag with the id of each requirement it proves, the id itself with `@` in front, for example `@REQ-LUC-012`. These tags map requirements to their scenarios.
+3. Every scenario carries exactly one of `@switch-off` and `@switch-on`, for the state of the feature switch it runs with.
+4. `@switch-off` scenarios check both parts of the switch off rule: stock operations behave exactly as Apache Cassandra, and the feature's syntax is refused with an error that names the switch.
+5. `@stock` marks a scenario that asserts Apache Cassandra's own behaviour. A `@stock` scenario MUST pass before the change and after it. Every other new or changed scenario MUST fail before the change and pass after it.
+6. The designer writes the scenarios of a feature item in the design record's pull request, tagged `@wip`, so they are approved with the requirements before the code starts.
+7. `@wip` scenarios merge onto the line but are left out of normal runs, so the line stays green. A separate run fails if a `@wip` scenario passes.
+8. The developer removes `@wip` in the code pull request as each scenario passes. The developer MUST NOT change what a scenario means. That is a change to an approved requirement and goes through [change control](additive.md#change-control-after-a-merge).
+9. Before a feature's final milestone gate, its switch refuses to turn on. `@switch-on` scenarios get past the refusal only through a mechanism inside the in-JVM distributed test framework. Shipped code has no way around the refusal.
+10. Each scenario runs once in the developer's pre-commit test run. Repeated runs of new and changed scenarios, to find flaky ones, belong to nightly CI.
 
 ## Upgrade and rollback tests
 
@@ -79,7 +96,7 @@ Changes that touch compaction or on-disk formats run on both sstable formats and
 |---|---|
 | Test policy and organisational test strategy | This page |
 | Test plan | The test plan section of a feature's delivery plan |
-| Test design specification and test case specification | Each item's coverage file, `ac-coverage.md`, next to its design record: one row per requirement, naming its test |
+| Test design specification and test case specification | Each item's scenarios, through their requirement tags, and its coverage file `ac-coverage.md` next to its design record. The coverage file has a row only for a requirement proven by another test, naming that test, or deliberately not tested, with the reason. The full requirement to test table is built from both into the item's evidence |
 | Test log | The test reports of the developer's pre-commit test run and of the CI runs, attached to the pull request |
 | Test completion report | The milestone report |
 
@@ -89,7 +106,7 @@ For a one-item change, the coverage file and the pull request's verification sec
 
 An item is done when:
 
-1. Every requirement in its design record has a passing test named in its coverage file.
+1. Every requirement in its design record has a passing scenario that carries its id, a passing test named in its coverage file, or a reason in its coverage file why it is deliberately not tested. A requirement with none of these fails.
 2. For a fix, the regression test failed before the fix and passes after it.
 3. The required checks pass.
 4. The parity suite passes with every fork feature off.

@@ -29,7 +29,7 @@ limitations under the License.
 
 Change history: the git history of this file.
 
-Location: `docs/design/<feature>/milestones/`. Process: [additive.md](../additive.md#milestone-gates).
+Location: `docs/design/<KEY>-<slug>/milestones/`. Process: [additive.md](../additive.md#milestone-gates).
 
 ## 1. Summary
 

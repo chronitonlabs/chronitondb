@@ -40,11 +40,12 @@ Supported versions are listed in the README of the repository.
 ## What a release may contain
 
 1. Any release MAY ship fixes, imports from Apache Cassandra and security fixes.
-2. A release MAY ship a finished feature that the operator can switch on with yaml or nodetool.
-3. Within a line, a feature's default MUST stay off. Upgrading within a line never changes behaviour by itself.
-4. A feature's default MAY be on only in a new line.
+2. A release MAY ship a finished feature behind its feature switch, which the operator sets with yaml or nodetool.
+3. Within a line, a feature's default MUST NOT change. Upgrading within a line never changes behaviour by itself.
+4. A purely additive feature's default MAY be on from a line's first release. A behaviour-changing feature's default MUST be off on every line.
+5. A feature finished after its line's first release ships with its default off on that line.
 
-A feature becomes switchable at its final milestone gate. Before that, its switch refuses to turn on. See [additive.md](additive.md#milestone-gates) and [branching-and-review.md](branching-and-review.md#every-fork-feature-is-off-by-default).
+A feature becomes switchable at its final milestone gate. Before that, its switch refuses to turn on, whatever its default. See [additive.md](additive.md#milestone-gates) and [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
 
 ## How a release is made
 

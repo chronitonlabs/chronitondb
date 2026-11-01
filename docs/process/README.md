@@ -87,15 +87,15 @@ The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. 
 1. **Line**: a long lived branch that ships releases, one per Apache Cassandra major version. Today `chronitondb-5.0` and `chronitondb-6.0`.
 2. **Stock**: code or behaviour exactly as Apache Cassandra has it.
 3. **Item**: one unit of work with one public GitHub issue, one design record or fix record, and one pull request per line it targets. A security fix has no public issue until disclosure. It is tracked in its private advisory.
-4. **Feature spec**: the top level description of a large feature, with feature requirements `FREQ-n`.
+4. **Feature spec**: the top level description of a large feature, with feature requirements `FREQ-<KEY>-nnn`.
 5. **Plan**: the list of items that deliver a feature spec.
 6. **Delivery plan**: the order of the items in milestones, with exit criteria.
 7. **Milestone gate**: the approval of a milestone report before the next milestone starts.
-8. **Design record**: the low level design of one item, with requirements `REQ-n`.
+8. **Design record**: the low level design of one item, with requirements `REQ-<KEY>-nnn` for feature work or `REQ-n` otherwise.
 9. **Fix record**: the short design record of a corrective change.
-10. **Coverage file**: the file in an item's design folder that maps each requirement to its test.
+10. **Coverage file**: the file in an item's design folder that names the test of each requirement no scenario proves, and the reason for each requirement deliberately not tested.
 11. **EARS**: the five sentence shapes every requirement uses.
-12. **Feature switch**: the yaml setting and nodetool toggle that turn a fork feature on or off. Before the feature's final milestone gate the switch refuses to turn on. After it, operators may turn the feature on, and its default stays off for the life of the line.
+12. **Feature switch**: the yaml setting and nodetool toggle that turn a fork feature on or off. Before the feature's final milestone gate the switch refuses to turn on. After it, operators may turn the feature on or off. Its default depends on the feature class and never changes within a line.
 13. **Parity suite**: the tests that prove a line behaves as stock with every fork feature off.
 14. **Import**: bringing an Apache Cassandra release or fix into a line.
 15. **Delta entry**: one record in the delta register for a change ChronitonDB carries on top of Apache Cassandra.
@@ -103,3 +103,6 @@ The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. 
 17. **Decision record**: a short record, in MADR format, of an answered question.
 18. **Release candidate**: a release published as a GitHub pre-release and in the proposed package repositories for verification and a soak before it is promoted unchanged.
 19. **Scheduled check**: a daily check the project runs on its own: the integrator's check of Apache Cassandra, the security engineer's check of shipped libraries and private vulnerability reports, and the release engineer's check of the latest CI results. Items it opens are requested by the maintainer who set it up.
+20. **Feature key**: 3 to 5 capital letters that name a fork feature, used in its directory `docs/design/<KEY>-<slug>/` and in its requirement ids.
+21. **Feature class**: purely additive, for a feature reachable only through syntax, index types or settings that stock Apache Cassandra rejects, or behaviour-changing, for a feature that changes something stock Apache Cassandra already does. A purely additive feature may be on by default from a line's first release. A behaviour-changing feature is always off by default.
+22. **Scenario**: the executable form of a fork feature's EARS requirements, written in Gherkin and kept in `test/bdd/`.

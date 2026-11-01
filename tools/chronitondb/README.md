@@ -82,7 +82,7 @@ Pins:
 
 ## Waivers
 
-A production limit can be exceeded only with a waiver the owner recorded in the design record of the change, naming the method, the rule and why the shape is right there. A suppression comment in the code is not a waiver and the rules files have no suppression filter. The maintainability review lens reads the check output next to the design record and treats a broken limit without a recorded waiver as a major finding.
+A production limit can be exceeded only with a waiver recorded in the design record of the change and approved with it, naming the method, the rule and why the shape is right there. A suppression comment in the code is not a waiver and the rules files have no suppression filter. The maintainability review lens reads the check output next to the design record and treats a broken limit without a recorded waiver as a major finding.
 
 ## Security checks
 

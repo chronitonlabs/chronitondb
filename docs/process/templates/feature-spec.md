@@ -69,6 +69,10 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 {What changes for an operator: new settings, new nodetool commands, new files on disk.}
 
+### 2.7 Package dependencies and hook points
+
+{For each ChronitonDB package under `org/chronitondb`: the packages it MAY import. A check refuses any other import, and changing these rules is a change to this spec. Then the hook points: each stock Apache Cassandra file that imports ChronitonDB code, why it must, and its [delta entry](../../delta/README.md). Keep the hook points few, since each one is a place where an Apache import can conflict.}
+
 ## 3. Feature requirements
 
 {One requirement per entry: an id `FREQ-n`, one EARS shape, one BCP 14 key word, and a source. Each requirement passes the ISO/IEC/IEEE 29148 checklist in [design-record.md](design-record.md).}
@@ -129,3 +133,11 @@ FREQ-1 ({shape}): {requirement}. Source: {issue, decision record, risk or stakeh
 ## 10. Milestones outline
 
 {The milestones in order, one line each, with what each makes testable. The delivery plan gives the detail.}
+
+## Glossary
+
+{One row per domain term this feature uses. Every design record, class, CQL option, metric and page of the feature uses these names. The reviewer checks new names against this table. A design record that needs a new term defines it under its own "New terms" heading, and the architect adds it here through change control.}
+
+| Term | Definition | Name in code, CQL and docs |
+|---|---|---|
+| {term} | {one line} | {names} |

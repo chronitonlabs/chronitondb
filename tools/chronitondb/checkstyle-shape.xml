@@ -21,67 +21,67 @@
 
 <!--
   Shape limits for ChronitonDB production code under org/chronitondb.
-  Owner decisions M2, M3 and M4 in the kit's DECISIONS.md. Every finding
-  here blocks the commit gate and the PR CI. The only way past a limit is
-  a waiver recorded in the design record, never a suppression comment, so
-  this file has no SuppressionFilter and no SuppressWarningsHolder.
+  Every finding here blocks the commit and the PR CI. The only way past a
+  limit is a waiver recorded in the design record, never a suppression
+  comment, so this file has no SuppressionFilter and no
+  SuppressWarningsHolder.
 
   Apache code is never checked with this file. Apache's own rules live in
   .build/checkstyle.xml and stay untouched.
 
-  Changing a limit is a one line change to a max property below (M4).
+  Changing a limit is a one line change to a max property below.
 -->
 <module name="Checker">
   <property name="severity" value="error"/>
   <property name="fileExtensions" value="java"/>
 
-  <!-- M3: file length 1,000 lines -->
+  <!-- File length 1,000 lines -->
   <module name="FileLength">
     <property name="max" value="1000"/>
   </module>
 
   <module name="TreeWalker">
 
-    <!-- M3: cyclomatic complexity 10 per method, a switch counts once -->
+    <!-- Cyclomatic complexity 10 per method, a switch counts once -->
     <module name="CyclomaticComplexity">
       <property name="max" value="10"/>
       <property name="switchBlockAsSingleDecisionPoint" value="true"/>
     </module>
 
-    <!-- M3: NPath 200 -->
+    <!-- NPath 200 -->
     <module name="NPathComplexity">
       <property name="max" value="200"/>
     </module>
 
-    <!-- M3: boolean expression complexity 3 -->
+    <!-- Boolean expression complexity 3 -->
     <module name="BooleanExpressionComplexity">
       <property name="max" value="3"/>
     </module>
 
-    <!-- M3: method length 80 lines, blank and comment lines included -->
+    <!-- Method length 80 lines, blank and comment lines included -->
     <module name="MethodLength">
       <property name="max" value="80"/>
       <property name="countEmpty" value="true"/>
     </module>
 
-    <!-- M3: parameters 7 -->
+    <!-- Parameters 7 -->
     <module name="ParameterNumber">
       <property name="max" value="7"/>
       <property name="ignoreOverriddenMethods" value="false"/>
     </module>
 
-    <!-- M3: nested if depth 3 -->
+    <!-- Nested if depth 3 -->
     <module name="NestedIfDepth">
       <property name="max" value="3"/>
     </module>
 
-    <!-- M3: nested loop depth 2. Checkstyle measures for loops only, while
+    <!-- Nested loop depth 2. Checkstyle measures for loops only, while
          and do loops are not counted by any checkstyle module. -->
     <module name="NestedForDepth">
       <property name="max" value="2"/>
     </module>
 
-    <!-- M3: class fan out 20 -->
+    <!-- Class fan out 20 -->
     <module name="ClassFanOutComplexity">
       <property name="max" value="20"/>
     </module>

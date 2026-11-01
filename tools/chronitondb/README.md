@@ -17,7 +17,7 @@ limitations under the License.
 
 # ChronitonDB code checks
 
-Two checks for the Java files under `org/chronitondb` that a change adds or modifies. Apache code is never checked by either. Both run in the agent commit gate and in the CI workflow `.github/workflows/chronitondb-shape.yml` on every pull request into a `chronitondb-*` branch. Owner decisions M2 to M6 and G1 in the kit's DECISIONS.md.
+Two checks for the Java files under `org/chronitondb` that a change adds or modifies. Apache code is never checked by either. Both run on the staged files before each commit, and in the CI workflow `.github/workflows/chronitondb-shape.yml` on every pull request into a `chronitondb-*` branch. The rules are in [conventions.md](../../docs/process/conventions.md#shape-limits).
 
 ## Shape limits: `shape-check.sh`
 
@@ -63,7 +63,7 @@ Apache's own checkstyle (`.build/checkstyle.xml` and `.build/checkstyle_test.xml
 ## Running
 
     tools/chronitondb/shape-check.sh FILE...            these files
-    tools/chronitondb/shape-check.sh                    the staged files (what the commit gate does)
+    tools/chronitondb/shape-check.sh                    the staged files (what runs before a commit)
     tools/chronitondb/shape-check.sh --base origin/chronitondb-6.0   the files changed since the merge base (what CI does)
     tools/chronitondb/shape-check.sh --self-test        the fixtures under test/
     tools/chronitondb/format-check.sh ...               same options, plus --fix
@@ -86,7 +86,7 @@ A production limit can be exceeded only with a waiver the owner recorded in the 
 
 ## Security checks
 
-Two more checks, advisory until the owner makes them required (decision E13). CI runs them on every pull request into a `chronitondb-*` branch, in `.github/workflows/chronitondb-semgrep.yml` and `chronitondb-spotbugs.yml`, each after its self-test.
+Two more checks. CI runs them on every pull request into a `chronitondb-*` branch, in `.github/workflows/chronitondb-semgrep.yml` and `chronitondb-spotbugs.yml`, each after its self-test. Both are required checks on every line, see [branching-and-review.md](../../docs/process/branching-and-review.md#required-checks).
 
 ### Semgrep: `semgrep-check.sh`
 

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Shape limits (owner decisions M2 to M6) and Google Java Style (G1) on the
+# Shape limits and Google Java Style on the
 # org/chronitondb Java files a pull request adds or changes. Apache code is
 # never checked here, Apache's own workflows are untouched. Every action is
 # pinned to a commit.

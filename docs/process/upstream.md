@@ -49,7 +49,7 @@ Until Apache releases `x.0.0` of a major version, the matching line follows the 
 
 ## Single fixes taken early
 
-A single Apache fix MAY be cherry-picked into a line ahead of the Apache release that contains it, when it is needed early. The integrator decides against these criteria: a security fix, a fix our own work depends on, or a fault our users hit. It opens the import pull request with the criterion that applies. The maintainers decide by merging it, and closing it declines the fix.
+A single Apache fix MAY be cherry-picked into a line ahead of the Apache release that contains it, when it is needed early. The integrator proposes it against these criteria: a security fix, a fix our own work depends on, or a fault our users hit. It opens the import pull request with the criterion that applies. The maintainers decide by merging it, and closing it declines the fix.
 
 1. The cherry-picked commit keeps its original Apache author and message, with the `(cherry picked from commit <full hash>)` line added by `git cherry-pick -x`.
 2. The import carries the regression test of the original fix.

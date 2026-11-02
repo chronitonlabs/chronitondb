@@ -38,6 +38,8 @@ Each level is approved by a merged pull request before the next level starts. Lo
 
 All three live on the line the feature targets.
 
+Checks on process documents, such as each document following its template, no unanswered clarification marker and the feature key rules, run on every pull request through a public check in the repository, and on the agents' work before it is committed. The check becomes a required check once it exists.
+
 Each large feature has its own public GitHub issue, opened by the architect. Its number names the branches of the feature spec, plan, delivery plan, milestone report and change control pull requests. Each item then has its own issue, opened by the designer.
 
 ## Feature keys and requirement ids
@@ -116,7 +118,9 @@ An item is not done until the user documentation, operator documentation and run
 Only the current milestone is in progress. When all its items are merged:
 
 1. The architect writes the milestone report in `docs/design/<KEY>-<slug>/milestones/` from [templates/milestone-report.md](templates/milestone-report.md). It is the ISO/IEC/IEEE 29119 test completion report for the milestone: what was tested and at which levels, results against the exit criteria, deviations, remaining risks, and a go or no-go recommendation.
-2. The report's Requirements delivered section lists each feature requirement of the milestone, the items and pull requests that deliver it, the scenarios or tests that prove it, and whether it is delivered. It also lists any behaviour nobody asked for, expected to read "None found." A fresh check of the merged code against the feature requirements fills it, and the reviewer checks it.
+
+   Where the milestone tests run: until the project's continuous integration runs the milestone tests, they run on the project's build machines with the same commands as the checks every commit passes. An exit criterion that cannot run there, such as a benchmark that needs dedicated hardware or the full parity suite, is listed in the report as a deviation, with why it cannot run and what would run it. The maintainers decide by merging the report whether the milestone goes ahead with those deviations. The continuous integration the milestone gates need is in place before a feature's final milestone, the one that becomes a release, and the final milestone's report recommends no-go without it.
+2. The report's Requirements delivered section lists each feature requirement of the milestone, the items and pull requests that deliver it, the scenarios or tests that prove it, and whether it is delivered, delivered in part, as planned, when the plan spreads its items over several milestones, or not delivered. The feature's last milestone report allows no requirement delivered in part: each is delivered, or not delivered and explained as a deviation. It also lists any behaviour nobody asked for, expected to read "None found." A fresh check of the merged code against the feature requirements fills it, and the reviewer checks it.
 3. The report reviews every risk in the feature spec as open, reduced, closed or happened. It adds new risks with likelihood, impact and mitigation. It says whether the remaining milestones should be re-ordered.
 4. A maintainer approves the gate by merging the report's pull request.
 5. The next milestone starts only after that merge.
@@ -134,7 +138,7 @@ An approved feature spec, plan or delivery plan changes only through this path:
 
 Re-planning normally happens at a milestone gate. Changes to the risk list follow the same path.
 
-One exception: a patch-version update of an approved library, under the same licence, for a bug fix or a security fix, MAY be made by the developer inside the item. The same pull request records it in the feature spec's Dependencies section with its reason.
+A library update, even a patch version, is never made inside a feature's item. It is an item of its own, see [maintenance.md](maintenance.md#dependency-patch-version-updates). The feature spec's Dependencies section names the update and its item.
 
 ## How work moves between approval points
 

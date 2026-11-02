@@ -29,11 +29,13 @@ Each line releases on its own rhythm:
 2. Otherwise, a release ships monthly when our own changes are waiting.
 3. Security fixes and urgent fixes are released whenever they are ready, outside both rhythms.
 
+The release engineer's daily check finds each release that is due on a line under these rules. It then opens the release's public issue and its release task itself, and writes the proposal. The maintainers still decide by merging the proposal and by starting the candidate run.
+
 ## Support lifetime
 
-1. The maintainers designate a line as long-term support (LTS) when its first release ships. An LTS line is supported for 5 years from its first ChronitonDB release, whatever Apache Cassandra does with its major version. This follows the default support period of the EU Cyber Resilience Act.
+1. The maintainers designate a line as long-term support (LTS) when its first release ships, in the line's plan file (see [Freezes](#freezes)). An LTS line is supported for 5 years from its first ChronitonDB release, whatever Apache Cassandra does with its major version. This follows the default support period of the EU Cyber Resilience Act.
 2. A line that is not designated LTS is supported until 12 months after the next line's first release.
-3. The support period and end date of each line, and whether it is LTS, are published with its first release.
+3. The support period of each line, whether it is LTS, and for an LTS line its end date, are published with its first release. A line's first release also states the end date of each earlier standard line it ends.
 4. After Apache's own end of life for a major version, security fixes and critical fixes are carried back to a supported line from newer Apache Cassandra versions.
 
 Supported versions are listed in the README of the repository.
@@ -52,20 +54,31 @@ A feature becomes switchable at its final milestone gate. Before that, its switc
 
 Every release takes two maintainer approvals, and each one is the merge of a pull request, like every approval in this project: the release proposal, before the candidate is built, and the promotion, after the soak and verification. The reviewer reviews both pull requests first.
 
-1. **Proposal.** The release engineer opens a release proposal pull request that adds `docs/releases/<version>.md`: the version, the exact commit on the line it is built from, what goes in, from the commits on the line, the milestone gates passed and the security fixes due.
+1. **Proposal.** When a release is due, the release engineer opens its issue and a release proposal pull request that adds `docs/releases/<version>.md` from [the release proposal template](templates/release-proposal.md): the version, the exact commit on the line it is built from, what goes in, from the commits on the line, the milestone gates passed and the security fixes due.
 2. **First approval.** A maintainer merges the proposal pull request. Nothing is built, tagged or published before that merge.
 3. **Release candidate.** A maintainer starts the release workflow by hand when the candidate is wanted, giving the version. Building and testing a candidate is expensive, so a maintainer chooses the moment. The workflow refuses to run unless that version's proposal is merged. The candidate tag is signed at the commit the proposal names, so anything merged later stays out. The pipeline then builds, tests and publishes the release candidate: a GitHub pre-release, and packages in a separate proposed package repository for Debian and Red Hat.
-4. **Verification.** The release engineer verifies the candidate: signatures, installs, upgrade and rollback from the previous ChronitonDB release and from Apache Cassandra, and the parity suite.
+4. **Verification.** The release engineer verifies the candidate: signatures, installs, upgrade and rollback from the previous ChronitonDB release and from Apache Cassandra, the parity suite, and that the release outputs are present and signed: the SBOM in SPDX and CycloneDX, the OpenVEX statements, the release notes and the provenance.
 5. **Soak.** The candidate stays in the proposed channel for 7 days.
-6. **Second approval and promotion.** If the verification passed and no problem is reported during the soak, the release engineer opens a promotion pull request that adds the verification results to `docs/releases/<version>.md`. A maintainer merges it, and the candidate is then promoted unchanged to the official release.
+6. **Second approval and promotion.** If the verification passed and no problem is reported during the soak, the release engineer opens a promotion pull request that fills the verification results section of `docs/releases/<version>.md`. A maintainer merges it, and the candidate is then promoted unchanged to the official release.
 
-A security release skips the soak once it is verified. It ships on the date the maintainers set. See [security.md](security.md).
+### Security releases
+
+A security release is prepared in private, after the practice Debian and Ubuntu follow for embargoed security updates:
+
+1. Its proposal names the commit in the security advisory's private fork, not a commit on the public line. The proposal and its review stay private until disclosure.
+2. Its release candidate is built and verified in private.
+3. It skips the soak once it is verified.
+4. Its packages publish at the moment of disclosure, together with the advisory, on the date the maintainers set. The fix reaches the public line at the same time.
+
+Every other release names one commit on the public line. See [security.md](security.md).
 
 ## Freezes
 
 1. There is no freeze on a line for its patch releases. The signed release candidate tag is the freeze.
 2. A problem found during the soak is fixed on the line. A new candidate is then cut, and the soak starts again.
 3. A feature freeze starts 4 weeks before the first release of a new line. After it, only fixes and imports go into that line until its first release.
+
+Each line has a plan file, `docs/releases/<line>-plan.md`, from [the line plan template](templates/line-plan.md). It holds the line's planned first release date, the date its feature freeze starts and whether the maintainers designated it LTS. It changes only by a pull request a maintainer merges. The release engineer and the reviewers read it: the release engineer for the releases that are due and the freeze, the reviewers to hold a feature pull request back during the freeze.
 
 ## Version numbers
 
@@ -78,7 +91,9 @@ ChronitonDB versions follow the pattern Ubuntu uses for packages it takes from D
 | A new Apache version, `n` from 1 | `5.0.11-chronitondb1` | The first ChronitonDB release containing Apache Cassandra 5.0.11 |
 | `<version>~rc<k>` | `5.0.10-chronitondb1~rc1` | The package version of a release candidate |
 | `<version>-rc<k>` | `5.0.10-chronitondb1-rc1` | The git tag of a release candidate |
-| Apache's development version | `6.0.0-alpha2-chronitondb1` | A build from Apache's branch before Apache's first release of that major version |
+| Apache's development version | `6.0-alpha3-chronitondb1` | A build from Apache's branch before Apache's first release of that major version, in Apache's own form |
+
+The Apache version is the one in the line's build file, even when Apache has not yet released it, since ChronitonDB leads Apache. A line taken from Apache's branch after 5.0.9 and before Apache's 5.0.10 release ships `5.0.10-chronitondb1`. The release notes name the exact Apache commit the release carries and say when Apache has not released that version yet. When Apache releases it, our import of that release becomes the next number on the same version, for example `5.0.10-chronitondb2`.
 
 1. The git tag of a release is the version itself, for example `5.0.10-chronitondb1`, next to Apache's own `cassandra-5.0.10` tag. The git tag of a release candidate uses `-rc<k>` in place of `~rc<k>`, since git does not allow `~` in a tag name.
 2. Release and release candidate tags are signed with the dedicated ChronitonDB release key, not with a person's key. Its public key is published so users can verify the tags.
@@ -112,6 +127,8 @@ ChronitonDB is a fork, so it has its own packaging and its own names, separate f
 4. A node switched from Apache Cassandra keeps the operator's own file.
 5. Each line's upgrade runbook states the minimum setup an existing Apache Cassandra cluster MUST reach before it switches. The list is published with the line's first release.
 6. A node checks the minimum setup at every start. It refuses to start when the setup is not met, and names each unmet setting and the runbook step that sets it.
+
+Our file holds every setting of Apache's two files, active or commented, or leaves one out on a line `# Left out: <setting>: <reason>`. A setting Apache removes is removed from our file too, or flagged on a line `# Apache removed: <setting>`. A pull request check will enforce both once it exists.
 
 How Apache's configuration changes reach our file is in [upstream.md](upstream.md#configuration-changes).
 

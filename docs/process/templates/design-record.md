@@ -39,7 +39,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### Requirements
 
-{One requirement per entry: an id, one EARS shape, one BCP 14 key word, and its source. The id is `REQ-<KEY>-nnn` for feature work, with the feature key and three digits numbered across the whole feature, and `REQ-n` for any other item. For an item of a feature, the source is an acceptance criterion in the plan, and through it a FREQ. Otherwise it is an acceptance criterion in the issue, a risk this record names, or a decision record. Each id is proven by a scenario that carries it as a tag, or has exactly one row in `ac-coverage.md` naming its test or the reason it is deliberately not tested.}
+{One requirement per entry, on one line: an id, one EARS shape, one BCP 14 key word, and its source. The id is `REQ-<KEY>-nnn` for feature work, with the feature key and three digits numbered across the whole feature, and `REQ-n` for any other item. For an item of a feature, the source is an acceptance criterion in the plan, and through it a FREQ. Otherwise it is an acceptance criterion in the issue, a risk this record names, or a decision record. Each id is proven by a scenario that carries it as a tag, or has exactly one row in `ac-coverage.md` naming its test or the reason it is deliberately not tested.}
 
 The five EARS shapes, one example each:
 
@@ -86,6 +86,8 @@ These rules apply to every source:
 ## 6. Quality requirements
 
 {For a one-item change, the checklist table from [quality-requirements.md](../quality-requirements.md), each line answered with REQ ids or a reason it does not apply. For an item of a feature, cite the feature spec lines this item delivers.}
+
+{A design that changes how nodes coordinate names its checked model here: the model files in the item's design directory and the model checker's result. See [quality-requirements.md](../quality-requirements.md#coordination-between-nodes-is-model-checked).}
 
 ## 7. Performance
 
@@ -135,7 +137,7 @@ These rules apply to every source:
 
 ## 11. Dependencies
 
-{Each new library or version change with version, ASF category, NOTICE and credit lines, known vulnerabilities and why it is needed. Or "No new dependency".}
+{Each new library or version change with version, ASF category, NOTICE and credit lines, known vulnerabilities and why it is needed, one library per line or table row. Name a library by its Maven `group:artifact` or artifact, its pip name, its file name under `lib/` without the version, or `accord` for the Accord submodule, and give the exact version, or the commit for Accord. A check reads the library and the version from the same line. Or "No new dependency".}
 
 ## 12. Compliance impact
 

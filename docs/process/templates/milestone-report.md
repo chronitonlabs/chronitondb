@@ -46,21 +46,19 @@ Location: `docs/design/<KEY>-<slug>/milestones/`. Process: [additive.md](../addi
 
 ## 4. Requirements delivered
 
-{The architect fills this section from a fresh check of the merged code against the feature requirements. The reviewer checks it. One row per feature requirement of the milestone: its id, the items and pull requests that deliver it, the scenarios or tests that prove it, and its status, delivered or not delivered. A requirement not delivered has its reason in Deviations.}
+{The architect fills this section from a fresh check of the merged code against the feature requirements. The reviewer checks it by tracing each row: the FREQ's acceptance criteria in the plan, the items' REQ ids that cite them, the scenarios tagged with those ids, and the requirement to test table in each item's evidence. A requirement proven only by a `@wip` scenario is not delivered. One row per feature requirement an item of this milestone delivers, as the plan's Delivers and Milestone lines give it: its id, the items and pull requests that deliver it, the scenarios or tests that prove it, and its status: delivered, delivered in part, as planned (the plan spreads its items over several milestones, name the milestone that completes it), or not delivered. A requirement not delivered has its reason in Deviations. The feature's last milestone report has no "delivered in part, as planned" row: each requirement is delivered, or not delivered with its reason in Deviations.}
 
 | Requirement | Delivered by | Proven by | Status |
 |---|---|---|---|
-| {FREQ-<KEY>-nnn} | {items #issue, pull requests #n} | {scenarios by feature file and name, or test classes} | {delivered or not delivered} |
+| {FREQ-<KEY>-nnn} | {items #issue, pull requests #n} | {scenarios by feature file and name, or test classes} | {delivered, delivered in part, as planned, or not delivered} |
 
 ### Behaviour nobody asked for
 
-{Behaviour of the merged code that no feature requirement asks for, found by the same check. Expected to read "None found." Otherwise list each finding: what the code does and where.}
-
-None found.
+{Behaviour of the merged code that no feature requirement asks for, found by the same check. Write "None found." when the check found none. Otherwise list each finding: what the code does and where.}
 
 ## 5. Deviations
 
-{Every difference from the test plan or the delivery plan, with the reason.}
+{Every difference from the test plan or the delivery plan, with the reason, including every exit criterion that could not run because the continuous integration it needs does not exist yet. For the final milestone such a deviation means no-go.}
 
 ## 6. Documentation
 

@@ -49,6 +49,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 {What changes, in plain words, and why this fix over the alternatives.}
 
+{A fix that changes how nodes coordinate names its checked model here: the model files in the item's design directory and the model checker's result. See [quality-requirements.md](../quality-requirements.md#coordination-between-nodes-is-model-checked).}
+
 ## 5. Requirements
 
 {The corrected behaviour as EARS requirements, `REQ-n`, one BCP 14 key word each, each with its source. Usually the unwanted behaviour shape: "If {condition}, then {the system} MUST {response}". A fix to a fork feature also lists here every feature requirement the fault breaks, by its id `REQ-<KEY>-nnn` at the start of a line. Its text stays in the design record that defines it, so the line cites the id with a few words of what it covers, no key word and no source. Each listed requirement is reproduced by a scenario tagged with it and with `@fix-<issue>`. See [testing.md](../testing.md#scenarios), rule 11.}

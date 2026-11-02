@@ -66,6 +66,10 @@ Behaviour that depends on the data is set per index (or per table) as an option.
 
 A nodetool toggle changes the in-memory value on the node where it runs. The yaml file holds the value at startup. There is no separate persistence of nodetool changes. A restart returns to the yaml value.
 
+### Coordination between nodes is model checked
+
+A design that adds or changes how nodes coordinate, such as a new message exchange, a state shared between nodes or an ordering rule, carries a TLA+ model of that protocol, checked by the TLC model checker. The model files and the checker's result go in the item's design directory, and the design record names them in its Quality requirements section.
+
 ## The checklist
 
 Copy this table into the feature spec or design record. Fill the last column for every line.
@@ -76,6 +80,7 @@ Copy this table into the feature spec or design record. Fill the last column for
 | Performance efficiency | Memory budgets on coordinator and replica | |
 | Reliability | Isolation levers on coordinator and replica: thread pools, limits, load shedding, timeouts, kill switch | |
 | Reliability | Automatic fallbacks opt-in, with yaml setting, nodetool toggle, metric and rate-limited log line | |
+| Reliability | Coordination between nodes model checked, when the design changes it | |
 | Compatibility | Stock Apache Cassandra behaviour unchanged | |
 | Compatibility | Stock behaviour unchanged with the feature off | |
 | Compatibility | Mixed-version cluster, upgrade and rollback (see the Compatibility section) | |

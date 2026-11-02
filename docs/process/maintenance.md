@@ -70,6 +70,6 @@ Every library update takes the same path through the security engineer, also one
 3. Names the test classes that cover every use of the library in ChronitonDB, not only the code a vulnerability touches.
 4. Hands the item to the developer, with no fix record. The named tests MUST run and pass before the update merges.
 
-When a vulnerability in a shipped library is fixed by a patch-version update, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. When a maintainer wants an update that is not a security fix, the maintainer opens the item and assigns it to the security engineer. See [security.md](security.md#watching-shipped-libraries-and-apache).
+When a vulnerability in a shipped library is fixed by a patch-version update, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. When a maintainer wants an update that is not a security fix, the maintainer opens the item and assigns it to the security engineer. Whoever opens a dependency update item also opens its public GitHub issue. See [security.md](security.md#watching-shipped-libraries-and-apache).
 
 Any other dependency change, a new library or a minor or major version change, needs approval in a feature spec or a design record before use. Once approved, it too is made as an item of its own through the security engineer, never inside the item that needs it.

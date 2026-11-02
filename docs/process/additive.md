@@ -134,7 +134,7 @@ An approved feature spec, plan or delivery plan changes only through this path:
 
 Re-planning normally happens at a milestone gate. Changes to the risk list follow the same path.
 
-One exception: a patch-version update of an approved library, under the same licence, for a bug fix or a security fix, MAY be made by the developer inside the item. The same pull request records it in the feature spec's Dependencies section with its reason.
+A library update, even a patch version, is never made inside a feature's item. It is an item of its own, see [maintenance.md](maintenance.md#dependency-patch-version-updates). The feature spec's Dependencies section names the update and its item.
 
 ## How work moves between approval points
 

@@ -58,6 +58,7 @@ The developer owns the implementation of one approved item.
 2. Writes the code, the user and operator documentation, the runbook entries and the delta entry the item needs, in the same pull request.
 3. Opens the pull request as a draft and answers each review finding.
 4. Edits only the files the approved design record lists. A file outside the list needs the design record updated first.
+5. Opens the public GitHub issue of a documentation only change, which has no designer.
 
 ## Reviewer
 

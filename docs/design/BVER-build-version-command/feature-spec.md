@@ -355,7 +355,7 @@ These rules apply to every source:
 | Unit test JVM | The JVM of a JUnit test that extends `CQLTester` and has started its services, which runs `initServer` and so holds the version MBean (`CQLTester.java:633` to `638`) | none |
 | Real node | A node run by `CassandraDaemon`, as against an in-JVM test instance or the unit test JVM | none |
 | Node | A real node, an in-JVM test instance or the unit test JVM alike, each with a `BuildVersion` of its own after its node start | none |
-| Operator | Whoever runs nodetool against a node, a person, a script or a test harness alike | none |
+| Operator | Whoever runs nodetool against a node, a person, a script or a test alike | none |
 | JMX client | Any caller that reaches the MBean through an MBean server, a remote connector client, nodetool and the in-process server of the unit test JVM alike | none |
 | Node start | The call of `StorageService.initServer`: by `CassandraDaemon.setup` on a real node, by an in-JVM test instance started with the framework's GOSSIP feature (`Instance.java:704` and `:709`), and by the unit test JVM when a test starts its services. A requirement that says the node starts means this call | `StorageService.initServer` |
 | Startup step | What the hook call of the node start does for this feature (section 2.3 item 2): creates `BuildVersion`, sets the switch off while the gate field is false and logs it, then registers the MBean and the counters | none |

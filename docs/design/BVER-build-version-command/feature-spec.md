@@ -151,19 +151,19 @@ FREQ-BVER-006 (unwanted behaviour): If the node cannot read a `ChronitonDBVersio
 
 FREQ-BVER-007 (event-driven): When an operator runs `nodetool chronitondbversion` against a node whose switch is on, the command SHALL print on stdout the one line `ChronitonDBVersion: ` followed by the node's version. Source: decision record 0002.
 
-FREQ-BVER-008 (event-driven): When an operator runs `nodetool chronitondbversion` against a node whose switch is off, the command SHALL print nothing on stdout and report the node's read refusal through the stock error path, with the setting `build_version_command_enabled` in the text on stderr. Source: the feature switch rules of branching-and-review.md, rule 7.
+FREQ-BVER-008 (event-driven): When an operator runs `nodetool chronitondbversion` against a node whose switch is off, the command SHALL print nothing on stdout. Source: the feature switch rules of branching-and-review.md, rule 7.
 
 FREQ-BVER-009 (state-driven): While the gate field is true, the node SHALL take the startup value of the switch from the yaml value of `build_version_command_enabled`. Source: the feature switch rules of branching-and-review.md, rule 1.
 
-FREQ-BVER-010 (optional feature): Where the yaml configuration of a node does not name `build_version_command_enabled`, the node SHALL take `true` as its yaml value, the default. Source: section 2.8 and the feature switch rules of branching-and-review.md, rule 3.
+FREQ-BVER-010 (state-driven): While the yaml configuration of a node does not name `build_version_command_enabled`, the node SHALL take `true` as its yaml value, the default. Source: section 2.8 and the feature switch rules of branching-and-review.md, rule 3.
 
-FREQ-BVER-011 (event-driven): When an operator runs `nodetool enablebuildversioncommand` or `nodetool disablebuildversioncommand`, the command SHALL write the `Enabled` attribute of the node's `BuildVersion` MBean to on or to off as the command's name says. Source: the feature switch rules of branching-and-review.md, rule 1.
+FREQ-BVER-011 (event-driven): When an operator runs `nodetool enablebuildversioncommand`, the command SHALL write the `Enabled` attribute of the node's `BuildVersion` MBean to on. Source: the feature switch rules of branching-and-review.md, rule 1.
 
-FREQ-BVER-012 (event-driven): When the node accepts a write of `Enabled`, the node SHALL change the `Config` field `build_version_command_enabled` in memory and nothing on disk. Source: the nodetool rule of quality-requirements.md.
+FREQ-BVER-012 (event-driven): When the node accepts a write of `Enabled`, the node SHALL change the `Config` field `build_version_command_enabled` in memory. Source: the nodetool rule of quality-requirements.md.
 
 FREQ-BVER-013 (event-driven): When a JMX client reads the `Enabled` attribute of the `BuildVersion` MBean, the node SHALL return the value of the switch. Source: the nodetool rule of quality-requirements.md, so that an operator and a test can read what the toggles change.
 
-FREQ-BVER-014 (event-driven): When the node accepts a write of `Enabled` or sets the switch off at startup while the gate field is false, the node SHALL log the old and the new value of the switch at INFO, also when the two values are equal. Source: observability rule 3 of quality-requirements.md.
+FREQ-BVER-014 (event-driven): When the node accepts a write of `Enabled`, the node SHALL log the old and the new value of the switch at INFO, also when the two values are equal. Source: observability rule 3 of quality-requirements.md.
 
 FREQ-BVER-015 (state-driven): While the gate field is false, the node SHALL start with the switch off, whatever the yaml value, from the startup step of `initServer` on. Source: the feature switch rules of branching-and-review.md, rule 2.
 
@@ -175,9 +175,9 @@ FREQ-BVER-018 (event-driven): When the node refuses a write of `Enabled`, the to
 
 FREQ-BVER-019 (event-driven): When the lift is registered on the builder of an in-JVM test cluster before the cluster starts, every instance of the cluster SHALL start with the gate field true. Source: the scenario rules of testing.md, rule 9.
 
-FREQ-BVER-020 (ubiquitous): The node SHALL register the `BuildVersion` MBean and the counters `ReadsServed` and `ReadsRefused` at its node start, whatever the switch's value. Source: the feature switch rules of branching-and-review.md, rule 1, so that the toggles and the counters exist with the switch off.
+FREQ-BVER-020 (event-driven): When the node starts, the node SHALL register the `BuildVersion` MBean, whatever the switch's value. Source: the feature switch rules of branching-and-review.md, rule 1, so that the toggles exist with the switch off.
 
-FREQ-BVER-021 (ubiquitous): The node SHALL count the version reads it serves in the counter `ReadsServed` and the version reads it refuses in the counter `ReadsRefused`, both of the metric type `BuildVersion`. Source: observability rule 1 of quality-requirements.md.
+FREQ-BVER-021 (ubiquitous): The node SHALL count the version reads it serves in the counter `ReadsServed` of the metric type `BuildVersion`. Source: observability rule 1 of quality-requirements.md.
 
 FREQ-BVER-022 (ubiquitous): The command `nodetool version` SHALL print, with this feature present and whatever the switch's value, exactly the output stock Apache Cassandra 5.0 prints on `chronitondb-sandbox` and nothing else, the line `ReleaseVersion: ` with the release version, and with `-v` also the line `GitSHA: ` with the git SHA. Source: the stock behaviour rule of quality-requirements.md.
 
@@ -193,6 +193,18 @@ FREQ-BVER-027 (ubiquitous): The shipped code SHALL NOT write the gate field: the
 
 FREQ-BVER-028 (event-driven): When the node refuses a write of `Enabled`, the node SHALL log the refusal at INFO. Source: observability rule 3 of quality-requirements.md, read for a change the node refuses, so that a refused toggle leaves a trace on the node.
 
+FREQ-BVER-029 (event-driven): When an operator runs `nodetool chronitondbversion` against a node whose switch is off, the command SHALL report the node's read refusal through the stock error path, with the setting `build_version_command_enabled` in the text on stderr. Source: the feature switch rules of branching-and-review.md, rule 7.
+
+FREQ-BVER-030 (event-driven): When an operator runs `nodetool disablebuildversioncommand`, the command SHALL write the `Enabled` attribute of the node's `BuildVersion` MBean to off. Source: the feature switch rules of branching-and-review.md, rule 1.
+
+FREQ-BVER-031 (event-driven): When the node accepts a write of `Enabled`, the node SHALL NOT write anything on disk. Source: the nodetool rule of quality-requirements.md.
+
+FREQ-BVER-032 (event-driven): When the startup step of section 2.3 item 2 sets the switch off, the node SHALL log the old and the new value of the switch at INFO, also when both are false. Source: observability rule 3 of quality-requirements.md.
+
+FREQ-BVER-033 (event-driven): When the node starts, the node SHALL register the counters `ReadsServed` and `ReadsRefused` as MBeans, whatever the switch's value. Source: the feature switch rules of branching-and-review.md, rule 1, so that the counters exist with the switch off.
+
+FREQ-BVER-034 (ubiquitous): The node SHALL count the version reads it refuses in the counter `ReadsRefused` of the metric type `BuildVersion`. Source: observability rule 1 of quality-requirements.md.
+
 ## 4. Quality requirements
 
 In this table the words gates and gate item are the checks of quality-requirements.md a change passes, not the final gate of section 2.5.
@@ -201,18 +213,18 @@ In this table the words gates and gate item are the checks of quality-requiremen
 |---|---|---|
 | Performance efficiency | Fastest correct design, with benchmarks in the design and in the gates | Does not apply: the feature touches no request path. A read returns one string loaded once from the class path, the stock mechanism of `FBUtilities.getReleaseVersionString` (`FBUtilities.java:443` to `466`). No benchmark |
 | Performance efficiency | Memory budgets on coordinator and replica | Does not apply: the node holds one string, one MBean and two counters, and no per request state |
-| Reliability | Isolation levers on coordinator and replica: thread pools, limits, load shedding, timeouts, kill switch | The kill switch is the feature switch, FREQ-BVER-009 to FREQ-BVER-013 and FREQ-BVER-017. No thread pool, limit, shedding or timeout: a read does no work beyond returning a string held in memory |
+| Reliability | Isolation levers on coordinator and replica: thread pools, limits, load shedding, timeouts, kill switch | The kill switch is the feature switch, FREQ-BVER-009 to FREQ-BVER-013, FREQ-BVER-017, FREQ-BVER-030 and FREQ-BVER-031. No thread pool, limit, shedding or timeout: a read does no work beyond returning a string held in memory |
 | Reliability | Automatic fallbacks opt-in, with yaml setting, nodetool toggle, metric and rate-limited log line | Does not apply: the feature has no fallback. A version the node cannot read is `Unknown` (FREQ-BVER-006), the stock idiom, and takes no other path |
 | Reliability | Coordination between nodes model checked, when the design changes it | Does not apply: nodes never exchange the version |
 | Compatibility | Stock Apache Cassandra behaviour unchanged | FREQ-BVER-022, FREQ-BVER-024, FREQ-BVER-025 and FREQ-BVER-026. The feature adds a command, an MBean, a setting and a properties entry that stock refuses or ignores, and changes no stock operation. The line's stock unit and in-JVM distributed test suites, run unchanged on a build with this feature and the gate field false, with no edit to any pre-existing test, stand in for the parity suite the line does not have yet ([testing.md](../../process/testing.md#test-levels)), and the delivery plan says at which point they run |
-| Compatibility | Stock behaviour unchanged with the feature off | FREQ-BVER-005, FREQ-BVER-008, FREQ-BVER-015, FREQ-BVER-022, FREQ-BVER-024 and FREQ-BVER-025. With the switch off a user sees the additions section 2.8 lists, the three `nodetool help` entries, the settings row, the version MBean and the two counter MBeans, and the node holds the fixed objects listed there: no thread, no file, no memory that grows with requests or data, and no change to any stock output |
+| Compatibility | Stock behaviour unchanged with the feature off | FREQ-BVER-005, FREQ-BVER-008, FREQ-BVER-015, FREQ-BVER-022, FREQ-BVER-024, FREQ-BVER-025 and FREQ-BVER-029. With the switch off a user sees the additions section 2.8 lists, the three `nodetool help` entries, the settings row, the version MBean and the two counter MBeans, and the node holds the fixed objects listed there: no thread, no file, no memory that grows with requests or data, and no change to any stock output |
 | Compatibility | Mixed-version cluster, upgrade and rollback (see the Compatibility section) | Section 6: no format, schema or protocol change. A nodetool and a node of different builds fail the way stock nodetool fails on a missing MBean or an unrecognised command |
 | Functional suitability | CQL validity and results independent of replication factor, data centres and replica count | Does not apply: the feature has no CQL |
 | Flexibility | Settings per index or per table over global ones, with global, include and exclude modes | Does not apply: the setting gates one command on one node and depends on no data |
-| Interaction capability | nodetool toggles change the in-memory value only, yaml holds the startup value | FREQ-BVER-009, FREQ-BVER-011, FREQ-BVER-012 and FREQ-BVER-013 |
-| Interaction capability | Error messages name the setting or toggle that controls the behaviour | FREQ-BVER-005 and FREQ-BVER-008. The gate refusal of FREQ-BVER-016 names the gate, which no setting or toggle controls |
-| Maintainability | Observability: metrics, traces and diagnostics as a gate item | FREQ-BVER-014, FREQ-BVER-020, FREQ-BVER-021 and FREQ-BVER-028. Observability rule 1, a counter per outcome, is met for the version reads, the one path a request takes. The two outcomes of a write of `Enabled`, accepted and refused, are logged at INFO and not counted: each is one operator action behind JMX authorisation, and its log line is the record. No trace line, since there is no query plan decision and no fallback. The MBean and the counters live for the life of the node, so nothing is released |
-| Security | Threat model answered (see the Threat model section) | Section 5, FREQ-BVER-002, FREQ-BVER-003, FREQ-BVER-005, FREQ-BVER-009, FREQ-BVER-013, FREQ-BVER-014, FREQ-BVER-021 and FREQ-BVER-027 |
+| Interaction capability | nodetool toggles change the in-memory value only, yaml holds the startup value | FREQ-BVER-009, FREQ-BVER-011, FREQ-BVER-012, FREQ-BVER-013, FREQ-BVER-030 and FREQ-BVER-031 |
+| Interaction capability | Error messages name the setting or toggle that controls the behaviour | FREQ-BVER-005 and FREQ-BVER-029. The gate refusal of FREQ-BVER-016 names the gate, which no setting or toggle controls |
+| Maintainability | Observability: metrics, traces and diagnostics as a gate item | FREQ-BVER-014, FREQ-BVER-020, FREQ-BVER-021, FREQ-BVER-028 and FREQ-BVER-032 to FREQ-BVER-034. Observability rule 1, a counter per outcome, is met for the version reads, the one path a request takes. The two outcomes of a write of `Enabled`, accepted and refused, are logged at INFO and not counted: each is one operator action behind JMX authorisation, and its log line is the record. No trace line, since there is no query plan decision and no fallback. The MBean and the counters live for the life of the node, so nothing is released |
+| Security | Threat model answered (see the Threat model section) | Section 5, FREQ-BVER-002, FREQ-BVER-003, FREQ-BVER-005, FREQ-BVER-009, FREQ-BVER-013, FREQ-BVER-014, FREQ-BVER-021, FREQ-BVER-027 and FREQ-BVER-034 |
 | Safety | Any risk of data loss or corruption named, with its mitigation | Does not apply: the feature reads one string and writes nothing on disk |
 
 ## 5. Threat model
@@ -220,7 +232,7 @@ In this table the words gates and gate item are the checks of quality-requiremen
 | Entry point | Threat (STRIDE) | Mitigation | FREQ |
 |---|---|---|---|
 | `BuildVersion` MBean, read of `Version` over JMX | Information disclosure: which ChronitonDB build a node runs | Stock JMX authentication and authorisation cover the new MBean as every other (`conf/cassandra-env.sh:237` to `247`, `AuthorizationProxy.java:79`). The switch refuses the read when off. The same class of fact is already readable from `StorageServiceMBean.getReleaseVersion` (`src/java/org/apache/cassandra/service/StorageServiceMBean.java:108`) | FREQ-BVER-005 |
-| `BuildVersion` MBean, read of `Version` over JMX | Denial of service: repeated reads | A read returns one string held in memory and allocates only the JMX reply. Each read that reaches the MBean is counted, so a flood is visible | FREQ-BVER-021 |
+| `BuildVersion` MBean, read of `Version` over JMX | Denial of service: repeated reads | A read returns one string held in memory and allocates only the JMX reply. Each read that reaches the MBean is counted, so a flood is visible | FREQ-BVER-021, FREQ-BVER-034 |
 | `BuildVersion` MBean, read of `Enabled` over JMX | Information disclosure: whether the feature is on | Stock JMX authentication and authorisation, as above. The value says nothing beyond the switch | FREQ-BVER-013 |
 | `BuildVersion` MBean, write of `Enabled` over JMX | Tampering: a client turns the feature on or off | Stock JMX authorisation. The change is in memory only and logged with the old and the new value, and a restart returns to the startup value | FREQ-BVER-009, FREQ-BVER-014 |
 | `BuildVersion` MBean, write of `Enabled` over JMX | Repudiation: nobody can tell that the switch was changed, or by whom | The INFO lines record each accepted write and each refused one (FREQ-BVER-028). Who made it is recorded nowhere above TRACE: stock logs the JMX subject at TRACE only (`AuthorizationProxy.java:194` to `196`), which is stock's rule for every MBean, and this spec accepts it: the INFO line records the change and not the principal | FREQ-BVER-014, FREQ-BVER-028 |
@@ -229,7 +241,7 @@ In this table the words gates and gate item are the checks of quality-requiremen
 | Build property `chronitondb.release` | Tampering: a wrong release number baked into a build | A build given none writes `0`, a build given a value that is not a release number fails, and the release process verifies a candidate before it is promoted ([release.md](../../process/release.md#how-a-release-is-made)) | FREQ-BVER-002, FREQ-BVER-003 |
 | Gate field `finalGatePassed` | Elevation of privilege: code or a client turns the switch on before the final gate | The field is private, has no setter and is written by no shipped code, so no JMX attribute, setting or command reaches it. The lift, test code under `test/distributed/`, is the only writer, by reflection inside an in-JVM instance | FREQ-BVER-016, FREQ-BVER-027 |
 | The three nodetool commands | Information disclosure: the JMX password given through the stock global options | The commands take the stock global options and add none (`NodeTool.java:351` to `367`). The handling of the password is stock's: the history file masks the value given with `-pw` (`NodeTool.java:305`), and a password file keeps it off the command line | none |
-| The two counter MBeans | Information disclosure: how many version reads a node served and refused | Stock JMX authentication and authorisation, where an operator turned them on, as for every metric MBean. The values are two counts and say nothing else | FREQ-BVER-021 |
+| The two counter MBeans | Information disclosure: how many version reads a node served and refused | Stock JMX authentication and authorisation, where an operator turned them on, as for every metric MBean. The values are two counts and say nothing else | FREQ-BVER-021, FREQ-BVER-034 |
 | `system_views.settings`, the row `build_version_command_enabled` | Information disclosure: whether the feature is on. Tampering: a write of the row | A read of the row needs `SELECT` on the table under CQL authorisation: stock makes the virtual schema tables readable by default and not `system_views` (`src/java/org/apache/cassandra/service/ClientState.java:91` to `92`). The table refuses every write (`src/java/org/apache/cassandra/db/virtual/AbstractVirtualTable.java:126` to `129`). The row is the stock settings table showing a `Config` field, and no requirement of this feature governs it | none |
 | The `ChronitonDBVersion` entry in `version.properties` on the class path | Tampering: an edited entry makes a node report a wrong version | The entry sits in the same file and jar as Apache's `CassandraVersion`, behind the same file permissions, and nothing in the node acts on the version: it is reported and never used | none |
 | The lift, test code under `test/distributed/` | Elevation of privilege: test code turns the gate field on | The lift is not shipped: it lives under `test/`, is registered only on the builder of an in-JVM test cluster, and writes a field no shipped path reaches | FREQ-BVER-019, FREQ-BVER-027 |

@@ -29,6 +29,8 @@ Each line releases on its own rhythm:
 2. Otherwise, a release ships monthly when our own changes are waiting.
 3. Security fixes and urgent fixes are released whenever they are ready, outside both rhythms.
 
+The release engineer's daily check finds each release that is due on a line under these rules. It then opens the release's public issue and its release task itself, and writes the proposal. The maintainers still decide by merging the proposal and by starting the candidate run.
+
 ## Support lifetime
 
 1. The maintainers designate a line as long-term support (LTS) when its first release ships. An LTS line is supported for 5 years from its first ChronitonDB release, whatever Apache Cassandra does with its major version. This follows the default support period of the EU Cyber Resilience Act.
@@ -52,7 +54,7 @@ A feature becomes switchable at its final milestone gate. Before that, its switc
 
 Every release takes two maintainer approvals, and each one is the merge of a pull request, like every approval in this project: the release proposal, before the candidate is built, and the promotion, after the soak and verification. The reviewer reviews both pull requests first.
 
-1. **Proposal.** The release engineer opens a release proposal pull request that adds `docs/releases/<version>.md` from [the release proposal template](templates/release-proposal.md): the version, the exact commit on the line it is built from, what goes in, from the commits on the line, the milestone gates passed and the security fixes due.
+1. **Proposal.** When a release is due, the release engineer opens its issue and a release proposal pull request that adds `docs/releases/<version>.md` from [the release proposal template](templates/release-proposal.md): the version, the exact commit on the line it is built from, what goes in, from the commits on the line, the milestone gates passed and the security fixes due.
 2. **First approval.** A maintainer merges the proposal pull request. Nothing is built, tagged or published before that merge.
 3. **Release candidate.** A maintainer starts the release workflow by hand when the candidate is wanted, giving the version. Building and testing a candidate is expensive, so a maintainer chooses the moment. The workflow refuses to run unless that version's proposal is merged. The candidate tag is signed at the commit the proposal names, so anything merged later stays out. The pipeline then builds, tests and publishes the release candidate: a GitHub pre-release, and packages in a separate proposed package repository for Debian and Red Hat.
 4. **Verification.** The release engineer verifies the candidate: signatures, installs, upgrade and rollback from the previous ChronitonDB release and from Apache Cassandra, the parity suite, and that the release outputs are present and signed: the SBOM in SPDX and CycloneDX, the OpenVEX statements, the release notes and the provenance.

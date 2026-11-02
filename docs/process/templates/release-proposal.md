@@ -25,7 +25,7 @@ limitations under the License.
 | Version | {n} |
 | Author | Release engineer: {GitHub username} |
 | Approver | The maintainer who merges the pull request, once for the proposal and once for the promotion |
-| References | {line, the previous release, milestone reports, security advisories} |
+| References | {line, the previous release, milestone reports, published security advisories by their CVE} |
 
 Change history: the git history of this file.
 
@@ -33,7 +33,7 @@ Location: `docs/releases/<version>.md`. Process: [release.md](../release.md).
 
 ## 1. Version
 
-{The version, in the form of [release.md](../release.md#version-numbers), and the line it ships on.}
+{The version, in the form of [release.md](../release.md#version-numbers), and the line it ships on. For a line's first release also its support, `Support: LTS` or `Support: standard` as the maintainers designated it, with the end date for an LTS line. See [release.md](../release.md#support-lifetime).}
 
 ## 2. Commit
 
@@ -49,11 +49,11 @@ Location: `docs/releases/<version>.md`. Process: [release.md](../release.md).
 
 ## 5. Security fixes due
 
-{The security fixes this release ships, each with its advisory and the date the maintainers set. Or "None".}
+{The security fixes this release ships. A public library vulnerability by its CVE and its VEX statement. A fix to ChronitonDB's own code is never named before disclosure: write only that the release carries security fixes, published with their advisories on the release date. Or "None".}
 
 ## 6. Verification results
 
-Not verified yet. After the soak the promotion pull request replaces this line with the results: signatures, installs, upgrade and rollback from the previous ChronitonDB release and from Apache Cassandra, and the parity suite, each with its result and evidence in the table, and the problems reported during the soak with what was done about each.
+Not verified yet. After the soak the promotion pull request replaces this line with the results: signatures, installs, upgrade and rollback from the previous ChronitonDB release and from Apache Cassandra, the parity suite, and the release outputs (SBOM, OpenVEX statements, release notes and provenance), each with its result and evidence in the table, and the problems reported during the soak with what was done about each.
 
 | Check | Result | Evidence |
 |---|---|---|

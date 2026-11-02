@@ -33,7 +33,7 @@ Each line releases on its own rhythm:
 
 1. The maintainers designate a line as long-term support (LTS) when its first release ships. An LTS line is supported for 5 years from its first ChronitonDB release, whatever Apache Cassandra does with its major version. This follows the default support period of the EU Cyber Resilience Act.
 2. A line that is not designated LTS is supported until 12 months after the next line's first release.
-3. The support period and end date of each line, and whether it is LTS, are published with its first release.
+3. The support period of each line, whether it is LTS, and for an LTS line its end date, are published with its first release. A line's first release also states the end date of each earlier standard line it ends.
 4. After Apache's own end of life for a major version, security fixes and critical fixes are carried back to a supported line from newer Apache Cassandra versions.
 
 Supported versions are listed in the README of the repository.
@@ -55,7 +55,7 @@ Every release takes two maintainer approvals, and each one is the merge of a pul
 1. **Proposal.** The release engineer opens a release proposal pull request that adds `docs/releases/<version>.md` from [the release proposal template](templates/release-proposal.md): the version, the exact commit on the line it is built from, what goes in, from the commits on the line, the milestone gates passed and the security fixes due.
 2. **First approval.** A maintainer merges the proposal pull request. Nothing is built, tagged or published before that merge.
 3. **Release candidate.** A maintainer starts the release workflow by hand when the candidate is wanted, giving the version. Building and testing a candidate is expensive, so a maintainer chooses the moment. The workflow refuses to run unless that version's proposal is merged. The candidate tag is signed at the commit the proposal names, so anything merged later stays out. The pipeline then builds, tests and publishes the release candidate: a GitHub pre-release, and packages in a separate proposed package repository for Debian and Red Hat.
-4. **Verification.** The release engineer verifies the candidate: signatures, installs, upgrade and rollback from the previous ChronitonDB release and from Apache Cassandra, and the parity suite.
+4. **Verification.** The release engineer verifies the candidate: signatures, installs, upgrade and rollback from the previous ChronitonDB release and from Apache Cassandra, the parity suite, and that the release outputs are present and signed: the SBOM in SPDX and CycloneDX, the OpenVEX statements, the release notes and the provenance.
 5. **Soak.** The candidate stays in the proposed channel for 7 days.
 6. **Second approval and promotion.** If the verification passed and no problem is reported during the soak, the release engineer opens a promotion pull request that fills the verification results section of `docs/releases/<version>.md`. A maintainer merges it, and the candidate is then promoted unchanged to the official release.
 

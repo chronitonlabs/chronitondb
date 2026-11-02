@@ -66,7 +66,7 @@ A patch-version update of an approved library, under the same licence, for a bug
 Every library update takes the same path through the security engineer, also one a maintainer asks for that is not a security fix. The security engineer:
 
 1. Checks the new version: its licence, the new dependencies it brings in, and its known vulnerabilities.
-2. Updates `NOTICE.txt`, `LICENSE.txt`, the SBOM records and the VEX statements as needed.
+2. Names the exact `NOTICE.txt` and `LICENSE.txt` text the update needs, or no change, and updates the VEX statements. The developer writes that text in the update's pull request, and the reviewer checks it matches. The SBOM of the next release records the change.
 3. Names the test classes that cover every use of the library in ChronitonDB, not only the code a vulnerability touches.
 4. Hands the item to the developer, with no fix record. The named tests MUST run and pass before the update merges.
 

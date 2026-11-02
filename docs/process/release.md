@@ -80,7 +80,9 @@ ChronitonDB versions follow the pattern Ubuntu uses for packages it takes from D
 | A new Apache version, `n` from 1 | `5.0.11-chronitondb1` | The first ChronitonDB release containing Apache Cassandra 5.0.11 |
 | `<version>~rc<k>` | `5.0.10-chronitondb1~rc1` | The package version of a release candidate |
 | `<version>-rc<k>` | `5.0.10-chronitondb1-rc1` | The git tag of a release candidate |
-| Apache's development version | `6.0.0-alpha2-chronitondb1` | A build from Apache's branch before Apache's first release of that major version |
+| Apache's development version | `6.0-alpha3-chronitondb1` | A build from Apache's branch before Apache's first release of that major version, in Apache's own form |
+
+The Apache version is the one in the line's build file, even when Apache has not yet released it, since ChronitonDB leads Apache. A line taken from Apache's branch after 5.0.9 and before Apache's 5.0.10 release ships `5.0.10-chronitondb1`. The release notes name the exact Apache commit the release carries and say when Apache has not released that version yet. When Apache releases it, our import of that release becomes the next number on the same version, for example `5.0.10-chronitondb2`.
 
 1. The git tag of a release is the version itself, for example `5.0.10-chronitondb1`, next to Apache's own `cassandra-5.0.10` tag. The git tag of a release candidate uses `-rc<k>` in place of `~rc<k>`, since git does not allow `~` in a tag name.
 2. Release and release candidate tags are signed with the dedicated ChronitonDB release key, not with a person's key. Its public key is published so users can verify the tags.

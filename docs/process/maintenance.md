@@ -66,10 +66,10 @@ A patch-version update of an approved library, under the same licence, for a bug
 Every library update takes the same path through the security engineer, also one a maintainer asks for that is not a security fix. The security engineer:
 
 1. Checks the new version: its licence, the new dependencies it brings in, and its known vulnerabilities.
-2. Updates `NOTICE.txt`, `LICENSE.txt`, the SBOM records and the VEX statements as needed.
+2. Names the exact `NOTICE.txt` and `LICENSE.txt` text the update needs, or no change, and updates the VEX statements. The developer writes that text in the update's pull request, and the reviewer checks it matches. The SBOM of the next release records the change.
 3. Names the test classes that cover every use of the library in ChronitonDB, not only the code a vulnerability touches.
 4. Hands the item to the developer, with no fix record. The named tests MUST run and pass before the update merges.
 
-When a vulnerability in a shipped library is fixed by a patch-version update, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. When a maintainer wants an update that is not a security fix, the maintainer opens the item and assigns it to the security engineer. See [security.md](security.md#watching-shipped-libraries-and-apache).
+When a vulnerability in a shipped library is fixed by a patch-version update, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. When a maintainer wants an update that is not a security fix, the maintainer opens the item and assigns it to the security engineer. Whoever opens a dependency update item also opens its public GitHub issue. See [security.md](security.md#watching-shipped-libraries-and-apache).
 
 Any other dependency change, a new library or a minor or major version change, needs approval in a feature spec or a design record before use. Once approved, it too is made as an item of its own through the security engineer, never inside the item that needs it.

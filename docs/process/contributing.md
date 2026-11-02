@@ -60,7 +60,7 @@ Never report a security problem in a public issue, pull request or discussion. R
 
 ### What a pull request needs
 
-1. **Its category or its feature.** Say which maintenance category the change is (corrective, preventive, adaptive, perfective or additive), or name the feature spec item it delivers. See [README.md](README.md).
+1. **Its category or its feature.** Say which maintenance category the change is (corrective, preventive, adaptive, perfective or additive), or name the feature spec item it delivers. See [README.md](README.md). A maintainer gives the issue its kind label at triage, and the pull request carries the same one.
 2. **An issue.** Link it with `Fixes #<issue>`.
 3. **Tests.** A fix includes a test that fails without it and passes with it. A new behaviour includes tests for each of its requirements. See [testing.md](testing.md).
 4. **Documentation.** User and operator documentation and runbook entries the change affects, in the same pull request.

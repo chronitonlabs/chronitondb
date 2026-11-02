@@ -44,7 +44,7 @@ A report that arrives in public is handled privately. Nobody repeats its details
 | Receipt | The report arrives through private vulnerability reporting. The maintainers acknowledge it. |
 | Verification | The security engineer triages the report: it reproduces the fault, finds the affected lines and releases, proposes a CVSS severity and says whether stock Apache Cassandra code is affected. The maintainers decide whether it is valid and its severity. |
 | Remediation | The fix follows the corrective order below, in the advisory's private fork. Apache is notified when stock code is affected. |
-| Release | The release engineer prepares fixed releases on every affected supported line, released together on the disclosure date the maintainers set. Security releases skip the release candidate soak once verified. The advisory is published. GitHub assigns the CVE as the CVE numbering authority. The security engineer updates the VEX statements. |
+| Release | The release engineer prepares fixed releases on every affected supported line, in private. Each proposal names the commit in the advisory's private fork, and each release candidate is built and verified in private. The packages publish at the moment of disclosure, together with the advisory, on the date the maintainers set, as Debian and Ubuntu handle embargoed security updates. Security releases skip the release candidate soak once verified. The advisory is published. GitHub assigns the CVE as the CVE numbering authority. The security engineer updates the VEX statements. |
 | Post release | The reporter is credited unless they ask not to be. The maintainers check that the fix reached every line. |
 
 Only the maintainers decide validity, severity, the CVE, the disclosure date, the advisory text and publication. The security engineer proposes and drafts, and never decides any of these.
@@ -55,7 +55,7 @@ A security fix follows the corrective path in [maintenance.md](maintenance.md), 
 
 1. A fix record, with a test that reproduces the fault and fails before the fix. Its name and messages describe the mechanics, never the attack.
 2. The fix, made against that test, on every affected supported line, each carrying the same test.
-3. The fixed releases on all affected lines, released together.
+3. The fixed releases on all affected lines, prepared in private from the advisory's private fork and published together at disclosure. See [release.md](release.md#security-releases).
 
 An urgent fix is an emergency and goes first in the queue. See [maintenance.md](maintenance.md#emergency-urgent-corrective-work). Only a security fix with a security advisory is private. Any other urgent fix, for example a data loss fault, takes the public corrective path.
 
@@ -108,6 +108,6 @@ ChronitonDB inherits every Apache Cassandra vulnerability on its base and every 
 1. Every day the security engineer checks every library in the SBOM against OSV, the GitHub advisory database and NVD.
 2. For each match it works out whether ChronitonDB is affected: whether the vulnerable code is shipped and reachable. It writes the VEX statement.
 3. When a patch-version update of the library fixes it, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. The item goes straight to the developer with no fix record, as [maintenance.md](maintenance.md#dependency-patch-version-updates) describes. The security engineer names in the item the test classes that cover every use of the library in ChronitonDB, and those tests run before the update merges. Anything else goes to the maintainers as a decision.
-4. Every library update goes through the security engineer, including one a maintainer asks for that is not a security fix. The security engineer checks the new version's licence, the new dependencies it brings in and its known vulnerabilities. It updates `NOTICE.txt`, `LICENSE.txt`, the SBOM records and the VEX statements as needed, and names the tests that cover every use of the library. See [maintenance.md](maintenance.md#dependency-patch-version-updates).
+4. Every library update goes through the security engineer, including one a maintainer asks for that is not a security fix. The security engineer checks the new version's licence, the new dependencies it brings in and its known vulnerabilities. It names the exact `NOTICE.txt` and `LICENSE.txt` text the update needs, which the developer writes and the reviewer checks, updates the VEX statements, and names the tests that cover every use of the library. See [maintenance.md](maintenance.md#dependency-patch-version-updates).
 5. A library ChronitonDB ships but does not use at all is not updated. The security engineer opens an item to remove it.
 6. The security engineer watches Apache Cassandra security announcements with the integrator. See [upstream.md](upstream.md).

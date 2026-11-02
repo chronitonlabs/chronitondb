@@ -60,4 +60,4 @@ Location: `docs/design/<KEY>-<slug>/delivery-plan.md`. Process: [additive.md](..
 
 ## 6. Test plan
 
-{The ISO/IEC/IEEE 29119 test plan for the feature: test levels used, what each milestone tests at which level, test environments, the parity suite, upgrade and rollback tests, benchmarks with thresholds, and golden corpora if any. See [testing.md](../testing.md).}
+{The ISO/IEC/IEEE 29119 test plan for the feature: test levels used, what each milestone tests at which level, test environments, the parity suite, upgrade and rollback tests, benchmarks with thresholds, and golden corpora if any. For each exit criterion, where it runs: on continuous integration or on the build machines. Until continuous integration exists, the parts of it the milestone gates need, which are in place before the final milestone. See [testing.md](../testing.md).}

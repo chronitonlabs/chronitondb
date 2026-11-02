@@ -81,8 +81,8 @@ Location: `docs/imports/<apache-version-or-range>.md`, added in the import pull 
 
 ## 8. Configuration changes
 
-{Every setting that changed over the imported range in Apache's `conf/cassandra.yaml` or `conf/cassandra_latest.yaml`: added, removed, or changed in value or comment. Then every default in Apache's `Config.java` that changed over the same range. One row each, mapped to ChronitonDB's own `conf/cassandra_chronitondb.yaml`. Write "None." in place of the table when neither file and no default changed. See [upstream.md](../upstream.md#configuration-changes).}
+{Every setting that changed over the imported range in Apache's `conf/cassandra.yaml` or `conf/cassandra_latest.yaml`: added, removed, or changed in value or comment. Then every default that changed over the same range: a default in `Config.java`, a nested option named with dots such as `sstable.selected_format`, or a default the node computes at startup in `DatabaseDescriptor.java`. A new option block is one row. One row each, mapped to ChronitonDB's own `conf/cassandra_chronitondb.yaml`. Write "None." in place of the table when neither file and no default changed. See [upstream.md](../upstream.md#configuration-changes).}
 
 | Setting | Changed in | Apache change | Our file |
 |---|---|---|---|
-| {setting name} | {`cassandra.yaml`, `cassandra_latest.yaml` or `Config.java`} | {added, removed, the old and new value, or the comment change} | {`taken`, `taken with a different value` and the value with the reason, or `not taken` with the reason} |
+| {setting name} | {`cassandra.yaml`, `cassandra_latest.yaml`, `Config.java` or `DatabaseDescriptor.java`} | {added, removed, the old and new value, `effective` with the old and new value of a default only startup changes, or the comment change} | {`taken`, `taken with a different value` and the value with the reason, or `not taken` with the reason} |

@@ -40,7 +40,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 ### Item {n}: {title}
 
 - **Delivers:** {FREQ ids from the feature spec}
-- **Acceptance criteria:** {numbered, each testable, written as EARS requirements with one BCP 14 key word}
+- **Acceptance criteria:** {numbered, each testable, each on one line, written as EARS requirements with one BCP 14 key word}
 - **Depends on:** {item numbers, or none}
 - **Line:** {chronitondb-5.0 or chronitondb-6.0}
 - **Milestone:** {milestone from the delivery plan}

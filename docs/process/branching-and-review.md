@@ -83,13 +83,14 @@ These checks run on every pull request to a line. Each MUST pass before a mainta
 | `spotbugs` | SpotBugs with FindSecBugs on the compiled ChronitonDB classes. Findings are reported. The check fails when its self-test fails |
 | `instruction-files` | No instruction files for automated coding tools anywhere in the tree, such as `AGENTS.md` |
 | `license/cla` | Every contributor to the pull request has signed the contributor agreement. See [contributing.md](contributing.md) |
+| `kind-label` | The pull request carries exactly one kind label. See [README.md](README.md) |
 | CodeQL | Code scanning. Blocks on high or critical security alerts and on errors |
 
 Apache's Build Scripts check also runs on pull requests that touch `.build/` or the workflows. It is advisory, since a check filtered by path cannot be required.
 
 The parity suite becomes a required check once it exists.
 
-The requirement id check becomes a required check once it exists. It enforces the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids).
+The process document check becomes a required check once it exists. It runs on every pull request, a person's or an agent's, and enforces the template rules, the clarification markers and the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids).
 
 Workflow runs on pull requests from first time and outside contributors wait for a maintainer's approval before they start.
 
@@ -120,7 +121,7 @@ Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer fir
 ### The inspection of a code pull request
 
 1. The pull request opens as a draft.
-2. The reviewer inspects it against the approved design record and the review checklists: correctness, concurrency, security, compatibility, tests, observability, performance, documentation, compliance and maintainability.
+2. The reviewer inspects it against the approved design record and the review checklists: correctness, concurrency, security, compatibility, tests, observability, performance, documentation, compliance and maintainability, and a set of known bug patterns adapted from Apache Cassandra's own targeted review.
 3. Each finding has a severity: blocker, major, minor or nit.
 4. The reviewer posts the review as a comment with a verdict. A clean review marks the pull request ready.
 5. A maintainer then approves and merges, or requests changes with the rework listed.
@@ -143,7 +144,7 @@ The record of a review lives on the pull request: the reviewer's comment with it
 
 1. The pull request title uses Conventional Commits form. It becomes the commit subject on the line. See [conventions.md](conventions.md).
 2. The body follows the organisation's pull request template: what and why, how it was tested, other branches, and the checklist.
-3. ChronitonDB adds to it: the impact, waived findings with their reasons, the upgrade and rollback story, the default of any new setting and why, which tests prove which claim, a per-line differences table when the change exists on both lines, and `Fixes #<issue>`.
+3. ChronitonDB adds to it: the impact, waived findings with their reasons, the upgrade and rollback story, the default of any new setting and why, which tests prove which claim, a per-line differences table when the change exists on both lines, and `Fixes #<issue>`. A change made on several lines writes `Fixes #<issue>` only on the newest line's pull request, which merges last, and `Part of #<issue>` on the others, so the issue closes when the last line has the change.
 4. The body describes the final change, never the order of the work. It is kept current at every push.
 5. After the line is merged into the work branch, one short comment gives the line commit merged in, what it touched and the tests run.
 

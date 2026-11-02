@@ -59,7 +59,13 @@ Scenarios are written in Gherkin and run with Cucumber, in the fork's own test m
 8. The developer removes `@wip` in the code pull request as each scenario passes. The developer MUST NOT change what a scenario means. That is a change to an approved requirement and goes through [change control](additive.md#change-control-after-a-merge).
 9. Before a feature's final milestone gate, its switch refuses to turn on. `@switch-on` scenarios get past the refusal only through a mechanism inside the in-JVM distributed test framework. Shipped code has no way around the refusal.
 10. Repeated runs of scenarios, to find flaky ones, run in the project's scheduled CI once it exists. Until then each scenario runs once per change, in the developer's pre-commit test run, and the shared step library's own tests are run repeatedly whenever the library changes.
-11. A fix to a fork feature MAY use a scenario as its reproducing test. The designer writes it, or updates the feature's existing scenario, on the item's code branch. It carries the tag of the feature's requirement id and the tag `@fix-<issue>`, with the GitHub issue number of the fix, for example `@fix-142`. The fix record selects the scenario with both tags joined with `and`, for example `@REQ-LUC-012 and @fix-142`. So exactly that scenario runs before the fix, where it MUST fail, and after the fix, where it MUST pass. The requirement tag alone is not enough, because the feature's other scenarios of that requirement already pass before the fix. A fix to stock Apache Cassandra code keeps a plain JUnit reproducing test.
+11. A fix to a fork feature MAY use scenarios as its reproducing test. The designer writes a new scenario, or updates one of the feature's existing scenarios, on the item's code branch.
+    1. The fix record lists, in its Requirements section, every feature requirement `REQ-<KEY>-nnn` the fault breaks. One fault MAY break several.
+    2. Each reproducing scenario carries the tag of at least one listed requirement and the tag `@fix-<issue>`, with the GitHub issue number of the fix, for example `@fix-142`. It carries no `@wip` and is never a `@stock` scenario.
+    3. The fix record selects them with the requirement tags and the fix tag joined with `and`: `@REQ-LUC-012 and @fix-142`, or for several requirements `(@REQ-LUC-012 or @REQ-LUC-013) and @fix-142`, naming exactly the requirements it lists. Only the scenarios that carry both tags run, before the fix, where each MUST fail, and after it, where each MUST pass. The requirement tags alone are not enough, because the feature's other scenarios of those requirements already pass before the fix. A `@fix-<issue>` scenario that carries none of the listed requirement tags is refused, since the selection would never run it.
+    4. After the fix, every scenario of the feature's key also runs, `@wip` left out, and each MUST pass.
+    5. An update of an approved scenario adds only the two tags and new Examples rows, or a new Examples block. Any other change to an approved scenario changes an approved requirement and goes through [change control](additive.md#change-control-after-a-merge).
+    6. A fix to stock Apache Cassandra code keeps a plain JUnit reproducing test.
 
 ## Upgrade and rollback tests
 
@@ -81,7 +87,7 @@ Scenarios are written in Gherkin and run with Cucumber, in the fork's own test m
 | Before each commit | The developer's pre-commit test run: the build, the code checks, the tests the item adds and the existing tests that cover the changed code. Its results are the test log for that commit |
 | On every pull request to a line, including pull requests from forks | The required checks in [branching-and-review.md](branching-and-review.md#required-checks) and the tests of the changed areas, on GitHub's own runners |
 | Regularly, per line | The full Apache Cassandra test suites, with fork features off and with them on |
-| At each milestone | The validation items, the upgrade and rollback tests the exit criteria name, the benchmarks, and the parity suite |
+| At each milestone | The validation items, the upgrade and rollback tests the exit criteria name, the benchmarks, and the parity suite, on continuous integration, or until it exists on the build machines, with every test that cannot run there listed as a deviation in the milestone report. See [additive.md](additive.md#milestone-gates) |
 | At each import from Apache Cassandra | The full test suites, the parity suite and the tests named in the import record, before the merge |
 | At each release candidate | The full test suites, signatures, installs, upgrade and rollback from the previous ChronitonDB release and from Apache Cassandra, and the parity suite, before promotion. See [release.md](release.md) |
 
@@ -98,7 +104,7 @@ Scenarios are written in Gherkin and run with Cucumber, in the fork's own test m
 |---|---|
 | Test policy and organisational test strategy | This page |
 | Test plan | The test plan section of a feature's delivery plan |
-| Test design specification and test case specification | Each item's scenarios, through their requirement tags, and its coverage file `ac-coverage.md` next to its design record. The coverage file has a row only for a requirement proven by another test, naming that test, or deliberately not tested, with the reason. The full requirement to test table is built from both into the item's evidence |
+| Test design specification and test case specification | Each item's scenarios, through their requirement tags, and its coverage file `ac-coverage.md` next to its design record, written from [the coverage file template](templates/ac-coverage.md). The coverage file has a row only for a requirement proven by another test, naming that test, or deliberately not tested, with the reason. The full requirement to test table is built from both into the item's evidence |
 | Test log | The test reports of the developer's pre-commit test run and of the CI runs, attached to the pull request |
 | Test completion report | The milestone report |
 

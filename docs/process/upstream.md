@@ -35,7 +35,7 @@ Every import pull request, a whole release or a single cherry-pick, is merged by
 ## Whole Apache releases
 
 1. Every Apache Cassandra patch release of a line's major version is imported into that line in whole, as one import item. The release is always taken.
-2. The integrator merges the Apache release tag into an import branch named `import/<release>/<line>`, cut from the line. That merge commit's subject is `import(apache-<version>): merge Apache Cassandra <version>`. A maintainer then merges the import pull request into the line with a merge commit. Every Apache commit keeps its identity, so git itself shows which Apache releases a line contains.
+2. The integrator merges the Apache release tag into an import branch named after the Apache release tag, `import/cassandra-<x.y.z>/<line>`, cut from the line. That merge commit's subject is `import(apache-<version>): merge Apache Cassandra <version>`. A maintainer then merges the import pull request into the line with a merge commit. Every Apache commit keeps its identity, so git itself shows which Apache releases a line contains.
 3. Each import is assessed on its merits before its pull request opens: the code checks and the reviewer's checklists run on the imported diff. The integrator resolves conflicts with the ChronitonDB delta. A finding or conflict it cannot resolve goes to the maintainers as a decision: adjust the imported code, offer a fix upstream, or wait for a conflict to be resolved before the merge. An import is never changed for style alone.
 4. Apache's own `CHANGES.txt` and `NEWS.txt` arrive with the import and are never edited.
 
@@ -54,7 +54,7 @@ A single Apache fix MAY be cherry-picked into a line ahead of the Apache release
 1. The cherry-picked commit keeps its original Apache author and message, with the `(cherry picked from commit <full hash>)` line added by `git cherry-pick -x`.
 2. The import carries the regression test of the original fix.
 3. The branch is named `import/CASSANDRA-<n>/<line>`.
-4. A maintainer merges the import pull request with a merge commit, so the cherry-picked commit reaches the line unchanged. That merge commit's subject is `import(CASSANDRA-<n>): <original Apache subject>` and its body names the Apache commit hash. See [conventions.md](conventions.md#commit-messages).
+4. A maintainer merges the import pull request with a merge commit, so the cherry-picked commit reaches the line unchanged. That merge commit's subject is `import(CASSANDRA-<n>): <original Apache subject>` and its body, taken from the import pull request's description, names the Apache commit hash. See [conventions.md](conventions.md#commit-messages).
 
 ## The import record
 
@@ -74,7 +74,7 @@ Tests for this change MAY be none only with a written reason in the record. For 
 ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`. Apache's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched. See [release.md](release.md#the-configuration-file). Every import, a whole release, a weekly branch merge or a single fix, is checked for configuration changes over the imported range:
 
 1. Every setting in Apache's two yaml files that was added, removed, or changed in value or comment.
-2. Every default in Apache's `Config.java` that changed. A setting a cluster's yaml file leaves out takes its code default, so a changed default changes running clusters too.
+2. Every default that changed, meaning the value a node runs with when its yaml file leaves the setting out: the defaults in `Config.java`, nested options named with dots such as `sstable.selected_format`, and the defaults a node computes at startup. A setting a cluster's yaml file leaves out takes its default, so a changed default changes running clusters too.
 
 The integrator lists each change in the import record's Configuration changes section and maps it to our file:
 
@@ -96,7 +96,7 @@ Every pull request that changes stock code or stock behaviour adds or updates it
 
 ## Offering changes upstream
 
-1. Every fix to stock code gets an Apache JIRA. The integrator drafts the JIRA and the patch. The maintainers file them.
+1. Every fix to stock code gets an Apache JIRA. A maintainer starts each offer. The integrator drafts the JIRA and the patch, and the maintainers file them.
 2. Features are offered upstream only when the maintainers decide, case by case.
 3. Code offered to Apache is reformatted to Apache Cassandra's style and follows Apache Cassandra's contribution process.
 

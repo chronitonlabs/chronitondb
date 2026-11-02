@@ -58,6 +58,7 @@ The developer owns the implementation of one approved item.
 2. Writes the code, the user and operator documentation, the runbook entries and the delta entry the item needs, in the same pull request.
 3. Opens the pull request as a draft and answers each review finding.
 4. Edits only the files the approved design record lists. A file outside the list needs the design record updated first.
+5. Opens the public GitHub issue of a documentation only change, which has no designer.
 
 ## Reviewer
 
@@ -66,7 +67,7 @@ The reviewer owns verification of each pull request, as an ISO/IEC 20246 inspect
 1. Inspects the pull request against the approved design and the checklists in [branching-and-review.md](branching-and-review.md).
 2. Records each finding with a severity: blocker, major, minor or nit.
 3. Gives a verdict in a review comment. A clean verdict marks the pull request ready for a maintainer.
-4. Checks that documentation, the delta entry and the decision records the change needs are present.
+4. Checks that documentation, the delta entry and the decision records the change needs are present. In a library update it checks that the notice and licence text matches what the security engineer named.
 5. Reviews every pull request: our own, outside contributors', imports and dependency updates. The review is posted on the pull request before a maintainer or committer merges it.
 
 ## Integrator
@@ -74,7 +75,7 @@ The reviewer owns verification of each pull request, as an ISO/IEC 20246 inspect
 The integrator keeps each line current with Apache Cassandra, after the integration process of ISO/IEC/IEEE 12207 and the merge work Ubuntu does against Debian. See [upstream.md](upstream.md).
 
 1. Runs a daily scheduled check of: Apache releases on each line's major version, commits on the Apache branch of a line whose major version Apache has not yet released, and Apache JIRAs and commits that touch areas in the delta register or look like security fixes.
-2. Prepares import pull requests: whole releases, the weekly branch merge before Apache's first release of a major version, and single cherry-picks the maintainers choose.
+2. Prepares import pull requests: whole releases, the weekly branch merge before Apache's first release of a major version, and single fixes it proposes against the published criteria, which the maintainers take by merging.
 3. Resolves conflicts with the ChronitonDB delta, or raises them to the maintainers.
 4. Runs the tests, writes the import record and updates the delta register.
 5. Sends the maintainers a weekly digest of what it found.
@@ -84,12 +85,12 @@ The integrator keeps each line current with Apache Cassandra, after the integrat
 
 The security engineer watches for vulnerabilities in what ChronitonDB ships. See [security.md](security.md).
 
-1. Runs a daily scheduled check of every library in the SBOM against OSV, the GitHub advisory database and NVD, and of new private vulnerability reports.
+1. Runs a daily scheduled check of every library in the SBOM against OSV, the GitHub advisory database and NVD, and notes new private vulnerability reports for triage.
 2. Works out whether ChronitonDB is affected, by whether the vulnerable code is shipped and reachable, and writes the VEX statement.
 3. Opens a corrective item for a patch-version update, or an emergency item when the vulnerability is serious. Anything else goes to the maintainers as a decision.
-4. Handles every library update, including one a maintainer asks for that is not a security fix: checks the new version, names the tests covering every use of the library, and hands it to the developer.
+4. Handles every library update, including one a maintainer asks for that is not a security fix: checks the new version, names the notice and licence text it needs and the tests covering every use of the library, and hands it to the developer.
 5. Opens an item to remove a library that ChronitonDB does not use at all.
-6. Triages private vulnerability reports for the maintainers: reproduction, affected lines, a proposed CVSS severity, and whether stock Apache Cassandra is affected.
+6. Triages each private vulnerability report on its own private task for the maintainers: reproduction, affected lines, a proposed CVSS severity, and whether stock Apache Cassandra is affected.
 7. Watches Apache Cassandra security announcements with the integrator.
 8. Never decides severity, the CVE, the disclosure date or publication.
 
@@ -98,10 +99,10 @@ The security engineer watches for vulnerabilities in what ChronitonDB ships. See
 The release engineer turns the lines into releases, after the transition process of ISO/IEC/IEEE 12207. See [release.md](release.md).
 
 1. Runs a daily scheduled check of the latest CI results and opens a corrective item for each real failure.
-2. Proposes each release in a release proposal pull request: the exact commit it is built from, what goes in, from the commits, the milestone gates passed and the security fixes due.
+2. Opens the issue and the task of each release that is due on a line under the release rules, and proposes it in a release proposal pull request: the exact commit it is built from, what goes in, from the commits, the milestone gates passed and the security fixes due.
 3. Once a maintainer has merged the proposal and started the candidate run, follows the pipeline to the published release candidate.
 4. Runs the verification pass: signatures, installs, upgrade and rollback tests, the parity suite.
-5. Opens the promotion pull request with the verification results, and promotes the candidate unchanged once a maintainer merges it.
+5. Opens the promotion pull request with the verification results. A maintainer's merge promotes the candidate unchanged.
 6. Coordinates security releases with the security engineer and the disclosure date the maintainers set.
 7. Keeps the release rules.
 8. Never tags or publishes without a maintainer's approval of that release.

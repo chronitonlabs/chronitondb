@@ -1,0 +1,119 @@
+# Copyright 2026 AxonOps Limited
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The process documents and feature keys a pull request changes, checked
+# with tools/chronitondb/doclint.py. The checker and the templates come from
+# the base branch, never from the pull request, so a pull request cannot
+# weaken its own check. The pull request's files are only read as data. It
+# runs only when the pull request changes a file under docs/ or test/bdd/.
+# Before the checker is on the line it says so and passes. Every action is
+# pinned to a commit.
+name: ChronitonDB documents
+
+on:
+  pull_request:
+    branches:
+      - 'chronitondb-*'
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  documents:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: The checker from the base branch
+        id: checker
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          dir="$RUNNER_TEMP/doclint"
+          mkdir -p "$dir"
+          for file in doclint.py markdown.py
+          do
+            if ! git show "origin/$BASE:tools/chronitondb/$file" > "$dir/$file" 2>/dev/null
+            then
+              echo "tools/chronitondb/$file is not on $BASE yet, so there is no checker to run. The check starts once it is merged."
+              echo "present=no" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "present=yes" >> "$GITHUB_OUTPUT"
+
+      - name: Process documents
+        if: steps.checker.outputs.present == 'yes'
+        env:
+          BASE: ${{ github.base_ref }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          mapfile -t docs < <(git diff --name-only --diff-filter=ACMR "origin/$BASE...HEAD" -- 'docs/*.md')
+          if [ "${#docs[@]}" -eq 0 ]
+          then
+            echo "No process document changed."
+            exit 0
+          fi
+          rc=0
+          out="$(python3 "$RUNNER_TEMP/doclint/doclint.py" document --repo . --templates "origin/$BASE" --source HEAD "${docs[@]}")" || rc=1
+          printf '%s\n' "$out" | grep -v '^issue ' || true
+          # A delta entry's Bug-ChronitonDB issue must exist in this repository.
+          while read -r word number path
+          do
+            [ "$word" = "issue" ] || continue
+            if [ "$(gh api "repos/$REPO/issues/$number" --jq .number 2>/dev/null </dev/null)" != "$number" ]
+            then
+              echo "::error file=$path::Bug-ChronitonDB names issue #$number, which this repository does not have."
+              rc=1
+            fi
+          done <<< "$out"
+          exit "$rc"
+
+      - name: Feature keys
+        if: steps.checker.outputs.present == 'yes'
+        env:
+          BASE: ${{ github.base_ref }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -z "$(git diff --name-only "origin/$BASE...HEAD" -- docs/design test/bdd)" ]
+          then
+            echo "No design directory or scenario changed."
+            exit 0
+          fi
+          rc=0
+          out="$(python3 "$RUNNER_TEMP/doclint/doclint.py" keys --repo . --base "origin/$BASE" --source HEAD)" || rc=1
+          # A key this pull request adds must not be in use by another open
+          # pull request: the merge of the first one reserves it.
+          while read -r word key dir
+          do
+            [ "$word" = "new" ] || continue
+            others="$(gh pr list -R "$REPO" --state open --limit 200 --json number,files \
+              --jq ".[] | select(.number != $NUMBER) | select(any(.files[]?.path; startswith(\"docs/design/$key-\"))) | .number" </dev/null)"
+            if [ -n "$others" ]
+            then
+              echo "::error file=$dir::The key $key is in use by the open pull request(s) $(printf '#%s ' $others). A new feature takes a key no directory and no open pull request uses."
+              rc=1
+            fi
+          done <<< "$out"
+          exit "$rc"

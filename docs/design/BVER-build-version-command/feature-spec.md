@@ -181,7 +181,7 @@ FREQ-BVER-021 (ubiquitous): The node SHALL count the version reads it serves in 
 
 FREQ-BVER-022 (ubiquitous): The command `nodetool version` SHALL print, with this feature present and whatever the switch's value, exactly the output stock Apache Cassandra 5.0 prints on `chronitondb-sandbox` and nothing else, the line `ReleaseVersion: ` with the release version, and with `-v` also the line `GitSHA: ` with the git SHA. Source: the stock behaviour rule of quality-requirements.md.
 
-FREQ-BVER-023 (ubiquitous): The in-JVM distributed tests of this feature SHALL start each instance of their clusters with the GOSSIP and JMX features of the in-JVM framework. Source: `Instance.java:704` and `:709`, where the node start runs only with GOSSIP, and `IsolatedJmx.java:127` to `128`, where the JMX connector starts only with JMX.
+FREQ-BVER-023 (ubiquitous): The in-JVM distributed tests of this feature SHALL start each instance of their clusters with the GOSSIP and JMX features of the in-JVM framework. Source: the in-JVM framework, which runs the node start only with GOSSIP (`Instance.java:704` and `:709`) and starts the JMX connector only with JMX (`IsolatedJmx.java:127` to `128`).
 
 ## 4. Quality requirements
 

@@ -80,3 +80,4 @@ Chosen option: "<option>", because <reason>.
 ## Index
 
 1. [0001. The first maintainers](0001-initial-maintainers.md), 2026-11-01, Accepted.
+2. [0002. The shape of the build version command](0002-build-version-command-shape.md), 2026-11-02, Accepted.

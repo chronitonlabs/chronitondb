@@ -33,7 +33,7 @@ The release engineer's daily check finds each release that is due on a line unde
 
 ## Support lifetime
 
-1. The maintainers designate a line as long-term support (LTS) when its first release ships. An LTS line is supported for 5 years from its first ChronitonDB release, whatever Apache Cassandra does with its major version. This follows the default support period of the EU Cyber Resilience Act.
+1. The maintainers designate a line as long-term support (LTS) when its first release ships, in the line's plan file (see [Freezes](#freezes)). An LTS line is supported for 5 years from its first ChronitonDB release, whatever Apache Cassandra does with its major version. This follows the default support period of the EU Cyber Resilience Act.
 2. A line that is not designated LTS is supported until 12 months after the next line's first release.
 3. The support period of each line, whether it is LTS, and for an LTS line its end date, are published with its first release. A line's first release also states the end date of each earlier standard line it ends.
 4. After Apache's own end of life for a major version, security fixes and critical fixes are carried back to a supported line from newer Apache Cassandra versions.
@@ -77,6 +77,8 @@ Every other release names one commit on the public line. See [security.md](secur
 1. There is no freeze on a line for its patch releases. The signed release candidate tag is the freeze.
 2. A problem found during the soak is fixed on the line. A new candidate is then cut, and the soak starts again.
 3. A feature freeze starts 4 weeks before the first release of a new line. After it, only fixes and imports go into that line until its first release.
+
+Each line has a plan file, `docs/releases/<line>-plan.md`, from [the line plan template](templates/line-plan.md). It holds the line's planned first release date, the date its feature freeze starts and whether the maintainers designated it LTS. It changes only by a pull request a maintainer merges. The release engineer and the reviewers read it: the release engineer for the releases that are due and the freeze, the reviewers to hold a feature pull request back during the freeze.
 
 ## Version numbers
 

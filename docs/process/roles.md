@@ -99,7 +99,7 @@ The security engineer watches for vulnerabilities in what ChronitonDB ships. See
 The release engineer turns the lines into releases, after the transition process of ISO/IEC/IEEE 12207. See [release.md](release.md).
 
 1. Runs a daily scheduled check of the latest CI results and opens a corrective item for each real failure.
-2. Proposes each release in a release proposal pull request: the exact commit it is built from, what goes in, from the commits, the milestone gates passed and the security fixes due.
+2. Opens the issue and the task of each release that is due on a line under the release rules, and proposes it in a release proposal pull request: the exact commit it is built from, what goes in, from the commits, the milestone gates passed and the security fixes due.
 3. Once a maintainer has merged the proposal and started the candidate run, follows the pipeline to the published release candidate.
 4. Runs the verification pass: signatures, installs, upgrade and rollback tests, the parity suite.
 5. Opens the promotion pull request with the verification results. A maintainer's merge promotes the candidate unchanged.

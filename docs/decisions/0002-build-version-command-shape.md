@@ -47,7 +47,7 @@ Chosen option: "One line from the node", because it answers the question an oper
 ### Consequences
 
 - Good: the operator sees the version of the node asked, in one line, the same way `nodetool version` works. One MBean and one command, and no change to any stock output.
-- Bad: the node side needs a startup hook and a `Config` field, two stock edits with delta entries. An operator who wants the Apache version too runs `nodetool version` as well.
+- Bad: the node side needs a startup hook and a `Config` field, two node side edits of stock files, each with a delta entry, beside the build file entry and nodetool's command list. An operator who wants the Apache version too runs `nodetool version` as well.
 
 ## More information
 

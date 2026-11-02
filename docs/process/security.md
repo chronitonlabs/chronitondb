@@ -44,7 +44,7 @@ A report that arrives in public is handled privately. Nobody repeats its details
 | Receipt | The report arrives through private vulnerability reporting. The maintainers acknowledge it. |
 | Verification | The security engineer triages the report: it reproduces the fault, finds the affected lines and releases, proposes a CVSS severity and says whether stock Apache Cassandra code is affected. The maintainers decide whether it is valid and its severity. |
 | Remediation | The fix follows the corrective order below, in the advisory's private fork. Apache is notified when stock code is affected. |
-| Release | The release engineer prepares fixed releases on every affected supported line, released together on the disclosure date the maintainers set. Security releases skip the release candidate soak once verified. The advisory is published. GitHub assigns the CVE as the CVE numbering authority. The security engineer updates the VEX statements. |
+| Release | The release engineer prepares fixed releases on every affected supported line, in private. Each proposal names the commit in the advisory's private fork, and each release candidate is built and verified in private. The packages publish at the moment of disclosure, together with the advisory, on the date the maintainers set, as Debian and Ubuntu handle embargoed security updates. Security releases skip the release candidate soak once verified. The advisory is published. GitHub assigns the CVE as the CVE numbering authority. The security engineer updates the VEX statements. |
 | Post release | The reporter is credited unless they ask not to be. The maintainers check that the fix reached every line. |
 
 Only the maintainers decide validity, severity, the CVE, the disclosure date, the advisory text and publication. The security engineer proposes and drafts, and never decides any of these.
@@ -55,7 +55,7 @@ A security fix follows the corrective path in [maintenance.md](maintenance.md), 
 
 1. A fix record, with a test that reproduces the fault and fails before the fix. Its name and messages describe the mechanics, never the attack.
 2. The fix, made against that test, on every affected supported line, each carrying the same test.
-3. The fixed releases on all affected lines, released together.
+3. The fixed releases on all affected lines, prepared in private from the advisory's private fork and published together at disclosure. See [release.md](release.md#security-releases).
 
 An urgent fix is an emergency and goes first in the queue. See [maintenance.md](maintenance.md#emergency-urgent-corrective-work). Only a security fix with a security advisory is private. Any other urgent fix, for example a data loss fault, takes the public corrective path.
 

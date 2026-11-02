@@ -87,7 +87,7 @@ Scenarios are written in Gherkin and run with Cucumber, in the fork's own test m
 | Before each commit | The developer's pre-commit test run: the build, the code checks, the tests the item adds and the existing tests that cover the changed code. Its results are the test log for that commit |
 | On every pull request to a line, including pull requests from forks | The required checks in [branching-and-review.md](branching-and-review.md#required-checks) and the tests of the changed areas, on GitHub's own runners |
 | Regularly, per line | The full Apache Cassandra test suites, with fork features off and with them on |
-| At each milestone | The validation items, the upgrade and rollback tests the exit criteria name, the benchmarks, and the parity suite |
+| At each milestone | The validation items, the upgrade and rollback tests the exit criteria name, the benchmarks, and the parity suite, on continuous integration, or until it exists on the build machines, with every test that cannot run there listed as a deviation in the milestone report. See [additive.md](additive.md#milestone-gates) |
 | At each import from Apache Cassandra | The full test suites, the parity suite and the tests named in the import record, before the merge |
 | At each release candidate | The full test suites, signatures, installs, upgrade and rollback from the previous ChronitonDB release and from Apache Cassandra, and the parity suite, before promotion. See [release.md](release.md) |
 

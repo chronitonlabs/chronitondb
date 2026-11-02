@@ -58,7 +58,7 @@ Location: `docs/design/<KEY>-<slug>/milestones/`. Process: [additive.md](../addi
 
 ## 5. Deviations
 
-{Every difference from the test plan or the delivery plan, with the reason.}
+{Every difference from the test plan or the delivery plan, with the reason, including every exit criterion that could not run because the continuous integration it needs does not exist yet. For the final milestone such a deviation means no-go.}
 
 ## 6. Documentation
 

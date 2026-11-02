@@ -56,7 +56,7 @@ Every third party component is checked against the Apache Software Foundation li
 ## SBOM, VEX and provenance
 
 1. Each release ships its software bill of materials in SPDX (ISO/IEC 5962) and in CycloneDX (ECMA-424).
-2. Each release ships an OpenVEX file for the known vulnerabilities in its shipped components, kept by the security engineer. See [security.md](security.md#vex-statements).
+2. Each release ships an OpenVEX file for the known vulnerabilities in its shipped components, kept by the security engineer in the public repository [chronitonlabs/chronitondb-security-tracker](https://github.com/chronitonlabs/chronitondb-security-tracker). See [security.md](security.md#vex-statements).
 3. With the release pipeline, each release artefact will carry SLSA Build Level 3 provenance through GitHub artifact attestations.
 4. With the release pipeline, the repository will run OpenSSF Scorecard weekly with public results.
 

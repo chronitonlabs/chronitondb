@@ -150,7 +150,7 @@ The release pipeline produces, for every release:
 2. The binary tarball.
 3. Debian and Red Hat packages.
 4. The software bill of materials in SPDX and in CycloneDX, published with the release.
-5. The OpenVEX file, published with the release. See [security.md](security.md#vex-statements).
+5. The OpenVEX file, taken from [chronitonlabs/chronitondb-security-tracker](https://github.com/chronitonlabs/chronitondb-security-tracker) and published with the release. See [security.md](security.md#vex-statements).
 6. Release notes, generated from the commits and `NEWS-chronitondb.txt`. See [conventions.md](conventions.md#change-logs-and-release-notes).
 7. SLSA Build Level 3 provenance for every artefact, through GitHub artifact attestations, once the release pipeline is built.
 8. A verification pass: signatures, installs and upgrade tests.

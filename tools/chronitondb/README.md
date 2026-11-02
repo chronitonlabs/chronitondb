@@ -17,7 +17,7 @@ limitations under the License.
 
 # ChronitonDB code checks
 
-Two checks for the Java files under `org/chronitondb` that a change adds or modifies. Apache code is never checked by either. Both run on the staged files before each commit, and in the CI workflow `.github/workflows/chronitondb-shape.yml` on every pull request into a `chronitondb-*` branch. The rules are in [conventions.md](../../docs/process/conventions.md#shape-limits).
+Two checks for the Java files under `org/chronitondb` that a change adds or modifies, and one for the process documents, `doclint.py`. Apache code is never checked by either. Both run on the staged files before each commit, and in the CI workflow `.github/workflows/chronitondb-shape.yml` on every pull request into a `chronitondb-*` branch. The rules are in [conventions.md](../../docs/process/conventions.md#shape-limits).
 
 ## Shape limits: `shape-check.sh`
 
@@ -116,3 +116,19 @@ SpotBugs 4.10.5 with the FindSecBugs 1.14.0 plugin on the compiled `org.chronito
     tools/chronitondb/spotbugs-check.sh --self-test     compile test/spotbugs and expect COMMAND_INJECTION and OBJECT_DESERIALIZATION
 
 The jars come from Maven Central into `build/chronitondb-shape/spotbugs-4.10.5`, each refused unless its sha256 matches the pin in the script. The set is the `lib/` of the SpotBugs release, so `java -jar spotbugs.jar` finds them through its manifest.
+
+## Process documents: `doclint.py`
+
+Checks the process documents under `docs/` against their templates on the line, and the rules [docs/process/](../../docs/process/README.md) sets for them: the document control table, every numbered section in order, no template placeholder and no `[NEEDS CLARIFICATION` marker left, and per document type the feature spec, plan, milestone report, decision record and delta entry rules. It also checks the feature keys and requirement ids of [additive.md](../../docs/process/additive.md#feature-keys-and-requirement-ids) across the lines, the library declarations of [compliance.md](../../docs/process/compliance.md), and that `conf/cassandra_chronitondb.yaml` holds every setting of Apache's two yaml files ([release.md](../../docs/process/release.md#the-configuration-file)). `markdown.py` beside it is its Markdown reader. Python 3 only, no other dependency.
+
+    tools/chronitondb/doclint.py document --repo . --templates origin/chronitondb-5.0 --source index docs/design/LUC-fulltext-search/feature-spec.md
+    tools/chronitondb/doclint.py keys --repo . --base origin/chronitondb-5.0 --source index
+
+The rules are read from the ref given with `--templates` or `--base`, the line, never from the change being checked. The CI workflow `.github/workflows/chronitondb-documents.yml` runs `document` on the process documents a pull request changes, and `keys` when it changes `docs/design/` or `test/bdd/`, with this file taken from the base branch. It also checks that a delta entry's issue exists and that a new feature key is not in use by another open pull request. Run `doclint.py` without arguments for every subcommand and option.
+
+Findings, one per line, then a summary:
+
+    docs/design/LUC-fulltext-search/feature-spec.md:45: FREQ-LUC-002 has 2 BCP 14 keywords, a requirement has exactly one (split it)
+    documents 1 checked 1 failed
+
+Exit 0 when nothing is found, 1 on a finding, 2 on a usage error.

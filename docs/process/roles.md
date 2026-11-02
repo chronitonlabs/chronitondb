@@ -79,14 +79,14 @@ The integrator keeps each line current with Apache Cassandra, after the integrat
 3. Resolves conflicts with the ChronitonDB delta, or raises them to the maintainers.
 4. Runs the tests, writes the import record and updates the delta register.
 5. Sends the maintainers a weekly digest of what it found.
-6. Drafts the Apache JIRAs and patches for our fixes to stock code. The maintainers file them.
+6. Drafts the Apache JIRAs and patches for our fixes to stock code, on [chronitonlabs/chronitondb-upstream](https://github.com/chronitonlabs/chronitondb-upstream). The maintainers file them.
 
 ## Security engineer
 
 The security engineer watches for vulnerabilities in what ChronitonDB ships. See [security.md](security.md).
 
 1. Runs a daily scheduled check of every library in the SBOM against OSV, the GitHub advisory database and NVD, and notes new private vulnerability reports for triage.
-2. Works out whether ChronitonDB is affected, by whether the vulnerable code is shipped and reachable, and writes the VEX statement.
+2. Works out whether ChronitonDB is affected, by whether the vulnerable code is shipped and reachable, and writes the VEX statement in [chronitonlabs/chronitondb-security-tracker](https://github.com/chronitonlabs/chronitondb-security-tracker).
 3. Opens a corrective item for a patch-version update, or an emergency item when the vulnerability is serious. Anything else goes to the maintainers as a decision.
 4. Handles every library update, including one a maintainer asks for that is not a security fix: checks the new version, names the notice and licence text it needs and the tests covering every use of the library, and hands it to the developer.
 5. Opens an item to remove a library that ChronitonDB does not use at all.

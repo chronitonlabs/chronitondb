@@ -21,7 +21,7 @@ limitations under the License.
 |---|---|
 | Title | Build version command |
 | Document type | Specification and description (ISO/IEC/IEEE 15289) |
-| Status | Draft |
+| Status | Approved |
 | Version | 1 |
 | Author | Architect: chronitondb-agent |
 | Approver | The maintainer who merges the pull request |

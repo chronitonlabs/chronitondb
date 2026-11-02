@@ -51,13 +51,13 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## 5. Requirements
 
-{The corrected behaviour as EARS requirements, `REQ-n`, one BCP 14 key word each, each with its source. Usually the unwanted behaviour shape: "If {condition}, then {the system} MUST {response}".}
+{The corrected behaviour as EARS requirements, `REQ-n`, one BCP 14 key word each, each with its source. Usually the unwanted behaviour shape: "If {condition}, then {the system} MUST {response}". A fix to a fork feature also lists here every feature requirement the fault breaks, by its id `REQ-<KEY>-nnn` at the start of a line. Its text stays in the design record that defines it, so the line cites the id with a few words of what it covers, no key word and no source. Each listed requirement is reproduced by a scenario tagged with it and with `@fix-<issue>`. See [testing.md](../testing.md#scenarios), rule 11.}
 
 ## 6. The reproducing test
 
 {The test the designer wrote on the item's code branch: its class and method, and its failing result on each affected line before the fix. The developer fixes against it on the same branch, and the code pull request shows it passing.}
 
-{A fix to a fork feature MAY use a scenario as its reproducing test: a new scenario, or the feature's existing scenario updated. It carries the tag of the feature's requirement id and the tag `@fix-<issue>`, with the issue number of this record, for example `@fix-142`. Name its feature file and scenario. It MUST fail before the fix and pass after it. A fix to stock Apache Cassandra code uses a plain JUnit test. See [testing.md](../testing.md#scenarios).}
+{A fix to a fork feature MAY use scenarios as its reproducing test: new scenarios, or the feature's existing scenarios updated with only the two tags and new Examples rows. Each carries the tag of at least one requirement listed in section 5 and the tag `@fix-<issue>`, with the issue number of this record, for example `@fix-142`, and no `@wip`. Name each feature file and scenario. Each MUST fail before the fix and pass after it. A fix to stock Apache Cassandra code uses a plain JUnit test. See [testing.md](../testing.md#scenarios).}
 
 ## 7. Compatibility impact
 
@@ -75,9 +75,9 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 Scenario runner: {the command that runs the scenarios, with {tags} once}
 
-Scenario tags: {the feature's requirement tag and this record's fix tag, joined with `and`, for example `@REQ-LUC-012 and @fix-142`}
+Scenario tags: {the requirement tags section 5 lists and this record's fix tag, joined with `and`, for example `@REQ-LUC-012 and @fix-142`, or `(@REQ-LUC-012 or @REQ-LUC-013) and @fix-142`}
 
-{The two scenario lines and their rules are those of the design record's Testing section. A fix with no scenarios leaves out both lines. A fix whose reproducing test is a scenario keeps them. Its tags line MUST require `@fix-<issue>` with the issue number of this record, joined to the rest with `and`, never with `or`. So only the reproducing scenario runs before the fix and after it.}
+{The two scenario lines and their rules are those of the design record's Testing section. A fix with no scenarios leaves out both lines. A fix whose reproducing test is a scenario keeps them. Its tags line MUST require `@fix-<issue>` with the issue number of this record, joined with `and` to the requirement tags section 5 lists, never with `or`. So only the scenarios that carry both tags run before the fix and after it, as long as none carries `@wip` or `@stock`, which the run leaves out. After the fix the feature's other scenarios run too, and each MUST still pass.}
 
 {Then the five lists of the design record's Testing section, with the same headings and format. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry. See [design-record.md](design-record.md#14-testing).}
 

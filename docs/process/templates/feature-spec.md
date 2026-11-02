@@ -85,7 +85,7 @@ Feature class: {purely additive or behaviour-changing}, because {reason}.
 
 ## 3. Feature requirements
 
-{One requirement per entry: an id `FREQ-<KEY>-nnn` with the feature key and three digits, one EARS shape, one BCP 14 key word, and a source. Each requirement passes the ISO/IEC/IEEE 29148 checklist in [design-record.md](design-record.md).}
+{One requirement per entry, on one line: an id `FREQ-<KEY>-nnn` with the feature key and three digits, one EARS shape, one BCP 14 key word, and a source. Each requirement passes the ISO/IEC/IEEE 29148 checklist in [design-record.md](design-record.md).}
 
 FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, risk or stakeholder need}.
 
@@ -126,7 +126,7 @@ FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, risk o
 
 ## 7. Dependencies
 
-{Each new library or version change. Or "No new dependency".}
+{Each new library or version change, one row each. Name a library by its Maven `group:artifact` or artifact, its pip name, its file name under `lib/` without the version, or `accord` for the Accord submodule, and give the exact version. Or "No new dependency".}
 
 | Library | Version | ASF category | NOTICE and credit lines | Known vulnerabilities | Why it is needed |
 |---|---|---|---|---|---|

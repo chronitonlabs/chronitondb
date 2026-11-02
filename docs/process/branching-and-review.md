@@ -83,6 +83,7 @@ These checks run on every pull request to a line. Each MUST pass before a mainta
 | `spotbugs` | SpotBugs with FindSecBugs on the compiled ChronitonDB classes. Findings are reported. The check fails when its self-test fails |
 | `instruction-files` | No instruction files for automated coding tools anywhere in the tree, such as `AGENTS.md` |
 | `license/cla` | Every contributor to the pull request has signed the contributor agreement. See [contributing.md](contributing.md) |
+| `kind-label` | The pull request carries exactly one kind label. See [README.md](README.md) |
 | CodeQL | Code scanning. Blocks on high or critical security alerts and on errors |
 
 Apache's Build Scripts check also runs on pull requests that touch `.build/` or the workflows. It is advisory, since a check filtered by path cannot be required.

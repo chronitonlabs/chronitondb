@@ -46,7 +46,7 @@ Location: `docs/design/<KEY>-<slug>/milestones/`. Process: [additive.md](../addi
 
 ## 4. Requirements delivered
 
-{The architect fills this section from a fresh check of the merged code against the feature requirements. The reviewer checks it. One row per feature requirement of the milestone: its id, the items and pull requests that deliver it, the scenarios or tests that prove it, and its status, delivered or not delivered. A requirement not delivered has its reason in Deviations.}
+{The architect fills this section from a fresh check of the merged code against the feature requirements. The reviewer checks it by tracing each row: the FREQ's acceptance criteria in the plan, the items' REQ ids that cite them, the scenarios tagged with those ids, and the requirement to test table in each item's evidence. A requirement proven only by a `@wip` scenario is not delivered. One row per feature requirement an item of this milestone delivers, as the plan's Delivers and Milestone lines give it: its id, the items and pull requests that deliver it, the scenarios or tests that prove it, and its status, delivered or not delivered. A requirement not delivered has its reason in Deviations.}
 
 | Requirement | Delivered by | Proven by | Status |
 |---|---|---|---|
@@ -54,9 +54,7 @@ Location: `docs/design/<KEY>-<slug>/milestones/`. Process: [additive.md](../addi
 
 ### Behaviour nobody asked for
 
-{Behaviour of the merged code that no feature requirement asks for, found by the same check. Expected to read "None found." Otherwise list each finding: what the code does and where.}
-
-None found.
+{Behaviour of the merged code that no feature requirement asks for, found by the same check. Write "None found." when the check found none. Otherwise list each finding: what the code does and where.}
 
 ## 5. Deviations
 

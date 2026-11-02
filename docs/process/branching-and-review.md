@@ -121,7 +121,7 @@ Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer fir
 ### The inspection of a code pull request
 
 1. The pull request opens as a draft.
-2. The reviewer inspects it against the approved design record and the review checklists: correctness, concurrency, security, compatibility, tests, observability, performance, documentation, compliance and maintainability.
+2. The reviewer inspects it against the approved design record and the review checklists: correctness, concurrency, security, compatibility, tests, observability, performance, documentation, compliance and maintainability, and a set of known bug patterns adapted from Apache Cassandra's own targeted review.
 3. Each finding has a severity: blocker, major, minor or nit.
 4. The reviewer posts the review as a comment with a verdict. A clean review marks the pull request ready.
 5. A maintainer then approves and merges, or requests changes with the rework listed.
@@ -144,7 +144,7 @@ The record of a review lives on the pull request: the reviewer's comment with it
 
 1. The pull request title uses Conventional Commits form. It becomes the commit subject on the line. See [conventions.md](conventions.md).
 2. The body follows the organisation's pull request template: what and why, how it was tested, other branches, and the checklist.
-3. ChronitonDB adds to it: the impact, waived findings with their reasons, the upgrade and rollback story, the default of any new setting and why, which tests prove which claim, a per-line differences table when the change exists on both lines, and `Fixes #<issue>`.
+3. ChronitonDB adds to it: the impact, waived findings with their reasons, the upgrade and rollback story, the default of any new setting and why, which tests prove which claim, a per-line differences table when the change exists on both lines, and `Fixes #<issue>`. A change made on several lines writes `Fixes #<issue>` only on the newest line's pull request, which merges last, and `Part of #<issue>` on the others, so the issue closes when the last line has the change.
 4. The body describes the final change, never the order of the work. It is kept current at every push.
 5. After the line is merged into the work branch, one short comment gives the line commit merged in, what it touched and the tests run.
 

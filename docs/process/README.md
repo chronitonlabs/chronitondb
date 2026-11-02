@@ -37,6 +37,8 @@ Every change has one maintenance category from ISO/IEC/IEEE 14764:2022. The cate
 | Adaptive | A change that keeps ChronitonDB working in a changed environment | One item with a design record | [maintenance.md](maintenance.md) |
 | Perfective | An improvement to performance, maintainability or documentation | One item with a design record, documentation only changes without one | [maintenance.md](maintenance.md) |
 
+Each issue and each pull request of a change carries exactly one kind label: `kind:additive`, `kind:corrective`, `kind:emergency`, `kind:preventive`, `kind:adaptive` or `kind:perfective`. A maintainer sets it on the issue at triage, an item the integrator, the security engineer or the release engineer opens carries its kind from the start, and a pull request copies its issue's kind. An issue also carries a line label, `chronitondb-5.0` or `chronitondb-6.0`, for each line the problem affects. A pull request's line is its base branch. A release proposal or promotion pull request, which changes only `docs/releases/`, has no category and carries no kind label.
+
 A change that comes from Apache Cassandra follows [upstream.md](upstream.md). A whole Apache release import and the weekly Apache branch merge are adaptive maintenance: they keep ChronitonDB current with upstream. A single cherry-picked Apache fix takes the category of the fix it brings, usually corrective. Work that changes no code, such as the scheduled checks, release runs and reviews, has no category.
 
 When the category is unclear, open an issue that says what should change. The maintainers set the category.

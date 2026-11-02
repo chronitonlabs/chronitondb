@@ -193,7 +193,7 @@ A production limit MAY be exceeded only with a waiver recorded in the item's des
 
 | Source | The file keeps | The commit carries |
 |---|---|---|
-| An Apache commit, cherry-picked | Its Apache headers, unchanged | The original author, the `import` subject and the upstream hash |
+| An Apache commit, cherry-picked | Its Apache headers, unchanged | The original author and the Apache message unchanged, with the `(cherry picked from commit <full hash>)` line. The maintainer's merge of the import pull request carries the `import` subject |
 | Another project's commit, cherry-picked | Its headers as they are | The original author, the source repository, the full hash and the ticket if any |
 | Another project's work, adapted into a new file | Its original header and author line, with the AxonOps Limited line added above when the file was adapted | `Co-authored-by:` for each author, the source and hash in the body, and a NOTICE entry where the licence asks for one |
 | An idea from elsewhere, code written fresh | The ChronitonDB header | A line in the body naming the source of the idea |

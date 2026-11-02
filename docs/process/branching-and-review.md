@@ -90,7 +90,7 @@ Apache's Build Scripts check also runs on pull requests that touch `.build/` or 
 
 The parity suite becomes a required check once it exists.
 
-The requirement id check becomes a required check once it exists. It enforces the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids).
+The process document check becomes a required check once it exists. It runs on every pull request, a person's or an agent's, and enforces the template rules, the clarification markers and the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids).
 
 Workflow runs on pull requests from first time and outside contributors wait for a maintainer's approval before they start.
 

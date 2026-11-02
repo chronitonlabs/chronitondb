@@ -61,7 +61,16 @@ Every release takes two maintainer approvals, and each one is the merge of a pul
 5. **Soak.** The candidate stays in the proposed channel for 7 days.
 6. **Second approval and promotion.** If the verification passed and no problem is reported during the soak, the release engineer opens a promotion pull request that fills the verification results section of `docs/releases/<version>.md`. A maintainer merges it, and the candidate is then promoted unchanged to the official release.
 
-A security release skips the soak once it is verified. It ships on the date the maintainers set. See [security.md](security.md).
+### Security releases
+
+A security release is prepared in private, after the practice Debian and Ubuntu follow for embargoed security updates:
+
+1. Its proposal names the commit in the security advisory's private fork, not a commit on the public line. The proposal and its review stay private until disclosure.
+2. Its release candidate is built and verified in private.
+3. It skips the soak once it is verified.
+4. Its packages publish at the moment of disclosure, together with the advisory, on the date the maintainers set. The fix reaches the public line at the same time.
+
+Every other release names one commit on the public line. See [security.md](security.md).
 
 ## Freezes
 

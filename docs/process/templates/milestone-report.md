@@ -46,11 +46,11 @@ Location: `docs/design/<KEY>-<slug>/milestones/`. Process: [additive.md](../addi
 
 ## 4. Requirements delivered
 
-{The architect fills this section from a fresh check of the merged code against the feature requirements. The reviewer checks it by tracing each row: the FREQ's acceptance criteria in the plan, the items' REQ ids that cite them, the scenarios tagged with those ids, and the requirement to test table in each item's evidence. A requirement proven only by a `@wip` scenario is not delivered. One row per feature requirement an item of this milestone delivers, as the plan's Delivers and Milestone lines give it: its id, the items and pull requests that deliver it, the scenarios or tests that prove it, and its status, delivered or not delivered. A requirement not delivered has its reason in Deviations.}
+{The architect fills this section from a fresh check of the merged code against the feature requirements. The reviewer checks it by tracing each row: the FREQ's acceptance criteria in the plan, the items' REQ ids that cite them, the scenarios tagged with those ids, and the requirement to test table in each item's evidence. A requirement proven only by a `@wip` scenario is not delivered. One row per feature requirement an item of this milestone delivers, as the plan's Delivers and Milestone lines give it: its id, the items and pull requests that deliver it, the scenarios or tests that prove it, and its status: delivered, delivered in part, as planned (the plan spreads its items over several milestones, name the milestone that completes it), or not delivered. A requirement not delivered has its reason in Deviations. The feature's last milestone report has no "delivered in part, as planned" row: each requirement is delivered, or not delivered with its reason in Deviations.}
 
 | Requirement | Delivered by | Proven by | Status |
 |---|---|---|---|
-| {FREQ-<KEY>-nnn} | {items #issue, pull requests #n} | {scenarios by feature file and name, or test classes} | {delivered or not delivered} |
+| {FREQ-<KEY>-nnn} | {items #issue, pull requests #n} | {scenarios by feature file and name, or test classes} | {delivered, delivered in part, as planned, or not delivered} |
 
 ### Behaviour nobody asked for
 

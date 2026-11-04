@@ -24,6 +24,7 @@ before they commit.
     doclint.py keys --repo DIR --base REF [--source SRC]
     doclint.py dependencies --repo DIR --base REF --line REF [--source SRC] FILE...
     doclint.py settings --repo DIR --base REF [--source SRC]
+    doclint.py index [--write | --check] FILE...
 
 SRC is where the documents are read: "index" (the default, the staged
 version), "worktree", or a commit. REF is where the rules are read, the line
@@ -37,6 +38,7 @@ The type of each PATH comes from where it lives:
     docs/design/<dir>/feature-spec.md      feature spec
     docs/design/<dir>/plan.md              plan
     docs/design/<dir>/delivery-plan.md     delivery plan
+    docs/design/<dir>/ac-coverage.md       coverage file
     docs/design/<dir>/milestones/*.md      milestone report
     docs/design/<dir>/*.md                 design record or fix record, by
                                            its first heading ("# Design:",
@@ -45,6 +47,7 @@ The type of each PATH comes from where it lives:
     docs/decisions/NNNN-<slug>.md          decision record
     docs/delta/<name>.md                   delta entry (README.md is the
                                            register)
+    docs/releases/<line>-plan.md           line plan
     docs/releases/*.md                     release proposal
 
 Any other path is not a document of the process and is passed over, except
@@ -59,6 +62,15 @@ Every document is checked for:
   3. every numbered section of the template ("## 3. Title", "### 2.1
      Title") is there, in order, and no placeholder of the template, a
      "{...}" text in braces, is left
+  4. when its template has a "## Contents" section, the document has one
+     too, as its first section after the title: a nested list of links,
+     one per heading below the title and in their order, each indented
+     two spaces per level below "##", showing the heading's text and
+     linking the heading's anchor, and nothing else. An anchor follows
+     GitHub's rules: the heading's text in lower case, every character
+     that is not a letter, a digit, "_", "-" or a space removed, each
+     space a hyphen, and a heading whose anchor is taken already gets
+     "-1", then "-2"
 
 A feature spec is also checked for:
 
@@ -121,6 +133,14 @@ Dependencies section of a merged feature spec or design record on the line
 bump of the same library (same major and minor), which the pull request
 states with its reason. It prints "patch NAME OLD NEW FILE" for each.
 
+index prints the Contents section each FILE needs, read from the working
+tree, whatever its type. With --write it puts that section in the file in
+place of its old one, or before its first heading below the title when it
+has none.
+With --check it reports what is wrong with the file's index, the check of
+point 4 above, also for a template. Authors and their tools run it after
+any heading changes, before the commit.
+
 settings is the setting name check of release.md, The configuration file.
 A setting name is a top level key of a yaml file, active ("name:") or
 commented ("# name:" or "#name:"). Every setting of Apache's
@@ -170,6 +190,8 @@ TEMPLATES = {
     "import-record": "docs/process/templates/import-record.md",
     "delta-entry": "docs/process/templates/delta-entry.md",
     "release-proposal": "docs/process/templates/release-proposal.md",
+    "line-plan": "docs/process/templates/line-plan.md",
+    "ac-coverage": "docs/process/templates/ac-coverage.md",
     "decision": "docs/decisions/README.md",
 }
 # Unnumbered sections the type requires beside the numbered ones.
@@ -226,6 +248,8 @@ def doc_type(path, text):
                 return "plan"
             if name == "delivery-plan.md":
                 return "delivery-plan"
+            if name == "ac-coverage.md":
+                return "ac-coverage"
             first = first_heading(text)
             if first.startswith("Design:"):
                 return "design-record"
@@ -241,6 +265,8 @@ def doc_type(path, text):
         return "decision"
     if re.match(r"^docs/delta/[^/]+\.md$", path) and path != "docs/delta/README.md":
         return "delta-entry"
+    if re.match(r"^docs/releases/[^/]+-plan\.md$", path):
+        return "line-plan"
     if re.match(r"^docs/releases/[^/]+\.md$", path):
         return "release-proposal"
     return None
@@ -699,6 +725,209 @@ def check_milestone(doc, path, source):
         for index, rid in in_part:
             doc.error(index, "%s is delivered in part in milestone %d, the feature's final milestone in %s. The final milestone delivers each requirement or reports it not delivered with its reason in Deviations" % (rid or "a requirement", own, plan_path))
 
+CONTENTS = "Contents"
+INDEX_ENTRY = re.compile(r"^( *)[-*+] +\[(.*)\]\(#([^()\s]*)\)\s*$")
+HTML_TAG = re.compile(r"</?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?/?>")
+
+
+def rendered(text):
+    """The text GitHub shows for a heading: a code span as its content, a
+    link or an image as its text, emphasis marks, HTML tags and
+    backslash escapes dropped."""
+    spans = []
+
+    def keep(match):
+        content = match.group(2)
+        if len(content) > 2 and content[0] == " " and content[-1] == " " and content.strip():
+            content = content[1:-1]
+        spans.append(content)
+        return "\0%d\0" % (len(spans) - 1)
+    text = re.sub(r"(`+)(.+?)\1", keep, text)
+    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = HTML_TAG.sub("", text)
+    text = re.sub(r"\*+|(?<!\w)_+|_+(?!\w)", "", text)
+    text = re.sub(r"\\([!-/:-@\[-`{-~])", r"\1", text)
+    return re.sub("\0([0-9]+)\0", lambda m: spans[int(m.group(1))], text)
+
+
+def slug(text):
+    """GitHub's anchor for a heading: its text in lower case, every
+    character that is not a letter, a digit, "_", "-" or a space removed,
+    each space a hyphen."""
+    return re.sub(r"[^\w\- ]", "", rendered(text).lower()).replace(" ", "-")
+
+
+def anchors(doc):
+    """(level, text, line, anchor) of each heading, in order. A heading
+    whose anchor is taken already gets "-1", then "-2", the next number
+    whose anchor is free, as GitHub numbers them."""
+    seen = {}
+    found = []
+    for level, text, index in doc.headings:
+        base = slug(text)
+        anchor = base
+        while anchor in seen:
+            seen[base] += 1
+            anchor = "%s-%d" % (base, seen[base])
+        seen[anchor] = 0
+        found.append((level, text, index, anchor))
+    return found
+
+
+def link_text(text):
+    """A heading's text as an index entry shows it: its links reduced to
+    their text and any other bracket escaped, so the entry stays one
+    link."""
+    text = re.sub(r"(?<!!)\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    return re.sub(r"(?<!\\)([\[\]])", r"\\\1", text)
+
+
+def indexed(doc):
+    """The headings the index lists: every heading below the title but
+    the Contents heading, as (level, text, line, anchor)."""
+    return [entry for entry in anchors(doc) if entry[0] >= 2 and not (entry[0] == 2 and entry[1] == CONTENTS)]
+
+
+def index_section(doc):
+    """The lines of the Contents section the document needs."""
+    lines = ["## " + CONTENTS, ""]
+    for level, text, _, anchor in indexed(doc):
+        lines.append("%s- [%s](#%s)" % ("  " * (level - 2), link_text(text), anchor))
+    return lines
+
+
+def has_contents(doc):
+    return any(level == 2 and text == CONTENTS for level, text, _ in doc.headings)
+
+
+def check_index(doc, path):
+    """The Contents section of point 4 of the module text."""
+    hint = "Regenerate it with tools/chronitondb/doclint.py index --write %s" % path
+    sections = [(level, text, index) for level, text, index in doc.headings if level == 2]
+    contents = [index for level, text, index in sections if text == CONTENTS]
+    if not contents:
+        doc.error(0, "no '## %s' section, the index of the document's headings with a link to each, as its template has. %s" % (CONTENTS, hint))
+        return
+    start = contents[0]
+    for index in contents[1:]:
+        doc.error(index, "a second '## %s' section. A document has one index" % CONTENTS)
+    if sections[0][2] != start:
+        doc.error(start, "the '## %s' section comes after '## %s'. It is the first section after the title" % (CONTENTS, sections[0][1]))
+    wanted = indexed(doc)
+    every = dict((anchor, (level, text, index)) for level, text, index, anchor in anchors(doc))
+    by_anchor = dict((anchor, (level, text, index)) for level, text, index, anchor in wanted)
+    _, end = doc.span(2, start)
+    listed = []
+    for index in range(start + 1, end):
+        if index in doc.commented:
+            continue
+        line = doc.visible[index]
+        if not line.strip() and index not in doc.fenced:
+            continue
+        match = INDEX_ENTRY.match(line) if index not in doc.fenced else None
+        if not match:
+            doc.error(index, "the Contents section holds only its list of links to the headings, one per line, and this line is not one. %s" % hint)
+            continue
+        indent, shown, anchor = len(match.group(1)), match.group(2), match.group(3)
+        if anchor not in every:
+            doc.error(index, "the index links #%s, and no heading of this file has that anchor. %s" % (anchor, hint))
+            continue
+        if anchor not in by_anchor:
+            doc.error(index, "the index links #%s, the %s, which the index leaves out" % (anchor, "title" if every[anchor][0] == 1 else "Contents heading"))
+            continue
+        if anchor in [a for _, a in listed]:
+            doc.error(index, "the index lists #%s twice" % anchor)
+            continue
+        listed.append((index, anchor))
+        level, text, _ = by_anchor[anchor]
+        if indent != 2 * (level - 2):
+            doc.error(index, "the index entry for '%s' is indented %d spaces, a level %d heading is indented %d. %s" % (text, indent, level, 2 * (level - 2), hint))
+        if shown != link_text(text):
+            doc.error(index, "the index entry #%s shows '%s', its heading reads '%s'. %s" % (anchor, shown, text, hint))
+    shown_anchors = [anchor for _, anchor in listed]
+    for level, text, index, anchor in wanted:
+        if anchor not in shown_anchors:
+            doc.error(start, "the heading '%s' on line %d is not in the index, as [%s](#%s). %s" % (text, index + 1, link_text(text), anchor, hint))
+    order = [anchor for _, _, _, anchor in wanted if anchor in shown_anchors]
+    for (index, anchor), expected in zip(listed, order):
+        if anchor != expected:
+            doc.error(index, "the index lists #%s out of the headings' order. %s" % (anchor, hint))
+            break
+
+
+def write_index(lines, doc):
+    """The lines of the document with its Contents section in place of the
+    old one, or before its first heading below the title when it has
+    none."""
+    drop = set()
+    for level, text, index in doc.headings:
+        if level == 2 and text == CONTENTS:
+            start, end = doc.span(2, index)
+            drop.update(range(start, end))
+    kept = [(index, line) for index, line in enumerate(lines) if index not in drop]
+    first = [index for level, text, index in doc.headings if level >= 2 and index not in drop]
+    if not first:
+        return None
+    at = [position for position, (index, _) in enumerate(kept) if index == first[0]][0]
+    before = [line for _, line in kept[:at]]
+    after = [line for _, line in kept[at:]]
+    while before and not before[-1].strip():
+        before.pop()
+    return before + [""] + index_section(doc) + [""] + after
+
+
+def run_index(args):
+    mode = None
+    files = []
+    for word in args:
+        if word in ("--write", "--check") and mode is None:
+            mode = word
+        elif word.startswith("--"):
+            sys.stderr.write(__doc__)
+            return 2
+        else:
+            files.append(word)
+    if not files:
+        sys.stderr.write(__doc__)
+        return 2
+    failed = 0
+    for path in files:
+        try:
+            with open(path, encoding="utf-8") as handle:
+                text = handle.read()
+        except (OSError, UnicodeDecodeError):
+            sys.stderr.write("%s:0: cannot be read\n" % path)
+            failed += 1
+            continue
+        doc = Markdown(path, text)
+        if not indexed(doc):
+            sys.stderr.write("%s:0: has no heading below its title, so there is nothing to index\n" % path)
+            failed += 1
+            continue
+        if mode == "--check":
+            check_index(doc, path)
+            for error in doc.errors:
+                sys.stderr.write(error + "\n")
+            failed += 1 if doc.errors else 0
+        elif mode == "--write":
+            new = write_index(doc.lines, doc)
+            if new is None:
+                sys.stderr.write("%s:0: has headings only inside its Contents section, so there is nothing to index\n" % path)
+                failed += 1
+            elif new != doc.lines:
+                with open(path, "w", encoding="utf-8") as handle:
+                    handle.write("\n".join(new))
+                print("index %s written" % path)
+            else:
+                print("index %s current" % path)
+        else:
+            if len(files) > 1:
+                print("==> %s <==" % path)
+            print("\n".join(index_section(doc)))
+    if mode == "--check":
+        print("index %d checked %d failed" % (len(files), failed))
+    return 1 if failed else 0
+
 
 def decision_template(text):
     """The decision record template: the fenced markdown block of
@@ -1116,6 +1345,8 @@ def check_settings(repo, base, where):
 
 
 def main(argv):
+    if argv and argv[0] == "index":
+        return run_index(argv[1:])
     if argv and argv[0] == "settings":
         repo, base, where = None, None, "index"
         args = argv[1:]
@@ -1254,6 +1485,8 @@ def main(argv):
             doc.error(0, "no %s template at %s on %s, so this document cannot be checked against it" % (kind.replace("-", " "), template_path, templates))
         else:
             check_common(doc, kind, template_text, path)
+            if has_contents(Markdown(template_path, template_text)):
+                check_index(doc, path)
             if kind == "feature-spec":
                 if "quality" not in rules:
                     quality = git(repo, "show", "%s:docs/process/quality-requirements.md" % templates)

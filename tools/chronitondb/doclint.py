@@ -39,6 +39,7 @@ The type of each PATH comes from where it lives:
     docs/design/<dir>/plan.md              plan
     docs/design/<dir>/delivery-plan.md     delivery plan
     docs/design/<dir>/ac-coverage.md       coverage file
+    docs/releases/<line>-plan.md           line plan
     docs/design/<dir>/milestones/*.md      milestone report
     docs/design/<dir>/*.md                 design record or fix record, by
                                            its first heading ("# Design:",
@@ -47,7 +48,6 @@ The type of each PATH comes from where it lives:
     docs/decisions/NNNN-<slug>.md          decision record
     docs/delta/<name>.md                   delta entry (README.md is the
                                            register)
-    docs/releases/<line>-plan.md           line plan
     docs/releases/*.md                     release proposal
 
 Any other path is not a document of the process and is passed over, except
@@ -65,12 +65,13 @@ Every document is checked for:
   4. when its template has a "## Contents" section, the document has one
      too, as its first section after the title: a nested list of links,
      one per heading below the title and in their order, each indented
-     two spaces per level below "##", showing the heading's text and
-     linking the heading's anchor, and nothing else. An anchor follows
-     GitHub's rules: the heading's text in lower case, every character
-     that is not a letter, a digit, "_", "-" or a space removed, each
-     space a hyphen, and a heading whose anchor is taken already gets
-     "-1", then "-2"
+     two spaces more than the nearest heading above it of a higher
+     level, none for a "##", showing the heading's text and linking the
+     heading's anchor, and nothing else. An anchor follows GitHub's
+     rules: the text GitHub shows for the heading in lower case, every
+     character that is not a letter, a digit, "_", "-" or a space
+     removed, each space a hyphen, and a heading whose anchor is taken
+     already gets "-1", then "-2"
 
 A feature spec is also checked for:
 
@@ -136,7 +137,8 @@ states with its reason. It prints "patch NAME OLD NEW FILE" for each.
 index prints the Contents section each FILE needs, read from the working
 tree, whatever its type. With --write it puts that section in the file in
 place of its old one, or before its first heading below the title when it
-has none.
+has none. A Contents section that holds anything but blank lines and
+index entries is refused with its line, and the file is left unchanged.
 With --check it reports what is wrong with the file's index, the check of
 point 4 above, also for a template. Authors and their tools run it after
 any heading changes, before the commit.
@@ -156,6 +158,7 @@ Findings go to stderr as "PATH:LINE: reason", exit 1 when there is one.
 A usage error exits 2.
 """
 
+import html
 import os
 import re
 import subprocess
@@ -728,26 +731,53 @@ def check_milestone(doc, path, source):
 CONTENTS = "Contents"
 INDEX_ENTRY = re.compile(r"^( *)[-*+] +\[(.*)\]\(#([^()\s]*)\)\s*$")
 HTML_TAG = re.compile(r"</?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?/?>")
+ESCAPE_OR_CODE = re.compile(r"\\([!-/:-@\[-`{-~])|(`+)(.+?)(?<!`)\2(?!`)")
+LINK = re.compile(r"(?<!!)\[([^\]]*)\](?:\([^)]*\)|\[[^\]]*\])")
+IMAGE = re.compile(r"!\[[^\]]*\](?:\([^)]*\)|\[[^\]]*\])")
+UNDERSCORES = re.compile(r"(?<!\w)(_+)(?!\s)(.+?)(?<!\s)\1(?!\w)")
+
+
+def protect(text):
+    """The text with each backslash escape and code span replaced by a
+    placeholder, which no later rule reads, and what each stood for: an
+    escape its character, a code span its source and its content."""
+    kept = []
+
+    def keep(match):
+        if match.group(1) is not None:
+            kept.append((match.group(0), match.group(1)))
+        else:
+            content = match.group(3)
+            if len(content) > 2 and content[0] == " " and content[-1] == " " and content.strip():
+                content = content[1:-1]
+            kept.append((match.group(0), content))
+        return "\0%d\0" % (len(kept) - 1)
+    return ESCAPE_OR_CODE.sub(keep, text), kept
+
+
+def restore(text, kept, which):
+    """The text with each placeholder back: which is 0 for the source as
+    written, 1 for what GitHub shows."""
+    return re.sub("\0([0-9]+)\0", lambda m: kept[int(m.group(1))][which], text)
 
 
 def rendered(text):
-    """The text GitHub shows for a heading: a code span as its content, a
-    link or an image as its text, emphasis marks, HTML tags and
-    backslash escapes dropped."""
-    spans = []
-
-    def keep(match):
-        content = match.group(2)
-        if len(content) > 2 and content[0] == " " and content[-1] == " " and content.strip():
-            content = content[1:-1]
-        spans.append(content)
-        return "\0%d\0" % (len(spans) - 1)
-    text = re.sub(r"(`+)(.+?)\1", keep, text)
-    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    """The text GitHub shows for a heading, from which it makes the
+    anchor: a backslash escape as its character, a code span as its
+    content, an inline or reference link as its text, an image as
+    nothing, HTML tags and emphasis marks dropped, a "_" kept unless it
+    opens and closes emphasis, HTML entities decoded."""
+    text, kept = protect(text)
+    text = IMAGE.sub("", text)
+    text = LINK.sub(r"\1", text)
     text = HTML_TAG.sub("", text)
-    text = re.sub(r"\*+|(?<!\w)_+|_+(?!\w)", "", text)
-    text = re.sub(r"\\([!-/:-@\[-`{-~])", r"\1", text)
-    return re.sub("\0([0-9]+)\0", lambda m: spans[int(m.group(1))], text)
+    text = text.replace("*", "")
+    previous = None
+    while previous != text:
+        previous = text
+        text = UNDERSCORES.sub(r"\2", text)
+    text = html.unescape(text)
+    return restore(text, kept, 1)
 
 
 def slug(text):
@@ -776,10 +806,12 @@ def anchors(doc):
 
 def link_text(text):
     """A heading's text as an index entry shows it: its links reduced to
-    their text and any other bracket escaped, so the entry stays one
-    link."""
-    text = re.sub(r"(?<!!)\[([^\]]*)\]\([^)]*\)", r"\1", text)
-    return re.sub(r"(?<!\\)([\[\]])", r"\\\1", text)
+    their text and any other bracket outside a code span escaped, so the
+    entry stays one link and a code span shows as written."""
+    text, kept = protect(text)
+    text = LINK.sub(r"\1", text)
+    text = re.sub(r"([\[\]])", r"\\\1", text)
+    return restore(text, kept, 0)
 
 
 def indexed(doc):
@@ -788,16 +820,42 @@ def indexed(doc):
     return [entry for entry in anchors(doc) if entry[0] >= 2 and not (entry[0] == 2 and entry[1] == CONTENTS)]
 
 
+def indents(entries):
+    """The indent of each index entry: none for a heading with no heading
+    of a higher level above it, otherwise two spaces more than the
+    nearest such heading. A heading that skips a level is one step below
+    its parent, never more, so the list stays nested."""
+    parents = []
+    found = []
+    for level, _, _, _ in entries:
+        while parents and parents[-1][0] >= level:
+            parents.pop()
+        indent = parents[-1][1] + 2 if parents else 0
+        parents.append((level, indent))
+        found.append(indent)
+    return found
+
+
 def index_section(doc):
     """The lines of the Contents section the document needs."""
     lines = ["## " + CONTENTS, ""]
-    for level, text, _, anchor in indexed(doc):
-        lines.append("%s- [%s](#%s)" % ("  " * (level - 2), link_text(text), anchor))
+    entries = indexed(doc)
+    for (level, text, _, anchor), indent in zip(entries, indents(entries)):
+        lines.append("%s- [%s](#%s)" % (" " * indent, link_text(text), anchor))
     return lines
 
 
 def has_contents(doc):
     return any(level == 2 and text == CONTENTS for level, text, _ in doc.headings)
+
+
+def contents_line_ok(doc, index):
+    """True for a line a Contents section may hold: blank, or one index
+    entry with nothing else on the line."""
+    if index in doc.fenced:
+        return False
+    line = doc.lines[index]
+    return not line.strip() or bool(INDEX_ENTRY.match(line))
 
 
 def check_index(doc, path):
@@ -816,18 +874,16 @@ def check_index(doc, path):
     wanted = indexed(doc)
     every = dict((anchor, (level, text, index)) for level, text, index, anchor in anchors(doc))
     by_anchor = dict((anchor, (level, text, index)) for level, text, index, anchor in wanted)
+    expected_indent = dict((entry[3], indent) for entry, indent in zip(wanted, indents(wanted)))
     _, end = doc.span(2, start)
     listed = []
     for index in range(start + 1, end):
-        if index in doc.commented:
+        if not doc.lines[index].strip() and index not in doc.fenced:
             continue
-        line = doc.visible[index]
-        if not line.strip() and index not in doc.fenced:
+        if not contents_line_ok(doc, index):
+            doc.error(index, "the Contents section holds only its list of links to the headings, one per line, and this line is not one. Move it out of the section. %s" % hint)
             continue
-        match = INDEX_ENTRY.match(line) if index not in doc.fenced else None
-        if not match:
-            doc.error(index, "the Contents section holds only its list of links to the headings, one per line, and this line is not one. %s" % hint)
-            continue
+        match = INDEX_ENTRY.match(doc.lines[index])
         indent, shown, anchor = len(match.group(1)), match.group(2), match.group(3)
         if anchor not in every:
             doc.error(index, "the index links #%s, and no heading of this file has that anchor. %s" % (anchor, hint))
@@ -840,8 +896,8 @@ def check_index(doc, path):
             continue
         listed.append((index, anchor))
         level, text, _ = by_anchor[anchor]
-        if indent != 2 * (level - 2):
-            doc.error(index, "the index entry for '%s' is indented %d spaces, a level %d heading is indented %d. %s" % (text, indent, level, 2 * (level - 2), hint))
+        if indent != expected_indent[anchor]:
+            doc.error(index, "the index entry for '%s' is indented %d spaces. It is indented %d, two spaces more than the nearest heading above it of a higher level. %s" % (text, indent, expected_indent[anchor], hint))
         if shown != link_text(text):
             doc.error(index, "the index entry #%s shows '%s', its heading reads '%s'. %s" % (anchor, shown, text, hint))
     shown_anchors = [anchor for _, anchor in listed]
@@ -855,25 +911,30 @@ def check_index(doc, path):
             break
 
 
-def write_index(lines, doc):
-    """The lines of the document with its Contents section in place of the
-    old one, or before its first heading below the title when it has
-    none."""
+def write_index(doc):
+    """(lines, None): the lines of the document with its Contents section
+    in place of the old one, or before its first heading below the title
+    when it has none, built from the headings that remain. (None, line):
+    a Contents section holds a line that is neither blank nor an index
+    entry, so nothing is removed and the file stays as it is. (None, None):
+    no heading below the title is left to index."""
     drop = set()
     for level, text, index in doc.headings:
         if level == 2 and text == CONTENTS:
             start, end = doc.span(2, index)
+            for line in range(start + 1, end):
+                if not contents_line_ok(doc, line):
+                    return None, line
             drop.update(range(start, end))
-    kept = [(index, line) for index, line in enumerate(lines) if index not in drop]
-    first = [index for level, text, index in doc.headings if level >= 2 and index not in drop]
+    kept = [line for index, line in enumerate(doc.lines) if index not in drop]
+    rest = Markdown(doc.name, "\n".join(kept))
+    first = [index for level, text, index in rest.headings if level >= 2]
     if not first:
-        return None
-    at = [position for position, (index, _) in enumerate(kept) if index == first[0]][0]
-    before = [line for _, line in kept[:at]]
-    after = [line for _, line in kept[at:]]
+        return None, None
+    before = kept[:first[0]]
     while before and not before[-1].strip():
         before.pop()
-    return before + [""] + index_section(doc) + [""] + after
+    return before + [""] + index_section(rest) + [""] + kept[first[0]:], None
 
 
 def run_index(args):
@@ -910,9 +971,12 @@ def run_index(args):
                 sys.stderr.write(error + "\n")
             failed += 1 if doc.errors else 0
         elif mode == "--write":
-            new = write_index(doc.lines, doc)
-            if new is None:
-                sys.stderr.write("%s:0: has headings only inside its Contents section, so there is nothing to index\n" % path)
+            new, stray = write_index(doc)
+            if stray is not None:
+                sys.stderr.write("%s:%d: the Contents section holds other text on this line. Move it out of the section, then run again. The file is unchanged\n" % (path, stray + 1))
+                failed += 1
+            elif new is None:
+                sys.stderr.write("%s:0: has no heading below its title outside its Contents section, so there is nothing to index\n" % path)
                 failed += 1
             elif new != doc.lines:
                 with open(path, "w", encoding="utf-8") as handle:

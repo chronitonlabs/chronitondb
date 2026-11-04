@@ -272,10 +272,14 @@ class SpecClass(Repo):
         self.assertEqual(rc, 1)
         self.assertIn("section Glossary says Not applicable, and the class requires it (Byzantine size)", err)
 
-    def test_touches_names_only_the_four_phrases_or_none(self):
+    def test_touches_names_only_the_seven_phrases_or_none(self):
         rc, err = self.spec_errors(touches="the planner")
         self.assertEqual(rc, 1)
-        self.assertIn("the 'Touches' row names 'the planner', which is none of: public interface, stock behaviour, new input or privilege, new dependency, or none (classification.md)", err)
+        self.assertIn("the 'Touches' row names 'the planner', which is none of: public interface, stock behaviour, new input or privilege, new dependency, shared state, request path, new feature or switch, or none (classification.md)", err)
+
+    def test_touches_names_what_a_code_review_adds_a_lens_for(self):
+        rc, err = self.spec_errors(touches="shared state, request path and new feature or switch")
+        self.assertNotIn("the 'Touches' row", err)
 
     def test_the_floor_keeps_a_public_interface_off_low_risk(self):
         rc, err = self.spec_errors(risk="Low: documentation only change", touches="public interface (yaml)",

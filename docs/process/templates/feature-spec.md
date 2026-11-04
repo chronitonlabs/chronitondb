@@ -29,7 +29,7 @@ limitations under the License.
 | Risk | {Critical, Normal or Low}: {the worst Bug Category the feature could cause if wrong, and the floor if one applied} |
 | Size | {Low Hanging Fruit, Normal, Challenging or Byzantine}: {why} |
 | Reach | {One area or Cross-cutting}: {why, naming the packages touched} |
-| Touches | {public interface (name which), stock behaviour, new input or privilege, new dependency, or none} |
+| Touches | {public interface (name which), stock behaviour, new input or privilege, new dependency, shared state (threads, pools or shared state), request path (a read, write or query path), new feature or switch, or none} |
 
 Change history: the git history of this file.
 

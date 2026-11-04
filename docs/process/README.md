@@ -43,6 +43,8 @@ A change that comes from Apache Cassandra follows [upstream.md](upstream.md). A 
 
 When the category is unclear, open an issue that says what should change. The maintainers set the category.
 
+Each change also has a class, its risk and its size, carried by one `risk:`, one `size:` and one `reach:` label on the issue and on each pull request. The class sets how deep the documents go, which checks and reviews the change gets and which approval steps it passes. See [classification.md](classification.md).
+
 ## Roles
 
 The maintainers decide scope, priority, releases and security disclosure, and approve every step by merging its pull request. Seven roles do the work:
@@ -73,9 +75,10 @@ A role MAY be carried out by a person or by an automated agent. Approvals are al
 12. [security.md](security.md): how vulnerabilities are reported, fixed and disclosed.
 13. [compliance.md](compliance.md): open source licence compliance, notices, SBOM and VEX.
 14. [quality-requirements.md](quality-requirements.md): the quality checklist every feature spec and design record answers.
-15. [templates/](templates/): the document templates.
-16. [The delta register](../delta/README.md): every change ChronitonDB carries on top of Apache Cassandra.
-17. [Decision records](../decisions/README.md): answered questions that settle behaviour, scope or process.
+15. [classification.md](classification.md): the risk and size of a change, and what each class changes.
+16. [templates/](templates/): the document templates.
+17. [The delta register](../delta/README.md): every change ChronitonDB carries on top of Apache Cassandra.
+18. [Decision records](../decisions/README.md): answered questions that settle behaviour, scope or process.
 
 The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. ChronitonDB does not edit it. ChronitonDB's own guide is in [.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md) and in [contributing.md](contributing.md).
 

@@ -144,7 +144,7 @@ When a document's template on the line has a `## Contents` section, the document
 
 `index` reads the working tree and works on any Markdown file. Authors and agents run `index --write` after any heading changes and before each commit of a document.
 
-A line plan, `docs/releases/<line>-plan.md`, is checked against the line plan template and a coverage file, `ac-coverage.md` in a design directory, against the coverage file template.
+A coverage file, `ac-coverage.md` in a design directory, is checked against the coverage file template.
 
 ### Tests
 

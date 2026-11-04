@@ -417,10 +417,6 @@ class DocumentCheck(unittest.TestCase):
         _, _, err = self.document("docs/delta/pinned.md")
         self.assertNotIn("Contents", err)
 
-    def test_a_line_plan_is_checked_against_the_line_plan_template(self):
-        self.assertEqual(doclint.doc_type("docs/releases/chronitondb-5.0-plan.md", "# Line plan: x\n"), "line-plan")
-        self.assertEqual(doclint.doc_type("docs/releases/5.0.10-chronitondb1.md", "# Release: x\n"), "release-proposal")
-
     def test_a_coverage_file_is_a_document(self):
         self.assertEqual(doclint.doc_type("docs/design/42-a-fix/ac-coverage.md", "# Acceptance coverage for #42\n"), "ac-coverage")
         template = self.read_template("ac-coverage.md")

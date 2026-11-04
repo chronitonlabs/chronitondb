@@ -18,8 +18,10 @@
 # the base branch, never from the pull request, so a pull request cannot
 # weaken its own check. The pull request's files are only read as data. It
 # runs only when the pull request changes a file under docs/ or test/bdd/.
-# Before the checker is on the line it says so and passes. Every action is
-# pinned to a commit.
+# Before the checker is on the line it says so and passes. A separate job
+# runs the checker's unit tests from the pull request, which judge the
+# checker and the templates the pull request brings, never its documents.
+# Every action is pinned to a commit.
 name: ChronitonDB documents
 
 on:
@@ -117,3 +119,14 @@ jobs:
             fi
           done <<< "$out"
           exit "$rc"
+
+  doclint-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Unit tests of the checker
+        run: python3 -m unittest discover -s tools/chronitondb/test/doclint -v

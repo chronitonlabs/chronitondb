@@ -22,12 +22,20 @@ limitations under the License.
 | Title | One Java version per line |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 2 |
+| Version | 3 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
 | References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
 Change history: the git history of this file.
+
+## Contents
+
+- [Header](#header)
+- [What](#what)
+- [Why](#why)
+- [Area](#area)
+- [Lines](#lines)
 
 ## Header
 
@@ -41,7 +49,7 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Bug-ChronitonDB | none |
 | Forwarded | Not needed. The Java versions Apache Cassandra supports are Apache's choice for its own users. |
 | Added | 2026-10-30 |
-| Last-Update | 2026-11-01 |
+| Last-Update | 2026-11-04 |
 | Pull requests | `chronitondb-5.0`: [#46](https://github.com/chronitonlabs/chronitondb/pull/46), commit `af8deb8da7`. `chronitondb-6.0`: [#49](https://github.com/chronitonlabs/chronitondb/pull/49), commit `2cffdd4d91`. |
 
 ## What

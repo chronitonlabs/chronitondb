@@ -22,12 +22,20 @@ limitations under the License.
 | Title | Import order check suppressed for ChronitonDB code |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 2 |
+| Version | 3 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
 | References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
 Change history: the git history of this file.
+
+## Contents
+
+- [Header](#header)
+- [What](#what)
+- [Why](#why)
+- [Area](#area)
+- [Lines](#lines)
 
 ## Header
 
@@ -41,7 +49,7 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Bug-ChronitonDB | none |
 | Forwarded | Not needed. It applies to ChronitonDB code only. |
 | Added | 2026-10-30 |
-| Last-Update | 2026-11-01 |
+| Last-Update | 2026-11-04 |
 | Pull requests | `chronitondb-6.0`: [#36](https://github.com/chronitonlabs/chronitondb/pull/36), commit `bd0a4f3a85`. |
 
 ## What

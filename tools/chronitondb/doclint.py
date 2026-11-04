@@ -39,7 +39,6 @@ The type of each PATH comes from where it lives:
     docs/design/<dir>/plan.md              plan
     docs/design/<dir>/delivery-plan.md     delivery plan
     docs/design/<dir>/ac-coverage.md       coverage file
-    docs/releases/<line>-plan.md           line plan
     docs/design/<dir>/milestones/*.md      milestone report
     docs/design/<dir>/*.md                 design record or fix record, by
                                            its first heading ("# Design:",
@@ -193,7 +192,6 @@ TEMPLATES = {
     "import-record": "docs/process/templates/import-record.md",
     "delta-entry": "docs/process/templates/delta-entry.md",
     "release-proposal": "docs/process/templates/release-proposal.md",
-    "line-plan": "docs/process/templates/line-plan.md",
     "ac-coverage": "docs/process/templates/ac-coverage.md",
     "decision": "docs/decisions/README.md",
 }
@@ -268,8 +266,6 @@ def doc_type(path, text):
         return "decision"
     if re.match(r"^docs/delta/[^/]+\.md$", path) and path != "docs/delta/README.md":
         return "delta-entry"
-    if re.match(r"^docs/releases/[^/]+-plan\.md$", path):
-        return "line-plan"
     if re.match(r"^docs/releases/[^/]+\.md$", path):
         return "release-proposal"
     return None

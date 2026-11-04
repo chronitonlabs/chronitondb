@@ -101,7 +101,8 @@ A feature spec is also checked for:
      its family, a colon and a reason of three words or more, Touches the
      phrases of TOUCHES (public interface, stock behaviour, new input or
      privilege, new dependency, shared state, request path, new feature or
-     switch), or none, and a Low risk never touching a public
+     switch) in any case, split at a comma, a semicolon or "and", or none,
+     and a Low risk never touching a public
      interface or stock behaviour. A missing or malformed level counts as
      the strictest of its family: Critical, Byzantine, Cross-cutting
  10. its sections against the class: each section the class requires
@@ -109,8 +110,12 @@ A feature spec is also checked for:
      sections Normal risk requires by Touches too), every other section
      holds its content or the one line "Not applicable: <reason>", a
      section that says Not applicable covers its subsections, which may be
-     left out, and the sections it covers are not checked further. Where
-     problems could occur and its Test plan never say none, low or n/a
+     left out, and the sections it covers are not checked further. "Not
+     applicable" counts as such a line before any punctuation, at the end
+     of the line, before because, since, as, here, now or yet, or before a
+     qualifier such as "for this feature", and so does a leading N/A. Where
+     problems could occur and its Test plan never say none, low or n/a,
+     and never open with none, low, no risk, minimal or negligible
 
 A decision record and a delta entry also have their unnumbered sections,
 and a decision record keeps none of its template's <...> placeholders.
@@ -120,7 +125,9 @@ checked for the form of their class rows, when their template has them. A
 plan and a milestone report repeat the levels of the feature spec of their
 feature directory. A fix record writes its Where problems could occur
 section with its Test plan in full, and so does a design record, unless its
-References row links a feature spec, when it may say Not applicable.
+References row links a feature spec as a Markdown link to a feature-spec.md
+the source holds, when it may say Not applicable with a reason that names
+the spec's section 4.
 
 A plan is also checked for: each item delivers FREQ ids its feature spec
 defines, each acceptance criterion has one EARS shape and one BCP 14
@@ -227,14 +234,25 @@ FLOOR = ("public interface", "stock behaviour")
 STRICTEST = {"Risk": "Critical", "Size": "Byzantine", "Reach": "Cross-cutting"}
 NOT_APPLICABLE = re.compile(r"^Not applicable:\s*(\S.*)$")
 # A section claims Not applicable when its own text starts with the words
-# and then any punctuation, the end of the line, or "because", "since" or
-# "as". Only a preposition after them makes content: "Not applicable to
-# clusters without ..." is content (P7, V1).
-NOT_APPLICABLE_ANY = re.compile(r"^\W*not\s+applicable\s*([^\w\s]|$|(because|since|as)\b)", re.I)
+# and then any punctuation, the end of the line, "because", "since" or "as",
+# or a qualifier that points at the document itself, such as "here", "for
+# this feature" or "in this case", and when it starts with "N/A" or "NA".
+# Only a preposition that names something else makes content: "Not
+# applicable to clusters without ..." is content (P7, V1, V5).
+NOT_APPLICABLE_ANY = re.compile(
+    r"^\W*(not\s+applicable\s*([^\w\s]|$|(because|since|as|here|now|yet)\b"
+    r"|(for|in|to|on)\s+(this|these|the\s+(feature|change|item|fix|case|spec|record|document|section))\b)"
+    r"|n/?a\b)", re.I)
 REASON_WORDS = 3
 WPCO = "Where problems could occur"
 TEST_PLAN = "Test plan"
 EMPTY_RISK = re.compile(r"^\W*(none|low|n/?a|nothing|no risk|low risk|minimal|negligible)\W*$", re.I)
+# A risk text that opens by playing the risk down: Ubuntu's rule refuses
+# "low" and an argument that the change is safe (P11).
+DISMISSIVE_RISK = re.compile(r"^\W*(none|low(\s+risk)?|no\s+risk|minimal|negligible|nothing)\b", re.I)
+# The Touches phrases are split at a comma, a semicolon or "and", and read
+# in any case (P8).
+TOUCHES_SPLIT = re.compile(r"\s*[,;]\s*(?:and\s+)?|\s+and\s+")
 WPCO_WORDS = 5
 
 TEMPLATES = {
@@ -589,7 +607,7 @@ def class_of(doc, fields, kind, rows):
         touches = set()
         if value and not outer_braces(value):
             text = re.sub(r"\([^)]*\)", "", value).strip().rstrip(".")
-            words = [w.strip() for w in re.split(r",\s*(?:and\s+)?|\s+and\s+", text) if w.strip()]
+            words = [w.strip().lower() for w in TOUCHES_SPLIT.split(text) if w.strip()]
             if words == ["none"]:
                 pass
             else:
@@ -630,7 +648,7 @@ def class_quietly(doc, fields):
     value = (fields or {}).get("Touches", ("", 0))[0]
     if value and not outer_braces(value):
         text = re.sub(r"\([^)]*\)", "", value).strip().rstrip(".")
-        touches = {w.strip() for w in re.split(r",\s*(?:and\s+)?|\s+and\s+", text) if w.strip() in TOUCHES}
+        touches = {w.strip().lower() for w in TOUCHES_SPLIT.split(text) if w.strip().lower() in TOUCHES}
     return levels, touches
 
 
@@ -684,7 +702,7 @@ def check_risk_text(doc, index, what):
     something: never none, low or a word or two."""
     lines = own_lines(doc, index)
     text = " ".join(line.strip() for _, line in lines)
-    if lines and (EMPTY_RISK.match(text) or len(re.findall(r"\w+", text)) < WPCO_WORDS):
+    if lines and (EMPTY_RISK.match(text) or DISMISSIVE_RISK.match(text) or len(re.findall(r"\w+", text)) < WPCO_WORDS):
         doc.error(index, "%s says only '%s'. It names what could break, how a user would see it and the tests that would catch it, never none or low (classification.md)" % (what, text if len(text) <= 40 else text[:37] + "..."))
 
 
@@ -763,11 +781,28 @@ def level_of(doc, index):
     return 2
 
 
-def check_record_risk(doc, kind, template):
+SPEC_LINK = re.compile(r"\[[^\]]*\]\(([^)\s]*feature-spec\.md)\)")
+
+
+def spec_link_of(references, path, source):
+    """The feature spec a design record's References row links, as a
+    Markdown link to a feature-spec.md the source holds, or None (P10)."""
+    for target in SPEC_LINK.findall(references or ""):
+        if target.startswith("docs/"):
+            resolved = target
+        else:
+            resolved = os.path.normpath(os.path.join(os.path.dirname(path or ""), target))
+        if source is None or source.read(resolved) is not None:
+            return resolved
+    return None
+
+
+def check_record_risk(doc, kind, template, path=None, source=None):
     """The Where problems could occur section of a design or fix record and
     its Test plan, when the record's template has them: always written in a
     fix record, and in a design record unless its References row links a
-    feature spec, when it may say Not applicable."""
+    feature spec the source holds, and its Not applicable reason names the
+    spec's section 4 (P10)."""
     if template is None or plain_section_span(template, WPCO) is None:
         return
     span = plain_section_span(doc, WPCO)
@@ -776,14 +811,16 @@ def check_record_risk(doc, kind, template):
         return
     fields, _ = control_table(doc)
     references = (fields or {}).get("References", ("", 0))[0]
-    allowed = kind == "design-record" and "feature-spec.md" in references
+    linked = spec_link_of(references, path, source) if kind == "design-record" else None
     state = not_applicable_of(doc, span[0])
+    reason = " ".join(line.strip() for _, line in own_lines(doc, span[0]))
+    allowed = linked is not None and re.search(r"\bsection 4\b|Where problems could occur", reason.split(":", 1)[-1], re.I) is not None
     if state:
         doc.error(span[0], "section %s says Not applicable, but %s" % (WPCO, state))
         return
     if state == "":
         if not allowed:
-            doc.error(span[0], "section %s says Not applicable. A %s writes it in full%s (classification.md)" % (WPCO, kind.replace("-", " "), "" if kind == "fix-record" else " unless its References row links the feature spec that covers it"))
+            doc.error(span[0], "section %s says Not applicable. A %s writes it in full%s (classification.md)" % (WPCO, kind.replace("-", " "), "" if kind == "fix-record" else " unless its References row links the feature spec that covers it, as a Markdown link to its feature-spec.md, and the reason names that spec's section 4"))
         return
     if not own_lines(doc, span[0]):
         doc.error(span[0], "section %s is empty. It names what could break, how a user would see it and the tests that would catch it (classification.md)" % WPCO)
@@ -2001,7 +2038,7 @@ def main(argv):
             elif kind in ("plan", "milestone-report", "design-record", "fix-record"):
                 check_class_rows(doc, kind, path, template_doc, source)
             if kind in ("design-record", "fix-record"):
-                check_record_risk(doc, kind, template_doc)
+                check_record_risk(doc, kind, template_doc, path, source)
             if kind == "feature-spec":
                 if "quality" not in rules:
                     quality = git(repo, "show", "%s:docs/process/quality-requirements.md" % templates)

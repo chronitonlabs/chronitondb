@@ -194,10 +194,25 @@ class SpecClass(Repo):
         self.assertIn("section 4 Where problems could occur says Not applicable, and the class requires it (every class)", err)
 
     def test_where_problems_could_occur_is_never_none_or_low(self):
-        for text in ("None.", "Low", "n/a"):
+        for text in ("None.", "Low"):
             rc, err = self.spec_errors(bodies={"Where problems could occur": text})
             self.assertEqual(rc, 1, text)
             self.assertIn("section 4 Where problems could occur says only '%s'. It names what could break" % text, err)
+        rc, err = self.spec_errors(bodies={"Where problems could occur": "n/a"})
+        self.assertEqual(rc, 1)
+        self.assertIn("section 4 Where problems could occur says Not applicable", err)
+
+    def test_a_risk_text_that_opens_by_playing_it_down_is_refused(self):
+        # P11: Ubuntu refuses "low" and an argument that the change is safe.
+        for text in ("Low risk, the change is small and safe and touches one class only.",
+                     "None, the change only renames a private method in one class.",
+                     "Minimal: the change only renames a private method in one class.",
+                     "No risk because the change only renames a private method here."):
+            rc, err = self.spec_errors(bodies={"Where problems could occur": text})
+            self.assertEqual(rc, 1, text)
+            self.assertIn("section 4 Where problems could occur says only", err, text)
+        rc, err = self.spec_errors(bodies={"Where problems could occur": "Lowering the default timeout could cut a slow read short on a busy node."})
+        self.assertEqual((rc, err), (0, ""))
         rc, err = self.spec_errors(bodies={"Test plan": "Low risk."})
         self.assertEqual(rc, 1)
         self.assertIn("section 4.1 Test plan says only 'Low risk.'", err)
@@ -261,6 +276,25 @@ class SpecClass(Repo):
         rc, err = self.spec_errors(bodies={"Glossary": "Not applicable, no terms beyond stock ones."})
         self.assertEqual(rc, 1)
         self.assertIn("section Glossary says Not applicable, but write it as the one line 'Not applicable: <reason>'", err)
+
+    def test_qualifiers_and_na_are_claims_too(self):
+        # V5: a qualifier that points at the document itself, and a leading
+        # N/A or NA, make the line a claim.
+        forms = ("Not applicable here, no decision record shapes it.",
+                 "Not applicable for this feature, nothing decided.",
+                 "Not applicable for this change, nothing decided.",
+                 "Not applicable in this case, nothing decided.",
+                 "N/A, nothing decided for this one.",
+                 "n/a nothing decided for this one",
+                 "NA. Nothing decided for this one.")
+        for form in forms:
+            rc, err = self.spec_errors(bodies={"Decisions": form})
+            self.assertEqual(rc, 1, form)
+            self.assertIn("section 10 Decisions says Not applicable", err, form)
+        rc, err = self.spec_errors(bodies={"Deployment": "Not applicable to clusters without the index: they see no change, and operators set nothing."})
+        self.assertEqual((rc, err), (0, ""))
+        rc, err = self.spec_errors(bodies={"Deployment": "NAT traversal is not needed: nodes reach each other on the private network."})
+        self.assertEqual((rc, err), (0, ""))
 
     def test_text_that_only_starts_with_not_applicable_is_content(self):
         rc, err = self.spec_errors(bodies={"Deployment": "Not applicable to clusters without the index: they see no change, and operators set nothing."})
@@ -343,6 +377,15 @@ class SpecClass(Repo):
         self.assertEqual(rc, 1)
         self.assertIn("the 'Touches' row names 'the planner', which is none of: public interface, stock behaviour, new input or privilege, new dependency, shared state, request path, new feature or switch, or none (classification.md)", err)
 
+    def test_touches_reads_any_case_and_a_semicolon(self):
+        # P8: the phrases in any case, split at a comma, a semicolon or and.
+        rc, err = self.spec_errors(touches="Public interface (CQL)")
+        self.assertNotIn("the 'Touches' row names", err)
+        rc, err = self.spec_errors(risk="Low: documentation only change", touches="Public interface (CQL)")
+        self.assertIn("the risk is Low, and Touches names public interface", err)
+        rc, err = self.spec_errors(touches="Shared state; request path")
+        self.assertNotIn("the 'Touches' row", err)
+
     def test_touches_names_what_a_code_review_adds_a_lens_for(self):
         rc, err = self.spec_errors(touches="shared state, request path and new feature or switch")
         self.assertNotIn("the 'Touches' row", err)
@@ -418,8 +461,19 @@ class OtherDocuments(Repo):
         text = re.sub(r"(## Where problems could occur\n\n)[^\n]*\n\n### Test plan\n\n[^\n]*\n", r"\1Not applicable: section 4 of the feature spec covers this item.\n", good)
         errors = self.class_errors(DESIGN, text)
         self.assertTrue(any("unless its References row links the feature spec that covers it" in e for e in errors), errors)
-        text = re.sub(r"^\| References \|.*\|$", "| References | Issue #43. Feature spec docs/design/ABC-test-feature/feature-spec.md |", text, flags=re.M)
+        # P10: a plain mention of a spec path is not enough. The row links a
+        # feature-spec.md the line holds, and the reason names its section 4.
+        text = re.sub(r"^\| References \|.*\|$", "| References | Unrelated: docs/design/XYZ-other/feature-spec.md |", text, flags=re.M)
+        errors = self.class_errors(DESIGN, text)
+        self.assertTrue(any("as a Markdown link to its feature-spec.md, and the reason names that spec's section 4" in e for e in errors), errors)
+        text = re.sub(r"^\| References \|.*\|$", "| References | Issue #43. [The feature spec](../ABC-test-feature/feature-spec.md) |", text, flags=re.M)
+        errors = self.class_errors(DESIGN, text)
+        self.assertTrue(any("as a Markdown link to its feature-spec.md" in e for e in errors), "a link to a spec the line does not hold")
+        self.put(SPEC, spec())
         self.assertEqual(self.class_errors(DESIGN, text), [])
+        other = text.replace("Not applicable: section 4 of the feature spec covers this item.", "Not applicable: the feature spec covers this item well.")
+        errors = self.class_errors(DESIGN, other)
+        self.assertTrue(any("the reason names that spec's section 4" in e for e in errors), "a reason that names no section 4")
 
     def test_the_floor_applies_to_a_record(self):
         text = filled("fix-record.md", []).replace("| Risk | Normal: a slow use case at worst |", "| Risk | Low: a test only change |")

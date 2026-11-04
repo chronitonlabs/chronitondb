@@ -37,7 +37,7 @@ Location: `docs/design/<KEY>-<slug>/feature-spec.md` on the line the feature tar
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
-The Risk, Size and Reach rows are the feature's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the feature touches, from the phrases in the row, or says none. A public interface or stock behaviour in Touches means the risk is Normal or Critical. The class decides which sections are required, as each section says. A required section holds its content. Any other section holds its content or the one line `Not applicable: <reason>`. A section that says Not applicable covers its subsections, which are then left out.
+The Risk, Size and Reach rows are the feature's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the feature touches, from the phrases in the row, in any case and separated by commas, or says none. A public interface or stock behaviour in Touches means the risk is Normal or Critical. The class decides which sections are required, as each section says. A required section holds its content. Any other section holds its content or the one line `Not applicable: <reason>`. A section that says Not applicable covers its subsections, which are then left out.
 
 ## Contents
 

@@ -236,7 +236,7 @@ Scenario tags: {the tag expression for this item's scenarios}
 
 ## Where problems could occur
 
-{Where the change could go wrong if it is wrong, worst case first: what a user or an operator would see (a wrong result, an error, a crash, a slow request, a changed file on disk), on which request path, and from which part of the change. Never "None" or "Low", and never an argument that the change is safe. After the "Where problems could occur" section of Ubuntu's stable release update template. An item of a feature whose feature spec the References row links MAY write the one line `Not applicable: <reason>` here, naming the spec's section 4 that covers it. Every other design record fills it. See [classification.md](../classification.md).}
+{Where the change could go wrong if it is wrong, worst case first: what a user or an operator would see (a wrong result, an error, a crash, a slow request, a changed file on disk), on which request path, and from which part of the change. Never "None" or "Low", and never an argument that the change is safe. After the "Where problems could occur" section of Ubuntu's stable release update template. An item of a feature whose feature spec the References row links, as a Markdown link to its `feature-spec.md`, MAY write the one line `Not applicable: <reason>` here, the reason naming the spec's section 4 that covers it. Every other design record fills it. See [classification.md](../classification.md).}
 
 ### Test plan
 

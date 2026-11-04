@@ -81,7 +81,7 @@ Reach follows Debian, which separates a single upload from a transition that mov
 
 ### The sections of a feature spec
 
-One template serves every class, [templates/feature-spec.md](templates/feature-spec.md). Each section says which class requires it. A required section holds its content. Any other section holds its content or the one line `Not applicable: <reason>`, and a section that says Not applicable covers its subsections, which are then left out. The process document check refuses a required section that says Not applicable, and the reviewer checks the claimed class.
+One template serves every class, [templates/feature-spec.md](templates/feature-spec.md). Each section says which class requires it. A required section holds its content. Any other section holds its content or the one line `Not applicable: <reason>`, and a section that says Not applicable covers its subsections, which are then left out. The process document check refuses a required section that says Not applicable, in any wording: "Not applicable" with any punctuation, "because", "here" or "for this feature" after it, or "N/A". Only text that applies the section to something named, such as "Not applicable to clusters without the index", counts as content. The reviewer checks the claimed class.
 
 | Class | Sections required in full |
 |---|---|
@@ -103,7 +103,7 @@ Before a document goes to review, its author runs independent checks on it in ro
 | Class | Independent checks each round | Review lenses | Threat model and compatibility |
 |---|---|---|---|
 | Critical risk | All three | Every lens of the review mode, and every citation checked | In full |
-| Normal risk | All three | For a document: correctness and documentation always, compatibility when a public interface or stock behaviour is touched, security for new input or privilege, compliance for a new dependency. For code: correctness, tests, documentation, maintainability and the review patterns always, and by what the change touches compatibility, security and compliance as for a document, concurrency for shared state, performance for a request path, observability for a new feature or switch. Every citation checked | In full when the floor or new input applies, else Not applicable with the reason |
+| Normal risk | All three | For a document: correctness and documentation always, compatibility when a public interface or stock behaviour is touched, security for new input or privilege, compliance for a new dependency. For code: correctness, tests, documentation, maintainability and the review patterns always, and by what the change touches compatibility, security and compliance as for a document, concurrency for shared state, performance for a request path, observability for a new feature or switch. Every citation checked | Compatibility in full when the floor applies, the threat model in full for new input or privilege, else Not applicable with the reason |
 | Low risk | Comprehension and ambiguity | Correctness and documentation | Not applicable |
 
 | Higher of size and risk | Round cap |
@@ -133,7 +133,7 @@ The class is three label families on the issue, mirrored on each of its pull req
 2. The reviewer checks the labels at every review, against the change and the reasons.
 3. A maintainer confirms the class: through the class and scope question for Critical work, at the spec merge for Normal work, at the pull request merge for Low work. A maintainer may change any label at any time, and the change takes effect from the next step of the work.
 4. Work that carries no class yet, or a family with no label or with two, is treated as the strictest value of that family: Critical, Byzantine and Cross-cutting.
-5. A required pull request check refuses a pull request that does not carry exactly one label of each family, as the kind label check does for the maintenance category. A release proposal or promotion pull request, which changes only `docs/releases/`, has no class, as it has no kind.
+5. A pull request check, required once the maintainers make it so, refuses a pull request that does not carry exactly one label of each family, as the kind label check does for the maintenance category. A release proposal or promotion pull request, which changes only `docs/releases/`, has no class, as it has no kind.
 
 ## Sources
 

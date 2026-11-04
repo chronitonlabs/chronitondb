@@ -38,6 +38,7 @@ The role that asked the question writes the record, in the pull request that fol
 3. A record states the decision cleanly with its reason. It does not quote the discussion that led to it, and it points to no private material.
 4. The decision outcome uses BCP 14 key words where it is normative.
 5. Each new file carries the ChronitonDB licence header. See [conventions.md](../process/conventions.md#licence-headers).
+6. Each new record keeps the template's Contents index, regenerated with `tools/chronitondb/doclint.py index --write <file>`. A record merged before the template had one stays as it was merged, under rule 2. See [conventions.md](../process/conventions.md#contents-index-of-process-documents).
 
 ## Template
 
@@ -51,6 +52,14 @@ The role that asked the question writes the record, in the pull request that fol
 | Date | <RFC 3339 date> |
 | Deciders | The maintainers |
 | References | <issue, pull request, feature spec, earlier records> |
+
+## Contents
+
+- [Context and problem statement](#context-and-problem-statement)
+- [Considered options](#considered-options)
+- [Decision outcome](#decision-outcome)
+  - [Consequences](#consequences)
+- [More information](#more-information)
 
 ## Context and problem statement
 

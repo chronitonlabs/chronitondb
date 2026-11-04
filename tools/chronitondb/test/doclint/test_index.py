@@ -417,6 +417,38 @@ class DocumentCheck(unittest.TestCase):
         _, _, err = self.document("docs/delta/pinned.md")
         self.assertNotIn("Contents", err)
 
+    def decisions_on_the_line(self):
+        """The line's decision README, whose record template has a Contents
+        section, and its merged record 0001, which has none."""
+        os.makedirs(os.path.join(self.repo, "docs", "decisions"))
+        for name in ("README.md", "0001-initial-maintainers.md"):
+            with open(os.path.join(ROOT, "docs", "decisions", name), encoding="utf-8") as handle:
+                self.put("docs/decisions/" + name, handle.read())
+        self.line(TEMPLATE)
+        with open(os.path.join(ROOT, "docs", "decisions", "0001-initial-maintainers.md"), encoding="utf-8") as handle:
+            old = handle.read()
+        self.assertNotIn("## Contents", old)
+        return old.replace("# 0001. The first maintainers", "# 0002. A later decision")
+
+    def test_a_merged_record_without_an_index_passes(self):
+        self.decisions_on_the_line()
+        rc, out, err = self.document("docs/decisions/0001-initial-maintainers.md")
+        self.assertEqual((rc, err), (0, ""))
+        self.assertIn("documents 1 checked 0 failed", out)
+
+    def test_a_new_record_without_an_index_fails(self):
+        self.put("docs/decisions/0002-a-later-decision.md", self.decisions_on_the_line())
+        rc, _, err = self.document("docs/decisions/0002-a-later-decision.md")
+        self.assertEqual(rc, 1)
+        self.assertIn("docs/decisions/0002-a-later-decision.md:1: no '## Contents' section", err)
+
+    def test_a_new_record_with_its_index_passes(self):
+        self.put("docs/decisions/0002-a-later-decision.md", self.decisions_on_the_line())
+        run("index", "--write", os.path.join(self.repo, "docs/decisions/0002-a-later-decision.md"))
+        rc, out, err = self.document("docs/decisions/0002-a-later-decision.md")
+        self.assertEqual((rc, err), (0, ""))
+        self.assertIn("documents 1 checked 0 failed", out)
+
     def test_a_coverage_file_is_a_document(self):
         self.assertEqual(doclint.doc_type("docs/design/42-a-fix/ac-coverage.md", "# Acceptance coverage for #42\n"), "ac-coverage")
         template = self.read_template("ac-coverage.md")

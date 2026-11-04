@@ -70,7 +70,11 @@ Every document is checked for:
      rules: the text GitHub shows for the heading in lower case, every
      character that is not a letter, a digit, "_", "-" or a space
      removed, each space a hyphen, and a heading whose anchor is taken
-     already gets "-1", then "-2"
+     already gets "-1", then "-2". A decision record is asked for its
+     index only when its number is above the highest record merged at
+     REF: a merged record is never edited, docs/decisions/README.md
+     rule 2, so one merged before its template had the section keeps
+     none
 
 A feature spec is also checked for:
 
@@ -989,6 +993,25 @@ def run_index(args):
     return 1 if failed else 0
 
 
+def last_merged_record(repo, ref):
+    """The highest number of a decision record at ref, docs/decisions/
+    NNNN-<slug>.md, or 0 when it has none."""
+    listing = git(repo, "ls-tree", "--name-only", ref, "--", "docs/decisions/") or ""
+    numbers = [int(match.group(1)) for match in (re.match(r"^docs/decisions/([0-9]{4})-[^/]+\.md$", line) for line in listing.split("\n")) if match]
+    return max(numbers) if numbers else 0
+
+
+def needs_index(kind, path, repo, templates, rules):
+    """True when the document is asked for its index: every templated
+    kind, and a decision record only when it is newer than every record
+    merged at the rules ref."""
+    if kind != "decision":
+        return True
+    if "last-record" not in rules:
+        rules["last-record"] = last_merged_record(repo, templates)
+    return int(os.path.basename(path)[:4]) > rules["last-record"]
+
+
 def decision_template(text):
     """The decision record template: the fenced markdown block of
     docs/decisions/README.md under its Template heading."""
@@ -1545,7 +1568,7 @@ def main(argv):
             doc.error(0, "no %s template at %s on %s, so this document cannot be checked against it" % (kind.replace("-", " "), template_path, templates))
         else:
             check_common(doc, kind, template_text, path)
-            if has_contents(Markdown(template_path, template_text)):
+            if has_contents(Markdown(template_path, template_text)) and needs_index(kind, path, repo, templates, rules):
                 check_index(doc, path)
             if kind == "feature-spec":
                 if "quality" not in rules:

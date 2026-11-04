@@ -17,7 +17,7 @@ limitations under the License.
 
 # Quality requirements
 
-Every feature spec and every one-item design record answers this checklist. It is organised by the quality characteristics of ISO/IEC 25010. Each line MUST have requirements that meet it, or a stated reason it does not apply. A line with neither blocks approval.
+Every feature spec and every one-item design record answers this checklist. A feature spec answers it when its class requires the Quality requirements section, see [classification.md](classification.md). It is organised by the quality characteristics of ISO/IEC 25010. Each line MUST have requirements that meet it, or a stated reason it does not apply. A line with neither blocks approval.
 
 ## The project rules
 

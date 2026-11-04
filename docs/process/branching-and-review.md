@@ -90,6 +90,8 @@ Apache's Build Scripts check also runs on pull requests that touch `.build/` or 
 
 The parity suite becomes a required check once it exists.
 
+The `class-label` check, that the pull request carries exactly one `risk:`, one `size:` and one `reach:` label, runs on every pull request and becomes a required check once the maintainers add it to the line's rules. See [classification.md](classification.md).
+
 The process document check becomes a required check once it exists. It runs on every pull request, a person's or an agent's, and enforces the template rules, the Contents index of each document (see [conventions.md](conventions.md#contents-index-of-process-documents)), the clarification markers and the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids).
 
 Workflow runs on pull requests from first time and outside contributors wait for a maintainer's approval before they start.

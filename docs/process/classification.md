@@ -37,7 +37,7 @@ The risk of a change is the worst Bug Category it could cause if it were wrong, 
 | Security | Remote code execution, privilege escalation, information leakage, denial of service | Critical |
 | Packaging | How the software is built, packaged and installed, the source or the package distribution | Low |
 | Documentation | What the documentation says | Low |
-| Code | A bug whose impact is unclear | Normal, unless the author shows a worse category |
+| Code | A bug whose impact is unclear | Critical until the author names the category the change could cause, as anything unknown counts as its strictest value |
 
 The table gives each category the level it takes by the definitions below. The worst row the change could cause decides. The three levels are Cassandra's Severity values:
 

@@ -136,10 +136,10 @@ Exit 0 when nothing is found, 1 on a finding, 2 on a usage error.
 
 ### The Contents index
 
-When a document's template on the line has a `## Contents` section, the document must have one too, as [conventions.md](../../docs/process/conventions.md#contents-index-of-process-documents) sets out: the first section after the title, a nested list with one link per heading below the title, in order, two spaces of indent per level below `##`, each showing its heading's text and linking its GitHub anchor. Duplicate headings link `-1`, `-2` as GitHub numbers them. The check refuses a missing or misplaced section, a heading left out, an entry out of order or at the wrong depth, a link no heading of the file answers, and any other text in the section.
+When a document's template on the line has a `## Contents` section, the document must have one too, as [conventions.md](../../docs/process/conventions.md#contents-index-of-process-documents) sets out: the first section after the title, a nested list with one link per heading below the title, in order, each entry two spaces deeper than the nearest heading above it of a higher level (a `##` not indented), each showing its heading's text and linking its GitHub anchor. Duplicate headings link `-1`, `-2` as GitHub numbers them. The check refuses a missing or misplaced section, a heading left out, an entry out of order or at the wrong depth, a link no heading of the file answers, and any other text in the section.
 
     tools/chronitondb/doclint.py index FILE              print the Contents section FILE needs
-    tools/chronitondb/doclint.py index --write FILE...   put it in the file, in place of the old one
+    tools/chronitondb/doclint.py index --write FILE...   put it in the file, in place of the old one, refused when that one holds other text
     tools/chronitondb/doclint.py index --check FILE...   report what is wrong with the index, also for a template
 
 `index` reads the working tree and works on any Markdown file. Authors and agents run `index --write` after any heading changes and before each commit of a document.

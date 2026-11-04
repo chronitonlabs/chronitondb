@@ -124,6 +124,37 @@ class Anchors(unittest.TestCase):
         self.assertEqual(doclint.slug("See [the register](README.md)"), "see-the-register")
         self.assertEqual(doclint.slug("Keep `snake_case` names"), "keep-snake_case-names")
 
+    def test_escaped_and_bare_underscores_are_kept(self):
+        # GitHub shows max_threads, _private, "Use _ as a placeholder" and
+        # chronitondb_ as written: none of these underscores is emphasis.
+        self.assertEqual(doclint.slug("max\\_threads"), "max_threads")
+        self.assertEqual(doclint.slug("_private"), "_private")
+        self.assertEqual(doclint.slug("Use _ as a placeholder"), "use-_-as-a-placeholder")
+        self.assertEqual(doclint.slug("The prefix chronitondb_ and more"), "the-prefix-chronitondb_-and-more")
+        self.assertEqual(doclint.slug("A lone _"), "a-lone-_")
+
+    def test_other_escapes_are_their_character(self):
+        self.assertEqual(doclint.rendered("Escaped \\`tick\\` and \\*star\\*"), "Escaped `tick` and *star*")
+        self.assertEqual(doclint.slug("Escaped \\`tick\\` and \\*star\\*"), "escaped-tick-and-star")
+
+    def test_a_reference_link_is_its_text(self):
+        self.assertEqual(doclint.slug("See [x][ref]"), "see-x")
+        self.assertEqual(doclint.slug("See [x][]"), "see-x")
+
+    def test_an_html_entity_is_its_character(self):
+        self.assertEqual(doclint.rendered("Q&amp;A"), "Q&A")
+        self.assertEqual(doclint.slug("Q&amp;A"), "qa")
+        self.assertEqual(doclint.slug("Keep `&amp;` literal"), "keep-amp-literal")
+
+    def test_an_image_shows_no_text(self):
+        self.assertEqual(doclint.slug("Link [a](http://x) and ![img](y.png)"), "link-a-and-")
+
+    def test_brackets_in_a_code_span(self):
+        self.assertEqual(doclint.slug("The `a[0]` value"), "the-a0-value")
+        self.assertEqual(doclint.link_text("The `a[0]` value"), "The `a[0]` value")
+        self.assertEqual(doclint.link_text("The [a] and `b[1]`"), "The \\[a\\] and `b[1]`")
+        self.assertEqual(doclint.link_text("See [x](y) and [z][ref]"), "See x and z")
+
     def test_duplicates_are_numbered(self):
         text = "# T\n\n## Notes\n\n## Notes\n\n### Notes\n"
         self.assertEqual(self.anchors_of(text), ["t", "notes", "notes-1", "notes-2"])
@@ -177,7 +208,16 @@ class IndexCheck(unittest.TestCase):
     def test_wrong_depth_fails(self):
         errors = check(GOOD.replace("  - [Fields](#fields)", "- [Fields](#fields)"))
         self.assertEqual(len(errors), 1)
-        self.assertIn("'Fields' is indented 0 spaces, a level 3 heading is indented 2", errors[0])
+        self.assertIn("'Fields' is indented 0 spaces. It is indented 2, two spaces more than the nearest heading above it of a higher level", errors[0])
+
+    def test_a_skipped_level_is_one_step_below_its_parent(self):
+        text = "# T\n\n## Contents\n\n- [A](#a)\n  - [Deep](#deep)\n    - [Deeper](#deeper)\n  - [B](#b)\n- [C](#c)\n\n## A\n\n##### Deep\n\n###### Deeper\n\n### B\n\n## C\n"
+        self.assertEqual(check(text), [])
+        errors = check(text.replace("  - [Deep](#deep)", "      - [Deep](#deep)"))
+        self.assertEqual(len(errors), 1)
+        self.assertIn("'Deep' is indented 6 spaces. It is indented 2", errors[0])
+        doc = Markdown("x.md", text)
+        self.assertEqual(doclint.index_section(doc)[2:], ["- [A](#a)", "  - [Deep](#deep)", "    - [Deeper](#deeper)", "  - [B](#b)", "- [C](#c)"])
 
     def test_out_of_order_fails(self):
         text = GOOD.replace("- [Header](#header)\n  - [Fields](#fields)\n- [What](#what)", "- [What](#what)\n- [Header](#header)\n  - [Fields](#fields)")
@@ -260,6 +300,31 @@ class IndexCommand(unittest.TestCase):
         text = self.without_contents().replace("## What\n", "## Contents\n\n- [Header](#header)\n\n## What\n")
         path = self.write("a.md", text)
         run("index", "--write", path)
+        self.assertEqual(self.read(path), GOOD)
+
+    def test_write_refuses_a_subsection_under_contents(self):
+        text = "# T\n\n## 1. Problem\n\nIntro.\n\n## Contents\n\n- [x](#x)\n\n### Requirements\n\nREQ-ABC-001 The node MUST do it.\n\n## 2. Next\n"
+        path = self.write("a.md", text)
+        rc, out, err = run("index", "--write", path)
+        self.assertEqual(rc, 1)
+        self.assertIn(path + ":11: the Contents section holds other text on this line", err)
+        self.assertIn("The file is unchanged", err)
+        self.assertEqual(self.read(path), text)
+
+    def test_write_refuses_a_paragraph_in_contents(self):
+        text = GOOD.replace("- [What](#what)\n", "- [What](#what)\n\nNote: keep me.\n")
+        path = self.write("a.md", text)
+        rc, _, err = run("index", "--write", path)
+        self.assertEqual(rc, 1)
+        self.assertIn(path + ":16: the Contents section holds other text on this line", err)
+        self.assertEqual(self.read(path), text)
+        self.assertTrue(any("holds only its list of links" in e for e in check(text, path)))
+
+    def test_write_builds_the_index_from_the_headings_that_remain(self):
+        text = self.without_contents().replace("## What\n", "## Contents\n\n- [Gone](#gone)\n\n## What\n")
+        path = self.write("a.md", text)
+        rc, _, _ = run("index", "--write", path)
+        self.assertEqual(rc, 0)
         self.assertEqual(self.read(path), GOOD)
 
     def test_check(self):

@@ -227,9 +227,10 @@ FLOOR = ("public interface", "stock behaviour")
 STRICTEST = {"Risk": "Critical", "Size": "Byzantine", "Reach": "Cross-cutting"}
 NOT_APPLICABLE = re.compile(r"^Not applicable:\s*(\S.*)$")
 # A section claims Not applicable when its own text starts with the words
-# and then a colon or nothing: "Not applicable to clusters without ..." is
-# content (P7).
-NOT_APPLICABLE_ANY = re.compile(r"^\W*not\s+applicable\s*(:|$)", re.I)
+# and then any punctuation, the end of the line, or "because", "since" or
+# "as". Only a preposition after them makes content: "Not applicable to
+# clusters without ..." is content (P7, V1).
+NOT_APPLICABLE_ANY = re.compile(r"^\W*not\s+applicable\s*([^\w\s]|$|(because|since|as)\b)", re.I)
 REASON_WORDS = 3
 WPCO = "Where problems could occur"
 TEST_PLAN = "Test plan"

@@ -171,7 +171,7 @@ FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, risk o
 
 ## 8. Dependencies
 
-{Required from Challenging size, for Cross-cutting reach, and at Normal risk when Touches names a new dependency. Each new library or version change, one row each. Name a library by its Maven `group:artifact` or artifact, its pip name, its file name under `lib/` without the version, or `accord` for the Accord submodule, and give the exact version. Or "No new dependency".}
+{Required from Challenging size, for Cross-cutting reach, and at Normal or Critical risk when Touches names a new dependency. Each new library or version change, one row each. Name a library by its Maven `group:artifact` or artifact, its pip name, its file name under `lib/` without the version, or `accord` for the Accord submodule, and give the exact version. Or "No new dependency".}
 
 | Library | Version | ASF category | NOTICE and credit lines | Known vulnerabilities | Why it is needed |
 |---|---|---|---|---|---|

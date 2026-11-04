@@ -87,7 +87,7 @@ One template serves every class, [templates/feature-spec.md](templates/feature-s
 | Normal size adds | Context and scope, Building blocks, Package dependencies and hook points, Milestones outline |
 | Challenging and Byzantine size | Every section, the Glossary included |
 | Cross-cutting reach adds | Dependencies, Risks, Milestones outline |
-| Critical risk adds | Threat model and Compatibility, in full |
+| Critical risk adds | Threat model and Compatibility, in full, and Dependencies when it adds a dependency |
 | Normal risk adds | Threat model when the change adds new input or privilege, Compatibility when it touches a public interface or stock behaviour, Dependencies when it adds a dependency |
 
 The control table of the spec carries the class: rows Risk, Size and Reach, each with the level and its reason, and a row Touches naming what the change touches: a public interface, stock behaviour, new input or privilege, a new dependency, or none. The plan and the milestone reports repeat the spec's class. A design record and a fix record carry the class of their item.

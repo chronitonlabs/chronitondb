@@ -125,7 +125,7 @@ A one-item change takes the same stages with its design record or fix record in 
 
 The class is three label families on the issue, mirrored on each of its pull requests: one `risk:` label, one `size:` label and one `reach:` label.
 
-1. The first contributor or role to pick up the issue sets the three labels, with a comment that gives the reasons: the worst Bug Category, the floor if it applied, and why that size and reach. For a feature that is the architect, for a Low risk fix the developer.
+1. The first contributor or role to pick up the issue sets the three labels, with a comment on the issue, next to the labels, that gives the reasons: the worst Bug Category, the floor if it applied, and why that size and reach. The comment is public, like the rest of the issue. For a feature that is the architect, for a Low risk fix the developer.
 2. The reviewer checks the labels at every review, against the change and the reasons.
 3. A maintainer confirms the class: through the class and scope question for Critical work, at the spec merge for Normal work, at the pull request merge for Low work. A maintainer may change any label at any time, and the change takes effect from the next step of the work.
 4. Work that carries no class yet, or a family with no label or with two, is treated as the strictest value of that family: Critical, Byzantine and Cross-cutting.

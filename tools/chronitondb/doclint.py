@@ -236,20 +236,26 @@ NOT_APPLICABLE = re.compile(r"^Not applicable:\s*(\S.*)$")
 # A section claims Not applicable when its own text starts with the words
 # and then any punctuation, the end of the line, "because", "since" or "as",
 # or a qualifier that points at the document itself, such as "here", "for
-# this feature" or "in this case", and when it starts with "N/A" or "NA".
-# Only a preposition that names something else makes content: "Not
-# applicable to clusters without ..." is content (P7, V1, V5).
+# this feature" or "in this case", and when it starts with "N/A" or "n/a",
+# the slash written. Only a preposition that names something else makes
+# content: "Not applicable to clusters without ..." and "Not applicable to
+# this release line only ..." are content, and so is a word NA (P7, V1,
+# V5, V7).
 NOT_APPLICABLE_ANY = re.compile(
     r"^\W*(not\s+applicable\s*([^\w\s]|$|(because|since|as|here|now|yet)\b"
-    r"|(for|in|to|on)\s+(this|these|the\s+(feature|change|item|fix|case|spec|record|document|section))\b)"
-    r"|n/?a\b)", re.I)
+    r"|(for|in|on)\s+(this|these|the\s+(feature|change|item|fix|case|spec|record|document|section))\b)"
+    r"|n/a\b)", re.I)
 REASON_WORDS = 3
 WPCO = "Where problems could occur"
 TEST_PLAN = "Test plan"
 EMPTY_RISK = re.compile(r"^\W*(none|low|n/?a|nothing|no risk|low risk|minimal|negligible)\W*$", re.I)
-# A risk text that opens by playing the risk down: Ubuntu's rule refuses
-# "low" and an argument that the change is safe (P11).
-DISMISSIVE_RISK = re.compile(r"^\W*(none|low(\s+risk)?|no\s+risk|minimal|negligible|nothing)\b", re.I)
+# A Where problems could occur text that opens by playing the risk down:
+# "low risk", "no risk", "minimal risk" or "negligible risk", or "none",
+# "low" or "nothing" with punctuation or the end of the text after it.
+# "Low-level reads ..." and "Nothing in stock changes, but ..." name real
+# problems (P11, V6). Ubuntu's rule is about that section, so the test plan
+# is not held to it.
+DISMISSIVE_RISK = re.compile(r"^\W*((low|no|minimal|negligible)\s+risk\b|(none|low|nothing)\s*([.,;:!]|$))", re.I)
 # The Touches phrases are split at a comma, a semicolon or "and", and read
 # in any case (P8).
 TOUCHES_SPLIT = re.compile(r"\s*[,;]\s*(?:and\s+)?|\s+and\s+")
@@ -697,12 +703,13 @@ def required_sections(template, levels, touches):
     return wanted
 
 
-def check_risk_text(doc, index, what):
+def check_risk_text(doc, index, what, opener=True):
     """The Where problems could occur section and its test plan name
-    something: never none, low or a word or two."""
+    something: never none, low or a word or two. The section, not its test
+    plan, never opens by playing the risk down (V6)."""
     lines = own_lines(doc, index)
     text = " ".join(line.strip() for _, line in lines)
-    if lines and (EMPTY_RISK.match(text) or DISMISSIVE_RISK.match(text) or len(re.findall(r"\w+", text)) < WPCO_WORDS):
+    if lines and (EMPTY_RISK.match(text) or (opener and DISMISSIVE_RISK.match(text)) or len(re.findall(r"\w+", text)) < WPCO_WORDS):
         doc.error(index, "%s says only '%s'. It names what could break, how a user would see it and the tests that would catch it, never none or low (classification.md)" % (what, text if len(text) <= 40 else text[:37] + "..."))
 
 
@@ -747,7 +754,7 @@ def check_spec_class(doc, template, fields):
                 # Its test plan alone is not enough, as in a record (P1).
                 doc.error(headings[number][1], "section %s %s is empty. It names what could break, how a user would see it and the tests that would catch it, and its test plan alone is not enough (classification.md)" % (number, title))
                 continue
-            check_risk_text(doc, headings[number][1], "section %s %s" % (number, title))
+            check_risk_text(doc, headings[number][1], "section %s %s" % (number, title), opener=title == WPCO)
     check_non_goals(doc)
     return levels
 
@@ -835,7 +842,7 @@ def check_record_risk(doc, kind, template, path=None, source=None):
     elif not own_lines(doc, plan) or not_applicable_of(doc, plan) is not None:
         doc.error(plan, "the %s of section %s is empty or says Not applicable. It names the test that would catch each problem (classification.md)" % (TEST_PLAN, WPCO))
     else:
-        check_risk_text(doc, plan, "the %s of section %s" % (TEST_PLAN, WPCO))
+        check_risk_text(doc, plan, "the %s of section %s" % (TEST_PLAN, WPCO), opener=False)
 
 
 def check_class_rows(doc, kind, path, template, source):

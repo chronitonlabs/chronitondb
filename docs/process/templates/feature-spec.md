@@ -37,7 +37,7 @@ Location: `docs/design/<KEY>-<slug>/feature-spec.md` on the line the feature tar
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
-The Risk, Size and Reach rows are the feature's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the feature touches, from the four phrases in the row, or says none. A public interface or stock behaviour in Touches means the risk is Normal or Critical. The class decides which sections are required, as each section says. A required section holds its content. Any other section holds its content or the one line `Not applicable: <reason>`. A section that says Not applicable covers its subsections, which are then left out.
+The Risk, Size and Reach rows are the feature's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the feature touches, from the phrases in the row, or says none. A public interface or stock behaviour in Touches means the risk is Normal or Critical. The class decides which sections are required, as each section says. A required section holds its content. Any other section holds its content or the one line `Not applicable: <reason>`. A section that says Not applicable covers its subsections, which are then left out.
 
 ## Contents
 
@@ -76,7 +76,7 @@ The Risk, Size and Reach rows are the feature's class, as [classification.md](..
 
 ### Non-goals
 
-{What the feature will not do, each with a short reason.}
+{Required for every class, never Not applicable. What the feature will not do, each with a short reason.}
 
 ## 2. Architecture
 
@@ -147,7 +147,7 @@ FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, risk o
 
 ## 7. Compatibility
 
-{Required from Challenging size, at Critical risk, and at Normal risk when Touches names a public interface or stock behaviour. In full, or the statement "This feature changes no format, schema or protocol" with the reason.}
+{Required from Challenging size, at Critical risk, and at Normal risk when Touches names a public interface or stock behaviour. Where it is required, the statement "This feature changes no format, schema or protocol" with the reason MAY stand in for 7.1 only, and 7.2 to 7.5 are written in full: a change with no format change still has a mixed-version and a rollback story. Where it is not required, the statement with the reason MAY stand in for 7.1 to 7.5.}
 
 ### 7.1 On-disk format changes
 

@@ -32,6 +32,12 @@ Change history: the git history of this file.
 
 Location: `docs/releases/<line>-plan.md`, one per line. It changes only by a pull request a maintainer merges. Process: [release.md](../release.md).
 
+## Contents
+
+- [1. First release](#1-first-release)
+- [2. Feature freeze](#2-feature-freeze)
+- [3. Support](#3-support)
+
 ## 1. First release
 
 Planned first release date: {YYYY-MM-DD, or "not set"}

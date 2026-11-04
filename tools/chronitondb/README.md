@@ -119,10 +119,11 @@ The jars come from Maven Central into `build/chronitondb-shape/spotbugs-4.10.5`,
 
 ## Process documents: `doclint.py`
 
-Checks the process documents under `docs/` against their templates on the line, and the rules [docs/process/](../../docs/process/README.md) sets for them: the document control table, every numbered section in order, no template placeholder and no `[NEEDS CLARIFICATION` marker left, and per document type the feature spec, plan, milestone report, decision record and delta entry rules. It also checks the feature keys and requirement ids of [additive.md](../../docs/process/additive.md#feature-keys-and-requirement-ids) across the lines, the library declarations of [compliance.md](../../docs/process/compliance.md), and that `conf/cassandra_chronitondb.yaml` holds every setting of Apache's two yaml files ([release.md](../../docs/process/release.md#the-configuration-file)). `markdown.py` beside it is its Markdown reader. Python 3 only, no other dependency.
+Checks the process documents under `docs/` against their templates on the line, and the rules [docs/process/](../../docs/process/README.md) sets for them: the document control table, every numbered section in order, the Contents index, no template placeholder and no `[NEEDS CLARIFICATION` marker left, and per document type the feature spec, plan, milestone report, decision record and delta entry rules. It also checks the feature keys and requirement ids of [additive.md](../../docs/process/additive.md#feature-keys-and-requirement-ids) across the lines, the library declarations of [compliance.md](../../docs/process/compliance.md), and that `conf/cassandra_chronitondb.yaml` holds every setting of Apache's two yaml files ([release.md](../../docs/process/release.md#the-configuration-file)). `markdown.py` beside it is its Markdown reader. Python 3 only, no other dependency.
 
     tools/chronitondb/doclint.py document --repo . --templates origin/chronitondb-5.0 --source index docs/design/LUC-fulltext-search/feature-spec.md
     tools/chronitondb/doclint.py keys --repo . --base origin/chronitondb-5.0 --source index
+    tools/chronitondb/doclint.py index --write docs/design/LUC-fulltext-search/feature-spec.md
 
 The rules are read from the ref given with `--templates` or `--base`, the line, never from the change being checked. The CI workflow `.github/workflows/chronitondb-documents.yml` runs `document` on the process documents a pull request changes, and `keys` when it changes `docs/design/` or `test/bdd/`, with this file taken from the base branch. It also checks that a delta entry's issue exists and that a new feature key is not in use by another open pull request. Run `doclint.py` without arguments for every subcommand and option.
 
@@ -132,3 +133,21 @@ Findings, one per line, then a summary:
     documents 1 checked 1 failed
 
 Exit 0 when nothing is found, 1 on a finding, 2 on a usage error.
+
+### The Contents index
+
+When a document's template on the line has a `## Contents` section, the document must have one too, as [conventions.md](../../docs/process/conventions.md#contents-index-of-process-documents) sets out: the first section after the title, a nested list with one link per heading below the title, in order, each entry two spaces deeper than the nearest heading above it of a higher level (a `##` not indented), each showing its heading's text and linking its GitHub anchor. Duplicate headings link `-1`, `-2` as GitHub numbers them. A decision record is asked for its index only when it is new, not yet on the line, since a merged record is never edited. A new record also takes the next number after the highest one merged on the line. The check refuses a missing or misplaced section, a heading left out, an entry out of order or at the wrong depth, a link no heading of the file answers, and any other text in the section.
+
+    tools/chronitondb/doclint.py index FILE              print the Contents section FILE needs
+    tools/chronitondb/doclint.py index --write FILE...   put it in the file, in place of the old one, refused when that one holds other text
+    tools/chronitondb/doclint.py index --check FILE...   report what is wrong with the index, also for a template
+
+`index` reads the working tree and works on any Markdown file. Authors and agents run `index --write` after any heading changes and before each commit of a document.
+
+A coverage file, `ac-coverage.md` in a design directory, is checked against the coverage file template.
+
+### Tests
+
+`test/doclint/` holds the checker's unit tests, Python's `unittest`, no other dependency. They include a test that every template in `docs/process/templates/` carries a correct index. The CI workflow runs them in a job of its own, apart from the job that checks the documents with the line's checker.
+
+    python3 -m unittest discover -s tools/chronitondb/test/doclint

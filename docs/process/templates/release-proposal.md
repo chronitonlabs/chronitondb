@@ -31,6 +31,15 @@ Change history: the git history of this file.
 
 Location: `docs/releases/<version>.md`. Process: [release.md](../release.md).
 
+## Contents
+
+- [1. Version](#1-version)
+- [2. Commit](#2-commit)
+- [3. What goes in](#3-what-goes-in)
+- [4. Milestone gates passed](#4-milestone-gates-passed)
+- [5. Security fixes due](#5-security-fixes-due)
+- [6. Verification results](#6-verification-results)
+
 ## 1. Version
 
 {The version, in the form of [release.md](../release.md#version-numbers), and the line it ships on. For a line's first release also its support, `Support: LTS` or `Support: standard` as the maintainers designated it, with the end date for an LTS line. See [release.md](../release.md#support-lifetime).}

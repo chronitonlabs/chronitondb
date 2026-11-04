@@ -127,6 +127,16 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 5. Documentation changes ship in the same pull request as the code they describe.
 6. Requirements and prerequisites in reference pages and how-to guides use BCP 14 key words. Tutorials and explanations use plain prose.
 
+## Contents index of process documents
+
+Each document is one file, so each carries an index of its headings near the top.
+
+1. Every template in [templates/](templates/) has a `## Contents` section, and every document written from a template keeps it. The decision record template in [docs/decisions/README.md](../decisions/README.md#template) has one too, and every new record keeps it. A record already merged is never edited except for its status, so it stays as it was merged, with or without an index.
+2. The Contents section is the first section after the title, below the document control table and the opening lines. It holds only a nested list: one link per heading below the title, in the order of the headings. A `##` heading is not indented. Every other heading is indented two spaces more than the nearest heading above it of a higher level, so a heading that skips a level is still one step below its parent.
+3. Each entry shows its heading's text and links the heading's anchor. The anchor follows GitHub's rules: the text GitHub shows for the heading in lower case, every character that is not a letter, a digit, `_`, `-` or a space removed, and each space a hyphen. A heading whose anchor is taken already gets `-1`, then `-2`. For example `## 2.1 Context and scope` is `#21-context-and-scope`.
+4. The index is never written by hand. After any heading is added, removed or renamed, and before the commit, the author regenerates it with `tools/chronitondb/doclint.py index --write <file>`. It refuses, and leaves the file unchanged, when the Contents section holds anything but the list. `tools/chronitondb/doclint.py index <file>` prints it, and `index --check <file>` reports what is wrong with it.
+5. The process document check refuses a document of a templated kind, a decision record only when it is new to the line, whose index is missing, not first, misses a heading, lists a heading out of order or at the wrong depth, or links an anchor that no heading of the file has. It also refuses a new decision record that does not take the next number after the highest one merged on the line. See [the tools README](../../tools/chronitondb/README.md#process-documents-doclintpy).
+
 ## Code layout
 
 1. Fork logic lives in classes under `org.chronitondb`, in packages named for what they are, for example `org.chronitondb.fulltext`.

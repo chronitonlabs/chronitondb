@@ -18,9 +18,11 @@
 # (docs/process/classification.md). The issue carries the class and the
 # pull request carries the same. A release proposal or promotion, which
 # changes only docs/releases/, has no class, as it has no kind, and passes
-# with no class label. It reruns when a label changes. It checks out
-# nothing and runs no code from the pull request, it only reads the pull
-# request's labels and file names.
+# with no class label. It reruns when a label changes, one run at a time
+# per pull request, the newest winning, and reads the labels from the API
+# when it runs, so quick label events cannot leave an older answer. It
+# checks out nothing and runs no code from the pull request, it only reads
+# the pull request's labels and file names.
 name: ChronitonDB class label
 
 on:
@@ -31,6 +33,11 @@ on:
 
 permissions:
   pull-requests: read
+  issues: read
+
+concurrency:
+  group: class-label-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   class-label:
@@ -38,7 +45,6 @@ jobs:
     steps:
       - name: Exactly one risk, one size and one reach label
         env:
-          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.pull_request.number }}
@@ -49,6 +55,9 @@ jobs:
             echo "A release proposal or promotion has no class, no class label needed."
             exit 0
           fi
+          # The labels as they are now, not as the event that started this
+          # run saw them.
+          LABELS="$(gh api "repos/$REPO/issues/$NUMBER/labels" --jq '[.[].name]')"
           rc=0
           for family in risk size reach
           do

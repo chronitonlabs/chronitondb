@@ -45,6 +45,7 @@ The type of each PATH comes from where it lives:
     docs/decisions/NNNN-<slug>.md          decision record
     docs/delta/<name>.md                   delta entry (README.md is the
                                            register)
+    docs/releases/<line>-plan.md           line plan
     docs/releases/*.md                     release proposal
 
 Any other path is not a document of the process and is passed over, except
@@ -167,6 +168,7 @@ TEMPLATES = {
     "milestone-report": "docs/process/templates/milestone-report.md",
     "design-record": "docs/process/templates/design-record.md",
     "fix-record": "docs/process/templates/fix-record.md",
+    "line-plan": "docs/process/templates/line-plan.md",
     "import-record": "docs/process/templates/import-record.md",
     "delta-entry": "docs/process/templates/delta-entry.md",
     "release-proposal": "docs/process/templates/release-proposal.md",
@@ -241,6 +243,8 @@ def doc_type(path, text):
         return "decision"
     if re.match(r"^docs/delta/[^/]+\.md$", path) and path != "docs/delta/README.md":
         return "delta-entry"
+    if re.match(r"^docs/releases/[^/]+-plan\.md$", path):
+        return "line-plan"
     if re.match(r"^docs/releases/[^/]+\.md$", path):
         return "release-proposal"
     return None

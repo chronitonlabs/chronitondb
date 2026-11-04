@@ -33,6 +33,43 @@ Location: `docs/design/<issue>-<slug>/`, or `docs/design/<KEY>-<slug>/` for a fo
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
+## Contents
+
+- [1. Problem, acceptance criteria and requirements](#1-problem-acceptance-criteria-and-requirements)
+  - [Requirements](#requirements)
+- [2. Decisions implemented](#2-decisions-implemented)
+- [3. Stock behaviour preservation](#3-stock-behaviour-preservation)
+  - [Stock hook points](#stock-hook-points)
+- [4. Prior art reviewed](#4-prior-art-reviewed)
+- [5. Idiom and consistency](#5-idiom-and-consistency)
+- [6. Quality requirements](#6-quality-requirements)
+- [7. Performance](#7-performance)
+  - [Hot path statement](#hot-path-statement)
+  - [Expected cost](#expected-cost)
+  - [Isolation levers](#isolation-levers)
+  - [Benchmarks that prove it](#benchmarks-that-prove-it)
+  - [Regression threshold and gate](#regression-threshold-and-gate)
+  - [Stock guard](#stock-guard)
+  - [What was not measured](#what-was-not-measured)
+- [8. Observability](#8-observability)
+- [9. Compatibility](#9-compatibility)
+- [10. Threat model and security](#10-threat-model-and-security)
+- [11. Dependencies](#11-dependencies)
+- [12. Compliance impact](#12-compliance-impact)
+- [13. Documentation](#13-documentation)
+- [14. Testing](#14-testing)
+  - [Tests for this change](#tests-for-this-change)
+  - [Existing suites at risk](#existing-suites-at-risk)
+  - [Stock suites run unchanged](#stock-suites-run-unchanged)
+  - [Tracing test](#tracing-test)
+  - [Formats and configurations](#formats-and-configurations)
+- [15. Not covered and follow-ups](#15-not-covered-and-follow-ups)
+- [New terms](#new-terms)
+- [Planned file list](#planned-file-list)
+  - [Shared with open items](#shared-with-open-items)
+  - [Waivers](#waivers)
+- [Requirement quality checklist (ISO/IEC/IEEE 29148)](#requirement-quality-checklist-isoiecieee-29148)
+
 ## 1. Problem, acceptance criteria and requirements
 
 {The problem in plain words. The acceptance criteria quoted from the issue or the plan item. Context and rationale stay in prose.}

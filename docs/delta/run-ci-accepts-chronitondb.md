@@ -22,12 +22,20 @@ limitations under the License.
 | Title | run-ci accepts this repository |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 2 |
+| Version | 3 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
 | References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
 Change history: the git history of this file.
+
+## Contents
+
+- [Header](#header)
+- [What](#what)
+- [Why](#why)
+- [Area](#area)
+- [Lines](#lines)
 
 ## Header
 
@@ -41,7 +49,7 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Bug-ChronitonDB | none |
 | Forwarded | Not needed. The change names this repository. |
 | Added | 2026-10-30 |
-| Last-Update | 2026-11-01 |
+| Last-Update | 2026-11-04 |
 | Pull requests | `chronitondb-5.0`: [#37](https://github.com/chronitonlabs/chronitondb/pull/37), commit `1fc1183e4c`. `chronitondb-6.0`: [#38](https://github.com/chronitonlabs/chronitondb/pull/38), commit `d2b5abc401`. |
 
 ## What

@@ -33,6 +33,35 @@ Location: `docs/design/<KEY>-<slug>/feature-spec.md` on the line the feature tar
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
+## Contents
+
+- [1. Purpose and scope](#1-purpose-and-scope)
+  - [Non-goals](#non-goals)
+- [2. Architecture](#2-architecture)
+  - [2.1 Context and scope](#21-context-and-scope)
+  - [2.2 Building blocks](#22-building-blocks)
+  - [2.3 Runtime view](#23-runtime-view)
+  - [2.4 Data and formats](#24-data-and-formats)
+  - [2.5 Cross cutting concepts](#25-cross-cutting-concepts)
+  - [2.6 Deployment](#26-deployment)
+  - [2.7 Package dependencies and hook points](#27-package-dependencies-and-hook-points)
+  - [2.8 Feature class and switches](#28-feature-class-and-switches)
+- [3. Feature requirements](#3-feature-requirements)
+- [4. Quality requirements](#4-quality-requirements)
+- [5. Threat model](#5-threat-model)
+- [6. Compatibility](#6-compatibility)
+  - [6.1 On-disk format changes](#61-on-disk-format-changes)
+  - [6.2 Mixed-version cluster](#62-mixed-version-cluster)
+  - [6.3 Upgrade path and prerequisites](#63-upgrade-path-and-prerequisites)
+  - [6.4 Rollback path](#64-rollback-path)
+  - [6.5 Runbook entries](#65-runbook-entries)
+- [7. Dependencies](#7-dependencies)
+- [8. Risks](#8-risks)
+- [9. Decisions](#9-decisions)
+- [10. Milestones outline](#10-milestones-outline)
+- [11. Prior art](#11-prior-art)
+- [Glossary](#glossary)
+
 ## 1. Purpose and scope
 
 {What the feature does and why, in plain words. Who uses it.}

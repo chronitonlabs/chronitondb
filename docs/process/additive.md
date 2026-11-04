@@ -38,7 +38,7 @@ Each level is approved by a merged pull request before the next level starts. Lo
 
 All three live on the line the feature targets.
 
-Checks on process documents, such as each document following its template, no unanswered clarification marker and the feature key rules, run on every pull request through a public check in the repository, and on the agents' work before it is committed. The check becomes a required check once it exists.
+Checks on process documents, such as each document following its template, its Contents index matching its headings, no unanswered clarification marker and the feature key rules, run on every pull request through a public check in the repository, and on the agents' work before it is committed. The check becomes a required check once it exists.
 
 Each large feature has its own public GitHub issue, opened by the architect. Its number names the branches of the feature spec, plan, delivery plan, milestone report and change control pull requests. Each item then has its own issue, opened by the designer.
 

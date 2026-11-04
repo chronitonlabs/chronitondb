@@ -22,12 +22,20 @@ limitations under the License.
 | Title | Apache workflow actions pinned to commits |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 2 |
+| Version | 3 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
 | References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
 Change history: the git history of this file.
+
+## Contents
+
+- [Header](#header)
+- [What](#what)
+- [Why](#why)
+- [Area](#area)
+- [Lines](#lines)
 
 ## Header
 
@@ -41,7 +49,7 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Bug-ChronitonDB | none |
 | Forwarded | Not needed. The maintainers may decide later to offer it to Apache Cassandra. |
 | Added | 2026-10-30 |
-| Last-Update | 2026-11-01 |
+| Last-Update | 2026-11-04 |
 | Pull requests | `chronitondb-5.0`: [#39](https://github.com/chronitonlabs/chronitondb/pull/39), commit `fb50ef9a74`. `chronitondb-6.0`: [#40](https://github.com/chronitonlabs/chronitondb/pull/40), commit `7306c3f56e`. |
 
 ## What

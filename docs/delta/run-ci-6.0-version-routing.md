@@ -22,12 +22,20 @@ limitations under the License.
 | Title | run-ci routes 6.0 versions on the 5.0 line |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 2 |
+| Version | 3 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
 | References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
 Change history: the git history of this file.
+
+## Contents
+
+- [Header](#header)
+- [What](#what)
+- [Why](#why)
+- [Area](#area)
+- [Lines](#lines)
 
 ## Header
 
@@ -41,7 +49,7 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Bug-ChronitonDB | none |
 | Forwarded | Not needed. The change is Apache's own, on its 6.0 branch but not on `cassandra-5.0`. We carry it until an Apache 5.0 release brings it. |
 | Added | 2026-10-30 |
-| Last-Update | 2026-11-01 |
+| Last-Update | 2026-11-04 |
 | Pull requests | `chronitondb-5.0`: [#37](https://github.com/chronitonlabs/chronitondb/pull/37), commit `b8c7408a5f`. |
 
 ## What

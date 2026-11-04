@@ -21,6 +21,12 @@ Location: next to its design or fix record, in `docs/design/<issue>-<slug>/`, or
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
+## Contents
+
+- [Coverage](#coverage)
+
+## Coverage
+
 {One row per requirement of the record that a scenario does not prove: a requirement proven by another test names that test, and one deliberately not tested gives the decision that excluded it. A requirement proven by a scenario carrying its tag needs no row. Each requirement has at most one row. Tooling reads this table, so keep its columns.}
 
 | Id | Source | Requirement | Covering scenario | Test | Status |

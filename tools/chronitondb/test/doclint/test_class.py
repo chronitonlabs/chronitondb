@@ -226,6 +226,12 @@ class SpecClass(Repo):
         self.assertEqual(rc, 1)
         self.assertIn("section 6 Threat model says Not applicable, and the class requires it (Critical risk)", err)
 
+    def test_critical_risk_requires_dependencies_for_a_new_dependency(self):
+        rc, err = self.spec_errors(risk="Critical: a wrong result, Correctness", touches="new dependency", na=("Dependencies",))
+        self.assertEqual(rc, 1)
+        self.assertIn("section 8 Dependencies says Not applicable, and the class requires it (Critical risk with a new dependency). Write it in full (classification.md)", err)
+        self.assertEqual(self.spec_errors(risk="Critical: a wrong result, Correctness", na=("Dependencies",)), (0, ""))
+
     def test_normal_risk_requires_what_touches_names(self):
         rc, err = self.spec_errors(touches="public interface (CQL), new input or privilege, new dependency",
                                    na=("Threat model", "Compatibility", "Dependencies"),

@@ -104,7 +104,8 @@ A feature spec is also checked for:
      interface or stock behaviour. A missing or malformed level counts as
      the strictest of its family: Critical, Byzantine, Cross-cutting
  10. its sections against the class: each section the class requires
-     holds its content and never says Not applicable, every other section
+     holds its content and never says Not applicable (at Critical risk the
+     sections Normal risk requires by Touches too), every other section
      holds its content or the one line "Not applicable: <reason>", a
      section that says Not applicable covers its subsections, which may be
      left out, and the sections it covers are not checked further. Where
@@ -623,6 +624,8 @@ def required_sections(template, levels, touches):
         for number in every:
             if compatibility and number.startswith(compatibility + "."):
                 wanted.setdefault(number, "Critical risk")
+        if "new dependency" in touches:
+            need(["Dependencies"], "Critical risk with a new dependency")
     if risk == "Normal":
         if "new input or privilege" in touches:
             need(["Threat model"], "Normal risk with new input or privilege")

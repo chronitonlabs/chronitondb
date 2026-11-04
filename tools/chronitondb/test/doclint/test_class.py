@@ -238,6 +238,30 @@ class SpecClass(Repo):
         self.assertEqual(self.spec_errors(risk="Critical: a wrong result, Correctness", drop=("On-disk format changes",)), (0, ""))
         self.assertEqual(self.spec_errors(drop=drop), (0, ""))
 
+    def test_every_form_of_not_applicable_is_a_claim(self):
+        # V1: a comma, a full stop, a dash, a colon, the end of the line or
+        # because, since or as after the words make a claim, in every
+        # section the class requires.
+        forms = ("Not applicable, the change is internal only.",
+                 "Not applicable. The change is internal only.",
+                 "Not applicable - the change is internal only",
+                 "Not applicable because the change is internal only.",
+                 "Not applicable since the change is internal only.",
+                 "Not applicable as the change is internal only.",
+                 "Not applicable")
+        sections = (("Where problems could occur", "section 4 Where problems could occur says Not applicable"),
+                    ("Decisions", "section 10 Decisions says Not applicable"),
+                    ("Building blocks", "section 2.2 Building blocks says Not applicable"),
+                    ("Non-goals", "section Non-goals says Not applicable"))
+        for form in forms:
+            for section, finding in sections:
+                rc, err = self.spec_errors(bodies={section: form})
+                self.assertEqual(rc, 1, (section, form))
+                self.assertIn(finding, err, (section, form))
+        rc, err = self.spec_errors(bodies={"Glossary": "Not applicable, no terms beyond stock ones."})
+        self.assertEqual(rc, 1)
+        self.assertIn("section Glossary says Not applicable, but write it as the one line 'Not applicable: <reason>'", err)
+
     def test_text_that_only_starts_with_not_applicable_is_content(self):
         rc, err = self.spec_errors(bodies={"Deployment": "Not applicable to clusters without the index: they see no change, and operators set nothing."})
         self.assertEqual((rc, err), (0, ""))
@@ -380,6 +404,11 @@ class OtherDocuments(Repo):
         text = re.sub(r"(## Where problems could occur\n\n)[^\n]*", r"\1Not applicable: the fix is a small one.", good)
         errors = self.class_errors(FIX, text)
         self.assertTrue(any("section Where problems could occur says Not applicable. A fix record writes it in full (classification.md)" in e for e in errors), errors)
+        for form in ("Not applicable, the fix is a small one.", "Not applicable. The fix is small.",
+                     "Not applicable - the fix is small", "Not applicable because the fix is small."):
+            text = re.sub(r"(## Where problems could occur\n\n)[^\n]*", lambda m: m.group(1) + form, good)
+            errors = self.class_errors(FIX, text)
+            self.assertTrue(any("section Where problems could occur says Not applicable" in e for e in errors), (form, errors))
         text = re.sub(r"(## Where problems could occur\n\n)[^\n]*", r"\1None.", good)
         errors = self.class_errors(FIX, text)
         self.assertTrue(any("section Where problems could occur says only 'None.'" in e for e in errors), errors)

@@ -26,12 +26,18 @@ limitations under the License.
 | Author | Designer: {GitHub username} |
 | Approver | The maintainer who merges the pull request |
 | References | Issue #{issue}. Line `chronitondb-<line>`. Apache base commit `<hash>`. Feature spec and plan item, if any. Decision records. |
+| Risk | {Critical, Normal or Low}: {the worst Bug Category the change could cause if wrong, and the floor if one applied} |
+| Size | {Low Hanging Fruit, Normal, Challenging or Byzantine}: {why} |
+| Reach | {One area or Cross-cutting}: {why, naming the packages touched} |
+| Touches | {public interface (name which), stock behaviour, new input or privilege, new dependency, or none} |
 
 Change history: the git history of this file.
 
 Location: `docs/design/<issue>-<slug>/`, or `docs/design/<KEY>-<slug>/` for a fork feature that fits one item (see [feature keys](../additive.md#feature-keys-and-requirement-ids)), with the coverage file `ac-coverage.md` next to it. For a fork feature that fits one item, the designer proposes a free key in this record's pull request, and the key is reserved when a maintainer merges it. Every section is filled, or carries a waiver with its reason. An empty section blocks approval.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
+
+The Risk, Size and Reach rows are the item's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the change touches, from the four phrases in the row, or says none. A public interface or stock behaviour in Touches means the risk is Normal or Critical.
 
 ## Contents
 
@@ -65,6 +71,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
   - [Formats and configurations](#formats-and-configurations)
 - [15. Not covered and follow-ups](#15-not-covered-and-follow-ups)
 - [New terms](#new-terms)
+- [Where problems could occur](#where-problems-could-occur)
+  - [Test plan](#test-plan)
 - [Planned file list](#planned-file-list)
   - [Shared with open items](#shared-with-open-items)
   - [Waivers](#waivers)
@@ -225,6 +233,14 @@ Scenario tags: {the tag expression for this item's scenarios}
 ## New terms
 
 {Terms this item needs that are not in the feature spec's glossary, each with a one line definition and its name in code, CQL and docs. The architect adds them to the glossary. Write "None." when there are none.}
+
+## Where problems could occur
+
+{Where the change could go wrong if it is wrong, worst case first: what a user or an operator would see (a wrong result, an error, a crash, a slow request, a changed file on disk), on which request path, and from which part of the change. Never "None" or "Low", and never an argument that the change is safe. After the "Where problems could occur" section of Ubuntu's stable release update template. An item of a feature whose feature spec the References row links MAY write the one line `Not applicable: <reason>` here, naming the spec's section 4 that covers it. Every other design record fills it. See [classification.md](../classification.md).}
+
+### Test plan
+
+{For each problem above, the test that would catch it and what it checks. A problem no test covers says why, and how it is watched instead. Left out when the section above says Not applicable.}
 
 ## Planned file list
 

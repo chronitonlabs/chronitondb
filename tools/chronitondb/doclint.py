@@ -320,7 +320,10 @@ def text_lines(doc, span):
 def check_requirement(doc, index, rid, text, unit):
     """One EARS shape, one BCP 14 keyword, a source, no unmeasured word
     without a number."""
-    body = re.sub(r"`[^`]*`", "", text)
+    # A code span is a word of the sentence: removed, a source that starts
+    # with one reads as no source. It becomes "code", which no keyword,
+    # shape or vague word check reads.
+    body = re.sub(r"`[^`]*`", "code", text)
     if not body.startswith(EARS):
         doc.error(index, "%s is in none of the five EARS shapes (The, When, While, Where, If then)" % rid)
     elif body.startswith("If ") and ", then " not in body:

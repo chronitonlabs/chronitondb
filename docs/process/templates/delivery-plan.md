@@ -31,6 +31,16 @@ Change history: the git history of this file.
 
 Location: `docs/design/<KEY>-<slug>/delivery-plan.md`. Process: [additive.md](../additive.md).
 
+## Contents
+
+- [1. Milestones](#1-milestones)
+  - [Milestone {n}: {name}](#milestone-n-name)
+- [2. Order rationale](#2-order-rationale)
+- [3. Line choice](#3-line-choice)
+- [4. Parallel work limit](#4-parallel-work-limit)
+- [5. Re-plan triggers](#5-re-plan-triggers)
+- [6. Test plan](#6-test-plan)
+
 ## 1. Milestones
 
 {Each milestone is an increment that can be tested and shown. One entry per milestone.}

@@ -31,6 +31,22 @@ Change history: the git history of this file.
 
 Location: `docs/imports/<apache-version-or-range>.md`, added in the import pull request. Process: [upstream.md](../upstream.md).
 
+## Contents
+
+- [1. What came in](#1-what-came-in)
+- [2. Assessment](#2-assessment)
+- [3. Conflicts with ChronitonDB changes](#3-conflicts-with-chronitondb-changes)
+- [4. Delta entries dropped](#4-delta-entries-dropped)
+- [5. Tests run](#5-tests-run)
+  - [Tests for this change](#tests-for-this-change)
+  - [Existing suites at risk](#existing-suites-at-risk)
+  - [Stock suites run unchanged](#stock-suites-run-unchanged)
+  - [Tracing test](#tracing-test)
+  - [Formats and configurations](#formats-and-configurations)
+- [6. Stock behaviour confirmed](#6-stock-behaviour-confirmed)
+- [7. Security](#7-security)
+- [8. Configuration changes](#8-configuration-changes)
+
 ## 1. What came in
 
 {Whole release: the Apache release tag and the commit range since the last import. Before Apache's first release of the major version: the Apache branch commit range merged this week. Single fix: the Apache JIRA, the Apache commit hash and the reason it is taken early (security, a dependency of our work, or a fault our users hit).}

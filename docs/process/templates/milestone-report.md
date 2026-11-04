@@ -31,6 +31,21 @@ Change history: the git history of this file.
 
 Location: `docs/design/<KEY>-<slug>/milestones/`. Process: [additive.md](../additive.md#milestone-gates).
 
+## Contents
+
+- [1. Summary](#1-summary)
+- [2. What was tested](#2-what-was-tested)
+- [3. Results against the exit criteria](#3-results-against-the-exit-criteria)
+- [4. Requirements delivered](#4-requirements-delivered)
+  - [Behaviour nobody asked for](#behaviour-nobody-asked-for)
+- [5. Deviations](#5-deviations)
+- [6. Documentation](#6-documentation)
+- [7. Risk review](#7-risk-review)
+  - [New risks](#new-risks)
+  - [Re-ordering](#re-ordering)
+- [8. Remaining risks](#8-remaining-risks)
+- [9. Recommendation](#9-recommendation)
+
 ## 1. Summary
 
 {What the milestone delivered, in a few lines.}

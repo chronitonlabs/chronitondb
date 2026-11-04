@@ -33,6 +33,13 @@ Location: `docs/design/<KEY>-<slug>/plan.md`. Process: [additive.md](../additive
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
+## Contents
+
+- [1. Items](#1-items)
+  - [Item {n}: {title}](#item-n-title)
+- [2. Validation items](#2-validation-items)
+- [3. Traceability](#3-traceability)
+
 ## 1. Items
 
 {One entry per item. Lower levels cite this plan, never restate it. Split only at a real boundary: a real prerequisite, output built in parallel, or a part that needs its own review.}

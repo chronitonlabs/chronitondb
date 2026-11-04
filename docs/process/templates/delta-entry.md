@@ -31,6 +31,14 @@ Change history: the git history of this file.
 
 Location: `docs/delta/`. Process: [the delta register](../../delta/README.md).
 
+## Contents
+
+- [Header](#header)
+- [What](#what)
+- [Why](#why)
+- [Area](#area)
+- [Lines](#lines)
+
 ## Header
 
 The fields follow Debian's [DEP-3 patch header convention](https://dep-team.pages.debian.net/deps/dep3/), adapted to a change ChronitonDB carries on top of Apache Cassandra. Author is in the table above. Added, Pull requests, Status, Area and Lines are the register's own. DEP-3 has no such fields. Dates are written YYYY-MM-DD, as DEP-3 writes them.

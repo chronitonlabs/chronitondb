@@ -33,6 +33,26 @@ Location: `docs/design/<issue>-<slug>/`, with the coverage file `ac-coverage.md`
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
+## Contents
+
+- [1. Symptom](#1-symptom)
+- [2. Root cause](#2-root-cause)
+- [3. Affected lines and releases](#3-affected-lines-and-releases)
+- [4. Fix](#4-fix)
+- [5. Requirements](#5-requirements)
+- [6. The reproducing test](#6-the-reproducing-test)
+- [7. Compatibility impact](#7-compatibility-impact)
+- [8. Upstream](#8-upstream)
+- [9. Order of pull requests](#9-order-of-pull-requests)
+- [10. Tests the change runs](#10-tests-the-change-runs)
+  - [Tests for this change](#tests-for-this-change)
+  - [Existing suites at risk](#existing-suites-at-risk)
+  - [Stock suites run unchanged](#stock-suites-run-unchanged)
+  - [Tracing test](#tracing-test)
+  - [Formats and configurations](#formats-and-configurations)
+- [Planned file list](#planned-file-list)
+  - [Shared with open items](#shared-with-open-items)
+
 ## 1. Symptom
 
 {What a user or operator sees, with the version, line and steps to reproduce.}

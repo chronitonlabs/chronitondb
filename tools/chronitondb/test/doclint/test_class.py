@@ -206,7 +206,7 @@ class SpecClass(Repo):
         # P11: Ubuntu refuses "low" and an argument that the change is safe.
         for text in ("Low risk, the change is small and safe and touches one class only.",
                      "None, the change only renames a private method in one class.",
-                     "Minimal: the change only renames a private method in one class.",
+                     "Minimal risk: the change only renames a private method in one class.",
                      "No risk because the change only renames a private method here."):
             rc, err = self.spec_errors(bodies={"Where problems could occur": text})
             self.assertEqual(rc, 1, text)
@@ -216,6 +216,19 @@ class SpecClass(Repo):
         rc, err = self.spec_errors(bodies={"Test plan": "Low risk."})
         self.assertEqual(rc, 1)
         self.assertIn("section 4.1 Test plan says only 'Low risk.'", err)
+        for text in ("Negligible risk, the method is private and renamed only.",
+                     "Nothing.", "Low."):
+            rc, err = self.spec_errors(bodies={"Where problems could occur": text})
+            self.assertEqual(rc, 1, text)
+
+    def test_real_risk_text_that_opens_with_low_or_nothing_passes(self):
+        # V6: the three real texts of the review pass.
+        rc, err = self.spec_errors(bodies={"Where problems could occur": "Low-level reads of the index could return a missed row on a replica read."})
+        self.assertEqual((rc, err), (0, ""))
+        rc, err = self.spec_errors(bodies={"Test plan": "Low memory nodes: a stress test checks the reader never runs out of heap."})
+        self.assertEqual((rc, err), (0, ""))
+        rc, err = self.spec_errors(bodies={"Where problems could occur": "Nothing in stock changes, but a wrong index entry would return a wrong row on a replica read."})
+        self.assertEqual((rc, err), (0, ""))
 
     def test_where_problems_could_occur_needs_its_own_text(self):
         rc, err = self.spec_errors(bodies={"Where problems could occur": ""})
@@ -285,8 +298,7 @@ class SpecClass(Repo):
                  "Not applicable for this change, nothing decided.",
                  "Not applicable in this case, nothing decided.",
                  "N/A, nothing decided for this one.",
-                 "n/a nothing decided for this one",
-                 "NA. Nothing decided for this one.")
+                 "n/a nothing decided for this one")
         for form in forms:
             rc, err = self.spec_errors(bodies={"Decisions": form})
             self.assertEqual(rc, 1, form)
@@ -294,6 +306,11 @@ class SpecClass(Repo):
         rc, err = self.spec_errors(bodies={"Deployment": "Not applicable to clusters without the index: they see no change, and operators set nothing."})
         self.assertEqual((rc, err), (0, ""))
         rc, err = self.spec_errors(bodies={"Deployment": "NAT traversal is not needed: nodes reach each other on the private network."})
+        self.assertEqual((rc, err), (0, ""))
+        # V7: "to this" names something else, and a word NA is no N/A.
+        rc, err = self.spec_errors(bodies={"Deployment": "Not applicable to this release line only: operators of 6.0 set nothing."})
+        self.assertEqual((rc, err), (0, ""))
+        rc, err = self.spec_errors(bodies={"Deployment": "NA region clusters set one more option, the rest set nothing."})
         self.assertEqual((rc, err), (0, ""))
 
     def test_text_that_only_starts_with_not_applicable_is_content(self):

@@ -1,0 +1,76 @@
+# Copyright 2026 AxonOps Limited
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Fails unless the pull request carries exactly one risk label, one size
+# label and one reach label, the class of the change
+# (docs/process/classification.md). The issue carries the class and the
+# pull request carries the same. A release proposal or promotion, which
+# changes only docs/releases/, has no class, as it has no kind, and passes
+# with no class label. It reruns when a label changes. It checks out
+# nothing and runs no code from the pull request, it only reads the pull
+# request's labels and file names.
+name: ChronitonDB class label
+
+on:
+  pull_request:
+    branches:
+      - 'chronitondb-*'
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  class-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exactly one risk, one size and one reach label
+        env:
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          files="$(gh api --paginate "repos/$REPO/pulls/$NUMBER/files" --jq '.[].filename')"
+          if [ -n "$files" ] && ! printf '%s\n' "$files" | grep -q -v '^docs/releases/'
+          then
+            echo "A release proposal or promotion has no class, no class label needed."
+            exit 0
+          fi
+          rc=0
+          for family in risk size reach
+          do
+            case "$family" in
+              risk) allowed="risk:critical, risk:normal or risk:low" ;;
+              size) allowed="size:low-hanging-fruit, size:normal, size:challenging or size:byzantine" ;;
+              reach) allowed="reach:one-area or reach:cross-cutting" ;;
+            esac
+            found="$(printf '%s' "$LABELS" | jq -r --arg f "$family:" '.[] | select(startswith($f))')"
+            count="$(printf '%s\n' "$found" | grep -c . || true)"
+            if [ "$count" -ne 1 ]
+            then
+              echo "::error::The pull request carries $count $family labels. It carries exactly one, its issue's: $allowed. See docs/process/classification.md."
+              rc=1
+              continue
+            fi
+            case "$found" in
+              risk:critical|risk:normal|risk:low|size:low-hanging-fruit|size:normal|size:challenging|size:byzantine|reach:one-area|reach:cross-cutting) echo "Class: $found" ;;
+              *)
+                echo "::error::The label $found is not a $family label of the class. It is one of: $allowed."
+                rc=1
+                ;;
+            esac
+          done
+          exit "$rc"

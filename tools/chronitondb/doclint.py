@@ -1045,7 +1045,8 @@ def check_record_number(doc, path, repo, templates, where, rules):
         return
     number = int(match.group(1))
     if number not in allowed:
-        doc.error(0, "a new decision record takes the next number after the highest merged one, %04d, and this one is %04d (docs/decisions/README.md, rule 1)" % (last + 1, number))
+        span = "%04d" % (last + 1) if len(allowed) == 1 else "%04d to %04d" % (last + 1, last + len(allowed))
+        doc.error(0, "a new decision record takes a number after the highest merged one, %04d, in order with no gap: %s here, and this one is %04d (docs/decisions/README.md, rule 1)" % (last, span, number))
 
 
 def decision_template(text):

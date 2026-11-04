@@ -27,23 +27,25 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 The risk of a change is the worst Bug Category it could cause if it were wrong, recorded with a Severity, as Apache Cassandra's JIRA records a bug.
 
-| Bug Category | What it covers |
-|---|---|
-| Correctness | Unrecoverable corruption or loss, recoverable corruption or loss, a transient incorrect response, a consistency fault, a fault in an API or its semantics |
-| Availability | A cluster crash, a process crash, a response crash, a node or service unavailable |
-| Degradation | Performance, resource management, a slow use case |
-| Security | Remote code execution, privilege escalation, information leakage, denial of service |
-| Packaging | How the software is built, packaged and installed |
-| Documentation | What the documentation says |
-| Code | Code clarity and tests, with no change to behaviour |
+| Bug Category | What it covers | Risk |
+|---|---|---|
+| Correctness | Unrecoverable corruption or loss, recoverable corruption or loss, a transient incorrect response, a consistency fault, a fault in an API or its semantics or implementation | Critical |
+| Correctness | A test failure, where only a test is wrong | Low |
+| Availability | A cluster crash, a process crash, a node or service unavailable | Critical |
+| Availability | A response crash | Normal |
+| Degradation | Performance, resource management, a slow use case, another exception with no other effect | Normal |
+| Security | Remote code execution, privilege escalation, information leakage, denial of service | Critical |
+| Packaging | How the software is built, packaged and installed, the source or the package distribution | Low |
+| Documentation | What the documentation says | Low |
+| Code | A bug whose impact is unclear | Normal, unless the author shows a worse category |
 
-The three levels are Cassandra's Severity values:
+The table gives each category the level it takes by the definitions below. The worst row the change could cause decides. The three levels are Cassandra's Severity values:
 
 | Risk | When | Label |
 |---|---|---|
-| Critical | The change could cause corruption or loss, wrong results, an inconsistency, a cluster or process crash, or a security breach | `risk:critical` |
+| Critical | The change could cause corruption or loss, wrong results, an inconsistency, a cluster or process crash, a node or service unavailable, or a security breach, a denial of service included | `risk:critical` |
 | Normal | The change could cause a degradation or a response crash, or it changes a public interface or stock behaviour | `risk:normal` |
-| Low | The change is documentation, packaging, code clarity or tests only | `risk:low` |
+| Low | The change is documentation, packaging, code clarity or tests only. Code clarity is this project's rule, not a JIRA category | `risk:low` |
 
 ### The floor
 
@@ -90,6 +92,8 @@ One template serves every class, [templates/feature-spec.md](templates/feature-s
 | Critical risk adds | Threat model and Compatibility, in full, and Dependencies when it adds a dependency |
 | Normal risk adds | Threat model when the change adds new input or privilege, Compatibility when it touches a public interface or stock behaviour, Dependencies when it adds a dependency |
 
+Compatibility in full means its parts: the statement that the feature changes no format, schema or protocol may stand in for the on-disk format changes only, and the mixed-version cluster, upgrade, rollback and runbook parts are still written. Non-goals are part of Purpose and scope and never say Not applicable.
+
 The control table of the spec carries the class: rows Risk, Size and Reach, each with the level and its reason, and a row Touches naming what the change touches: a public interface, stock behaviour, new input or privilege, a new dependency, shared state (threads, pools or shared state), a request path (a read, write or query path), a new feature or switch, or none. The plan and the milestone reports repeat the spec's class. A design record and a fix record carry the class of their item.
 
 ### Checks and review
@@ -135,6 +139,6 @@ The class is three label families on the issue, mirrored on each of its pull req
 
 1. Apache Cassandra, [JIRA Workflow Proposals](https://cwiki.apache.org/confluence/spaces/CASSANDRA/pages/97551605/JIRA+Workflow+Proposals): the Bug Category, Severity and Complexity fields, as used on the [CASSANDRA project in JIRA](https://issues.apache.org/jira/projects/CASSANDRA).
 2. Apache Cassandra, [Cassandra Enhancement Proposals](https://cwiki.apache.org/confluence/spaces/CASSANDRA/pages/95652201/Cassandra+Enhancement+Proposals+CEP): the compatibility areas of a public interface.
-3. Ubuntu, [Stable Release Updates](https://wiki.ubuntu.com/StableReleaseUpdates): the bug template with its Test Plan and Where problems could occur sections.
+3. Ubuntu, [Stable Release Updates, the bug template](https://ubuntu.com/project/docs/SRU/reference/bug-template/): its Test Plan and Where problems could occur sections.
 4. Debian, [bug severity levels](https://www.debian.org/Bugs/Developer#severities) and the [release critical bug policy](https://release.debian.org/testing/rc_policy.txt).
 5. Debian, [transitions](https://wiki.debian.org/Teams/ReleaseTeam/Transitions), and Fedora, [the Changes policy](https://docs.fedoraproject.org/en-US/program_management/changes_policy/) with its Self-Contained and System-Wide changes.

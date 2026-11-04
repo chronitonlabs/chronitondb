@@ -99,8 +99,9 @@ A feature spec is also checked for:
   9. its class (docs/process/classification.md), once the template has
      the rows: Risk, Size and Reach each the level, one of the levels of
      its family, a colon and a reason of three words or more, Touches the
-     phrases public interface, stock behaviour, new input or privilege and
-     new dependency, or none, and a Low risk never touching a public
+     phrases of TOUCHES (public interface, stock behaviour, new input or
+     privilege, new dependency, shared state, request path, new feature or
+     switch), or none, and a Low risk never touching a public
      interface or stock behaviour. A missing or malformed level counts as
      the strictest of its family: Critical, Byzantine, Cross-cutting
  10. its sections against the class: each section the class requires
@@ -225,7 +226,10 @@ FLOOR = ("public interface", "stock behaviour")
 # The strictest value of each family, which a missing or unreadable row counts as.
 STRICTEST = {"Risk": "Critical", "Size": "Byzantine", "Reach": "Cross-cutting"}
 NOT_APPLICABLE = re.compile(r"^Not applicable:\s*(\S.*)$")
-NOT_APPLICABLE_ANY = re.compile(r"^\W*not\s+applicable\b", re.I)
+# A section claims Not applicable when its own text starts with the words
+# and then a colon or nothing: "Not applicable to clusters without ..." is
+# content (P7).
+NOT_APPLICABLE_ANY = re.compile(r"^\W*not\s+applicable\s*(:|$)", re.I)
 REASON_WORDS = 3
 WPCO = "Where problems could occur"
 TEST_PLAN = "Test plan"
@@ -448,13 +452,16 @@ def check_common(doc, kind, template_text, path):
     previous = -1
     compatibility = section_number(template, "Compatibility") if kind == "feature-spec" else None
     skip_parts = compatibility is not None and NO_FORMAT_CHANGE in section_text(doc, compatibility)
+    # Where the class requires Compatibility in full, the statement stands in
+    # for the on-disk format changes only (P3).
+    only_formats = skip_parts and wanted and "Risk" in wanted and compatibility_in_full(*class_quietly(doc, fields))
     # A section that says Not applicable covers its subsections, which may
     # be left out, once the template carries the class (classification.md).
     covered = not_applicable_numbers(doc) if kind == "feature-spec" and wanted and "Risk" in wanted else set()
     for level, number, title, _ in numbered_sections(template):
         if "{" in title:
             continue
-        if skip_parts and number.startswith(compatibility + "."):
+        if skip_parts and number.startswith(compatibility + ".") and (not only_formats or number == compatibility + ".1"):
             continue
         if "." in number and number.split(".")[0] in covered:
             continue
@@ -526,7 +533,7 @@ def own_lines(doc, index):
             end = other
             break
     return [(i, doc.visible[i]) for i in range(index + 1, end)
-            if i not in doc.commented and doc.visible[i].strip()]
+            if i not in doc.commented and i not in doc.fenced and doc.visible[i].strip()]
 
 
 def not_applicable_of(doc, index):
@@ -598,6 +605,34 @@ def class_of(doc, fields, kind, rows):
     return levels, touches
 
 
+def compatibility_in_full(levels, touches):
+    """True when the class requires Compatibility in full: Critical risk,
+    Challenging or Byzantine size, or Normal risk touching a public
+    interface or stock behaviour. The statement "This feature changes no
+    format, schema or protocol" then stands in for the on-disk format
+    changes only, and the other parts stay (classification.md)."""
+    risk, size = levels.get("Risk"), levels.get("Size")
+    return risk == "Critical" or size in ("Challenging", "Byzantine") or \
+        (risk == "Normal" and bool((touches or set()) & set(FLOOR)))
+
+
+def class_quietly(doc, fields):
+    """The class of a feature spec's control table, read with no finding:
+    the levels and the Touches phrases, a missing or malformed level the
+    strictest of its family, as class_of reads them."""
+    levels = {}
+    for row, allowed in CLASS_ROWS:
+        value = (fields or {}).get(row, ("", 0))[0]
+        word = value.split(":", 1)[0].strip()
+        levels[row] = word if word in allowed else STRICTEST[row]
+    touches = set()
+    value = (fields or {}).get("Touches", ("", 0))[0]
+    if value and not outer_braces(value):
+        text = re.sub(r"\([^)]*\)", "", value).strip().rstrip(".")
+        touches = {w.strip() for w in re.split(r",\s*(?:and\s+)?|\s+and\s+", text) if w.strip() in TOUCHES}
+    return levels, touches
+
+
 def required_sections(template, levels, touches):
     """{section: the class that requires it} of a feature spec, by the
     template's numbered sections and its Glossary."""
@@ -665,12 +700,13 @@ def check_spec_class(doc, template, fields):
             headings["Glossary"] = ("", index)
     compatibility = section_number(doc, "Compatibility")
     no_format = compatibility is not None and NO_FORMAT_CHANGE in section_text(doc, compatibility)
+    only_formats = compatibility_in_full(levels, touches)
     covered = not_applicable_numbers(doc)
     for number, (title, index) in headings.items():
         name = ("%s %s" % (number, title)) if title else number
         if "." in number and number.split(".")[0] in covered:
             continue
-        if no_format and compatibility and number.startswith(compatibility + "."):
+        if no_format and compatibility and number.startswith(compatibility + ".") and (not only_formats or number == compatibility + ".1"):
             continue
         state = not_applicable_of(doc, index)
         if state:
@@ -688,8 +724,35 @@ def check_spec_class(doc, template, fields):
     for title in (WPCO, TEST_PLAN):
         number = section_number(doc, title)
         if number is not None and not_applicable_of(doc, headings[number][1]) is None:
+            if title == WPCO and not own_lines(doc, headings[number][1]):
+                # Its test plan alone is not enough, as in a record (P1).
+                doc.error(headings[number][1], "section %s %s is empty. It names what could break, how a user would see it and the tests that would catch it, and its test plan alone is not enough (classification.md)" % (number, title))
+                continue
             check_risk_text(doc, headings[number][1], "section %s %s" % (number, title))
+    check_non_goals(doc)
     return levels
+
+
+def check_non_goals(doc):
+    """The Non-goals of section 1, required at every class, never Not
+    applicable (P9)."""
+    purpose = section_number(doc, "Purpose and scope")
+    span = section_span(doc, purpose) if purpose is not None else None
+    index = None
+    for level, text, found in doc.headings:
+        if level == 3 and text == "Non-goals" and (span is None or span[0] < found < span[1]):
+            index = found
+            break
+    if index is None:
+        doc.error(0, "no '### Non-goals' section. The feature spec template has it")
+        return
+    state = not_applicable_of(doc, index)
+    if state:
+        doc.error(index, "section Non-goals says Not applicable, but %s" % state)
+    elif state == "":
+        doc.error(index, "section Non-goals says Not applicable, and the class requires it (every class). Write it in full (classification.md)")
+    elif not own_lines(doc, index):
+        doc.error(index, "section Non-goals is empty. It names what the feature will not do, each with a short reason, at every class (classification.md)")
 
 
 def level_of(doc, index):

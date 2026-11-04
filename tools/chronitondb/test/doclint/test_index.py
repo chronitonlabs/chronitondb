@@ -449,6 +449,33 @@ class DocumentCheck(unittest.TestCase):
         self.assertEqual((rc, err), (0, ""))
         self.assertIn("documents 1 checked 0 failed", out)
 
+    def test_a_new_record_reusing_a_merged_number_fails(self):
+        self.put("docs/decisions/0001-another.md", self.decisions_on_the_line().replace("# 0002.", "# 0001."))
+        rc, _, err = self.document("docs/decisions/0001-another.md")
+        self.assertEqual(rc, 1)
+        self.assertIn("docs/decisions/0001-another.md:1: no '## Contents' section", err)
+        self.assertIn("a new decision record takes the next number after the highest merged one, 0002, and this one is 0001", err)
+
+    def test_a_new_record_leaving_a_gap_fails(self):
+        path = "docs/decisions/0003-gap.md"
+        self.put(path, self.decisions_on_the_line().replace("# 0002.", "# 0003."))
+        run("index", "--write", os.path.join(self.repo, path))
+        rc, _, err = self.document(path)
+        self.assertEqual(rc, 1)
+        self.assertNotIn("Contents", err)
+        self.assertIn("takes the next number after the highest merged one, 0002, and this one is 0003", err)
+
+    def test_two_new_records_in_order_pass(self):
+        text = self.decisions_on_the_line()
+        paths = ["docs/decisions/0002-a-later-decision.md", "docs/decisions/0003-another-decision.md"]
+        self.put(paths[0], text)
+        self.put(paths[1], text.replace("# 0002.", "# 0003."))
+        for path in paths:
+            run("index", "--write", os.path.join(self.repo, path))
+        rc, out, err = run("document", "--repo", self.repo, "--templates", "line", "--source", "worktree", *paths)
+        self.assertEqual((rc, err), (0, ""))
+        self.assertIn("documents 2 checked 0 failed", out)
+
     def test_a_coverage_file_is_a_document(self):
         self.assertEqual(doclint.doc_type("docs/design/42-a-fix/ac-coverage.md", "# Acceptance coverage for #42\n"), "ac-coverage")
         template = self.read_template("ac-coverage.md")

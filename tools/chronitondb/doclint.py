@@ -71,10 +71,13 @@ Every document is checked for:
      character that is not a letter, a digit, "_", "-" or a space
      removed, each space a hyphen, and a heading whose anchor is taken
      already gets "-1", then "-2". A decision record is asked for its
-     index only when its number is above the highest record merged at
-     REF: a merged record is never edited, docs/decisions/README.md
-     rule 2, so one merged before its template had the section keeps
-     none
+     index only when it is new, absent at REF: a merged record is never
+     edited, docs/decisions/README.md rule 2, so one merged before its
+     template had the section keeps none
+
+A new decision record also takes the next number after the highest
+record merged at REF, one number per new record and in order, so it
+neither reuses a merged number nor leaves a gap (rule 1 of the README).
 
 A feature spec is also checked for:
 
@@ -993,23 +996,56 @@ def run_index(args):
     return 1 if failed else 0
 
 
-def last_merged_record(repo, ref):
-    """The highest number of a decision record at ref, docs/decisions/
-    NNNN-<slug>.md, or 0 when it has none."""
-    listing = git(repo, "ls-tree", "--name-only", ref, "--", "docs/decisions/") or ""
-    numbers = [int(match.group(1)) for match in (re.match(r"^docs/decisions/([0-9]{4})-[^/]+\.md$", line) for line in listing.split("\n")) if match]
-    return max(numbers) if numbers else 0
+RECORD = re.compile(r"^docs/decisions/([0-9]{4})-[^/]+\.md$")
 
 
-def needs_index(kind, path, repo, templates, rules):
+def records_at(repo, where):
+    """The decision record paths of docs/decisions/ at where: "index",
+    "worktree" or a commit."""
+    if where == "index":
+        listing = git(repo, "ls-files", "--", "docs/decisions/")
+    elif where == "worktree":
+        listing = git(repo, "ls-files", "--cached", "--others", "--exclude-standard", "--", "docs/decisions/")
+    else:
+        listing = git(repo, "ls-tree", "-r", "--name-only", where, "--", "docs/decisions/")
+    return [line for line in (listing or "").split("\n") if RECORD.match(line)]
+
+
+def record_rules(repo, templates, where, rules):
+    """The decision records merged at the rules ref, and the numbers the
+    new ones may take: the next numbers after the highest merged one, one
+    each, in order (docs/decisions/README.md, rule 1)."""
+    if "records" not in rules:
+        merged = set(records_at(repo, templates))
+        numbers = [int(RECORD.match(path).group(1)) for path in merged]
+        last = max(numbers) if numbers else 0
+        new = [path for path in records_at(repo, where) if path not in merged]
+        rules["records"] = (merged, last, set(range(last + 1, last + 1 + len(new))))
+    return rules["records"]
+
+
+def needs_index(kind, path, repo, templates, where, rules):
     """True when the document is asked for its index: every templated
-    kind, and a decision record only when it is newer than every record
-    merged at the rules ref."""
+    kind, and a decision record only when it is new, absent at the rules
+    ref. A merged record is never edited (docs/decisions/README.md, rule
+    2), so one merged before its template had the section keeps none."""
     if kind != "decision":
         return True
-    if "last-record" not in rules:
-        rules["last-record"] = last_merged_record(repo, templates)
-    return int(os.path.basename(path)[:4]) > rules["last-record"]
+    merged, _, _ = record_rules(repo, templates, where, rules)
+    return path not in merged
+
+
+def check_record_number(doc, path, repo, templates, where, rules):
+    """A new decision record takes the next number after the highest
+    record merged at the rules ref, so it neither reuses a merged number
+    nor leaves a gap (docs/decisions/README.md, rule 1)."""
+    merged, last, allowed = record_rules(repo, templates, where, rules)
+    match = RECORD.match(path)
+    if path in merged or not match:
+        return
+    number = int(match.group(1))
+    if number not in allowed:
+        doc.error(0, "a new decision record takes the next number after the highest merged one, %04d, and this one is %04d (docs/decisions/README.md, rule 1)" % (last + 1, number))
 
 
 def decision_template(text):
@@ -1568,8 +1604,10 @@ def main(argv):
             doc.error(0, "no %s template at %s on %s, so this document cannot be checked against it" % (kind.replace("-", " "), template_path, templates))
         else:
             check_common(doc, kind, template_text, path)
-            if has_contents(Markdown(template_path, template_text)) and needs_index(kind, path, repo, templates, rules):
+            if has_contents(Markdown(template_path, template_text)) and needs_index(kind, path, repo, templates, where, rules):
                 check_index(doc, path)
+            if kind == "decision":
+                check_record_number(doc, path, repo, templates, where, rules)
             if kind == "feature-spec":
                 if "quality" not in rules:
                     quality = git(repo, "show", "%s:docs/process/quality-requirements.md" % templates)

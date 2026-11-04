@@ -217,7 +217,10 @@ RISKS = ("Critical", "Normal", "Low")
 SIZES = ("Low Hanging Fruit", "Normal", "Challenging", "Byzantine")
 REACHES = ("One area", "Cross-cutting")
 CLASS_ROWS = (("Risk", RISKS), ("Size", SIZES), ("Reach", REACHES))
-TOUCHES = ("public interface", "stock behaviour", "new input or privilege", "new dependency")
+# The last three name what a Normal risk code review adds a lens for: threads,
+# pools or shared state, a read, write or query path, and a new feature or switch.
+TOUCHES = ("public interface", "stock behaviour", "new input or privilege", "new dependency",
+           "shared state", "request path", "new feature or switch")
 FLOOR = ("public interface", "stock behaviour")
 # The strictest value of each family, which a missing or unreadable row counts as.
 STRICTEST = {"Risk": "Critical", "Size": "Byzantine", "Reach": "Cross-cutting"}

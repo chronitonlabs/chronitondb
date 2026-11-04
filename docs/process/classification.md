@@ -90,7 +90,7 @@ One template serves every class, [templates/feature-spec.md](templates/feature-s
 | Critical risk adds | Threat model and Compatibility, in full, and Dependencies when it adds a dependency |
 | Normal risk adds | Threat model when the change adds new input or privilege, Compatibility when it touches a public interface or stock behaviour, Dependencies when it adds a dependency |
 
-The control table of the spec carries the class: rows Risk, Size and Reach, each with the level and its reason, and a row Touches naming what the change touches: a public interface, stock behaviour, new input or privilege, a new dependency, or none. The plan and the milestone reports repeat the spec's class. A design record and a fix record carry the class of their item.
+The control table of the spec carries the class: rows Risk, Size and Reach, each with the level and its reason, and a row Touches naming what the change touches: a public interface, stock behaviour, new input or privilege, a new dependency, shared state (threads, pools or shared state), a request path (a read, write or query path), a new feature or switch, or none. The plan and the milestone reports repeat the spec's class. A design record and a fix record carry the class of their item.
 
 ### Checks and review
 
@@ -99,7 +99,7 @@ Before a document goes to review, its author runs independent checks on it in ro
 | Class | Independent checks each round | Review lenses | Threat model and compatibility |
 |---|---|---|---|
 | Critical risk | All three | Every lens of the review mode, and every citation checked | In full |
-| Normal risk | All three | Correctness and documentation always, compatibility when a public interface or stock behaviour is touched, security for new input or privilege, compliance for a new dependency, and every citation checked | In full when the floor or new input applies, else Not applicable with the reason |
+| Normal risk | All three | For a document: correctness and documentation always, compatibility when a public interface or stock behaviour is touched, security for new input or privilege, compliance for a new dependency. For code: correctness, tests, documentation, maintainability and the review patterns always, and by what the change touches compatibility, security and compliance as for a document, concurrency for shared state, performance for a request path, observability for a new feature or switch. Every citation checked | In full when the floor or new input applies, else Not applicable with the reason |
 | Low risk | Comprehension and ambiguity | Correctness and documentation | Not applicable |
 
 | Higher of size and risk | Round cap |

@@ -96,9 +96,29 @@ A feature spec is also checked for:
   7. its Dependencies section lists each library with ASF category A or B,
      or says "No new dependency"
   8. it has its Glossary
+  9. its class (docs/process/classification.md), once the template has
+     the rows: Risk, Size and Reach each the level, one of the levels of
+     its family, a colon and a reason of three words or more, Touches the
+     phrases public interface, stock behaviour, new input or privilege and
+     new dependency, or none, and a Low risk never touching a public
+     interface or stock behaviour. A missing or malformed level counts as
+     the strictest of its family: Critical, Byzantine, Cross-cutting
+ 10. its sections against the class: each section the class requires
+     holds its content and never says Not applicable, every other section
+     holds its content or the one line "Not applicable: <reason>", a
+     section that says Not applicable covers its subsections, which may be
+     left out, and the sections it covers are not checked further. Where
+     problems could occur and its Test plan never say none, low or n/a
 
 A decision record and a delta entry also have their unnumbered sections,
 and a decision record keeps none of its template's <...> placeholders.
+
+A plan, a milestone report, a design record and a fix record are also
+checked for the form of their class rows, when their template has them. A
+plan and a milestone report repeat the levels of the feature spec of their
+feature directory. A fix record writes its Where problems could occur
+section with its Test plan in full, and so does a design record, unless its
+References row links a feature spec, when it may say Not applicable.
 
 A plan is also checked for: each item delivers FREQ ids its feature spec
 defines, each acceptance criterion has one EARS shape and one BCP 14
@@ -189,6 +209,24 @@ OUR_ISSUE = re.compile(r"^\[?#?([0-9]+)\]?\(https://github\.com/chronitonlabs/ch
 NO_ENTRY_POINT = "This feature adds no new entry point"
 NO_FORMAT_CHANGE = "This feature changes no format, schema or protocol"
 NO_DEPENDENCY = "No new dependency"
+
+# The class of a change (docs/process/classification.md): the Risk, Size,
+# Reach and Touches rows of the document control table.
+RISKS = ("Critical", "Normal", "Low")
+SIZES = ("Low Hanging Fruit", "Normal", "Challenging", "Byzantine")
+REACHES = ("One area", "Cross-cutting")
+CLASS_ROWS = (("Risk", RISKS), ("Size", SIZES), ("Reach", REACHES))
+TOUCHES = ("public interface", "stock behaviour", "new input or privilege", "new dependency")
+FLOOR = ("public interface", "stock behaviour")
+# The strictest value of each family, which a missing or unreadable row counts as.
+STRICTEST = {"Risk": "Critical", "Size": "Byzantine", "Reach": "Cross-cutting"}
+NOT_APPLICABLE = re.compile(r"^Not applicable:\s*(\S.*)$")
+NOT_APPLICABLE_ANY = re.compile(r"^\W*not\s+applicable\b", re.I)
+REASON_WORDS = 3
+WPCO = "Where problems could occur"
+TEST_PLAN = "Test plan"
+EMPTY_RISK = re.compile(r"^\W*(none|low|n/?a|nothing|no risk|low risk|minimal|negligible)\W*$", re.I)
+WPCO_WORDS = 5
 
 TEMPLATES = {
     "feature-spec": "docs/process/templates/feature-spec.md",
@@ -404,11 +442,17 @@ def check_common(doc, kind, template_text, path):
     have = numbered_sections(doc)
     have_numbers = [(number, title) for _, number, title, _ in have]
     previous = -1
-    skip_parts = kind == "feature-spec" and NO_FORMAT_CHANGE in section_text(doc, "6")
+    compatibility = section_number(template, "Compatibility") if kind == "feature-spec" else None
+    skip_parts = compatibility is not None and NO_FORMAT_CHANGE in section_text(doc, compatibility)
+    # A section that says Not applicable covers its subsections, which may
+    # be left out, once the template carries the class (classification.md).
+    covered = not_applicable_numbers(doc) if kind == "feature-spec" and wanted and "Risk" in wanted else set()
     for level, number, title, _ in numbered_sections(template):
         if "{" in title:
             continue
-        if skip_parts and number.startswith("6."):
+        if skip_parts and number.startswith(compatibility + "."):
+            continue
+        if "." in number and number.split(".")[0] in covered:
             continue
         if (number, title) not in have_numbers:
             doc.error(0, "no '%s %s%s %s' section. The %s template has it" % ("#" * level, number, "." if level == 2 else "", title, kind.replace("-", " ")))
@@ -460,13 +504,271 @@ def freqs_of(doc):
     return found
 
 
+def section_number(doc, title):
+    """The number of the numbered section with this title, None when the
+    document has none."""
+    for _, number, found, _ in numbered_sections(doc):
+        if found == title:
+            return number
+    return None
+
+
+def own_lines(doc, index):
+    """The text lines under the heading at index, up to the next heading of
+    any level, comments left out, blank lines dropped."""
+    end = len(doc.lines)
+    for _, _, other in doc.headings:
+        if other > index:
+            end = other
+            break
+    return [(i, doc.visible[i]) for i in range(index + 1, end)
+            if i not in doc.commented and doc.visible[i].strip()]
+
+
+def not_applicable_of(doc, index):
+    """For the heading at index: None when its own text is no Not applicable
+    line, "" when it is one well formed line, or why it is not."""
+    lines = own_lines(doc, index)
+    hits = [(i, line.strip()) for i, line in lines if NOT_APPLICABLE_ANY.match(line.strip())]
+    if not hits:
+        return None
+    line = hits[0][1]
+    match = NOT_APPLICABLE.match(line)
+    if not match:
+        return "write it as the one line 'Not applicable: <reason>'"
+    if len(re.findall(r"\w+", match.group(1))) < REASON_WORDS:
+        return "its reason has fewer than %d words: 'Not applicable: <reason>' gives the reason" % REASON_WORDS
+    if len(lines) > 1:
+        return "it holds more than the one line 'Not applicable: <reason>'"
+    return ""
+
+
+def not_applicable_numbers(doc):
+    """The numbers of the numbered sections whose own text is a Not
+    applicable line, well formed or not."""
+    return {number for _, number, _, index in numbered_sections(doc) if not_applicable_of(doc, index) is not None}
+
+
+def class_of(doc, fields, kind, rows):
+    """{row: level} of the class rows a document control table holds, each
+    checked for its form, and the set of Touches phrases (None when the
+    table has no Touches row). A missing or malformed level counts as the
+    strictest of its family."""
+    levels = {}
+    for name, allowed in rows:
+        value, line = fields.get(name, ("", 0))
+        level = None
+        for word in sorted(allowed, key=len, reverse=True):
+            if value.startswith(word + ":"):
+                level = word
+                break
+        if level is None:
+            if value and not outer_braces(value):
+                doc.error(line, "the '%s' row is '%s'. It is the level, one of %s, then a colon and the reason (classification.md)" % (name, value if len(value) <= 60 else value[:57] + "...", ", ".join(allowed)))
+            levels[name] = STRICTEST[name]
+            continue
+        reason = value[len(level) + 1:]
+        if len(re.findall(r"\w+", reason)) < REASON_WORDS:
+            doc.error(line, "the '%s' row gives no reason after '%s:'. Write the level, a colon and a reason of %d words or more (classification.md)" % (name, level, REASON_WORDS))
+        levels[name] = level
+    touches = None
+    if "Touches" in fields:
+        value, line = fields["Touches"]
+        touches = set()
+        if value and not outer_braces(value):
+            text = re.sub(r"\([^)]*\)", "", value).strip().rstrip(".")
+            words = [w.strip() for w in re.split(r",\s*(?:and\s+)?|\s+and\s+", text) if w.strip()]
+            if words == ["none"]:
+                pass
+            else:
+                for word in words:
+                    if word in TOUCHES:
+                        touches.add(word)
+                    elif word == "none":
+                        doc.error(line, "the 'Touches' row says none beside other phrases. It says none alone, or lists what the change touches")
+                    else:
+                        doc.error(line, "the 'Touches' row names '%s', which is none of: %s, or none (classification.md)" % (word, ", ".join(TOUCHES)))
+            floor = sorted(touches & set(FLOOR))
+            if floor and levels.get("Risk") == "Low" and fields.get("Risk", ("", 0))[0].startswith("Low:"):
+                doc.error(fields["Risk"][1], "the risk is Low, and Touches names %s. A change that touches a public interface or stock behaviour is at least Normal risk (classification.md, The floor)" % " and ".join(floor))
+    return levels, touches
+
+
+def required_sections(template, levels, touches):
+    """{section: the class that requires it} of a feature spec, by the
+    template's numbered sections and its Glossary."""
+    size, reach, risk = levels.get("Size"), levels.get("Reach"), levels.get("Risk")
+    touches = touches or set()
+    numbers = {title: number for _, number, title, _ in numbered_sections(template) if "{" not in title}
+    every = [n for _, n, t, _ in numbered_sections(template) if "{" not in t] + ["Glossary"]
+    wanted = {}
+
+    def need(names, why):
+        for name in names:
+            number = numbers.get(name, name if name == "Glossary" else None)
+            if number is not None and number not in wanted:
+                wanted[number] = why
+
+    need(["Purpose and scope", "Architecture", "Feature class and switches", "Feature requirements", WPCO, TEST_PLAN, "Decisions", "Prior art"], "every class")
+    if size in ("Challenging", "Byzantine"):
+        for number in every:
+            wanted.setdefault(number, "%s size" % size)
+    if size == "Normal":
+        need(["Context and scope", "Building blocks", "Package dependencies and hook points", "Milestones outline"], "Normal size")
+    if reach == "Cross-cutting":
+        need(["Dependencies", "Risks", "Milestones outline"], "Cross-cutting reach")
+    if risk == "Critical":
+        compatibility = numbers.get("Compatibility")
+        need(["Threat model", "Compatibility"], "Critical risk")
+        for number in every:
+            if compatibility and number.startswith(compatibility + "."):
+                wanted.setdefault(number, "Critical risk")
+    if risk == "Normal":
+        if "new input or privilege" in touches:
+            need(["Threat model"], "Normal risk with new input or privilege")
+        if touches & set(FLOOR):
+            compatibility = numbers.get("Compatibility")
+            need(["Compatibility"], "Normal risk touching %s" % " and ".join(sorted(touches & set(FLOOR))))
+            for number in every:
+                if compatibility and number.startswith(compatibility + "."):
+                    wanted.setdefault(number, wanted[compatibility])
+        if "new dependency" in touches:
+            need(["Dependencies"], "Normal risk with a new dependency")
+    return wanted
+
+
+def check_risk_text(doc, index, what):
+    """The Where problems could occur section and its test plan name
+    something: never none, low or a word or two."""
+    lines = own_lines(doc, index)
+    text = " ".join(line.strip() for _, line in lines)
+    if lines and (EMPTY_RISK.match(text) or len(re.findall(r"\w+", text)) < WPCO_WORDS):
+        doc.error(index, "%s says only '%s'. It names what could break, how a user would see it and the tests that would catch it, never none or low (classification.md)" % (what, text if len(text) <= 40 else text[:37] + "..."))
+
+
+def check_spec_class(doc, template, fields):
+    """A feature spec against its class (classification.md): each section
+    the class requires holds its content, never Not applicable, every other
+    section its content or the one line 'Not applicable: <reason>', and the
+    Where problems could occur section and its test plan name something."""
+    levels, touches = class_of(doc, fields, "feature-spec", CLASS_ROWS)
+    wanted = required_sections(template, levels, touches)
+    headings = {number: (title, index) for _, number, title, index in numbered_sections(doc)}
+    for level, text, index in doc.headings:
+        if level == 2 and text == "Glossary":
+            headings["Glossary"] = ("", index)
+    compatibility = section_number(doc, "Compatibility")
+    no_format = compatibility is not None and NO_FORMAT_CHANGE in section_text(doc, compatibility)
+    covered = not_applicable_numbers(doc)
+    for number, (title, index) in headings.items():
+        name = ("%s %s" % (number, title)) if title else number
+        if "." in number and number.split(".")[0] in covered:
+            continue
+        if no_format and compatibility and number.startswith(compatibility + "."):
+            continue
+        state = not_applicable_of(doc, index)
+        if state:
+            doc.error(index, "section %s says Not applicable, but %s" % (name, state))
+            continue
+        if state == "" and number in wanted:
+            doc.error(index, "section %s says Not applicable, and the class requires it (%s). Write it in full (classification.md)" % (name, wanted[number]))
+            continue
+        if state is None:
+            start, end = doc.span(level_of(doc, index), index)
+            body = [i for i in range(start + 1, end) if i not in doc.commented and doc.visible[i].strip()
+                    and not any(found == i for _, _, found in doc.headings)]
+            if not body:
+                doc.error(index, "section %s is empty. Write it, or the one line 'Not applicable: <reason>' when the class does not require it (classification.md)" % name)
+    for title in (WPCO, TEST_PLAN):
+        number = section_number(doc, title)
+        if number is not None and not_applicable_of(doc, headings[number][1]) is None:
+            check_risk_text(doc, headings[number][1], "section %s %s" % (number, title))
+    return levels
+
+
+def level_of(doc, index):
+    for level, _, found in doc.headings:
+        if found == index:
+            return level
+    return 2
+
+
+def check_record_risk(doc, kind, template):
+    """The Where problems could occur section of a design or fix record and
+    its Test plan, when the record's template has them: always written in a
+    fix record, and in a design record unless its References row links a
+    feature spec, when it may say Not applicable."""
+    if template is None or plain_section_span(template, WPCO) is None:
+        return
+    span = plain_section_span(doc, WPCO)
+    if span is None:
+        doc.error(0, "no '## %s' section. The %s template has it" % (WPCO, kind.replace("-", " ")))
+        return
+    fields, _ = control_table(doc)
+    references = (fields or {}).get("References", ("", 0))[0]
+    allowed = kind == "design-record" and "feature-spec.md" in references
+    state = not_applicable_of(doc, span[0])
+    if state:
+        doc.error(span[0], "section %s says Not applicable, but %s" % (WPCO, state))
+        return
+    if state == "":
+        if not allowed:
+            doc.error(span[0], "section %s says Not applicable. A %s writes it in full%s (classification.md)" % (WPCO, kind.replace("-", " "), "" if kind == "fix-record" else " unless its References row links the feature spec that covers it"))
+        return
+    if not own_lines(doc, span[0]):
+        doc.error(span[0], "section %s is empty. It names what could break, how a user would see it and the tests that would catch it (classification.md)" % WPCO)
+    else:
+        check_risk_text(doc, span[0], "section %s" % WPCO)
+    plan = None
+    for level, text, index in doc.headings:
+        if level == 3 and text == TEST_PLAN and span[0] < index < span[1]:
+            plan = index
+    if plan is None:
+        doc.error(span[0], "section %s has no '### %s'. The %s template has it" % (WPCO, TEST_PLAN, kind.replace("-", " ")))
+    elif not own_lines(doc, plan) or not_applicable_of(doc, plan) is not None:
+        doc.error(plan, "the %s of section %s is empty or says Not applicable. It names the test that would catch each problem (classification.md)" % (TEST_PLAN, WPCO))
+    else:
+        check_risk_text(doc, plan, "the %s of section %s" % (TEST_PLAN, WPCO))
+
+
+def check_class_rows(doc, kind, path, template, source):
+    """The class rows of a plan, milestone report, design record or fix
+    record, when its template has them: their form, and for a plan and a
+    milestone report the same levels as the feature spec of the directory."""
+    wanted, _ = control_table(template)
+    if not wanted or "Risk" not in wanted:
+        return
+    fields, _ = control_table(doc)
+    if fields is None:
+        return
+    rows = tuple(row for row in CLASS_ROWS if row[0] in wanted)
+    levels, _ = class_of(doc, {k: v for k, v in fields.items() if k in wanted}, kind, rows)
+    if kind not in ("plan", "milestone-report"):
+        return
+    folder = os.path.dirname(path) if kind == "plan" else os.path.dirname(os.path.dirname(path))
+    spec_path = os.path.join(folder, "feature-spec.md")
+    spec_text = source.read(spec_path)
+    if spec_text is None:
+        return
+    spec = Markdown(spec_path, spec_text)
+    spec_fields, _ = control_table(spec)
+    if not spec_fields or "Risk" not in spec_fields:
+        return
+    spec_levels, _ = class_of(Markdown(spec_path, spec_text), spec_fields, "feature-spec", CLASS_ROWS)
+    for name, _ in rows:
+        mine, line = levels.get(name), fields.get(name, ("", 0))[1]
+        theirs = spec_levels.get(name)
+        if name in fields and mine != theirs and not outer_braces(fields[name][0]):
+            doc.error(line, "the %s is %s, and the feature spec %s says %s. The %s repeats the feature spec's class (classification.md)" % (name.lower(), mine, spec_path, theirs, kind.replace("-", " ")))
+
+
 def check_feature_spec(doc, path, rules):
     key_match = KEY_DIR.match(path)
     key = key_match.group(1) if key_match else None
     if key is None:
         doc.error(0, "a feature spec lives in docs/design/<KEY>-<slug>/, KEY 3 to 5 capital letters and a lower case slug, found %s" % os.path.dirname(path))
     # 2.8 the feature class.
-    span = section_span(doc, "2.8")
+    span = section_span(doc, "2.8") if "2" not in not_applicable_numbers(doc) else None
     if span is not None and not any(CLASS_LINE.match(line.strip()) for _, line in text_lines(doc, span)):
         doc.error(span[0], "section 2.8 has no line 'Feature class: <purely additive or behaviour-changing>, because <reason>.'")
     # 3 the feature requirements.
@@ -489,8 +791,10 @@ def check_feature_spec(doc, path, rules):
             check_requirement(doc, index, rid, text.strip(), "a requirement")
         if not freqs:
             doc.error(span[0], "section 3 defines no feature requirement FREQ-<KEY>-nnn")
-    # 4 the quality checklist, every line answered.
-    span = section_span(doc, "4")
+    covered = not_applicable_numbers(doc)
+    # The quality checklist, every line answered.
+    quality = section_number(doc, "Quality requirements")
+    span = section_span(doc, quality) if quality and quality not in covered else None
     if span is not None and rules.get("quality"):
         rows = {}
         for index, cells in first_table(doc, span[0], span[1]):
@@ -507,10 +811,11 @@ def check_feature_spec(doc, path, rules):
             for rid in re.findall(r"FREQ-[A-Z]{3,5}-[0-9]{3}", answer):
                 if rid not in freqs:
                     doc.error(index, "the quality line '%s' names %s, which section 3 does not define" % (line_text, rid))
-    # 5 the threat model.
-    span = section_span(doc, "5")
+    # The threat model.
+    threat = section_number(doc, "Threat model")
+    span = section_span(doc, threat) if threat and threat not in covered else None
     if span is not None:
-        text = section_text(doc, "5")
+        text = section_text(doc, threat)
         rows = [cells for _, cells in first_table(doc, span[0], span[1]) if any(cells)]
         statement = re.search(re.escape(NO_ENTRY_POINT) + r"\W+\S+", text)
         if not rows and not statement:
@@ -519,12 +824,13 @@ def check_feature_spec(doc, path, rules):
             for rid in re.findall(r"FREQ-[A-Z]{3,5}-[0-9]{3}", " ".join(cells)):
                 if rid not in freqs:
                     doc.error(span[0], "the threat model names %s, which section 3 does not define" % rid)
-    # 7 the dependencies.
-    span = section_span(doc, "7")
+    # The dependencies.
+    dependencies = section_number(doc, "Dependencies")
+    span = section_span(doc, dependencies) if dependencies and dependencies not in covered else None
     if span is not None:
         rows = [(index, cells) for index, cells in first_table(doc, span[0], span[1]) if any(cells)]
-        if not rows and NO_DEPENDENCY not in section_text(doc, "7"):
-            doc.error(span[0], "section 7 lists no library and does not say \"%s\"" % NO_DEPENDENCY)
+        if not rows and NO_DEPENDENCY not in section_text(doc, dependencies):
+            doc.error(span[0], "section %s lists no library and does not say \"%s\"" % (dependencies, NO_DEPENDENCY))
         for index, cells in rows:
             category = cells[2] if len(cells) > 2 else ""
             if re.match(r"^(Category\s+)?X\b", category):
@@ -1616,6 +1922,16 @@ def main(argv):
                 check_index(doc, path)
             if kind == "decision":
                 check_record_number(doc, path, repo, templates, where, rules)
+            template_doc = Markdown(template_path, template_text)
+            template_fields, _ = control_table(template_doc)
+            if kind == "feature-spec" and template_fields and "Risk" in template_fields:
+                fields, _ = control_table(doc)
+                if fields is not None:
+                    check_spec_class(doc, template_doc, fields)
+            elif kind in ("plan", "milestone-report", "design-record", "fix-record"):
+                check_class_rows(doc, kind, path, template_doc, source)
+            if kind in ("design-record", "fix-record"):
+                check_record_risk(doc, kind, template_doc)
             if kind == "feature-spec":
                 if "quality" not in rules:
                     quality = git(repo, "show", "%s:docs/process/quality-requirements.md" % templates)

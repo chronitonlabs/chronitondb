@@ -24,6 +24,7 @@ before they commit.
     doclint.py keys --repo DIR --base REF [--source SRC]
     doclint.py dependencies --repo DIR --base REF --line REF [--source SRC] FILE...
     doclint.py settings --repo DIR --base REF [--source SRC]
+    doclint.py index [--write | --check] FILE...
 
 SRC is where the documents are read: "index" (the default, the staged
 version), "worktree", or a commit. REF is where the rules are read, the line
@@ -37,6 +38,7 @@ The type of each PATH comes from where it lives:
     docs/design/<dir>/feature-spec.md      feature spec
     docs/design/<dir>/plan.md              plan
     docs/design/<dir>/delivery-plan.md     delivery plan
+    docs/design/<dir>/ac-coverage.md       coverage file
     docs/design/<dir>/milestones/*.md      milestone report
     docs/design/<dir>/*.md                 design record or fix record, by
                                            its first heading ("# Design:",
@@ -59,6 +61,23 @@ Every document is checked for:
   3. every numbered section of the template ("## 3. Title", "### 2.1
      Title") is there, in order, and no placeholder of the template, a
      "{...}" text in braces, is left
+  4. when its template has a "## Contents" section, the document has one
+     too, as its first section after the title: a nested list of links,
+     one per heading below the title and in their order, each indented
+     two spaces more than the nearest heading above it of a higher
+     level, none for a "##", showing the heading's text and linking the
+     heading's anchor, and nothing else. An anchor follows GitHub's
+     rules: the text GitHub shows for the heading in lower case, every
+     character that is not a letter, a digit, "_", "-" or a space
+     removed, each space a hyphen, and a heading whose anchor is taken
+     already gets "-1", then "-2". A decision record is asked for its
+     index only when it is new, absent at REF: a merged record is never
+     edited, docs/decisions/README.md rule 2, so one merged before its
+     template had the section keeps none
+
+A new decision record also takes the next number after the highest
+record merged at REF, one number per new record and in order, so it
+neither reuses a merged number nor leaves a gap (rule 1 of the README).
 
 A feature spec is also checked for:
 
@@ -121,6 +140,15 @@ Dependencies section of a merged feature spec or design record on the line
 bump of the same library (same major and minor), which the pull request
 states with its reason. It prints "patch NAME OLD NEW FILE" for each.
 
+index prints the Contents section each FILE needs, read from the working
+tree, whatever its type. With --write it puts that section in the file in
+place of its old one, or before its first heading below the title when it
+has none. A Contents section that holds anything but blank lines and
+index entries is refused with its line, and the file is left unchanged.
+With --check it reports what is wrong with the file's index, the check of
+point 4 above, also for a template. Authors and their tools run it after
+any heading changes, before the commit.
+
 settings is the setting name check of release.md, The configuration file.
 A setting name is a top level key of a yaml file, active ("name:") or
 commented ("# name:" or "#name:"). Every setting of Apache's
@@ -136,6 +164,7 @@ Findings go to stderr as "PATH:LINE: reason", exit 1 when there is one.
 A usage error exits 2.
 """
 
+import html
 import os
 import re
 import subprocess
@@ -170,6 +199,7 @@ TEMPLATES = {
     "import-record": "docs/process/templates/import-record.md",
     "delta-entry": "docs/process/templates/delta-entry.md",
     "release-proposal": "docs/process/templates/release-proposal.md",
+    "ac-coverage": "docs/process/templates/ac-coverage.md",
     "decision": "docs/decisions/README.md",
 }
 # Unnumbered sections the type requires beside the numbered ones.
@@ -226,6 +256,8 @@ def doc_type(path, text):
                 return "plan"
             if name == "delivery-plan.md":
                 return "delivery-plan"
+            if name == "ac-coverage.md":
+                return "ac-coverage"
             first = first_heading(text)
             if first.startswith("Design:"):
                 return "design-record"
@@ -699,6 +731,323 @@ def check_milestone(doc, path, source):
         for index, rid in in_part:
             doc.error(index, "%s is delivered in part in milestone %d, the feature's final milestone in %s. The final milestone delivers each requirement or reports it not delivered with its reason in Deviations" % (rid or "a requirement", own, plan_path))
 
+CONTENTS = "Contents"
+INDEX_ENTRY = re.compile(r"^( *)[-*+] +\[(.*)\]\(#([^()\s]*)\)\s*$")
+HTML_TAG = re.compile(r"</?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?/?>")
+ESCAPE_OR_CODE = re.compile(r"\\([!-/:-@\[-`{-~])|(`+)(.+?)(?<!`)\2(?!`)")
+LINK = re.compile(r"(?<!!)\[([^\]]*)\](?:\([^)]*\)|\[[^\]]*\])")
+IMAGE = re.compile(r"!\[[^\]]*\](?:\([^)]*\)|\[[^\]]*\])")
+UNDERSCORES = re.compile(r"(?<!\w)(_+)(?!\s)(.+?)(?<!\s)\1(?!\w)")
+
+
+def protect(text):
+    """The text with each backslash escape and code span replaced by a
+    placeholder, which no later rule reads, and what each stood for: an
+    escape its character, a code span its source and its content."""
+    kept = []
+
+    def keep(match):
+        if match.group(1) is not None:
+            kept.append((match.group(0), match.group(1)))
+        else:
+            content = match.group(3)
+            if len(content) > 2 and content[0] == " " and content[-1] == " " and content.strip():
+                content = content[1:-1]
+            kept.append((match.group(0), content))
+        return "\0%d\0" % (len(kept) - 1)
+    return ESCAPE_OR_CODE.sub(keep, text), kept
+
+
+def restore(text, kept, which):
+    """The text with each placeholder back: which is 0 for the source as
+    written, 1 for what GitHub shows."""
+    return re.sub("\0([0-9]+)\0", lambda m: kept[int(m.group(1))][which], text)
+
+
+def rendered(text):
+    """The text GitHub shows for a heading, from which it makes the
+    anchor: a backslash escape as its character, a code span as its
+    content, an inline or reference link as its text, an image as
+    nothing, HTML tags and emphasis marks dropped, a "_" kept unless it
+    opens and closes emphasis, HTML entities decoded."""
+    text, kept = protect(text)
+    text = IMAGE.sub("", text)
+    text = LINK.sub(r"\1", text)
+    text = HTML_TAG.sub("", text)
+    text = text.replace("*", "")
+    previous = None
+    while previous != text:
+        previous = text
+        text = UNDERSCORES.sub(r"\2", text)
+    text = html.unescape(text)
+    return restore(text, kept, 1)
+
+
+def slug(text):
+    """GitHub's anchor for a heading: its text in lower case, every
+    character that is not a letter, a digit, "_", "-" or a space removed,
+    each space a hyphen."""
+    return re.sub(r"[^\w\- ]", "", rendered(text).lower()).replace(" ", "-")
+
+
+def anchors(doc):
+    """(level, text, line, anchor) of each heading, in order. A heading
+    whose anchor is taken already gets "-1", then "-2", the next number
+    whose anchor is free, as GitHub numbers them."""
+    seen = {}
+    found = []
+    for level, text, index in doc.headings:
+        base = slug(text)
+        anchor = base
+        while anchor in seen:
+            seen[base] += 1
+            anchor = "%s-%d" % (base, seen[base])
+        seen[anchor] = 0
+        found.append((level, text, index, anchor))
+    return found
+
+
+def link_text(text):
+    """A heading's text as an index entry shows it: its links reduced to
+    their text and any other bracket outside a code span escaped, so the
+    entry stays one link and a code span shows as written."""
+    text, kept = protect(text)
+    text = LINK.sub(r"\1", text)
+    text = re.sub(r"([\[\]])", r"\\\1", text)
+    return restore(text, kept, 0)
+
+
+def indexed(doc):
+    """The headings the index lists: every heading below the title but
+    the Contents heading, as (level, text, line, anchor)."""
+    return [entry for entry in anchors(doc) if entry[0] >= 2 and not (entry[0] == 2 and entry[1] == CONTENTS)]
+
+
+def indents(entries):
+    """The indent of each index entry: none for a heading with no heading
+    of a higher level above it, otherwise two spaces more than the
+    nearest such heading. A heading that skips a level is one step below
+    its parent, never more, so the list stays nested."""
+    parents = []
+    found = []
+    for level, _, _, _ in entries:
+        while parents and parents[-1][0] >= level:
+            parents.pop()
+        indent = parents[-1][1] + 2 if parents else 0
+        parents.append((level, indent))
+        found.append(indent)
+    return found
+
+
+def index_section(doc):
+    """The lines of the Contents section the document needs."""
+    lines = ["## " + CONTENTS, ""]
+    entries = indexed(doc)
+    for (level, text, _, anchor), indent in zip(entries, indents(entries)):
+        lines.append("%s- [%s](#%s)" % (" " * indent, link_text(text), anchor))
+    return lines
+
+
+def has_contents(doc):
+    return any(level == 2 and text == CONTENTS for level, text, _ in doc.headings)
+
+
+def contents_line_ok(doc, index):
+    """True for a line a Contents section may hold: blank, or one index
+    entry with nothing else on the line."""
+    if index in doc.fenced:
+        return False
+    line = doc.lines[index]
+    return not line.strip() or bool(INDEX_ENTRY.match(line))
+
+
+def check_index(doc, path):
+    """The Contents section of point 4 of the module text."""
+    hint = "Regenerate it with tools/chronitondb/doclint.py index --write %s" % path
+    sections = [(level, text, index) for level, text, index in doc.headings if level == 2]
+    contents = [index for level, text, index in sections if text == CONTENTS]
+    if not contents:
+        doc.error(0, "no '## %s' section, the index of the document's headings with a link to each, as its template has. %s" % (CONTENTS, hint))
+        return
+    start = contents[0]
+    for index in contents[1:]:
+        doc.error(index, "a second '## %s' section. A document has one index" % CONTENTS)
+    if sections[0][2] != start:
+        doc.error(start, "the '## %s' section comes after '## %s'. It is the first section after the title" % (CONTENTS, sections[0][1]))
+    wanted = indexed(doc)
+    every = dict((anchor, (level, text, index)) for level, text, index, anchor in anchors(doc))
+    by_anchor = dict((anchor, (level, text, index)) for level, text, index, anchor in wanted)
+    expected_indent = dict((entry[3], indent) for entry, indent in zip(wanted, indents(wanted)))
+    _, end = doc.span(2, start)
+    listed = []
+    for index in range(start + 1, end):
+        if not doc.lines[index].strip() and index not in doc.fenced:
+            continue
+        if not contents_line_ok(doc, index):
+            doc.error(index, "the Contents section holds only its list of links to the headings, one per line, and this line is not one. Move it out of the section. %s" % hint)
+            continue
+        match = INDEX_ENTRY.match(doc.lines[index])
+        indent, shown, anchor = len(match.group(1)), match.group(2), match.group(3)
+        if anchor not in every:
+            doc.error(index, "the index links #%s, and no heading of this file has that anchor. %s" % (anchor, hint))
+            continue
+        if anchor not in by_anchor:
+            doc.error(index, "the index links #%s, the %s, which the index leaves out" % (anchor, "title" if every[anchor][0] == 1 else "Contents heading"))
+            continue
+        if anchor in [a for _, a in listed]:
+            doc.error(index, "the index lists #%s twice" % anchor)
+            continue
+        listed.append((index, anchor))
+        level, text, _ = by_anchor[anchor]
+        if indent != expected_indent[anchor]:
+            doc.error(index, "the index entry for '%s' is indented %d spaces. It is indented %d, two spaces more than the nearest heading above it of a higher level. %s" % (text, indent, expected_indent[anchor], hint))
+        if shown != link_text(text):
+            doc.error(index, "the index entry #%s shows '%s', its heading reads '%s'. %s" % (anchor, shown, text, hint))
+    shown_anchors = [anchor for _, anchor in listed]
+    for level, text, index, anchor in wanted:
+        if anchor not in shown_anchors:
+            doc.error(start, "the heading '%s' on line %d is not in the index, as [%s](#%s). %s" % (text, index + 1, link_text(text), anchor, hint))
+    order = [anchor for _, _, _, anchor in wanted if anchor in shown_anchors]
+    for (index, anchor), expected in zip(listed, order):
+        if anchor != expected:
+            doc.error(index, "the index lists #%s out of the headings' order. %s" % (anchor, hint))
+            break
+
+
+def write_index(doc):
+    """(lines, None): the lines of the document with its Contents section
+    in place of the old one, or before its first heading below the title
+    when it has none, built from the headings that remain. (None, line):
+    a Contents section holds a line that is neither blank nor an index
+    entry, so nothing is removed and the file stays as it is. (None, None):
+    no heading below the title is left to index."""
+    drop = set()
+    for level, text, index in doc.headings:
+        if level == 2 and text == CONTENTS:
+            start, end = doc.span(2, index)
+            for line in range(start + 1, end):
+                if not contents_line_ok(doc, line):
+                    return None, line
+            drop.update(range(start, end))
+    kept = [line for index, line in enumerate(doc.lines) if index not in drop]
+    rest = Markdown(doc.name, "\n".join(kept))
+    first = [index for level, text, index in rest.headings if level >= 2]
+    if not first:
+        return None, None
+    before = kept[:first[0]]
+    while before and not before[-1].strip():
+        before.pop()
+    return before + [""] + index_section(rest) + [""] + kept[first[0]:], None
+
+
+def run_index(args):
+    mode = None
+    files = []
+    for word in args:
+        if word in ("--write", "--check") and mode is None:
+            mode = word
+        elif word.startswith("--"):
+            sys.stderr.write(__doc__)
+            return 2
+        else:
+            files.append(word)
+    if not files:
+        sys.stderr.write(__doc__)
+        return 2
+    failed = 0
+    for path in files:
+        try:
+            with open(path, encoding="utf-8") as handle:
+                text = handle.read()
+        except (OSError, UnicodeDecodeError):
+            sys.stderr.write("%s:0: cannot be read\n" % path)
+            failed += 1
+            continue
+        doc = Markdown(path, text)
+        if not indexed(doc):
+            sys.stderr.write("%s:0: has no heading below its title, so there is nothing to index\n" % path)
+            failed += 1
+            continue
+        if mode == "--check":
+            check_index(doc, path)
+            for error in doc.errors:
+                sys.stderr.write(error + "\n")
+            failed += 1 if doc.errors else 0
+        elif mode == "--write":
+            new, stray = write_index(doc)
+            if stray is not None:
+                sys.stderr.write("%s:%d: the Contents section holds other text on this line. Move it out of the section, then run again. The file is unchanged\n" % (path, stray + 1))
+                failed += 1
+            elif new is None:
+                sys.stderr.write("%s:0: has no heading below its title outside its Contents section, so there is nothing to index\n" % path)
+                failed += 1
+            elif new != doc.lines:
+                with open(path, "w", encoding="utf-8") as handle:
+                    handle.write("\n".join(new))
+                print("index %s written" % path)
+            else:
+                print("index %s current" % path)
+        else:
+            if len(files) > 1:
+                print("==> %s <==" % path)
+            print("\n".join(index_section(doc)))
+    if mode == "--check":
+        print("index %d checked %d failed" % (len(files), failed))
+    return 1 if failed else 0
+
+
+RECORD = re.compile(r"^docs/decisions/([0-9]{4})-[^/]+\.md$")
+
+
+def records_at(repo, where):
+    """The decision record paths of docs/decisions/ at where: "index",
+    "worktree" or a commit."""
+    if where == "index":
+        listing = git(repo, "ls-files", "--", "docs/decisions/")
+    elif where == "worktree":
+        listing = git(repo, "ls-files", "--cached", "--others", "--exclude-standard", "--", "docs/decisions/")
+    else:
+        listing = git(repo, "ls-tree", "-r", "--name-only", where, "--", "docs/decisions/")
+    return [line for line in (listing or "").split("\n") if RECORD.match(line)]
+
+
+def record_rules(repo, templates, where, rules):
+    """The decision records merged at the rules ref, and the numbers the
+    new ones may take: the next numbers after the highest merged one, one
+    each, in order (docs/decisions/README.md, rule 1)."""
+    if "records" not in rules:
+        merged = set(records_at(repo, templates))
+        numbers = [int(RECORD.match(path).group(1)) for path in merged]
+        last = max(numbers) if numbers else 0
+        new = [path for path in records_at(repo, where) if path not in merged]
+        rules["records"] = (merged, last, set(range(last + 1, last + 1 + len(new))))
+    return rules["records"]
+
+
+def needs_index(kind, path, repo, templates, where, rules):
+    """True when the document is asked for its index: every templated
+    kind, and a decision record only when it is new, absent at the rules
+    ref. A merged record is never edited (docs/decisions/README.md, rule
+    2), so one merged before its template had the section keeps none."""
+    if kind != "decision":
+        return True
+    merged, _, _ = record_rules(repo, templates, where, rules)
+    return path not in merged
+
+
+def check_record_number(doc, path, repo, templates, where, rules):
+    """A new decision record takes the next number after the highest
+    record merged at the rules ref, so it neither reuses a merged number
+    nor leaves a gap (docs/decisions/README.md, rule 1)."""
+    merged, last, allowed = record_rules(repo, templates, where, rules)
+    match = RECORD.match(path)
+    if path in merged or not match:
+        return
+    number = int(match.group(1))
+    if number not in allowed:
+        span = "%04d" % (last + 1) if len(allowed) == 1 else "%04d to %04d" % (last + 1, last + len(allowed))
+        doc.error(0, "a new decision record takes a number after the highest merged one, %04d, in order with no gap: %s here, and this one is %04d (docs/decisions/README.md, rule 1)" % (last, span, number))
+
 
 def decision_template(text):
     """The decision record template: the fenced markdown block of
@@ -1116,6 +1465,8 @@ def check_settings(repo, base, where):
 
 
 def main(argv):
+    if argv and argv[0] == "index":
+        return run_index(argv[1:])
     if argv and argv[0] == "settings":
         repo, base, where = None, None, "index"
         args = argv[1:]
@@ -1254,6 +1605,10 @@ def main(argv):
             doc.error(0, "no %s template at %s on %s, so this document cannot be checked against it" % (kind.replace("-", " "), template_path, templates))
         else:
             check_common(doc, kind, template_text, path)
+            if has_contents(Markdown(template_path, template_text)) and needs_index(kind, path, repo, templates, where, rules):
+                check_index(doc, path)
+            if kind == "decision":
+                check_record_number(doc, path, repo, templates, where, rules)
             if kind == "feature-spec":
                 if "quality" not in rules:
                     quality = git(repo, "show", "%s:docs/process/quality-requirements.md" % templates)

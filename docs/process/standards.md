@@ -27,7 +27,7 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 **ISO/IEC/IEEE 16326 (project management plans).** The delivery plan of a feature follows it: milestones, the reason for their order, exit criteria, the release and line each milestone ships in, the limit on parallel work and what triggers a re-plan. See [additive.md](additive.md).
 
-**ISO/IEC/IEEE 15289 (content of life cycle information items).** Every template is based on its 15289 document type and carries the common header: title, document type, status, version, author, approver and references. Git holds the change history. The merge that approves a document records its approver. See [templates/](templates/).
+**ISO/IEC/IEEE 15289 (content of life cycle information items).** Every template is based on its 15289 document type and carries the common header: title, document type, status, version, author, approver and references. Git holds the change history. The merge that approves a document records its approver. Each template and each document written from it also carries a Contents index of its headings, see [conventions.md](conventions.md#contents-index-of-process-documents). See [templates/](templates/).
 
 ## Requirements and architecture
 

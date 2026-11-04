@@ -202,6 +202,48 @@ class SpecClass(Repo):
         self.assertEqual(rc, 1)
         self.assertIn("section 4.1 Test plan says only 'Low risk.'", err)
 
+    def test_where_problems_could_occur_needs_its_own_text(self):
+        rc, err = self.spec_errors(bodies={"Where problems could occur": ""})
+        self.assertEqual(rc, 1)
+        self.assertIn("section 4 Where problems could occur is empty. It names what could break, how a user would see it and the tests that would catch it, and its test plan alone is not enough (classification.md)", err)
+
+    def test_non_goals_are_required_at_every_size(self):
+        na = ("Context and scope", "Building blocks", "Runtime view", "Data and formats", "Cross cutting concepts",
+              "Deployment", "Package dependencies and hook points", "Quality requirements", "Threat model",
+              "Compatibility", "Dependencies", "Risks", "Milestones outline", "Glossary")
+        drop = ("On-disk format changes", "Mixed-version cluster", "Upgrade path and prerequisites",
+                "Rollback path", "Runbook entries")
+        size = "Low Hanging Fruit: one option on one class"
+        rc, err = self.spec_errors(size=size, na=na + ("Non-goals",), drop=drop)
+        self.assertEqual(rc, 1)
+        self.assertIn("section Non-goals says Not applicable, and the class requires it (every class). Write it in full (classification.md)", err)
+        rc, err = self.spec_errors(size=size, na=na, drop=drop, bodies={"Non-goals": ""})
+        self.assertEqual(rc, 1)
+        self.assertIn("section Non-goals is empty. It names what the feature will not do, each with a short reason, at every class (classification.md)", err)
+        rc, err = self.spec_errors(size=size, na=na, drop=drop + ("Non-goals",))
+        self.assertEqual(rc, 1)
+        self.assertIn("no '### Non-goals' section. The feature spec template has it", err)
+
+    def test_the_no_format_statement_replaces_only_on_disk_formats_where_compatibility_is_required(self):
+        drop = ("On-disk format changes", "Mixed-version cluster", "Upgrade path and prerequisites",
+                "Rollback path", "Runbook entries")
+        rc, err = self.spec_errors(risk="Critical: a wrong result, Correctness", drop=drop)
+        self.assertEqual(rc, 1)
+        self.assertNotIn("no '### 7.1 On-disk format changes' section", err)
+        self.assertIn("no '### 7.2 Mixed-version cluster' section. The feature spec template has it", err)
+        self.assertIn("no '### 7.4 Rollback path' section. The feature spec template has it", err)
+        rc, err = self.spec_errors(touches="stock behaviour", drop=drop)
+        self.assertEqual(rc, 1)
+        self.assertIn("no '### 7.2 Mixed-version cluster' section", err)
+        self.assertEqual(self.spec_errors(risk="Critical: a wrong result, Correctness", drop=("On-disk format changes",)), (0, ""))
+        self.assertEqual(self.spec_errors(drop=drop), (0, ""))
+
+    def test_text_that_only_starts_with_not_applicable_is_content(self):
+        rc, err = self.spec_errors(bodies={"Deployment": "Not applicable to clusters without the index: they see no change, and operators set nothing."})
+        self.assertEqual((rc, err), (0, ""))
+        rc, err = self.spec_errors(bodies={"Deployment": "The tool prints this when the index is off:\n\n```\nNot applicable: the index is off\n```"})
+        self.assertEqual((rc, err), (0, ""))
+
     def test_challenging_size_requires_every_section(self):
         rc, err = self.spec_errors(size="Challenging: three read paths and a new format", na=("Glossary", "Runtime view"))
         self.assertEqual(rc, 1)
@@ -246,7 +288,7 @@ class SpecClass(Repo):
         rc, err = self.spec_errors(bodies={"Glossary": "Not applicable: none"}, na=())
         self.assertEqual(rc, 1)
         self.assertIn("section Glossary says Not applicable, but its reason has fewer than 3 words", err)
-        rc, err = self.spec_errors(bodies={"Glossary": "Not applicable, no terms beyond stock ones."})
+        rc, err = self.spec_errors(bodies={"Glossary": "Not applicable"})
         self.assertEqual(rc, 1)
         self.assertIn("section Glossary says Not applicable, but write it as the one line 'Not applicable: <reason>'", err)
 

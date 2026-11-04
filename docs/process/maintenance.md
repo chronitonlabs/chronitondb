@@ -21,7 +21,7 @@ This page covers corrective, emergency, preventive, adaptive and perfective chan
 
 Every change is one item with one public GitHub issue. A security fix has no public issue until disclosure. It is tracked in its private advisory. A maintainer approves an item's design record or fix record, and later its pull request, by merging. The reviewer reviews each of those pull requests first.
 
-Low risk work, documentation, packaging, code clarity or tests only, needs no design record or fix record: it goes straight to a pull request whose body carries Where problems could occur and its test plan. See [classification.md](classification.md).
+Low risk work, documentation, packaging, code clarity or tests only, needs no design record or fix record: it goes straight to a pull request whose body carries Where problems could occur and its test plan. A change to source carries a test that covers it, and a change to a file that guards the process, such as CI, the build file or the process pages, is never Low. See [classification.md](classification.md#the-floor).
 
 ## Corrective: fixing a fault
 

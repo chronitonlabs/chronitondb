@@ -146,6 +146,10 @@ When a document's template on the line has a `## Contents` section, the document
 
 A coverage file, `ac-coverage.md` in a design directory, is checked against the coverage file template.
 
+### The class
+
+The class of a change, its risk, size and reach, is set out in [classification.md](../../docs/process/classification.md). When the template on the line carries the class rows, a feature spec's Risk, Size and Reach rows each hold the level, a colon and the reason, and its Touches row lists what the change touches or says none. A Low risk that touches a public interface or stock behaviour is refused. Each section the class requires holds its content. Every other section holds its content or the one line `Not applicable: <reason>`, which covers the section's subsections. The section Where problems could occur and its Test plan never say none or low. A plan and a milestone report repeat the feature spec's levels, and a fix record, and a design record not covered by a feature spec, write Where problems could occur in full.
+
 ### Tests
 
 `test/doclint/` holds the checker's unit tests, Python's `unittest`, no other dependency. They include a test that every template in `docs/process/templates/` carries a correct index. The CI workflow runs them in a job of its own, apart from the job that checks the documents with the line's checker.

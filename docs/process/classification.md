@@ -51,6 +51,8 @@ The table gives each category the level it takes by the definitions below. The w
 
 A change that touches a public interface or stock behaviour is at least Normal, whatever its worst Bug Category. The public interfaces are the compatibility areas Apache Cassandra's enhancement proposal process names: CQL and the native protocol, JMX and its metrics, virtual tables, the yaml configuration, the tools such as nodetool, and the on-disk formats. Stock behaviour is anything stock Apache Cassandra already does: results, errors, warnings, metrics and the performance of existing operations.
 
+A change to a file that guards the process is never Low either: it is at least Normal. These files are the CI workflows and scripts (`.github/`, `.build/`, `.circleci/`, `.jenkins/`), the build file `build.xml`, the test configuration under `test/conf/`, the project's checkers under `tools/chronitondb/`, the process pages and templates under `docs/process/`, and the instructions for contributors' tools, `.claude/` and any `CLAUDE.md` or `AGENTS.md` at any depth.
+
 ### Where problems could occur
 
 Every feature spec, fix record, design record that is not covered by its feature spec, and pull request body of Low risk work carries a section "Where problems could occur" with its test plan, after the section of the same name in Ubuntu's stable release update template. It says where the change could go wrong if a part of it is wrong, worst case first: what a user or operator would see, on which request path, and from which part of the change. It is never "None" or "Low", and never an argument that the change is safe. The test plan names, for each problem, the test that would catch it, or why no test can and how it is watched instead.

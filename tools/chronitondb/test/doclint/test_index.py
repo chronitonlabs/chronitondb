@@ -454,7 +454,7 @@ class DocumentCheck(unittest.TestCase):
         rc, _, err = self.document("docs/decisions/0001-another.md")
         self.assertEqual(rc, 1)
         self.assertIn("docs/decisions/0001-another.md:1: no '## Contents' section", err)
-        self.assertIn("a new decision record takes the next number after the highest merged one, 0002, and this one is 0001", err)
+        self.assertIn("a new decision record takes a number after the highest merged one, 0001, in order with no gap: 0002 here, and this one is 0001", err)
 
     def test_a_new_record_leaving_a_gap_fails(self):
         path = "docs/decisions/0003-gap.md"
@@ -463,7 +463,7 @@ class DocumentCheck(unittest.TestCase):
         rc, _, err = self.document(path)
         self.assertEqual(rc, 1)
         self.assertNotIn("Contents", err)
-        self.assertIn("takes the next number after the highest merged one, 0002, and this one is 0003", err)
+        self.assertIn("after the highest merged one, 0001, in order with no gap: 0002 here, and this one is 0003", err)
 
     def test_two_new_records_in_order_pass(self):
         text = self.decisions_on_the_line()

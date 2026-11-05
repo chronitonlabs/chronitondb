@@ -63,7 +63,7 @@ A change that touches a public interface or stock behaviour is at least Normal, 
 10. command line tools and arguments
 11. operational routines
 
-ChronitonDB adds one area the page does not name: virtual tables.
+ChronitonDB adds one area the page does not name: virtual tables. The page's list ends with an ellipsis, so it is open, but ChronitonDB's list is closed: a new area is a change to this page.
 
 The Touches row names a public interface with its area in brackets, such as public interface (configuration) or public interface (gossip). Stock behaviour is anything stock Apache Cassandra already does: results, errors, warnings, metrics and the performance of existing operations.
 

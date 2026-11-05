@@ -252,6 +252,8 @@ FLOOR_AREAS = (
     ("operational routines", r"operational\s+routines?|\broutines?\b|\brunbooks?\b"),
     ("virtual tables", r"virtual\s+tables?|\bsystem_views\b"),
 )
+# The words of an on-disk format, which the CEP list names by its files.
+ON_DISK = re.compile(r"on.?disk|\bformats?\b|\bfiles?\b", re.I)
 PUBLIC_INTERFACE = re.compile(r"public\s+interface\b(\s*\(([^)]*)\))?", re.I)
 # The strictest value of each family, which a missing or unreadable row counts as.
 STRICTEST = {"Risk": "Critical", "Size": "Byzantine", "Reach": "Cross-cutting"}
@@ -653,7 +655,10 @@ def class_of(doc, fields, kind, rows):
                 if match.group(1) is None:
                     doc.error(line, "the 'Touches' row names public interface without its area. Name it in brackets, such as public interface (configuration), from: %s (classification.md, The floor)" % areas)
                 elif not floor_areas(match.group(2)):
-                    doc.error(line, "the 'Touches' row names public interface (%s), which names none of the compatibility areas: %s (classification.md, The floor)" % (match.group(2).strip(), areas))
+                    hint = ""
+                    if ON_DISK.search(match.group(2)):
+                        hint = ". An on-disk file is named by its area: sstable components, or commitlog, hint log and cache files"
+                    doc.error(line, "the 'Touches' row names public interface (%s), which names none of the compatibility areas: %s%s (classification.md, The floor)" % (match.group(2).strip(), areas, hint))
             text = re.sub(r"\([^)]*\)", "", value).strip().rstrip(".")
             words = [w.strip().lower() for w in TOUCHES_SPLIT.split(text) if w.strip()]
             if words == ["none"]:

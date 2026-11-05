@@ -26,12 +26,17 @@ limitations under the License.
 | Author | Architect: {GitHub username} |
 | Approver | The maintainer who merges the pull request |
 | References | {feature spec, delivery plan, decision records} |
+| Risk | {the feature spec's risk, Critical, Normal or Low}: {its reason} |
+| Size | {the feature spec's size, Low Hanging Fruit, Normal, Challenging or Byzantine}: {its reason} |
+| Reach | {the feature spec's reach, One area or Cross-cutting}: {its reason} |
 
 Change history: the git history of this file.
 
 Location: `docs/design/<KEY>-<slug>/plan.md`. Process: [additive.md](../additive.md).
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
+
+The Risk, Size and Reach rows repeat the feature spec's class, the level words the same, as [classification.md](../classification.md) defines it.
 
 ## Contents
 

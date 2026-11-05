@@ -49,7 +49,23 @@ The table gives each category the level it takes by the definitions below. The w
 
 ### The floor
 
-A change that touches a public interface or stock behaviour is at least Normal, whatever its worst Bug Category. The public interfaces are the compatibility areas Apache Cassandra's enhancement proposal process names: CQL and the native protocol, JMX and its metrics, virtual tables, the yaml configuration, the tools such as nodetool, and the on-disk formats. Stock behaviour is anything stock Apache Cassandra already does: results, errors, warnings, metrics and the performance of existing operations.
+A change that touches a public interface or stock behaviour is at least Normal, whatever its worst Bug Category. The public interfaces are the areas of compatibility that Apache Cassandra's [Cassandra Enhancement Proposals](https://cwiki.apache.org/confluence/spaces/CASSANDRA/pages/95652201/Cassandra+Enhancement+Proposals+CEP) page lists under Compatibility Concerns, quoted as the page writes them:
+
+1. native protocol (and CQL)
+2. gossip and the messaging service
+3. pluggable components (SPIs) like authorisation, triggers, …
+4. commitlog, hintlog, cache files
+5. sstables components
+6. configuration
+7. jmx mbeans (including metrics)
+8. monitoring
+9. client tool classes
+10. command line tools and arguments
+11. operational routines
+
+ChronitonDB adds one area the page does not name: virtual tables.
+
+The Touches row names a public interface with its area in brackets, such as public interface (configuration) or public interface (gossip). Stock behaviour is anything stock Apache Cassandra already does: results, errors, warnings, metrics and the performance of existing operations.
 
 A change to a file that guards the process is never Low either: it is at least Normal. These files are the CI workflows and scripts (`.github/`, `.build/`, `.circleci/`, `.jenkins/`), the build file `build.xml`, the test configuration under `test/conf/`, the project's checkers under `tools/chronitondb/`, the process pages and templates under `docs/process/`, and the instructions for contributors' tools, `.claude/` and any `CLAUDE.md` or `AGENTS.md` at any depth.
 
@@ -96,7 +112,7 @@ One template serves every class, [templates/feature-spec.md](templates/feature-s
 
 Compatibility in full means its parts: the statement that the feature changes no format, schema or protocol may stand in for the on-disk format changes only, and the mixed-version cluster, upgrade, rollback and runbook parts are still written. Non-goals are part of Purpose and scope and never say Not applicable.
 
-The control table of the spec carries the class: rows Risk, Size and Reach, each with the level and its reason, and a row Touches naming what the change touches: a public interface, stock behaviour, new input or privilege, a new dependency, shared state (threads, pools or shared state), a request path (a read, write or query path), a new feature or switch, or none. The plan and the milestone reports repeat the spec's class. A design record and a fix record carry the class of their item.
+The control table of the spec carries the class: rows Risk, Size and Reach, each with the level and its reason, and a row Touches naming what the change touches: a public interface with its area from the floor's list, stock behaviour, new input or privilege, a new dependency, shared state (threads, pools or shared state), a request path (a read, write or query path), a new feature or switch, or none. The plan and the milestone reports repeat the spec's class. A design record and a fix record carry the class of their item.
 
 ### Checks and review
 
@@ -140,7 +156,7 @@ The class is three label families on the issue, mirrored on each of its pull req
 ## Sources
 
 1. Apache Cassandra, [JIRA Workflow Proposals](https://cwiki.apache.org/confluence/spaces/CASSANDRA/pages/97551605/JIRA+Workflow+Proposals): the Bug Category, Severity and Complexity fields, as used on the [CASSANDRA project in JIRA](https://issues.apache.org/jira/projects/CASSANDRA).
-2. Apache Cassandra, [Cassandra Enhancement Proposals](https://cwiki.apache.org/confluence/spaces/CASSANDRA/pages/95652201/Cassandra+Enhancement+Proposals+CEP): the compatibility areas of a public interface.
+2. Apache Cassandra, [Cassandra Enhancement Proposals](https://cwiki.apache.org/confluence/spaces/CASSANDRA/pages/95652201/Cassandra+Enhancement+Proposals+CEP), its Compatibility Concerns: the areas of compatibility that make a public interface.
 3. Ubuntu, [Stable Release Updates, the bug template](https://ubuntu.com/project/docs/SRU/reference/bug-template/): its Test Plan and Where problems could occur sections.
 4. Debian, [bug severity levels](https://www.debian.org/Bugs/Developer#severities) and the [release critical bug policy](https://release.debian.org/testing/rc_policy.txt).
 5. Debian, [transitions](https://wiki.debian.org/Teams/ReleaseTeam/Transitions), and Fedora, [the Changes policy](https://docs.fedoraproject.org/en-US/program_management/changes_policy/) with its Self-Contained and System-Wide changes.

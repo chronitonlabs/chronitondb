@@ -415,6 +415,46 @@ class SpecClass(Repo):
         self.assertEqual(rc, 1)
         self.assertIn("the risk is Low, and Touches names public interface. A change that touches a public interface or stock behaviour is at least Normal risk (classification.md, The floor)", err)
 
+    def test_a_public_interface_names_its_compatibility_area(self):
+        rc, err = self.spec_errors(touches="public interface, stock behaviour")
+        self.assertEqual(rc, 1)
+        self.assertIn("the 'Touches' row names public interface without its area. Name it in brackets, such as public interface (configuration)", err)
+        rc, err = self.spec_errors(touches="public interface (the planner)")
+        self.assertEqual(rc, 1)
+        self.assertIn("the 'Touches' row names public interface (the planner), which names none of the compatibility areas", err)
+        for area in ("native protocol", "CQL", "gossip", "internode messaging", "the authorisation SPI", "triggers",
+                     "commitlog", "hint log", "saved cache files", "sstable components", "configuration", "yaml",
+                     "JMX MBeans", "metrics", "monitoring", "client tool classes", "nodetool arguments",
+                     "operational routines", "virtual tables"):
+            rc, err = self.spec_errors(touches="public interface (%s)" % area)
+            self.assertNotIn("the 'Touches' row", err, area)
+
+    def test_a_compatibility_area_alone_counts_as_a_public_interface(self):
+        rc, err = self.spec_errors(touches="gossip, shared state", na=("Compatibility",),
+                                   drop=("On-disk format changes", "Mixed-version cluster", "Upgrade path and prerequisites",
+                                         "Rollback path", "Runbook entries"))
+        self.assertEqual(rc, 1)
+        self.assertIn("the 'Touches' row names 'gossip', which is a compatibility area of gossip and the messaging service. Write it as public interface (gossip) (classification.md, The floor)", err)
+        self.assertIn("section 7 Compatibility says Not applicable, and the class requires it (Normal risk touching public interface)", err)
+        rc, err = self.spec_errors(risk="Low: documentation only change", touches="virtual tables")
+        self.assertIn("the risk is Low, and Touches names public interface", err)
+
+    def test_the_floor_areas_are_the_cep_list_and_virtual_tables(self):
+        self.assertEqual([name for name, _ in doclint.FLOOR_AREAS], [
+            "native protocol and CQL", "gossip and the messaging service",
+            "pluggable components (SPIs) such as authorisation and triggers", "commitlog, hint log and cache files",
+            "sstable components", "configuration", "JMX MBeans including metrics", "monitoring", "client tool classes",
+            "command line tools and arguments", "operational routines", "virtual tables"])
+        with open(os.path.join(ROOT, "docs", "process", "classification.md"), encoding="utf-8") as handle:
+            page = handle.read()
+        floor = page.split("### The floor", 1)[1].split("\n### ", 1)[0]
+        for quoted in ("native protocol (and CQL)", "gossip and the messaging service",
+                       "pluggable components (SPIs) like authorisation, triggers", "commitlog, hintlog, cache files",
+                       "sstables components", "configuration", "jmx mbeans (including metrics)", "monitoring",
+                       "client tool classes", "command line tools and arguments", "operational routines",
+                       "virtual tables", "Cassandra+Enhancement+Proposals"):
+            self.assertIn(quoted, floor)
+
     def test_a_missing_class_row_is_refused(self):
         text = spec().replace("| Touches | none |\n", "")
         self.put(SPEC, text)

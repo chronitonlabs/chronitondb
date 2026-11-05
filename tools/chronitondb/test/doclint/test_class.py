@@ -422,6 +422,10 @@ class SpecClass(Repo):
         rc, err = self.spec_errors(touches="public interface (the planner)")
         self.assertEqual(rc, 1)
         self.assertIn("the 'Touches' row names public interface (the planner), which names none of the compatibility areas", err)
+        rc, err = self.spec_errors(touches="public interface (on-disk format)")
+        self.assertEqual(rc, 1)
+        self.assertIn("An on-disk file is named by its area: sstable components, or commitlog, hint log and cache files (classification.md, The floor)", err)
+        self.assertNotIn("An on-disk file", self.spec_errors(touches="public interface (the planner)")[1])
         for area in ("native protocol", "CQL", "gossip", "internode messaging", "the authorisation SPI", "triggers",
                      "commitlog", "hint log", "saved cache files", "sstable components", "configuration", "yaml",
                      "JMX MBeans", "metrics", "monitoring", "client tool classes", "nodetool arguments",
@@ -452,7 +456,7 @@ class SpecClass(Repo):
                        "pluggable components (SPIs) like authorisation, triggers", "commitlog, hintlog, cache files",
                        "sstables components", "configuration", "jmx mbeans (including metrics)", "monitoring",
                        "client tool classes", "command line tools and arguments", "operational routines",
-                       "virtual tables", "Cassandra+Enhancement+Proposals"):
+                       "virtual tables", "Cassandra+Enhancement+Proposals", "a new area is a change to this page"):
             self.assertIn(quoted, floor)
 
     def test_a_missing_class_row_is_refused(self):

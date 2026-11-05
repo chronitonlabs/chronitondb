@@ -102,7 +102,9 @@ A feature spec is also checked for:
      phrases of TOUCHES (public interface, stock behaviour, new input or
      privilege, new dependency, shared state, request path, new feature or
      switch) in any case, split at a comma, a semicolon or "and", or none,
-     and a Low risk never touching a public
+     a public interface naming its area in brackets, one of FLOOR_AREAS
+     (a phrase that names an area alone counts as a public interface and
+     is refused), and a Low risk never touching a public
      interface or stock behaviour. A missing or malformed level counts as
      the strictest of its family: Critical, Byzantine, Cross-cutting
  10. its sections against the class: each section the class requires
@@ -230,6 +232,27 @@ CLASS_ROWS = (("Risk", RISKS), ("Size", SIZES), ("Reach", REACHES))
 TOUCHES = ("public interface", "stock behaviour", "new input or privilege", "new dependency",
            "shared state", "request path", "new feature or switch")
 FLOOR = ("public interface", "stock behaviour")
+# The floor's public interfaces: the areas of compatibility the Cassandra
+# Enhancement Proposals page lists under Compatibility Concerns, plus
+# virtual tables, ChronitonDB's one addition (classification.md, The floor).
+# A Touches row names public interface with its area in brackets, such as
+# "public interface (configuration)", and each area is found by its words.
+FLOOR_AREAS = (
+    ("native protocol and CQL", r"native\s+protocol|protocol\s+version|\bcql\b"),
+    ("gossip and the messaging service", r"\bgossip|messaging|internode|\bverbs?\b"),
+    ("pluggable components (SPIs) such as authorisation and triggers",
+     r"\bspis?\b|pluggable|\bplug-?ins?\b|authori[sz]|authenticat|\btriggers?\b"),
+    ("commitlog, hint log and cache files", r"commit\s*log|hint\s*log|\bhints?\b|cache\s+files?|saved\s+caches?"),
+    ("sstable components", r"\bsstables?\b"),
+    ("configuration", r"configuration|\bconfig\b|\byaml\b|system\s+propert"),
+    ("JMX MBeans including metrics", r"\bjmx\b|\bmbeans?\b|\bmetrics?\b"),
+    ("monitoring", r"\bmonitoring\b"),
+    ("client tool classes", r"client\s+tool"),
+    ("command line tools and arguments", r"command\s+line|\bnodetool\b|\bcqlsh\b|\btools?\b|\barguments?\b"),
+    ("operational routines", r"operational\s+routines?|\broutines?\b|\brunbooks?\b"),
+    ("virtual tables", r"virtual\s+tables?|\bsystem_views\b"),
+)
+PUBLIC_INTERFACE = re.compile(r"public\s+interface\b(\s*\(([^)]*)\))?", re.I)
 # The strictest value of each family, which a missing or unreadable row counts as.
 STRICTEST = {"Risk": "Critical", "Size": "Byzantine", "Reach": "Cross-cutting"}
 NOT_APPLICABLE = re.compile(r"^Not applicable:\s*(\S.*)$")
@@ -585,6 +608,19 @@ def not_applicable_numbers(doc):
     return {number for _, number, _, index in numbered_sections(doc) if not_applicable_of(doc, index) is not None}
 
 
+def floor_areas(text):
+    """The floor areas a text names, in the order of FLOOR_AREAS."""
+    return [name for name, words in FLOOR_AREAS if re.search(words, text, re.I)]
+
+
+def touch_of(word):
+    """The Touches phrase a word of the row is: one of TOUCHES, public
+    interface when it names a floor area without saying so, or None."""
+    if word in TOUCHES:
+        return word
+    return "public interface" if floor_areas(word) else None
+
+
 def class_of(doc, fields, kind, rows):
     """{row: level} of the class rows a document control table holds, each
     checked for its form, and the set of Touches phrases (None when the
@@ -612,16 +648,28 @@ def class_of(doc, fields, kind, rows):
         value, line = fields["Touches"]
         touches = set()
         if value and not outer_braces(value):
+            areas = ", ".join(name for name, _ in FLOOR_AREAS)
+            for match in PUBLIC_INTERFACE.finditer(value):
+                if match.group(1) is None:
+                    doc.error(line, "the 'Touches' row names public interface without its area. Name it in brackets, such as public interface (configuration), from: %s (classification.md, The floor)" % areas)
+                elif not floor_areas(match.group(2)):
+                    doc.error(line, "the 'Touches' row names public interface (%s), which names none of the compatibility areas: %s (classification.md, The floor)" % (match.group(2).strip(), areas))
             text = re.sub(r"\([^)]*\)", "", value).strip().rstrip(".")
             words = [w.strip().lower() for w in TOUCHES_SPLIT.split(text) if w.strip()]
             if words == ["none"]:
                 pass
             else:
                 for word in words:
+                    touch = touch_of(word)
                     if word in TOUCHES:
                         touches.add(word)
                     elif word == "none":
                         doc.error(line, "the 'Touches' row says none beside other phrases. It says none alone, or lists what the change touches")
+                    elif touch:
+                        # Counted as a public interface, so the floor and the
+                        # sections it requires apply while the row is fixed.
+                        touches.add(touch)
+                        doc.error(line, "the 'Touches' row names '%s', which is a compatibility area of %s. Write it as public interface (%s) (classification.md, The floor)" % (word, " and ".join(floor_areas(word)), word))
                     else:
                         doc.error(line, "the 'Touches' row names '%s', which is none of: %s, or none (classification.md)" % (word, ", ".join(TOUCHES)))
             floor = sorted(touches & set(FLOOR))
@@ -654,7 +702,7 @@ def class_quietly(doc, fields):
     value = (fields or {}).get("Touches", ("", 0))[0]
     if value and not outer_braces(value):
         text = re.sub(r"\([^)]*\)", "", value).strip().rstrip(".")
-        touches = {w.strip().lower() for w in TOUCHES_SPLIT.split(text) if w.strip().lower() in TOUCHES}
+        touches = {touch_of(w.strip().lower()) for w in TOUCHES_SPLIT.split(text) if w.strip()} - {None}
     return levels, touches
 
 

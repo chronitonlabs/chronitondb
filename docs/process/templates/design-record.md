@@ -29,7 +29,7 @@ limitations under the License.
 | Risk | {Critical, Normal or Low}: {the worst Bug Category the change could cause if wrong, and the floor if one applied} |
 | Size | {Low Hanging Fruit, Normal, Challenging or Byzantine}: {why} |
 | Reach | {One area or Cross-cutting}: {why, naming the packages touched} |
-| Touches | {public interface (name which), stock behaviour, new input or privilege, new dependency, shared state (threads, pools or shared state), request path (a read, write or query path), new feature or switch, or none} |
+| Touches | {public interface (its compatibility area), stock behaviour, new input or privilege, new dependency, shared state (threads, pools or shared state), request path (a read, write or query path), new feature or switch, or none} |
 
 Change history: the git history of this file.
 
@@ -37,7 +37,7 @@ Location: `docs/design/<issue>-<slug>/`, or `docs/design/<KEY>-<slug>/` for a fo
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
-The Risk, Size and Reach rows are the item's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the change touches, from the phrases in the row, or says none. A public interface or stock behaviour in Touches means the risk is Normal or Critical.
+The Risk, Size and Reach rows are the item's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the change touches, from the phrases in the row, or says none. A public interface names its area in brackets, one of the compatibility areas in [classification.md](../classification.md#the-floor), such as public interface (configuration). A public interface or stock behaviour in Touches means the risk is Normal or Critical.
 
 ## Contents
 

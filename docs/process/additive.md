@@ -57,19 +57,20 @@ Every fork feature has a feature key: 3 to 5 capital letters, for example `LUC`.
 
 ### Level 1: the feature spec
 
-The feature spec says what the feature is and why. It is written from [templates/feature-spec.md](templates/feature-spec.md) and contains:
+The feature spec says what the feature is and why. It is written from [templates/feature-spec.md](templates/feature-spec.md). Its control table carries the feature's class, which sets the sections it fills in full: the others say `Not applicable: <reason>`. See [classification.md](classification.md). It contains:
 
 1. Purpose and scope, with non-goals.
 2. Architecture in short arc42 form: context, building blocks, interfaces, on-disk and wire formats, runtime behaviour, observability, limits. It states the class of the feature and of each switch, with the reason, the default on each line and, for a behaviour-changing feature, the stock operations it changes. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
 3. Feature requirements, each with an id `FREQ-<KEY>-nnn`, one EARS shape, one BCP 14 key word and a source.
-4. Quality requirements, answering every line of [quality-requirements.md](quality-requirements.md).
-5. Threat model: every new entry point checked with STRIDE, each mitigation a FREQ, or the statement that there is no new entry point.
-6. Compatibility: on-disk format changes with their version markers, behaviour in a mixed-version cluster during a rolling upgrade, the upgrade path and prerequisites, the rollback path, and the runbook entries. A feature with no format, schema or protocol change says so.
-7. Dependencies: each new library or version change with its ASF licence category, NOTICE and credit lines, known vulnerabilities and the reason it is needed. See [compliance.md](compliance.md).
-8. Risks, each with likelihood, impact and mitigation.
-9. Decisions, as links to decision records.
-10. A milestone outline.
-11. Prior art: how other systems and projects solved the problem, what each got right and wrong, and why ChronitonDB chooses differently where it does. The template sets the rules for sources, licences and patents.
+4. Where problems could occur, with its test plan: what could break if the feature is wrong and the tests that would catch it.
+5. Quality requirements, answering every line of [quality-requirements.md](quality-requirements.md).
+6. Threat model: every new entry point checked with STRIDE, each mitigation a FREQ, or the statement that there is no new entry point.
+7. Compatibility: on-disk format changes with their version markers, behaviour in a mixed-version cluster during a rolling upgrade, the upgrade path and prerequisites, the rollback path, and the runbook entries. A feature with no format, schema or protocol change says so.
+8. Dependencies: each new library or version change with its ASF licence category, NOTICE and credit lines, known vulnerabilities and the reason it is needed. See [compliance.md](compliance.md).
+9. Risks, each with likelihood, impact and mitigation.
+10. Decisions, as links to decision records.
+11. A milestone outline.
+12. Prior art: how other systems and projects solved the problem, what each got right and wrong, and why ChronitonDB chooses differently where it does. The template sets the rules for sources, licences and patents.
 
 A maintainer approves the feature spec by merging its pull request.
 

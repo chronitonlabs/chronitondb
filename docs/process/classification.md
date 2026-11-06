@@ -141,7 +141,7 @@ The author of the spec names what the change touches in the Touches row, and the
 | Normal | The spec, the plan and the code, each merged by a maintainer. The maintainer confirms the class when merging the spec |
 | Low | No spec or plan stage. The work goes straight to a pull request whose body carries Where problems could occur and its test plan. A maintainer merges it |
 
-A one-item change takes the same stages with its design record or fix record in place of the spec and plan. At every level, only a maintainer, or a committer within their area or line, merges. See [governance.md](governance.md).
+A one-item change takes the same stages with its design record or fix record in place of the spec and plan. Only maintainers merge, at every level.
 
 ## Labels
 

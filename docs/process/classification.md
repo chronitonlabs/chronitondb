@@ -131,7 +131,7 @@ Before a document goes to review, its author runs independent checks on it in ro
 | Challenging size | 8 |
 | Byzantine size or Critical risk | 10 |
 
-The author of the spec names what the change touches in the Touches row, and the reviewer checks it against the change. Drafting and review get more reasoning effort at Critical risk than at Normal, and Normal more than Low. An automated role's settings follow the class of its task.
+The author of the spec names what the change touches in the Touches row, and the reviewer checks it against the change. Drafting gets more reasoning effort at Critical risk than at Normal, and at Normal more than at Low. Review gets more at Critical risk than at Normal or Low. An automated role's settings follow the class of its task.
 
 ### Stages and approvals
 

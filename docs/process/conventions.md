@@ -126,7 +126,8 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 3. User and operator documentation follows Diátaxis: tutorials, how-to guides, reference and explanation, one kind per page. Its folder layout will be defined with the documentation site.
 4. Each line keeps its own documentation on its own branch.
 5. Documentation changes ship in the same pull request as the code they describe.
-6. Requirements and prerequisites in reference pages and how-to guides use BCP 14 key words. Tutorials and explanations use plain prose.
+6. Requirements and prerequisites in reference pages, how-to guides, runbooks, the process pages and templates, and design and decision records use BCP 14 key words. Tutorials and explanations use plain prose.
+7. Product documentation, meaning reference pages, operator guides, runbooks and design and decision records, never addresses the reader as "you". Pages that address people taking part may: [contributing.md](contributing.md), the reporting part of [security.md](security.md) and the How we work section of `.github/README.md`.
 
 ## Contents index of process documents
 

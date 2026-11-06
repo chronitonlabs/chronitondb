@@ -35,6 +35,6 @@
 /redhat/                                              @chronitonlabs/sensitive-reviewers
 
 # The process and governance are the maintainers' decision (governance.md),
-# so changes there need a maintainer.
+# so changes there request a maintainer's review.
 /docs/process/                                        @chronitonlabs/maintainers
 /docs/governance/                                     @chronitonlabs/maintainers

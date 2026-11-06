@@ -77,7 +77,7 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 **Google Java Style.** New ChronitonDB Java code follows it. Apache Cassandra code keeps Apache's style. See [conventions.md](conventions.md).
 
-**The Ubuntu and Debian version pattern.** A ChronitonDB version is the Apache Cassandra version it contains followed by `-chronitondb<n>`, for example `5.0.10-chronitondb1`, with `~rc<k>` in the package version of a release candidate and `-rc<k>` in its git tag. Debian and Red Hat package tools order these versions correctly. In strict Semantic Versioning the hyphen marks a pre-release, which we accept as Ubuntu does. See [release.md](release.md#version-numbers).
+**Debian and Red Hat version ordering.** A ChronitonDB release version is the line followed by ChronitonDB's own release number on it, `<line>-chronitondb<n>`, for example `5.0-chronitondb3`, with `~rc<k>` in the package version of a release candidate and `-rc<k>` in its git tag. It is written so that the version comparison of the [Debian Policy Manual](https://www.debian.org/doc/debian-policy/ch-controlfields.html#version) and of rpm orders every release and release candidate correctly. It is not Semantic Versioning. See [release.md](release.md#version-numbers).
 
 **RFC 3339.** Timestamps in our records, evidence, documentation and release notes use RFC 3339. Apache Cassandra's own log format is unchanged.
 

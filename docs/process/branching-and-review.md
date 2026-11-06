@@ -69,7 +69,7 @@ ChronitonDB uses trunk-based development. Each line is a trunk. Work reaches a l
 3. A tag is never moved or deleted.
 4. Anything that installs or releases from a tag verifies its signature first.
 
-A release tag is the version itself, for example `5.0.10-chronitondb1`, next to Apache's own `cassandra-5.0.10` tag. A release candidate tag adds `-rc<k>`, for example `5.0.10-chronitondb1-rc1`, since git does not allow `~` in a tag name. Release tags are signed with the dedicated ChronitonDB release key, not a person's key. See [release.md](release.md#version-numbers).
+A release tag is the version itself, for example `5.0-chronitondb3`. It cannot clash with Apache's own tags, which start with `cassandra-`. A release candidate tag adds `-rc<k>`, for example `5.0-chronitondb3-rc1`, since git does not allow `~` in a tag name. Release tags are signed with the dedicated ChronitonDB release key, not a person's key. See [release.md](release.md#version-numbers).
 
 ## Required checks
 

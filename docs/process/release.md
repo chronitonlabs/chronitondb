@@ -126,13 +126,22 @@ The release engineer takes the first three from the line's git history: the Apac
 
 ### The version a running node reports
 
-A running node reports a different string from its release version, in `nodetool version`, `system.local`, `system.peers_v2`, gossip and the drivers. This is the node version: `<Apache version>+chronitondb.<feature level>`, for example `5.0.9+chronitondb.1`.
+A running node reports a different string from its release version to other nodes and to drivers, in gossip, `system.local`, `system.peers_v2` and the drivers. This is the node version: `<Apache version>+chronitondb.<feature level>`, for example `5.0.9+chronitondb.1`.
 
 1. Its Apache part is the newest Apache Cassandra release the line fully contains, the release the release notes name first. On a line before Apache's first release of its major version it is the newest Apache pre-release the line contains, for example `6.0-alpha2+chronitondb.1`. Fixes taken early and Apache branch commits after that release do not change it.
 2. It exists so that Apache Cassandra and its drivers compare a ChronitonDB node correctly. They read the part after `+` as build information, so `5.0.9+chronitondb.1` compares as Apache Cassandra 5.0.9. They read a hyphen as a pre-release, so the release version `5.0-chronitondb3` would compare as a pre-release of 5.0.0, older than every Apache Cassandra 5.0 release.
-3. It is never shown as the release version. Packages, tags, release notes and our documentation name a release by its release version only. Apache's `nodetool version` prints the node version under its own label `ReleaseVersion`, which stays as Apache has it. The release version of an installed node is the version of its `chronitondb` package.
+3. It is never shown as the release version. Packages, tags, release notes, `nodetool version` and our documentation name a release by its release version only.
 4. The feature level is a number in the code, raised only when a release changes how nodes work together. Features that need every node to cooperate turn on once every node reports their level.
 5. A node in Apache compatibility mode reports the plain Apache version, for example `5.0.9`.
+6. A switch turns the ChronitonDB form of the node version on or off on these surfaces. Its feature spec sets its name, its default and the driver tests that prove each setting.
+
+### What nodetool version shows
+
+`nodetool version` shows what is installed: the release version, for example `5.0-chronitondb3`, and the git SHA of the build. It shows no Apache release line.
+
+1. This is an exception the maintainers made to the rule that stock output stays as Apache prints it. A ChronitonDB node is a different database and binary, and an operator needs to know which release is installed.
+2. It is on by default.
+3. The feature that makes `nodetool version` show this is not built yet. Until it is, `nodetool version` prints Apache's output, and the release version of an installed node is the version of its `chronitondb` package.
 
 ## Packaging
 

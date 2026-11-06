@@ -48,7 +48,7 @@ Any automatic fallback, such as falling back to a scan, is off by default. It ha
 
 ### Stock behaviour unchanged
 
-Stock Apache Cassandra behaviour is unchanged for anyone not using a ChronitonDB feature. A behaviour-changing feature is always off by default and changes stock behaviour only for operators who switch it on. With a feature off, the node behaves exactly as stock: the feature's syntax is refused with an error that names the switch, no new files are written, no new threads start and no new memory is used. Code defaults in stock classes stay as Apache has them. The parity suite proves it.
+Stock Apache Cassandra behaviour is unchanged for anyone not using a ChronitonDB feature, except the one exception in [release.md](release.md#what-a-release-may-contain), `nodetool version`. A behaviour-changing feature is always off by default, but for that exception, and changes stock behaviour only for operators who switch it on. With a feature off, the node behaves exactly as stock: the feature's syntax is refused with an error that names the switch, no new files are written, no new threads start and no new memory is used. Code defaults in stock classes stay as Apache has them. The parity suite proves it.
 
 ### CQL does not depend on topology
 

@@ -45,7 +45,7 @@ Supported versions are listed in the README of the repository.
 1. Any release MAY ship fixes, imports from Apache Cassandra and security fixes.
 2. A release MAY ship a finished feature behind its feature switch, which the operator sets with yaml or nodetool.
 3. Within a line, a feature's default MUST NOT change. Upgrading within a line never changes behaviour by itself.
-4. A purely additive feature's default MAY be on from a line's first release. A behaviour-changing feature's default MUST be off on every line.
+4. A purely additive feature's default MAY be on from a line's first release. A behaviour-changing feature's default MUST be off on every line, with one exception the maintainers made: `nodetool version` showing the release version and the git SHA is on by default, see [What nodetool version shows](#what-nodetool-version-shows). No other behaviour-changing feature is on by default. That feature ships before each line's first release, `5.0-chronitondb1` and `6.0-chronitondb1`: it blocks a line's first release until it is in. So it is in every release of a line from the first, and no release within a line changes what `nodetool version` shows.
 5. A feature finished after its line's first release ships with its default off on that line.
 
 A feature becomes switchable at its final milestone gate. Before that, its switch refuses to turn on, whatever its default. See [additive.md](additive.md#milestone-gates) and [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
@@ -82,39 +82,76 @@ Each line has a plan file, `docs/releases/<line>-plan.md`, from [the line plan t
 
 ## Version numbers
 
-ChronitonDB versions follow the pattern Ubuntu uses for packages it takes from Debian.
+A ChronitonDB release version is the line followed by ChronitonDB's own release number on that line: `<line>-chronitondb<n>`. Here `<line>` is the line's Apache Cassandra major version, `5.0` for `chronitondb-5.0` and `6.0` for `chronitondb-6.0`. `n` starts at 1 on each line and goes up by one with each release on it.
+
+A release version never carries an Apache patch number. A line leads Apache: it can carry Apache fixes taken early and Apache branch commits that no Apache release holds yet. A version such as `5.0.10-chronitondb1` would claim Apache Cassandra 5.0.10 where the release carries more or less than that. The form `<line>-chronitondb<n>` cannot be mistaken for an Apache version.
 
 | Form | Example | Meaning |
 |---|---|---|
-| `<Apache version>-chronitondb<n>` | `5.0.10-chronitondb1` | The first ChronitonDB release containing Apache Cassandra 5.0.10 |
-| The same, `n` raised by one | `5.0.10-chronitondb2` | A further ChronitonDB release on the same Apache version |
-| A new Apache version, `n` from 1 | `5.0.11-chronitondb1` | The first ChronitonDB release containing Apache Cassandra 5.0.11 |
-| `<version>~rc<k>` | `5.0.10-chronitondb1~rc1` | The package version of a release candidate |
-| `<version>-rc<k>` | `5.0.10-chronitondb1-rc1` | The git tag of a release candidate |
-| Apache's development version | `6.0-alpha3-chronitondb1` | A build from Apache's branch before Apache's first release of that major version, in Apache's own form |
+| `<line>-chronitondb<n>` | `5.0-chronitondb1` | The first ChronitonDB release on the 5.0 line |
+| The same, `n` raised by one | `5.0-chronitondb2` | The next release on the 5.0 line |
+| Another line, `n` from 1 | `6.0-chronitondb1` | The first ChronitonDB release on the 6.0 line |
+| `<version>~rc<k>` | `5.0-chronitondb3~rc1` | The package version of the first release candidate of `5.0-chronitondb3` |
+| `<version>-rc<k>` | `5.0-chronitondb3-rc1` | The git tag of that release candidate |
 
-The Apache version is the one in the line's build file, even when Apache has not yet released it, since ChronitonDB leads Apache. A line taken from Apache's branch after 5.0.9 and before Apache's 5.0.10 release ships `5.0.10-chronitondb1`. The release notes name the exact Apache commit the release carries and say when Apache has not released that version yet. When Apache releases it, our import of that release becomes the next number on the same version, for example `5.0.10-chronitondb2`.
+1. `n` goes up by one for every release, whatever it carries: an Apache release import, fixes taken early, security fixes or our own changes.
+2. A release candidate cut again after a problem in the soak keeps its version and raises `k`, for example `5.0-chronitondb3~rc2`.
+3. A line taken from Apache's branch before Apache's first release of that major version is numbered the same way. The 6.0 line's first release is `6.0-chronitondb1`, even while Apache's own build file says a development version such as `6.0-alpha3`. Apache's development version never appears in a ChronitonDB release version.
+4. The git tag of a release is the version itself, for example `5.0-chronitondb3`. It cannot clash with Apache's own tags, which start with `cassandra-`. The git tag of a release candidate uses `-rc<k>` in place of `~rc<k>`, since git does not allow `~` in a tag name.
+5. Release and release candidate tags are signed with the dedicated ChronitonDB release key, not with a person's key. Its public key is published so users can verify the tags.
+6. These versions are not Semantic Versioning, which needs three numbers and reads a hyphen as a pre-release. Package tools and git do not need it.
 
-1. The git tag of a release is the version itself, for example `5.0.10-chronitondb1`, next to Apache's own `cassandra-5.0.10` tag. The git tag of a release candidate uses `-rc<k>` in place of `~rc<k>`, since git does not allow `~` in a tag name.
-2. Release and release candidate tags are signed with the dedicated ChronitonDB release key, not with a person's key. Its public key is published so users can verify the tags.
-3. Debian and Red Hat package tools order these versions correctly, release candidates before their release.
-4. In strict Semantic Versioning the hyphen marks a pre-release. We accept that for packages and tags, as Ubuntu does.
+### How package tools order the versions
+
+Debian and Red Hat package tools order every release and release candidate of a line correctly:
+
+1. Both split the version at its hyphen. Debian reads `5.0` as the upstream version and `chronitondb3` as the Debian revision. Red Hat reads `5.0` as the Version and `chronitondb3` as the Release, since a Red Hat Version allows no hyphen.
+2. Both compare runs of digits as numbers, so `5.0-chronitondb9` comes before `5.0-chronitondb10`.
+3. Both sort `~` before anything, even the end of the version. So `5.0-chronitondb3~rc1` comes before `5.0-chronitondb3~rc2`, and both come before `5.0-chronitondb3`.
+4. The release candidate of the next release comes after the current release: `5.0-chronitondb2` comes before `5.0-chronitondb3~rc1`.
+5. A line's versions come before the next line's: `5.0-chronitondb99` comes before `6.0-chronitondb1`.
+
+Each of these orders was checked with `dpkg --compare-versions` on Debian 13 and with rpm's version comparison in rpm 4.14 and rpm 6.1. Red Hat tools sort `~` this way from rpm 4.10.
+
+### What a release contains
+
+The release version does not say which Apache content a release carries, so its release notes and its release proposal state it:
+
+1. The newest Apache Cassandra release the line fully contains, for example Apache Cassandra 5.0.9. On a line before Apache's first release of its major version, the newest Apache pre-release of that major version the line contains, for example Apache Cassandra 6.0-alpha2.
+2. When the line carries Apache branch commits after that release, the last Apache commit merged, by its full hash.
+3. Every change cherry-picked on top of that release: an Apache fix by its Apache JIRA and full Apache commit hash, a change from another project by its source repository and commit.
+4. Our own changes, from the commits on the line and `NEWS-chronitondb.txt`.
+
+The release engineer takes the first three from the line's git history: the Apache release tags it contains, Apache's branch, and its import commits. See [upstream.md](upstream.md) and [conventions.md](conventions.md#change-logs-and-release-notes).
 
 ### The version a running node reports
 
-A running node reports a different string from its package version, in `nodetool version`, `system.local`, `system.peers_v2`, gossip and the drivers: `<Apache version>+chronitondb.<feature level>`, for example `5.0.10+chronitondb.1`.
+A running node reports a different string from its release version to other nodes and to drivers, in gossip, `system.local`, `system.peers_v2` and the drivers. This is the node version: `<Apache version>+chronitondb.<feature level>`, for example `5.0.10+chronitondb.1`.
 
-1. Apache Cassandra and its drivers read a hyphen in a node's version as a pre-release, so `5.0.10-chronitondb1` would compare as older than Apache Cassandra 5.0.10. They read the part after `+` as build information, so `5.0.10+chronitondb.1` compares as 5.0.10.
-2. The feature level is a number in the code, raised only when a release changes how nodes work together. Features that need every node to cooperate turn on once every node reports their level.
-3. A node in Apache compatibility mode reports the plain Apache version, for example `5.0.10`.
-4. The package version and the git tag say which build is installed. The node's version says which Apache version it carries and its feature level.
+1. Its Apache part is the version in the line's build file, the string stock Apache Cassandra reports for a release build of the same code: `5.0.10` on the 5.0 line today, `6.0-alpha3` on the 6.0 line. The version checks in Apache's code are written against that version. It can differ from the Apache release the release notes name.
+2. It exists so that Apache Cassandra and its drivers compare a ChronitonDB node correctly. They read the part after `+` as build information, so `5.0.10+chronitondb.1` compares just after Apache Cassandra 5.0.10 and before 5.0.11. They read a hyphen as a pre-release, so the release version `5.0-chronitondb3` would compare as a pre-release of 5.0.0, older than every Apache Cassandra 5.0 release.
+3. It is never shown as the release version. Packages, tags, release notes and our documentation name a release by its release version only.
+4. The feature level is a number in the code, raised only when a release changes how nodes work together. Features that need every node to cooperate turn on once every node reports their level, so they need the ChronitonDB form on every node.
+5. The ChronitonDB form is a behaviour-changing feature with its own switch, off by default. With it off, a node reports the build file's version as stock does, for example `5.0.10`, and the features that need a feature level stay off. Its feature spec sets the switch's name and the driver tests that prove each setting.
+6. Apache compatibility mode, `apache_compatibility_mode`, comes first. A node in Apache compatibility mode reports the plain Apache version whatever the switch says. With compatibility mode off, the switch decides.
+7. The switch never changes `nodetool version`. Until the feature of [What nodetool version shows](#what-nodetool-version-shows) ships, `nodetool version` prints Apache's own string, and the node version MUST NOT appear there.
+
+### What nodetool version shows
+
+`nodetool version` shows what is installed: the release version, for example `5.0-chronitondb3`, and the git SHA of the build. It shows no Apache release line.
+
+1. It is the one exception to the rule that a behaviour-changing feature is off by default, see [What a release may contain](#what-a-release-may-contain). A ChronitonDB node is a different database and binary, and an operator needs to know which release is installed.
+2. It has a switch, like every feature, and it is on by default.
+3. It is required for a line's first release and blocks that release until it is in. The version and the git SHA it shows are read from the build, never written into the code, and its tests prove both on a built package.
+4. The feature is not built yet. Until it is, `nodetool version` prints Apache's output, and the release version of an installed node is the version of its `chronitondb` package.
+5. `bin/cassandra -v`, the startup log line `Cassandra version:` and the cqlsh banner stay as they are today. Any change to them is decided in their own feature spec.
 
 ## Packaging
 
 ChronitonDB is a fork, so it has its own packaging and its own names, separate from Apache's.
 
 1. The Debian and Red Hat packaging lives in `packaging/debian/` and `packaging/redhat/`, with the tarball script in `packaging/`. The release pipeline builds from them. `packaging/` is a sensitive path with code owner review. The pull request that creates it adds it to `.github/CODEOWNERS`.
-2. The package and its service are named `chronitondb`. Its versions follow [Version numbers](#version-numbers), for example `5.0.10-chronitondb1`.
+2. The package and its service are named `chronitondb`. Its versions follow [Version numbers](#version-numbers), for example `5.0-chronitondb1`.
 3. A new install uses the configuration directory `/etc/chronitondb`, the data directory `/var/lib/chronitondb` and the system user `chronitondb`.
 4. The package is declared as replacing Apache's `cassandra` package.
 5. Apache's `debian/` and `redhat/` folders stay untouched, as the upstream reference.
@@ -151,7 +188,7 @@ The release pipeline produces, for every release:
 3. Debian and Red Hat packages.
 4. The software bill of materials in SPDX and in CycloneDX, published with the release.
 5. The OpenVEX file, published with the release. See [security.md](security.md#vex-statements).
-6. Release notes, generated from the commits and `NEWS-chronitondb.txt`. See [conventions.md](conventions.md#change-logs-and-release-notes).
+6. Release notes, generated from the commits and `NEWS-chronitondb.txt`, naming the Apache content as [What a release contains](#what-a-release-contains) says. See [conventions.md](conventions.md#change-logs-and-release-notes).
 7. SLSA Build Level 3 provenance for every artefact, through GitHub artifact attestations, once the release pipeline is built.
 8. A verification pass: signatures, installs and upgrade tests.
 

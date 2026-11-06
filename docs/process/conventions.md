@@ -92,7 +92,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 1. `CHANGES-chronitondb.txt` is generated at release from the `feat`, `fix`, `perf`, `security` and `import` commits and the import merge commits. It is never edited by hand. Each line has the form ` * <Imperative description> (#<issue>)`. Security fixes have their own section.
 2. `NEWS-chronitondb.txt` carries upgrade notes per release and anything user facing or upgrade relevant: for example the cleanup statements to run before a downgrade. It is written in the pull request that makes the change.
 3. Apache's `CHANGES.txt` and `NEWS.txt` are never edited. They change only through imports.
-4. Release notes are built from our commits and `NEWS-chronitondb.txt`. The commit subject is the text a user reads.
+4. Release notes are built from our commits and `NEWS-chronitondb.txt`. The commit subject is the text a user reads. They also name the newest Apache Cassandra release the line fully contains and every change cherry-picked on top of it, taken from the import merge commits. See [release.md](release.md#what-a-release-contains).
 
 ## Where things live
 
@@ -216,7 +216,7 @@ An import whose author has not signed the contributor agreement fails the agreem
 2. Settings that apply across the fork are named for what they do.
 3. ChronitonDB MBeans use the JMX domain `org.chronitondb`.
 4. Fork metrics use their own metric types. Stock metric types gain no new metrics.
-5. ChronitonDB versions have the form `<Apache version>-chronitondb<n>`, for example `5.0.10-chronitondb1`. Release candidate package versions add `~rc<k>`. The git tag of a release is the version itself. The git tag of a release candidate adds `-rc<k>`, for example `5.0.10-chronitondb1-rc1`, since git does not allow `~` in a tag name. See [release.md](release.md#version-numbers).
+5. ChronitonDB release versions have the form `<line>-chronitondb<n>`, for example `5.0-chronitondb3`, with `n` from 1 on each line. They never carry an Apache patch number. Release candidate package versions add `~rc<k>`, for example `5.0-chronitondb3~rc1`. The git tag of a release is the version itself. The git tag of a release candidate adds `-rc<k>`, for example `5.0-chronitondb3-rc1`, since git does not allow `~` in a tag name. See [release.md](release.md#version-numbers).
 6. The package and its service are named `chronitondb`. A new install uses the configuration directory `/etc/chronitondb`, the data directory `/var/lib/chronitondb` and the system user `chronitondb`. See [release.md](release.md#packaging).
 7. Timestamps in our records, evidence, documentation and release notes use RFC 3339.
 

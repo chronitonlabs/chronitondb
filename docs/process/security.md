@@ -99,7 +99,7 @@ Every release ships an OpenVEX file for known vulnerabilities in its shipped com
 
 Apache's own judgements on its dependencies are a starting point, never a copy. ChronitonDB ships components Apache does not, so each claim is checked against what ChronitonDB ships.
 
-The SBOM and VEX files are public, published with each release. See [compliance.md](compliance.md) and [release.md](release.md#release-outputs).
+The security engineer keeps the VEX statements in the public repository [chronitonlabs/chronitondb-security-tracker](https://github.com/chronitonlabs/chronitondb-security-tracker), updated by pull request as findings change. Each release ships the OpenVEX file for its line from there. The SBOM and VEX files are public, published with each release. See [compliance.md](compliance.md) and [release.md](release.md#release-outputs).
 
 ## Watching shipped libraries and Apache
 

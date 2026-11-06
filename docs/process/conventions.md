@@ -111,6 +111,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Decision records | `docs/decisions/NNNN-<slug>.md` |
 | Import records | `docs/imports/<apache-version-or-range>.md` |
 | Release proposals and their verification results | `docs/releases/<version>.md` |
+| Line plan: first release date, feature freeze and LTS designation | `docs/releases/<line>-plan.md` |
 | Delta register | `docs/delta/` |
 | User and operator documentation | `docs/` |
 | Change logs | `CHANGES-chronitondb.txt`, `NEWS-chronitondb.txt` |

@@ -141,7 +141,7 @@ The author of the spec names what the change touches in the Touches row, and the
 | Normal | The spec, the plan and the code, each merged by a maintainer. The maintainer confirms the class when merging the spec |
 | Low | No spec or plan stage. The work goes straight to a pull request whose body carries Where problems could occur and its test plan. A maintainer merges it |
 
-A one-item change takes the same stages with its design record or fix record in place of the spec and plan. Only maintainers merge, at every level.
+A one-item change takes the same stages with its design record or fix record in place of the spec and plan. At every level, only a maintainer, or a committer within their area or line, merges. See [governance.md](governance.md).
 
 ## Labels
 
@@ -151,7 +151,7 @@ The class is three label families on the issue, mirrored on each of its pull req
 2. The reviewer checks the labels at every review, against the change and the reasons.
 3. A maintainer confirms the class: through the class and scope question for Critical work, at the spec merge for Normal work, at the pull request merge for Low work. A maintainer may change any label at any time, and the change takes effect from the next step of the work.
 4. Work that carries no class yet, or a family with no label or with two, is treated as the strictest value of that family: Critical, Byzantine and Cross-cutting.
-5. A pull request check, required once the maintainers make it so, refuses a pull request that does not carry exactly one label of each family, as the kind label check does for the maintenance category. A release proposal or promotion pull request, which changes only `docs/releases/`, has no class, as it has no kind.
+5. The required `class-label` check refuses a pull request that does not carry exactly one label of each family, as the kind label check does for the maintenance category. A release proposal or promotion pull request, which changes only `docs/releases/`, has no class, as it has no kind.
 
 ## Sources
 

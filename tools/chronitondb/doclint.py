@@ -264,8 +264,7 @@ NOT_APPLICABLE = re.compile(r"^Not applicable:\s*(\S.*)$")
 # this feature" or "in this case", and when it starts with "N/A" or "n/a",
 # the slash written. Only a preposition that names something else makes
 # content: "Not applicable to clusters without ..." and "Not applicable to
-# this release line only ..." are content, and so is a word NA (P7, V1,
-# V5, V7).
+# this release line only ..." are content, and so is a word NA.
 NOT_APPLICABLE_ANY = re.compile(
     r"^\W*(not\s+applicable\s*([^\w\s]|$|(because|since|as|here|now|yet)\b"
     r"|(for|in|on)\s+(this|these|the\s+(feature|change|item|fix|case|spec|record|document|section))\b)"
@@ -278,11 +277,11 @@ EMPTY_RISK = re.compile(r"^\W*(none|low|n/?a|nothing|no risk|low risk|minimal|ne
 # "low risk", "no risk", "minimal risk" or "negligible risk", or "none",
 # "low" or "nothing" with punctuation or the end of the text after it.
 # "Low-level reads ..." and "Nothing in stock changes, but ..." name real
-# problems (P11, V6). Ubuntu's rule is about that section, so the test plan
+# problems. Ubuntu's rule is about that section, so the test plan
 # is not held to it.
 DISMISSIVE_RISK = re.compile(r"^\W*((low|no|minimal|negligible)\s+risk\b|(none|low|nothing)\s*([.,;:!]|$))", re.I)
 # The Touches phrases are split at a comma, a semicolon or "and", and read
-# in any case (P8).
+# in any case.
 TOUCHES_SPLIT = re.compile(r"\s*[,;]\s*(?:and\s+)?|\s+and\s+")
 WPCO_WORDS = 5
 
@@ -503,7 +502,7 @@ def check_common(doc, kind, template_text, path):
     compatibility = section_number(template, "Compatibility") if kind == "feature-spec" else None
     skip_parts = compatibility is not None and NO_FORMAT_CHANGE in section_text(doc, compatibility)
     # Where the class requires Compatibility in full, the statement stands in
-    # for the on-disk format changes only (P3).
+    # for the on-disk format changes only.
     only_formats = skip_parts and wanted and "Risk" in wanted and compatibility_in_full(*class_quietly(doc, fields))
     # A section that says Not applicable covers its subsections, which may
     # be left out, once the template carries the class (classification.md).
@@ -759,7 +758,7 @@ def required_sections(template, levels, touches):
 def check_risk_text(doc, index, what, opener=True):
     """The Where problems could occur section and its test plan name
     something: never none, low or a word or two. The section, not its test
-    plan, never opens by playing the risk down (V6)."""
+    plan, never opens by playing the risk down."""
     lines = own_lines(doc, index)
     text = " ".join(line.strip() for _, line in lines)
     if lines and (EMPTY_RISK.match(text) or (opener and DISMISSIVE_RISK.match(text)) or len(re.findall(r"\w+", text)) < WPCO_WORDS):
@@ -804,7 +803,7 @@ def check_spec_class(doc, template, fields):
         number = section_number(doc, title)
         if number is not None and not_applicable_of(doc, headings[number][1]) is None:
             if title == WPCO and not own_lines(doc, headings[number][1]):
-                # Its test plan alone is not enough, as in a record (P1).
+                # Its test plan alone is not enough, as in a record.
                 doc.error(headings[number][1], "section %s %s is empty. It names what could break, how a user would see it and the tests that would catch it, and its test plan alone is not enough (classification.md)" % (number, title))
                 continue
             check_risk_text(doc, headings[number][1], "section %s %s" % (number, title), opener=title == WPCO)
@@ -814,7 +813,7 @@ def check_spec_class(doc, template, fields):
 
 def check_non_goals(doc):
     """The Non-goals of section 1, required at every class, never Not
-    applicable (P9)."""
+    applicable."""
     purpose = section_number(doc, "Purpose and scope")
     span = section_span(doc, purpose) if purpose is not None else None
     index = None
@@ -846,7 +845,7 @@ SPEC_LINK = re.compile(r"\[[^\]]*\]\(([^)\s]*feature-spec\.md)\)")
 
 def spec_link_of(references, path, source):
     """The feature spec a design record's References row links, as a
-    Markdown link to a feature-spec.md the source holds, or None (P10)."""
+    Markdown link to a feature-spec.md the source holds, or None."""
     for target in SPEC_LINK.findall(references or ""):
         if target.startswith("docs/"):
             resolved = target
@@ -862,7 +861,7 @@ def check_record_risk(doc, kind, template, path=None, source=None):
     its Test plan, when the record's template has them: always written in a
     fix record, and in a design record unless its References row links a
     feature spec the source holds, and its Not applicable reason names the
-    spec's section 4 (P10)."""
+    spec's section 4."""
     if template is None or plain_section_span(template, WPCO) is None:
         return
     span = plain_section_span(doc, WPCO)

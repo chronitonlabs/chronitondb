@@ -67,6 +67,8 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 **ISO/IEC 5962 (SPDX) and ECMA-424 (CycloneDX).** Each release ships its software bill of materials in both formats.
 
+**REUSE.** The FSFE's REUSE specification records the copyright and licence of every file in the repository, checked by `reuse lint`. It is adopted before the first release. See [compliance.md](compliance.md).
+
 **The ASF licence categories.** Every third party dependency is checked against the Apache Software Foundation categories A, B and X before use, as Apache Cassandra does.
 
 ## Code and history

@@ -50,7 +50,7 @@ Location: `docs/releases/<version>.md`. Process: [release.md](../release.md).
 
 ## 3. What goes in
 
-{First the Apache content, as [release.md](../release.md#what-a-release-contains) says: the newest Apache Cassandra release the line fully contains, the last Apache commit merged when the line carries Apache branch commits after that release, and every change cherry-picked on top of that release, an Apache fix by its Apache JIRA and Apache commit hash. Then the commits on the line since the previous release, grouped as features, fixes, performance, security and imports. One line each, with its pull request.}
+{First the Apache content, as [release.md](../release.md#what-a-release-contains) says, one list item each: `- Apache release: <version>`, the newest Apache Cassandra release the line fully contains, `- Apache commit: <full hash>`, the last Apache commit merged when the line carries Apache branch commits after that release, and for each change cherry-picked on top of that release `- CASSANDRA-<n> <full Apache commit hash> <Apache subject>`. Then the commits on the line since the previous release, grouped as features, fixes, performance, security and imports. One line each, with its pull request.}
 
 ## 4. Milestone gates passed
 

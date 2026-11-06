@@ -35,7 +35,7 @@ ChronitonDB uses trunk-based development. Each line is a trunk. Work reaches a l
 1. Every fork feature sits behind its feature switch: a yaml setting and a nodetool toggle.
 2. Before the feature's final milestone gate, the switch refuses to turn on, whatever its default.
 3. A purely additive feature is reachable only through new syntax, new index types or new settings that stock Apache Cassandra rejects. Its default MAY be on from a line's first release. A cluster that does not use it behaves exactly as Apache Cassandra.
-4. A behaviour-changing feature changes something stock Apache Cassandra already does: results, errors, warnings or the performance of existing operations. Its default MUST be off on every line. Operators opt in.
+4. A behaviour-changing feature changes something stock Apache Cassandra already does: results, errors, warnings or the performance of existing operations. Its default MUST be off on every line, except the one exception in [release.md](release.md#what-a-release-may-contain). Operators opt in.
 5. A feature's default never changes within a line. Upgrading within a line never changes behaviour by itself. A feature that passes its final milestone gate after its line's first release ships with its default off on that line. See [release.md](release.md#what-a-release-may-contain).
 6. The feature spec states the class of the feature and of each switch, with the reason, the default on each line and, for a behaviour-changing feature, the stock operations it changes. A maintainer approves the class with the spec. A feature that fits one item states the same in its design record.
 7. With a feature off, the line MUST behave exactly as stock Apache Cassandra: stock operations behave as Apache's do, the feature's syntax is refused with an error that names the switch, no new files are written, no new threads start and no new memory is used.
@@ -69,7 +69,7 @@ ChronitonDB uses trunk-based development. Each line is a trunk. Work reaches a l
 3. A tag is never moved or deleted.
 4. Anything that installs or releases from a tag verifies its signature first.
 
-A release tag is the version itself, for example `5.0.10-chronitondb1`, next to Apache's own `cassandra-5.0.10` tag. A release candidate tag adds `-rc<k>`, for example `5.0.10-chronitondb1-rc1`, since git does not allow `~` in a tag name. Release tags are signed with the dedicated ChronitonDB release key, not a person's key. See [release.md](release.md#version-numbers).
+A release tag is the version itself, for example `5.0-chronitondb3`. It cannot clash with Apache's own tags, which start with `cassandra-`. A release candidate tag adds `-rc<k>`, for example `5.0-chronitondb3-rc1`, since git does not allow `~` in a tag name. Release tags are signed with the dedicated ChronitonDB release key, not a person's key. See [release.md](release.md#version-numbers).
 
 ## Required checks
 

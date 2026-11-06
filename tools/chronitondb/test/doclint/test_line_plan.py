@@ -104,8 +104,8 @@ class LinePlan(unittest.TestCase):
         self.assertNotIn("release proposal", err)
 
     def test_a_release_proposal_is_still_checked_against_its_template(self):
-        self.put("docs/releases/5.0.10-chronitondb1.md", filled_line_plan())
-        rc, _, err = self.document("docs/releases/5.0.10-chronitondb1.md")
+        self.put("docs/releases/5.0-chronitondb1.md", filled_line_plan())
+        rc, _, err = self.document("docs/releases/5.0-chronitondb1.md")
         self.assertEqual(rc, 1)
         self.assertIn("The release proposal template has it", err)
 

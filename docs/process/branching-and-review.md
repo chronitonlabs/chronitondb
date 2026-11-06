@@ -49,8 +49,10 @@ ChronitonDB uses trunk-based development. Each line is a trunk. Work reaches a l
    - People: `<github-username>/<issue>-<slug>/<line>`, for example `octocat/42-phrase-query/chronitondb-5.0`.
    - Automated agents: `agent/<issue>-<slug>/<line>`.
    - A design or fix record that is approved before the code starts has its own pull request, from a branch with `-design` added to the slug, for example `agent/42-phrase-query-design/chronitondb-5.0`.
-3. Import branches have three forms: `import/<release>/<line>` for a whole Apache release, `import/cassandra-<x.y>-<short hash>/<line>` for the weekly Apache branch merge, and `import/CASSANDRA-<n>/<line>` for a single cherry-picked fix. See [upstream.md](upstream.md).
-4. People outside the project work on a fork of the repository and open a pull request from it. See [contributing.md](contributing.md).
+   - The pull requests of a large feature come from branches named for the feature's issue, with `-spec` added to the slug for the feature spec, `-plan` for the plan and delivery plan, and `-change-<k>` for a change control update. A release promotion's branch adds `-promotion` to the slug of its proposal's branch.
+   - An automated agent also saves its unfinished work to a side branch of its work branch, with `checkpoint/` before the line, for example `agent/42-phrase-query/checkpoint/chronitondb-5.0`, so a run that is cut off can resume. A checkpoint branch never has a pull request and is never merged. It is deleted a day after the item's pull requests are merged or closed.
+3. Import branches have three forms: `import/cassandra-<x.y.z>/<line>` for a whole Apache release, named after its Apache release tag, `import/cassandra-<x.y>-<short hash>/<line>` for the weekly Apache branch merge, and `import/CASSANDRA-<n>/<line>` for a single cherry-picked fix. See [upstream.md](upstream.md).
+4. People outside the project work on a fork of the repository and open a pull request from it. See [contributing.md](contributing.md). Today only maintainers create branches outside `agent/` in this repository. The integrator's `import/` branches wait until the project's automation is allowed to create them.
 5. An item affected on several lines carries all of them. It gets one pull request per affected line, oldest line first, and is done when all of them are merged.
 
 ## History rules
@@ -59,8 +61,8 @@ ChronitonDB uses trunk-based development. Each line is a trunk. Work reaches a l
 2. Nothing is ever force pushed, on any branch. During review, answers to findings are added as new commits.
 3. Our own pull requests are squash merged. The line gets one signed commit whose subject is the pull request title, in Conventional Commits form. Merge commits on a work branch therefore never reach the line, and each line stays linear apart from imports.
 4. Import pull requests, a whole Apache release or a single cherry-pick, are merged with a merge commit, so the imported commits keep their Apache author, message and cherry-pick line. These are the only merge commits on a line. See [upstream.md](upstream.md).
-5. Rebase merging is not used.
-6. Every commit is signed, on work branches and on lines.
+5. Rebase merging is not used. GitHub offers both squash and merge commits on every pull request, so the maintainer who merges picks the method by the kind of pull request.
+6. Every commit is signed, on work branches and on lines. GitHub refuses unsigned commits on the lines and unsigned tags. On work branches and forks signing is every contributor's own rule.
 
 ## Tags
 
@@ -84,15 +86,16 @@ These checks run on every pull request to a line. Each MUST pass before a mainta
 | `instruction-files` | No instruction files for automated coding tools anywhere in the tree, such as `AGENTS.md` |
 | `license/cla` | Every contributor to the pull request has signed the contributor agreement. See [contributing.md](contributing.md) |
 | `kind-label` | The pull request carries exactly one kind label. See [README.md](README.md) |
+| `class-label` | The pull request carries exactly one `risk:`, one `size:` and one `reach:` label. See [classification.md](classification.md) |
+| `documents` | The process documents and feature keys the pull request changes: the template rules, the Contents index of each document (see [conventions.md](conventions.md#contents-index-of-process-documents)), the clarification markers and the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids). The checker and the templates come from the line, never from the pull request |
+| `doclint-tests` | The unit tests of the process document checker, as the pull request changes it |
 | CodeQL | Code scanning. Blocks on high or critical security alerts and on errors |
 
-Apache's Build Scripts check also runs on pull requests that touch `.build/` or the workflows. It is advisory, since a check filtered by path cannot be required.
+The `kind-label` and `class-label` checks pass a release proposal or promotion pull request, which changes only `docs/releases/` and carries no kind or class. The `documents` check runs on every pull request, a person's or an agent's, and passes one that changes no file under `docs/` or `test/bdd/`.
+
+Apache's Build Scripts check also runs on pull requests that touch `.build/` or the workflows, and Apache's CI Check on pull requests that touch `.jenkins/` or the CI scripts under `.build/`. Both are advisory, since a check filtered by path cannot be required.
 
 The parity suite becomes a required check once it exists.
-
-The `class-label` check, that the pull request carries exactly one `risk:`, one `size:` and one `reach:` label, runs on every pull request and becomes a required check once the maintainers add it to the line's rules. See [classification.md](classification.md).
-
-The process document check becomes a required check once it exists. It runs on every pull request, a person's or an agent's, and enforces the template rules, the Contents index of each document (see [conventions.md](conventions.md#contents-index-of-process-documents)), the clarification markers and the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids).
 
 Workflow runs on pull requests from first time and outside contributors wait for a maintainer's approval before they start.
 
@@ -125,7 +128,7 @@ Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer fir
 1. The pull request opens as a draft.
 2. The reviewer inspects it against the approved design record and the review checklists: correctness, concurrency, security, compatibility, tests, observability, performance, documentation, compliance and maintainability, and a set of known bug patterns adapted from Apache Cassandra's own targeted review.
 3. Each finding has a severity: blocker, major, minor or nit.
-4. The reviewer posts the review as a comment with a verdict. A clean review marks the pull request ready.
+4. The reviewer posts the review as a comment with a verdict. A review is clean when it has no blocker and no major finding. A clean review marks the pull request ready.
 5. A maintainer then approves and merges, or requests changes with the rework listed.
 
 ### Two review standards, picked by file
@@ -145,7 +148,7 @@ The record of a review lives on the pull request: the reviewer's comment with it
 ## Pull requests
 
 1. The pull request title uses Conventional Commits form. It becomes the commit subject on the line. See [conventions.md](conventions.md).
-2. The body follows the organisation's pull request template: what and why, how it was tested, other branches, and the checklist.
+2. The body follows the organisation's pull request template: what and why, how it was tested, other branches, and the checklist. A pull request from an automated agent opens with a short block for the maintainer, what it needs from them, a summary and what to check before merging, and puts the rest under Details.
 3. ChronitonDB adds to it: the impact, waived findings with their reasons, the upgrade and rollback story, the default of any new setting and why, which tests prove which claim, a per-line differences table when the change exists on both lines, and `Fixes #<issue>`. A change made on several lines writes `Fixes #<issue>` only on the newest line's pull request, which merges last, and `Part of #<issue>` on the others, so the issue closes when the last line has the change.
 4. The body describes the final change, never the order of the work. It is kept current at every push.
 5. After the line is merged into the work branch, one short comment gives the line commit merged in, what it touched and the tests run.

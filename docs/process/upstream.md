@@ -99,6 +99,7 @@ Every pull request that changes stock code or stock behaviour adds or updates it
 1. Every fix to stock code gets an Apache JIRA. A maintainer starts each offer. The integrator drafts the JIRA and the patch, and the maintainers file them.
 2. Features are offered upstream only when the maintainers decide, case by case.
 3. Code offered to Apache is reformatted to Apache Cassandra's style and follows Apache Cassandra's contribution process.
+4. Patches offered to Apache are prepared on [chronitonlabs/chronitondb-upstream](https://github.com/chronitonlabs/chronitondb-upstream), a fork of Apache Cassandra kept apart from the ChronitonDB lines, each on a branch from the Apache branch it targets.
 
 ## The upstream radar
 

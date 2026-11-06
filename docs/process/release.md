@@ -45,7 +45,7 @@ Supported versions are listed in the README of the repository.
 1. Any release MAY ship fixes, imports from Apache Cassandra and security fixes.
 2. A release MAY ship a finished feature behind its feature switch, which the operator sets with yaml or nodetool.
 3. Within a line, a feature's default MUST NOT change. Upgrading within a line never changes behaviour by itself.
-4. A purely additive feature's default MAY be on from a line's first release. A behaviour-changing feature's default MUST be off on every line.
+4. A purely additive feature's default MAY be on from a line's first release. A behaviour-changing feature's default MUST be off on every line, with one exception the maintainers made: `nodetool version` showing the release version and the git SHA is on by default, see [What nodetool version shows](#what-nodetool-version-shows). No other behaviour-changing feature is on by default.
 5. A feature finished after its line's first release ships with its default off on that line.
 
 A feature becomes switchable at its final milestone gate. Before that, its switch refuses to turn on, whatever its default. See [additive.md](additive.md#milestone-gates) and [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
@@ -119,29 +119,31 @@ The release version does not say which Apache content a release carries, so its 
 
 1. The newest Apache Cassandra release the line fully contains, for example Apache Cassandra 5.0.9. On a line before Apache's first release of its major version, the newest Apache pre-release of that major version the line contains, for example Apache Cassandra 6.0-alpha2.
 2. When the line carries Apache branch commits after that release, the last Apache commit merged, by its full hash.
-3. Every change cherry-picked on top of that release: an Apache fix by its Apache JIRA and Apache commit hash, a change from another project by its source repository and commit.
+3. Every change cherry-picked on top of that release: an Apache fix by its Apache JIRA and full Apache commit hash, a change from another project by its source repository and commit.
 4. Our own changes, from the commits on the line and `NEWS-chronitondb.txt`.
 
-The release engineer takes the first three from the line's git history: the Apache release tags it contains, Apache's branch, and its import merge commits. See [upstream.md](upstream.md) and [conventions.md](conventions.md#change-logs-and-release-notes).
+The release engineer takes the first three from the line's git history: the Apache release tags it contains, Apache's branch, and its import commits. See [upstream.md](upstream.md) and [conventions.md](conventions.md#change-logs-and-release-notes).
 
 ### The version a running node reports
 
-A running node reports a different string from its release version to other nodes and to drivers, in gossip, `system.local`, `system.peers_v2` and the drivers. This is the node version: `<Apache version>+chronitondb.<feature level>`, for example `5.0.9+chronitondb.1`.
+A running node reports a different string from its release version to other nodes and to drivers, in gossip, `system.local`, `system.peers_v2` and the drivers. This is the node version: `<Apache version>+chronitondb.<feature level>`, for example `5.0.10+chronitondb.1`.
 
-1. Its Apache part is the newest Apache Cassandra release the line fully contains, the release the release notes name first. On a line before Apache's first release of its major version it is the newest Apache pre-release the line contains, for example `6.0-alpha2+chronitondb.1`. Fixes taken early and Apache branch commits after that release do not change it.
-2. It exists so that Apache Cassandra and its drivers compare a ChronitonDB node correctly. They read the part after `+` as build information, so `5.0.9+chronitondb.1` compares as Apache Cassandra 5.0.9. They read a hyphen as a pre-release, so the release version `5.0-chronitondb3` would compare as a pre-release of 5.0.0, older than every Apache Cassandra 5.0 release.
-3. It is never shown as the release version. Packages, tags, release notes, `nodetool version` and our documentation name a release by its release version only.
-4. The feature level is a number in the code, raised only when a release changes how nodes work together. Features that need every node to cooperate turn on once every node reports their level.
-5. A node in Apache compatibility mode reports the plain Apache version, for example `5.0.9`.
-6. A switch turns the ChronitonDB form of the node version on or off on these surfaces. Its feature spec sets its name, its default and the driver tests that prove each setting.
+1. Its Apache part is the version in the line's build file, the string stock Apache Cassandra reports for the same code: `5.0.10` on the 5.0 line today, `6.0-alpha3` on the 6.0 line. The version checks in Apache's code are written against that version. It can differ from the Apache release the release notes name.
+2. It exists so that Apache Cassandra and its drivers compare a ChronitonDB node correctly. They read the part after `+` as build information, so `5.0.10+chronitondb.1` compares just after Apache Cassandra 5.0.10 and before 5.0.11. They read a hyphen as a pre-release, so the release version `5.0-chronitondb3` would compare as a pre-release of 5.0.0, older than every Apache Cassandra 5.0 release.
+3. It is never shown as the release version. Packages, tags, release notes and our documentation name a release by its release version only.
+4. The feature level is a number in the code, raised only when a release changes how nodes work together. Features that need every node to cooperate turn on once every node reports their level, so they need the ChronitonDB form on every node.
+5. The ChronitonDB form is a behaviour-changing feature with its own switch, off by default. With it off, a node reports the build file's version as stock does, for example `5.0.10`, and the features that need a feature level stay off. Its feature spec sets the switch's name and the driver tests that prove each setting.
+6. Apache compatibility mode, `apache_compatibility_mode`, comes first. A node in Apache compatibility mode reports the plain Apache version whatever the switch says. With compatibility mode off, the switch decides.
+7. The switch never changes `nodetool version`. Until the feature of [What nodetool version shows](#what-nodetool-version-shows) ships, `nodetool version` prints Apache's own string, and the node version MUST NOT appear there.
 
 ### What nodetool version shows
 
 `nodetool version` shows what is installed: the release version, for example `5.0-chronitondb3`, and the git SHA of the build. It shows no Apache release line.
 
-1. This is an exception the maintainers made to the rule that stock output stays as Apache prints it. A ChronitonDB node is a different database and binary, and an operator needs to know which release is installed.
-2. It is on by default.
-3. The feature that makes `nodetool version` show this is not built yet. Until it is, `nodetool version` prints Apache's output, and the release version of an installed node is the version of its `chronitondb` package.
+1. It is the one exception to the rule that a behaviour-changing feature is off by default, see [What a release may contain](#what-a-release-may-contain). A ChronitonDB node is a different database and binary, and an operator needs to know which release is installed.
+2. It has a switch, like every feature, and it is on by default.
+3. The feature is not built yet. Until it is, `nodetool version` prints Apache's output, and the release version of an installed node is the version of its `chronitondb` package.
+4. `bin/cassandra -v`, the startup log line `Cassandra version:` and the cqlsh banner stay as they are today. Any change to them is decided in their own feature spec.
 
 ## Packaging
 

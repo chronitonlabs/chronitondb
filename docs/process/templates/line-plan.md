@@ -42,7 +42,7 @@ Location: `docs/releases/<line>-plan.md`, one per line. It changes only by a pul
 
 Planned first release date: {YYYY-MM-DD, or "not set"}
 
-{What the first release is planned to ship, by feature and its delivery plan. Once the first release ships, its date and version.}
+{What the first release is planned to ship, by feature and its delivery plan. Once the first release ships, its date and version, for example `5.0-chronitondb1`.}
 
 ## 2. Feature freeze
 

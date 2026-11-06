@@ -42,7 +42,7 @@ Location: `docs/releases/<version>.md`. Process: [release.md](../release.md).
 
 ## 1. Version
 
-{The version, in the form of [release.md](../release.md#version-numbers), and the line it ships on. For a line's first release also its support, `Support: LTS` or `Support: standard` as the maintainers designated it, with the end date for an LTS line. See [release.md](../release.md#support-lifetime).}
+{The version, in the form of [release.md](../release.md#version-numbers), for example `5.0-chronitondb3`, and the line it ships on. For a line's first release also its support, `Support: LTS` or `Support: standard` as the maintainers designated it, with the end date for an LTS line. See [release.md](../release.md#support-lifetime).}
 
 ## 2. Commit
 
@@ -50,7 +50,7 @@ Location: `docs/releases/<version>.md`. Process: [release.md](../release.md).
 
 ## 3. What goes in
 
-{From the commits on the line since the previous release, grouped as features, fixes, performance, security and imports. One line each, with its pull request.}
+{First the Apache content, as [release.md](../release.md#what-a-release-contains) says: the newest Apache Cassandra release the line fully contains, the last Apache commit merged when the line carries Apache branch commits after that release, and every change cherry-picked on top of that release, an Apache fix by its Apache JIRA and Apache commit hash. Then the commits on the line since the previous release, grouped as features, fixes, performance, security and imports. One line each, with its pull request.}
 
 ## 4. Milestone gates passed
 

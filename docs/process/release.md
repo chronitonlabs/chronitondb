@@ -84,7 +84,7 @@ Each line has a plan file, `docs/releases/<line>-plan.md`, from [the line plan t
 
 A ChronitonDB release version is the line followed by ChronitonDB's own release number on that line: `<line>-chronitondb<n>`. Here `<line>` is the line's Apache Cassandra major version, `5.0` for `chronitondb-5.0` and `6.0` for `chronitondb-6.0`. `n` starts at 1 on each line and goes up by one with each release on it.
 
-A release version never carries an Apache patch number. A line leads Apache: it can carry Apache fixes taken early and Apache branch commits that no Apache release holds yet. A version such as `5.0.10-something` would claim Apache Cassandra 5.0.10 where the release carries more or less than that. The form `<line>-chronitondb<n>` cannot be mistaken for an Apache version.
+A release version never carries an Apache patch number. A line leads Apache: it can carry Apache fixes taken early and Apache branch commits that no Apache release holds yet. A version such as `5.0.10-chronitondb1` would claim Apache Cassandra 5.0.10 where the release carries more or less than that. The form `<line>-chronitondb<n>` cannot be mistaken for an Apache version.
 
 | Form | Example | Meaning |
 |---|---|---|
@@ -122,7 +122,7 @@ The release version does not say which Apache content a release carries, so its 
 3. Every change cherry-picked on top of that release: an Apache fix by its Apache JIRA and Apache commit hash, a change from another project by its source repository and commit.
 4. Our own changes, from the commits on the line and `NEWS-chronitondb.txt`.
 
-The release engineer takes the first three from the import merge commits on the line. See [upstream.md](upstream.md) and [conventions.md](conventions.md#change-logs-and-release-notes).
+The release engineer takes the first three from the line's git history: the Apache release tags it contains, Apache's branch, and its import merge commits. See [upstream.md](upstream.md) and [conventions.md](conventions.md#change-logs-and-release-notes).
 
 ### The version a running node reports
 

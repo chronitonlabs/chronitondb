@@ -45,7 +45,7 @@ Supported versions are listed in the README of the repository.
 1. Any release MAY ship fixes, imports from Apache Cassandra and security fixes.
 2. A release MAY ship a finished feature behind its feature switch, which the operator sets with yaml or nodetool.
 3. Within a line, a feature's default MUST NOT change. Upgrading within a line never changes behaviour by itself.
-4. A purely additive feature's default MAY be on from a line's first release. A behaviour-changing feature's default MUST be off on every line, with one exception the maintainers made: `nodetool version` showing the release version and the git SHA is on by default, see [What nodetool version shows](#what-nodetool-version-shows). No other behaviour-changing feature is on by default.
+4. A purely additive feature's default MAY be on from a line's first release. A behaviour-changing feature's default MUST be off on every line, with one exception the maintainers made: `nodetool version` showing the release version and the git SHA is on by default, see [What nodetool version shows](#what-nodetool-version-shows). No other behaviour-changing feature is on by default. That feature ships before each line's first release, `5.0-chronitondb1` and `6.0-chronitondb1`: it blocks a line's first release until it is in. So it is in every release of a line from the first, and no release within a line changes what `nodetool version` shows.
 5. A feature finished after its line's first release ships with its default off on that line.
 
 A feature becomes switchable at its final milestone gate. Before that, its switch refuses to turn on, whatever its default. See [additive.md](additive.md#milestone-gates) and [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
@@ -142,8 +142,9 @@ A running node reports a different string from its release version to other node
 
 1. It is the one exception to the rule that a behaviour-changing feature is off by default, see [What a release may contain](#what-a-release-may-contain). A ChronitonDB node is a different database and binary, and an operator needs to know which release is installed.
 2. It has a switch, like every feature, and it is on by default.
-3. The feature is not built yet. Until it is, `nodetool version` prints Apache's output, and the release version of an installed node is the version of its `chronitondb` package.
-4. `bin/cassandra -v`, the startup log line `Cassandra version:` and the cqlsh banner stay as they are today. Any change to them is decided in their own feature spec.
+3. It is required for a line's first release and blocks that release until it is in. The version and the git SHA it shows are read from the build, never written into the code, and its tests prove both on a built package.
+4. The feature is not built yet. Until it is, `nodetool version` prints Apache's output, and the release version of an installed node is the version of its `chronitondb` package.
+5. `bin/cassandra -v`, the startup log line `Cassandra version:` and the cqlsh banner stay as they are today. Any change to them is decided in their own feature spec.
 
 ## Packaging
 

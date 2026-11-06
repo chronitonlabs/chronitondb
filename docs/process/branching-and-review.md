@@ -50,9 +50,9 @@ ChronitonDB uses trunk-based development. Each line is a trunk. Work reaches a l
    - Automated agents: `agent/<issue>-<slug>/<line>`.
    - A design or fix record that is approved before the code starts has its own pull request, from a branch with `-design` added to the slug, for example `agent/42-phrase-query-design/chronitondb-5.0`.
    - The pull requests of a large feature come from branches named for the feature's issue, with `-spec` added to the slug for the feature spec, `-plan` for the plan and delivery plan, and `-change-<k>` for a change control update. A release promotion's branch adds `-promotion` to the slug of its proposal's branch.
-   - An automated agent also saves its unfinished work to a side branch of its work branch, `agent/<issue>-<slug>/checkpoint/<line>`, so a run that is cut off can resume. A checkpoint branch never has a pull request, is never merged and is deleted once the item's pull requests are merged or closed.
+   - An automated agent also saves its unfinished work to a side branch of its work branch, with `checkpoint/` before the line, for example `agent/42-phrase-query/checkpoint/chronitondb-5.0`, so a run that is cut off can resume. A checkpoint branch never has a pull request and is never merged. It is deleted a day after the item's pull requests are merged or closed.
 3. Import branches have three forms: `import/cassandra-<x.y.z>/<line>` for a whole Apache release, named after its Apache release tag, `import/cassandra-<x.y>-<short hash>/<line>` for the weekly Apache branch merge, and `import/CASSANDRA-<n>/<line>` for a single cherry-picked fix. See [upstream.md](upstream.md).
-4. People outside the project work on a fork of the repository and open a pull request from it. See [contributing.md](contributing.md). In this repository only maintainers create branches outside `agent/`.
+4. People outside the project work on a fork of the repository and open a pull request from it. See [contributing.md](contributing.md). Today only maintainers create branches outside `agent/` in this repository. The integrator's `import/` branches wait until the project's automation is allowed to create them.
 5. An item affected on several lines carries all of them. It gets one pull request per affected line, oldest line first, and is done when all of them are merged.
 
 ## History rules

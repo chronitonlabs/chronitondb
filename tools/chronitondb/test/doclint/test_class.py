@@ -203,7 +203,7 @@ class SpecClass(Repo):
         self.assertIn("section 4 Where problems could occur says Not applicable", err)
 
     def test_a_risk_text_that_opens_by_playing_it_down_is_refused(self):
-        # P11: Ubuntu refuses "low" and an argument that the change is safe.
+        # Ubuntu refuses "low" and an argument that the change is safe.
         for text in ("Low risk, the change is small and safe and touches one class only.",
                      "None, the change only renames a private method in one class.",
                      "Minimal risk: the change only renames a private method in one class.",
@@ -222,7 +222,7 @@ class SpecClass(Repo):
             self.assertEqual(rc, 1, text)
 
     def test_real_risk_text_that_opens_with_low_or_nothing_passes(self):
-        # V6: the three real texts of the review pass.
+        # Three texts that name real problems pass.
         rc, err = self.spec_errors(bodies={"Where problems could occur": "Low-level reads of the index could return a missed row on a replica read."})
         self.assertEqual((rc, err), (0, ""))
         rc, err = self.spec_errors(bodies={"Test plan": "Low memory nodes: a stress test checks the reader never runs out of heap."})
@@ -267,7 +267,7 @@ class SpecClass(Repo):
         self.assertEqual(self.spec_errors(drop=drop), (0, ""))
 
     def test_every_form_of_not_applicable_is_a_claim(self):
-        # V1: a comma, a full stop, a dash, a colon, the end of the line or
+        # A comma, a full stop, a dash, a colon, the end of the line or
         # because, since or as after the words make a claim, in every
         # section the class requires.
         forms = ("Not applicable, the change is internal only.",
@@ -291,7 +291,7 @@ class SpecClass(Repo):
         self.assertIn("section Glossary says Not applicable, but write it as the one line 'Not applicable: <reason>'", err)
 
     def test_qualifiers_and_na_are_claims_too(self):
-        # V5: a qualifier that points at the document itself, and a leading
+        # A qualifier that points at the document itself, and a leading
         # N/A or NA, make the line a claim.
         forms = ("Not applicable here, no decision record shapes it.",
                  "Not applicable for this feature, nothing decided.",
@@ -307,7 +307,7 @@ class SpecClass(Repo):
         self.assertEqual((rc, err), (0, ""))
         rc, err = self.spec_errors(bodies={"Deployment": "NAT traversal is not needed: nodes reach each other on the private network."})
         self.assertEqual((rc, err), (0, ""))
-        # V7: "to this" names something else, and a word NA is no N/A.
+        # "To this" names something else, and a word NA is no N/A.
         rc, err = self.spec_errors(bodies={"Deployment": "Not applicable to this release line only: operators of 6.0 set nothing."})
         self.assertEqual((rc, err), (0, ""))
         rc, err = self.spec_errors(bodies={"Deployment": "NA region clusters set one more option, the rest set nothing."})
@@ -395,7 +395,8 @@ class SpecClass(Repo):
         self.assertIn("the 'Touches' row names 'the planner', which is none of: public interface, stock behaviour, new input or privilege, new dependency, shared state, request path, new feature or switch, or none (classification.md)", err)
 
     def test_touches_reads_any_case_and_a_semicolon(self):
-        # P8: the phrases in any case, split at a comma, a semicolon or and.
+        # The phrases are read in any case, split at a comma, a semicolon or
+        # and.
         rc, err = self.spec_errors(touches="Public interface (CQL)")
         self.assertNotIn("the 'Touches' row names", err)
         rc, err = self.spec_errors(risk="Low: documentation only change", touches="Public interface (CQL)")
@@ -522,7 +523,7 @@ class OtherDocuments(Repo):
         text = re.sub(r"(## Where problems could occur\n\n)[^\n]*\n\n### Test plan\n\n[^\n]*\n", r"\1Not applicable: section 4 of the feature spec covers this item.\n", good)
         errors = self.class_errors(DESIGN, text)
         self.assertTrue(any("unless its References row links the feature spec that covers it" in e for e in errors), errors)
-        # P10: a plain mention of a spec path is not enough. The row links a
+        # A plain mention of a spec path is not enough. The row links a
         # feature-spec.md the line holds, and the reason names its section 4.
         text = re.sub(r"^\| References \|.*\|$", "| References | Unrelated: docs/design/XYZ-other/feature-spec.md |", text, flags=re.M)
         errors = self.class_errors(DESIGN, text)

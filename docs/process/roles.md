@@ -75,7 +75,7 @@ The reviewer owns verification of each pull request, as an ISO/IEC 20246 inspect
 The integrator keeps each line current with Apache Cassandra, after the integration process of ISO/IEC/IEEE 12207 and the merge work Ubuntu does against Debian. See [upstream.md](upstream.md).
 
 1. Runs a daily scheduled check of: Apache releases on each line's major version, commits on the Apache branch of a line whose major version Apache has not yet released, and Apache JIRAs and commits that touch areas in the delta register or look like security fixes.
-2. Prepares import pull requests: whole releases, the weekly branch merge before Apache's first release of a major version, and single fixes it proposes against the published criteria, which the maintainers take by merging.
+2. Prepares import pull requests: whole releases, the weekly branch merge before Apache's first release of a major version, single Apache fixes it proposes or a maintainer asks for, and commits from other projects a maintainer asks for. Each single fix or commit states its reason in its own words, and the maintainers take it by merging.
 3. Resolves conflicts with the ChronitonDB delta, or raises them to the maintainers.
 4. Runs the tests, writes the import record and updates the delta register.
 5. Sends the maintainers a weekly digest of what it found.

@@ -29,7 +29,7 @@ Each line releases on its own rhythm:
 2. Otherwise, a release ships monthly when our own changes are waiting.
 3. Security fixes and urgent fixes are released whenever they are ready, outside both rhythms.
 
-The release engineer's daily check finds each release that is due on a line under these rules. It then opens the release's public issue and its release task itself, and writes the proposal. The maintainers still decide by merging the proposal and by starting the candidate run.
+The release engineer's daily check finds each release that is due on a line under these rules. It then opens the release's public issue itself and writes the proposal. The maintainers still decide by merging the proposal and by starting the candidate run.
 
 ## Support lifetime
 

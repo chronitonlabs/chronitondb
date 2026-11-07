@@ -26,6 +26,7 @@ ChronitonDB runs its open source compliance as an OpenChain programme: ISO/IEC 5
 3. **Contributions.** Contributions are made under the Chroniton Labs contributor agreements, signed through the agreement check on each pull request. See [contributing.md](contributing.md).
 4. **Known vulnerabilities.** The vulnerability process in [security.md](security.md) and the VEX statements below cover the security assurance side. The security engineer checks every shipped library daily against OSV, the GitHub advisory database and NVD, and writes the VEX statements. See [roles.md](roles.md#security-engineer).
 5. **Self-certification.** OpenChain self-certification for both standards is planned before the first release.
+6. **REUSE.** Before the first release the repository adopts the [REUSE specification](https://reuse.software/): a `LICENSES/` folder with every licence text used, a `REUSE.toml` that covers Apache Cassandra's files under the Apache License 2.0 with the exceptions they carry, and `reuse lint` as a required pull request check. Apache file headers are never edited. ChronitonDB files keep their SPDX header line.
 
 ## Third party licences
 
@@ -42,7 +43,7 @@ Every third party component is checked against the Apache Software Foundation li
 1. Every new dependency, and every version change of an existing one, MUST be declared before use. For a feature it goes in the feature spec's Dependencies section. For a one-item change it goes in the design record's Dependencies section. The change itself is then made as an item of its own through the security engineer. See [maintenance.md](maintenance.md#dependency-patch-version-updates).
 2. Each declaration gives the library and version, its ASF licence category, the NOTICE and credit lines it needs, its known vulnerabilities and why it is needed.
 3. The maintainers approve the declaration by merging the document. A library that no merged document declares is refused at review.
-4. `build.xml`, `lib/`, `packaging/` and the other build inputs are sensitive paths with code owner review. `packaging/` joins `.github/CODEOWNERS` in the pull request that creates it. See [branching-and-review.md](branching-and-review.md#sensitive-paths).
+4. `build.xml`, `lib/`, `packaging/` and the other build inputs are sensitive paths: a change to one requests a review from the code owners. `packaging/` joins `.github/CODEOWNERS` in the pull request that creates it. See [branching-and-review.md](branching-and-review.md#sensitive-paths).
 5. A patch-version update of an approved library, under the same licence, for a bug or security fix, MAY be made without a fix record or design record. The pull request description gives the reason, and the SBOM and VEX record the change. See [maintenance.md](maintenance.md#dependency-patch-version-updates).
 
 ## NOTICE and credits
@@ -56,7 +57,7 @@ Every third party component is checked against the Apache Software Foundation li
 ## SBOM, VEX and provenance
 
 1. Each release ships its software bill of materials in SPDX (ISO/IEC 5962) and in CycloneDX (ECMA-424).
-2. Each release ships an OpenVEX file for the known vulnerabilities in its shipped components, kept by the security engineer. See [security.md](security.md#vex-statements).
+2. Each release ships an OpenVEX file for the known vulnerabilities in its shipped components, kept by the security engineer in the public repository [chronitonlabs/chronitondb-security-tracker](https://github.com/chronitonlabs/chronitondb-security-tracker). See [security.md](security.md#vex-statements).
 3. With the release pipeline, each release artefact will carry SLSA Build Level 3 provenance through GitHub artifact attestations.
 4. With the release pipeline, the repository will run OpenSSF Scorecard weekly with public results.
 

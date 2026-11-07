@@ -119,7 +119,7 @@ The release version does not say which Apache content a release carries, so its 
 
 1. The newest Apache Cassandra release the line fully contains, for example Apache Cassandra 5.0.9. On a line before Apache's first release of its major version, the newest Apache pre-release of that major version the line contains, for example Apache Cassandra 6.0-alpha2.
 2. When the line carries Apache branch commits after that release, the last Apache commit merged, by its full hash.
-3. Every change cherry-picked on top of that release: an Apache fix by its Apache JIRA and full Apache commit hash, a change from another project by its source repository and commit, found by the `import(<owner>/<repo>@<12 character hash>)` subject of its import merge commit.
+3. Every change cherry-picked on top of that release: an Apache fix by its Apache JIRA and full Apache commit hash, a change from another project by its source repository and full commit hash, found by the `import(<owner>/<repo>@<12 character hash>)` subject of its import merge commit.
 4. Our own changes, from the commits on the line and `NEWS-chronitondb.txt`.
 
 The release engineer takes the first three from the line's git history: the Apache release tags it contains, Apache's branch, and its import commits. See [upstream.md](upstream.md) and [conventions.md](conventions.md#change-logs-and-release-notes).

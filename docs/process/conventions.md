@@ -73,7 +73,7 @@ A breaking change takes `!` after the type or scope, for example `feat(fulltext)
 2. Its import pull request is merged with a merge commit. The merge commit carries the Conventional Commits subject `import(CASSANDRA-<n>): <original Apache subject>` and its body names the Apache commit hash.
 3. For a whole release import, the integrator merges the Apache release tag into the import branch. That merge commit's subject is `import(apache-<version>): merge Apache Cassandra <version>`, for example `import(apache-5.0.8): merge Apache Cassandra 5.0.8`. A maintainer then merges the import pull request into the line with a merge commit.
 4. For a weekly merge of an Apache branch, before Apache's first release of its major version, the integrator's merge into the import branch has the subject `import(apache-<x.y>-branch): merge Apache cassandra-<x.y> at <short hash>`, for example `import(apache-6.0-branch): merge Apache cassandra-6.0 at 1a2b3c4d5e`.
-5. A single commit taken unchanged from a project other than Apache keeps its original author, date and message. Its import pull request is merged with a merge commit. The merge commit carries the Conventional Commits subject `import(<owner>/<repo>@<12 character hash>): <original subject>`, the pull request title, and its message ends with the trailer `Origin: https://github.com/<owner>/<repo>/commit/<full hash>`, the DEP-3 Origin form the [delta entries](../delta/README.md) use. Code ported from another project and rewritten stays our own commit, with credit to its authors. See [Code from elsewhere](#code-from-elsewhere).
+5. A single commit taken unchanged from a project other than Apache keeps its original author, date and message, with the `(cherry picked from commit <full hash>)` line added by `git cherry-pick -x`. Its import pull request is merged with a merge commit. The merge commit carries the Conventional Commits subject `import(<owner>/<repo>@<12 character hash>): <original subject>`, the pull request title, and its message ends with the trailer `Origin: https://github.com/<owner>/<repo>/commit/<full hash>`, the DEP-3 Origin form the [delta entries](../delta/README.md) use. Code ported from another project and rewritten stays our own commit, with credit to its authors. See [Code from elsewhere](#code-from-elsewhere).
 
 See [upstream.md](upstream.md).
 
@@ -128,7 +128,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 4. Each line keeps its own documentation on its own branch.
 5. Documentation changes ship in the same pull request as the code they describe.
 6. Requirements and prerequisites in reference pages, how-to guides, runbooks, the process pages and templates, and design and decision records use BCP 14 key words. Tutorials and explanations use plain prose.
-7. Product documentation, meaning reference pages, operator guides, runbooks and design and decision records, never addresses the reader as "you". Pages that address people taking part may: [contributing.md](contributing.md), the reporting part of [security.md](security.md) and the How we work section of `.github/README.md`.
+7. Product documentation, meaning reference pages, operator guides, runbooks and design and decision records, never addresses the reader as "you". Pages that address people taking part may: [contributing.md](contributing.md), `.github/CONTRIBUTING.md`, the reporting part of [security.md](security.md) and the How we work section of `.github/README.md`.
 
 ## Contents index of process documents
 
@@ -207,7 +207,7 @@ A production limit MAY be exceeded only with a waiver recorded in the item's des
 | Source | The file keeps | The commit carries |
 |---|---|---|
 | An Apache commit, cherry-picked | Its Apache headers, unchanged | The original author and the Apache message unchanged, with the `(cherry picked from commit <full hash>)` line. The maintainer's merge of the import pull request carries the `import` subject |
-| Another project's commit, cherry-picked | Its headers as they are | The original author, date and message unchanged. The maintainer's merge of the import pull request carries the `import(<owner>/<repo>@<12 character hash>)` subject, the `Origin:` trailer with the full hash and the ticket if any |
+| Another project's commit, cherry-picked | Its headers as they are | The original author, date and message unchanged, with the `(cherry picked from commit <full hash>)` line added by `git cherry-pick -x`. The maintainer's merge of the import pull request carries the `import(<owner>/<repo>@<12 character hash>)` subject and the `Origin:` trailer with the full hash |
 | Another project's work, adapted into a new file | Its original header and author line, with the AxonOps Limited line added above when the file was adapted | `Co-authored-by:` for each author, the source and hash in the body, and a NOTICE entry where the licence asks for one |
 | An idea from elsewhere, code written fresh | The ChronitonDB header | A line in the body naming the source of the idea |
 

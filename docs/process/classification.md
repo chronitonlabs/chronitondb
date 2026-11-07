@@ -141,7 +141,7 @@ The author of the spec names what the change touches in the Touches row, and the
 | Normal | The spec, the plan and the code, each merged by a maintainer. The maintainer confirms the class when merging the spec |
 | Low | No spec or plan stage. The work goes straight to a pull request whose body carries Where problems could occur and its test plan. A maintainer merges it |
 
-A one-item change takes the same stages with its design record or fix record in place of the spec and plan. Only maintainers merge, at every level.
+A one-item change takes the same stages with its design record or fix record in place of the spec and plan. A change to documentation only needs no design record at any risk level. The review and the maintainer's merge still apply, and a change to a process page or template is still at least Normal risk, so it takes the checks of Normal risk. See [maintenance.md](maintenance.md#documentation-only-changes). Only maintainers merge, at every level.
 
 ## Labels
 

@@ -35,9 +35,11 @@ permissions:
   pull-requests: read
   issues: read
 
+# Runs of one pull request queue rather than cancel each other: a cancelled
+# run is recorded as a failed required check and blocks the merge.
 concurrency:
   group: class-label-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   class-label:

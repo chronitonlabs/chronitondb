@@ -150,7 +150,7 @@ A running node reports a different string from its release version to other node
 
 ChronitonDB is a fork, so it has its own packaging and its own names, separate from Apache's.
 
-1. The Debian and Red Hat packaging lives in `packaging/debian/` and `packaging/redhat/`, with the tarball script in `packaging/`. The release pipeline builds from them. `packaging/` is a sensitive path with code owner review. The pull request that creates it adds it to `.github/CODEOWNERS`.
+1. The Debian and Red Hat packaging lives in `packaging/debian/` and `packaging/redhat/`, with the tarball script in `packaging/`. The release pipeline builds from them. `packaging/` is a sensitive path: a change to it requests a review from the code owners. The pull request that creates it adds it to `.github/CODEOWNERS`.
 2. The package and its service are named `chronitondb`. Its versions follow [Version numbers](#version-numbers), for example `5.0-chronitondb1`.
 3. A new install uses the configuration directory `/etc/chronitondb`, the data directory `/var/lib/chronitondb` and the system user `chronitondb`.
 4. The package is declared as replacing Apache's `cassandra` package.
@@ -187,7 +187,7 @@ The release pipeline produces, for every release:
 2. The binary tarball.
 3. Debian and Red Hat packages.
 4. The software bill of materials in SPDX and in CycloneDX, published with the release.
-5. The OpenVEX file, published with the release. See [security.md](security.md#vex-statements).
+5. The OpenVEX file, taken from [chronitonlabs/chronitondb-security-tracker](https://github.com/chronitonlabs/chronitondb-security-tracker) and published with the release. See [security.md](security.md#vex-statements).
 6. Release notes, generated from the commits and `NEWS-chronitondb.txt`, naming the Apache content as [What a release contains](#what-a-release-contains) says. See [conventions.md](conventions.md#change-logs-and-release-notes).
 7. SLSA Build Level 3 provenance for every artefact, through GitHub artifact attestations, once the release pipeline is built.
 8. A verification pass: signatures, installs and upgrade tests.

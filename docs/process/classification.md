@@ -131,7 +131,7 @@ Before a document goes to review, its author runs independent checks on it in ro
 | Challenging size | 8 |
 | Byzantine size or Critical risk | 10 |
 
-The author of the spec names what the change touches in the Touches row, and the reviewer checks it against the change. Drafting and review get more reasoning effort at Critical risk than at Normal, and Normal more than Low. An automated role's settings follow the class of its task.
+The author of the spec names what the change touches in the Touches row, and the reviewer checks it against the change. Drafting gets more reasoning effort at Critical risk than at Normal, and at Normal more than at Low. Review gets more at Critical risk than at Normal or Low. An automated role's settings follow the class of its task.
 
 ### Stages and approvals
 
@@ -151,7 +151,7 @@ The class is three label families on the issue, mirrored on each of its pull req
 2. The reviewer checks the labels at every review, against the change and the reasons.
 3. A maintainer confirms the class: through the class and scope question for Critical work, at the spec merge for Normal work, at the pull request merge for Low work. A maintainer may change any label at any time, and the change takes effect from the next step of the work.
 4. Work that carries no class yet, or a family with no label or with two, is treated as the strictest value of that family: Critical, Byzantine and Cross-cutting.
-5. A pull request check, required once the maintainers make it so, refuses a pull request that does not carry exactly one label of each family, as the kind label check does for the maintenance category. A release proposal or promotion pull request, which changes only `docs/releases/`, has no class, as it has no kind.
+5. The required `class-label` check refuses a pull request that does not carry exactly one label of each family, as the kind label check does for the maintenance category. A release proposal or promotion pull request, which changes only `docs/releases/`, has no class, as it has no kind.
 
 ## Sources
 

@@ -68,7 +68,7 @@ Never report a security problem in a public issue, pull request or discussion. R
 6. **A title and commits** in Conventional Commits form. The title becomes the commit subject on the line.
 7. **The pull request template,** filled in.
 
-Changes that need a design record follow [maintenance.md](maintenance.md) or [additive.md](additive.md). The maintainers will say if your change needs one before review.
+Changes that need a design record follow [maintenance.md](maintenance.md) or [additive.md](additive.md). A change to documentation only never needs one. The maintainers will say if your change needs one before review.
 
 ### Checks and review
 

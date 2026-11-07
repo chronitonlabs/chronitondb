@@ -150,7 +150,7 @@ A running node reports a different string from its release version to other node
 
 ChronitonDB is a fork, so it has its own packaging and its own names, separate from Apache's.
 
-1. The Debian and Red Hat packaging lives in `packaging/debian/` and `packaging/redhat/`, with the tarball script in `packaging/`. The release pipeline builds from them. `packaging/` is a sensitive path with code owner review. The pull request that creates it adds it to `.github/CODEOWNERS`.
+1. The Debian and Red Hat packaging lives in `packaging/debian/` and `packaging/redhat/`, with the tarball script in `packaging/`. The release pipeline builds from them. `packaging/` is a sensitive path: a change to it requests a review from the code owners. The pull request that creates it adds it to `.github/CODEOWNERS`.
 2. The package and its service are named `chronitondb`. Its versions follow [Version numbers](#version-numbers), for example `5.0-chronitondb1`.
 3. A new install uses the configuration directory `/etc/chronitondb`, the data directory `/var/lib/chronitondb` and the system user `chronitondb`.
 4. The package is declared as replacing Apache's `cassandra` package.

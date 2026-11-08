@@ -110,7 +110,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Milestone reports of a feature | `docs/design/<KEY>-<slug>/milestones/` |
 | Design record or fix record of one item, with its coverage file | `docs/design/<issue>-<slug>/`, or `docs/design/<KEY>-<slug>/` for a fork feature that fits one item |
 | Decision records | `docs/decisions/NNNN-<slug>.md` |
-| Import records | `docs/imports/<apache-version-or-range>.md` |
+| Import records | `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project |
 | Release proposals and their verification results | `docs/releases/<version>.md` |
 | Line plan: first release date, feature freeze and LTS designation | `docs/releases/<line>-plan.md` |
 | Delta register | `docs/delta/` |

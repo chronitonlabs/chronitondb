@@ -18,9 +18,9 @@
 # (docs/process/classification.md). The issue carries the class and the
 # pull request carries the same. A release proposal or promotion, which
 # changes only docs/releases/, has no class, as it has no kind, and passes
-# with no class label. It reruns when a label changes, one run at a time
-# per pull request, the newest winning, and reads the labels from the API
-# when it runs, so quick label events cannot leave an older answer. It
+# with no class label. It reruns when a label changes and reads the
+# labels from the API when it runs, so quick label events cannot leave an
+# older answer. It
 # checks out nothing and runs no code from the pull request, it only reads
 # the pull request's labels and file names.
 name: ChronitonDB class label
@@ -35,11 +35,10 @@ permissions:
   pull-requests: read
   issues: read
 
-# Runs of one pull request queue rather than cancel each other: a cancelled
-# run is recorded as a failed required check and blocks the merge.
-concurrency:
-  group: class-label-${{ github.event.pull_request.number }}
-  cancel-in-progress: false
+# No concurrency group: GitHub keeps at most one waiting run per group and
+# cancels the older one, and a cancelled run leaves the required check
+# waiting. Every run reads the labels when it runs, so each answer is
+# current.
 
 jobs:
   class-label:

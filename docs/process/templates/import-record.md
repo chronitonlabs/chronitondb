@@ -15,21 +15,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# Import: {Apache release or CASSANDRA-n} into {line}
+# Import: {Apache release, CASSANDRA-n or owner/repo@12 character hash} into {line}
 
 | Field | Value |
 |---|---|
-| Title | Import of {Apache release or CASSANDRA-n} into {line} |
+| Title | Import of {Apache release, CASSANDRA-n or owner/repo@12 character hash} into {line} |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Draft, Approved or Superseded |
 | Version | {n} |
 | Author | Integrator: {GitHub username} |
 | Approver | The maintainer who merges the import pull request |
-| References | Issue #{issue}. Apache release tag or commit hash. Import pull request. |
+| References | Issue #{issue}. Apache release tag or commit hash, or the other project's commit link. Import pull request. |
 
 Change history: the git history of this file.
 
-Location: `docs/imports/<apache-version-or-range>.md`, added in the import pull request. Process: [upstream.md](../upstream.md).
+Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project, added in the import pull request. Process: [upstream.md](../upstream.md).
 
 ## Contents
 
@@ -49,7 +49,7 @@ Location: `docs/imports/<apache-version-or-range>.md`, added in the import pull 
 
 ## 1. What came in
 
-{Whole release: the Apache release tag and the commit range since the last import. Before Apache's first release of the major version: the Apache branch commit range merged this week. Single fix: the Apache JIRA, the Apache commit hash and the reason it is taken early (security, a dependency of our work, or a fault our users hit).}
+{Whole release: the Apache release tag and the commit range since the last import. Before Apache's first release of the major version: the Apache branch commit range merged this week. Single fix: the Apache JIRA, the Apache commit hash and the line `Reason: <why the line takes it now>`, in plain words and from no fixed list. Commit from another project: the repository, the full commit hash, its author and subject, the branch of that repository that holds it, its approved licence, the `Reason:` line and the line `Origin: https://github.com/<owner>/<repo>/commit/<full hash>`.}
 
 ## 2. Assessment
 

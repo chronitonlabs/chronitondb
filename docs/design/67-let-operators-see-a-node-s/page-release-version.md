@@ -57,7 +57,7 @@ A build made without a release version shows `5.0-chronitondb-SNAPSHOT`. A build
 | `nodetool enablereleaseversion` | sets `nodetool_release_version_enabled` to `true` on the node, in memory | nothing on success |
 | `nodetool disablereleaseversion` | sets it to `false` on the node, in memory | nothing on success |
 
-Against a node without the MBean below, both exit with code 1 and print `The node has no ChronitonDB release version reporter. It runs Apache Cassandra or an older ChronitonDB build.`
+Against a node without the MBean below, both print one line to standard output and exit with code 1: `enablereleaseversion: the node has no ChronitonDB release version reporter. It runs Apache Cassandra or an older ChronitonDB build.`, or the same line starting with `disablereleaseversion:`. Under JMX authorization, a role that lacks `DESCRIBE` or `MODIFY` on the MBean gets `error: Access Denied`, as from any stock command without a grant.
 
 ## JMX
 
@@ -65,6 +65,8 @@ Against a node without the MBean below, both exit with code 1 and print `The nod
 |---|---|---|---|
 | `org.chronitondb:type=ReleaseVersion` | `ReleaseVersion` | String, read only | the release version of the build, returned whatever the switch says |
 | `org.chronitondb:type=ReleaseVersion` | `Enabled` | boolean, read and write | the switch |
+
+Under JMX authorization, a role needs `DESCRIBE` and `SELECT` on this MBean to see the release version with `nodetool version`, and `MODIFY` to run the two commands. A role without them sees Apache Cassandra's output.
 
 ## Metric
 
@@ -74,14 +76,15 @@ Against a node without the MBean below, both exit with code 1 and print `The nod
 
 ## Build
 
-The release pipeline passes `-Dchronitondb.version=<release version>` to the build. The build writes it as the key `ReleaseVersion` of `org/chronitondb/version.properties` inside the jar. Without the property the value is `5.0-chronitondb-SNAPSHOT`. The git SHA is Apache Cassandra's own, from the same build.
+The release pipeline passes `-Dchronitondb.version=<release version>` to the build. The build writes it as the key `ReleaseVersion` of `org/chronitondb/version.properties`, generated under `src/resources` and copied into the jar. Without the property the value is `5.0-chronitondb-SNAPSHOT`. The git SHA is Apache Cassandra's own, from the same build.
 
 ## Failure behaviour
 
 | Case | What happens |
 |---|---|
-| the properties file is missing, lacks the key or holds it empty | the node reports `Unknown` |
-| the JMX role may not read the MBean | `nodetool version` prints Apache Cassandra's output, the toggles fail with `Access Denied` as any stock command without a grant |
+| the properties file is missing, lacks the key or holds it blank | the node reports `Unknown` |
+| the JMX role may not read the MBean | `nodetool version` prints Apache Cassandra's output and nothing else, the toggles fail with `error: Access Denied` as any stock command without a grant |
+| the JMX connection fails in another way | `nodetool version` fails with `error:` and exit code 2, as it does for Apache Cassandra's own calls |
 | the node asked has no MBean | `nodetool version` prints Apache Cassandra's output, the toggles exit with code 1 |
 | the switch is off | `nodetool version` prints Apache Cassandra's output |
 

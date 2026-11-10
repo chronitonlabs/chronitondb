@@ -76,15 +76,16 @@ Under JMX authorization, a role needs `DESCRIBE` and `SELECT` on this MBean to s
 
 ## Build
 
-The release pipeline passes `-Dchronitondb.version=<release version>` to the build. The build writes it as the key `ReleaseVersion` of `org/chronitondb/version.properties`, generated under `src/resources` and copied into the jar. Without the property the value is `5.0-chronitondb-SNAPSHOT`. The git SHA is Apache Cassandra's own, from the same build.
+The release pipeline passes `-Dchronitondb.version=<release version>` to the build. The build writes it as the key `ReleaseVersion` of `org/apache/cassandra/config/version.properties` inside the jar, next to Apache Cassandra's own `CassandraVersion` and `GitSHA` keys. Without the property the value is `5.0-chronitondb-SNAPSHOT`. The git SHA is Apache Cassandra's own, from the same build.
 
 ## Failure behaviour
 
 | Case | What happens |
 |---|---|
-| the properties file is missing, lacks the key or holds it blank | the node reports `Unknown` |
+| the properties file is missing, lacks the key `ReleaseVersion` or holds it blank | the node reports `Unknown` |
 | the JMX role may not read the MBean | `nodetool version` prints Apache Cassandra's output and nothing else, the toggles fail with `error: Access Denied` as any stock command without a grant |
 | the JMX connection fails in another way | `nodetool version` fails with `error:` and exit code 2, as it does for Apache Cassandra's own calls |
+| nodetool runs with no JMX connection, as inside the in-JVM test framework | `nodetool version` prints Apache Cassandra's output, the two commands fail as a usage error with exit code 1 |
 | the node asked has no MBean | `nodetool version` prints Apache Cassandra's output, the toggles exit with code 1 |
 | the switch is off | `nodetool version` prints Apache Cassandra's output |
 
@@ -94,4 +95,4 @@ The release pipeline passes `-Dchronitondb.version=<release version>` to the bui
 
 ## Rollback to Apache Cassandra
 
-Before a node runs an Apache Cassandra binary, `cassandra.yaml` MUST NOT contain `nodetool_release_version_enabled`. Apache Cassandra refuses to start on a yaml with a key it does not know.
+Before a node runs an Apache Cassandra binary, or a ChronitonDB build older than this feature, `cassandra.yaml` MUST NOT contain `nodetool_release_version_enabled`. Apache Cassandra, and an older ChronitonDB build, refuse to start on a yaml with a key they do not know.

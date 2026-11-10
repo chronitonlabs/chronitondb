@@ -89,3 +89,4 @@ Chosen option: "<option>", because <reason>.
 ## Index
 
 1. [0001. The first maintainers](0001-initial-maintainers.md), 2026-11-01, Accepted.
+2. [0002. What nodetool version prints on a ChronitonDB node](0002-nodetool-version-output-on-a-chronitondb-node.md), 2026-11-10, Proposed.

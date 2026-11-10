@@ -1,0 +1,94 @@
+---
+title: Release version
+description: What nodetool version shows on a ChronitonDB node, the switch that controls it, and the MBean and metric behind it.
+---
+<!--
+Copyright 2026 AxonOps Limited
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
+# Release version
+
+Skeleton of the reference page `docs/reference/release-version.md`. The developer fills each placeholder in angle brackets and moves the file to that path in the code pull request. The page is a reference page: facts only, no steps, no background.
+
+A ChronitonDB™ node reports its release version, `<line>-chronitondb<n>`, through `nodetool version`. Apache Cassandra® reports its own version string everywhere else.
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [RFC 2119] [RFC 8174] when, and only when, they appear in all capitals, as shown here.
+
+## nodetool version
+
+With the switch on, the default:
+
+```
+$ nodetool version
+ReleaseVersion: <release version, for example 5.0-chronitondb3>
+$ nodetool version --verbose
+ReleaseVersion: <release version>
+GitSHA: <git SHA of the build>
+```
+
+With the switch off, or against a node that runs Apache Cassandra or an older ChronitonDB build, the output is Apache Cassandra's: `ReleaseVersion: <Apache version>` and with `--verbose` the `GitSHA:` line.
+
+A build made without a release version shows `5.0-chronitondb-SNAPSHOT`. A build whose value is missing shows `Unknown`.
+
+## Setting
+
+| Key | Type | Default | Change at runtime |
+|---|---|---|---|
+| `nodetool_release_version_enabled` | boolean | `true` | `nodetool enablereleaseversion`, `nodetool disablereleaseversion`, in memory only, the yaml value returns at restart |
+
+## nodetool commands
+
+| Command | What it changes | Output |
+|---|---|---|
+| `nodetool enablereleaseversion` | sets `nodetool_release_version_enabled` to `true` on the node, in memory | nothing on success |
+| `nodetool disablereleaseversion` | sets it to `false` on the node, in memory | nothing on success |
+
+Against a node without the MBean below, both exit with code 1 and print `The node has no ChronitonDB release version reporter. It runs Apache Cassandra or an older ChronitonDB build.`
+
+## JMX
+
+| ObjectName | Attribute | Type | Meaning |
+|---|---|---|---|
+| `org.chronitondb:type=ReleaseVersion` | `ReleaseVersion` | String, read only | the release version of the build, returned whatever the switch says |
+| `org.chronitondb:type=ReleaseVersion` | `Enabled` | boolean, read and write | the switch |
+
+## Metric
+
+| ObjectName | Type | Unit | What increments it | Alert threshold |
+|---|---|---|---|---|
+| `org.chronitondb.metrics:type=ReleaseVersion,name=Reported` | counter | reads | each read of the `ReleaseVersion` attribute, by nodetool or any JMX client | none |
+
+## Build
+
+The release pipeline passes `-Dchronitondb.version=<release version>` to the build. The build writes it as the key `ReleaseVersion` of `org/chronitondb/version.properties` inside the jar. Without the property the value is `5.0-chronitondb-SNAPSHOT`. The git SHA is Apache Cassandra's own, from the same build.
+
+## Failure behaviour
+
+| Case | What happens |
+|---|---|
+| the properties file is missing, lacks the key or holds it empty | the node reports `Unknown` |
+| the JMX role may not read the MBean | `nodetool version` prints Apache Cassandra's output, the toggles fail with `Access Denied` as any stock command without a grant |
+| the node asked has no MBean | `nodetool version` prints Apache Cassandra's output, the toggles exit with code 1 |
+| the switch is off | `nodetool version` prints Apache Cassandra's output |
+
+## Known limitations
+
+`bin/cassandra -v`, the start log line `Cassandra version:` and the cqlsh banner show Apache Cassandra's version string.
+
+## Rollback to Apache Cassandra
+
+Before a node runs an Apache Cassandra binary, `cassandra.yaml` MUST NOT contain `nodetool_release_version_enabled`. Apache Cassandra refuses to start on a yaml with a key it does not know.

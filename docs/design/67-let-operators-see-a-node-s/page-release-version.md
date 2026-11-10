@@ -66,7 +66,7 @@ Against a node without the MBean below, both print one line to standard output a
 | `org.chronitondb:type=ReleaseVersion` | `ReleaseVersion` | String, read only | the release version of the build, returned whatever the switch says |
 | `org.chronitondb:type=ReleaseVersion` | `Enabled` | boolean, read and write | the switch |
 
-Under JMX authorization, a role needs `DESCRIBE` and `SELECT` on this MBean to see the release version with `nodetool version`, and `MODIFY` to run the two commands. A role without them sees Apache Cassandra's output.
+Under JMX authorization, a role needs `DESCRIBE` and `SELECT` on `org.chronitondb:type=ReleaseVersion` to see the release version with `nodetool version`. A role needs `DESCRIBE` and `MODIFY` on `org.chronitondb:type=ReleaseVersion` to run the two commands. A role without them sees Apache Cassandra's output from `nodetool version`.
 
 ## Metric
 
@@ -76,7 +76,7 @@ Under JMX authorization, a role needs `DESCRIBE` and `SELECT` on this MBean to s
 
 ## Build
 
-The release pipeline passes `-Dchronitondb.version=<release version>` to the build. The build writes it as the key `ReleaseVersion` of `org/apache/cassandra/config/version.properties` inside the jar, next to Apache Cassandra's own `CassandraVersion` and `GitSHA` keys. Without the property the value is `5.0-chronitondb-SNAPSHOT`. The git SHA is Apache Cassandra's own, from the same build.
+The release pipeline passes `-Dchronitondb.version=<release version>` to the build. The build writes it as the key `ReleaseVersion` of `org/apache/cassandra/config/version.properties` inside the jar, next to Apache Cassandra's own `CassandraVersion` and `GitSHA` keys. Without the property the value is `5.0-chronitondb-SNAPSHOT`, and a release build, one made with `-Drelease`, refuses to build without the property. The git SHA is Apache Cassandra's own, from the same build.
 
 ## Failure behaviour
 
@@ -91,7 +91,9 @@ The release pipeline passes `-Dchronitondb.version=<release version>` to the bui
 
 ## Known limitations
 
-`bin/cassandra -v`, the start log line `Cassandra version:` and the cqlsh banner show Apache Cassandra's version string.
+These keep Apache Cassandra's version string on a ChronitonDB node: `cassandra -v`, the start log line `Cassandra version:`, the cqlsh banner, `nodetool describecluster` and `nodetool gossipinfo`, which show the versions gossip carries, and `nodetool version` run from an Apache Cassandra nodetool or a ChronitonDB nodetool older than this feature, because the choice is made in the nodetool process. Check a rolling upgrade with the new nodetool.
+
+Every release candidate of a release prints the release version itself, for example `5.0-chronitondb3`, not the candidate's package version `5.0-chronitondb3~rc1`. `nodetool version --verbose` tells two candidates apart by their git SHA.
 
 ## Rollback to Apache Cassandra
 

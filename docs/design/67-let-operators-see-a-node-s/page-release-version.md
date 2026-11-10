@@ -57,7 +57,7 @@ A build made without a release version shows `5.0-chronitondb-SNAPSHOT`. A build
 | `nodetool enablereleaseversion` | sets `nodetool_release_version_enabled` to `true` on the node, in memory | nothing on success |
 | `nodetool disablereleaseversion` | sets it to `false` on the node, in memory | nothing on success |
 
-Against a node without the MBean below, both print one line to standard output and exit with code 1: `enablereleaseversion: the node has no ChronitonDB release version reporter. It runs Apache Cassandra or an older ChronitonDB build.`, or the same line starting with `disablereleaseversion:`. Under JMX authorization, a role that lacks `DESCRIBE` or `MODIFY` on the MBean gets `error: Access Denied`, as from any stock command without a grant.
+Against a node without the MBean below, both end with status 1 and print `nodetool: enablereleaseversion: the node has no ChronitonDB release version reporter. It runs Apache Cassandra or an older ChronitonDB build, or the reporter failed to register at start.` on standard output, or the same line with `disablereleaseversion` in its place, followed by the usual `See 'nodetool help'` line. Under JMX authorization, a role that lacks `DESCRIBE` or `MODIFY` on the MBean gets `error: Access Denied`, as from any stock command without a grant.
 
 ## JMX
 
@@ -82,11 +82,11 @@ The release pipeline passes `-Dchronitondb.version=<release version>` to the bui
 
 | Case | What happens |
 |---|---|
-| the properties file is missing, lacks the key `ReleaseVersion` or holds it blank | the node reports `Unknown` |
+| the properties file is missing, cannot be loaded, lacks the key `ReleaseVersion` or holds it blank | the node reports `Unknown` and, for a file that cannot be loaded, logs one WARN line |
 | the JMX role may not read the MBean | `nodetool version` prints Apache Cassandra's output and nothing else, the toggles fail with `error: Access Denied` as any stock command without a grant |
 | the JMX connection fails in another way | `nodetool version` fails with `error:` and exit code 2, as it does for Apache Cassandra's own calls |
-| nodetool runs with no JMX connection, as inside the in-JVM test framework | `nodetool version` prints Apache Cassandra's output, the two commands fail as a usage error with exit code 1 |
-| the node asked has no MBean | `nodetool version` prints Apache Cassandra's output, the toggles exit with code 1 |
+| nodetool runs with no JMX connection, as inside the in-JVM test framework | `nodetool version` prints Apache Cassandra's output, the two commands end with status 1 and `nodetool: enablereleaseversion needs a JMX connection`, or the same for `disablereleaseversion` |
+| the node asked has no MBean | `nodetool version` prints Apache Cassandra's output, the toggles end with status 1 and the line above |
 | the switch is off | `nodetool version` prints Apache Cassandra's output |
 
 ## Known limitations

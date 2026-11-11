@@ -90,3 +90,4 @@ Chosen option: "<option>", because <reason>.
 
 1. [0001. The first maintainers](0001-initial-maintainers.md), 2026-11-01, Accepted.
 2. [0002. What nodetool version prints on a ChronitonDB node](0002-nodetool-version-output-on-a-chronitondb-node.md), 2026-11-10, Proposed.
+3. [0003. Where the tests prove the release version before a package exists](0003-release-version-tests-before-a-package-exists.md), 2026-11-11, Proposed.

@@ -20,7 +20,7 @@ limitations under the License.
 | Field | Value |
 |---|---|
 | Document type | Record (ISO/IEC/IEEE 15289), MADR |
-| Status | Proposed |
+| Status | Accepted |
 | Date | 2026-11-10 |
 | Deciders | The maintainers |
 | References | Issue #67, the design record in `docs/design/67-let-operators-see-a-node-s/`, [release.md, What nodetool version shows](../process/release.md#what-nodetool-version-shows) |

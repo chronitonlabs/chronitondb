@@ -545,7 +545,7 @@ None.
 
 ### Waivers
 
-None.
+1. Exit criterion 4 of [testing.md](../../process/testing.md#exit-criteria), the parity suite passes with every fork feature off. The parity suite does not exist on this line, and the stock suites of section 14 run at the default of the switch, on. In its place `VersionOutputTest.switchOffPrintsStockOutput` compares the off output with the stock output on both streams and in the status. Waived because there is no parity suite to run, and a second run of the stock suites with the switch off needs a test configuration under `test/conf/`, a protected path this item does not touch. The maintainers approve the waiver with this record.
 
 ## Requirement quality checklist (ISO/IEC/IEEE 29148)
 

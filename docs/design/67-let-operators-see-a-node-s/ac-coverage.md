@@ -27,7 +27,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Coverage
 
-This item is not an item of a fork feature, so no scenario proves a requirement. Every requirement has one row naming its JUnit test. "Problem n" is item n of the record's Where problems could occur. REQ-26 names a stock test that runs unchanged, and REQ-27, REQ-28, REQ-29 and REQ-32 name a documentation test that reads the two files.
+This item is not an item of a fork feature, so no scenario proves a requirement. Every requirement has one row naming its JUnit test. "Problem n" is item n of the record's Where problems could occur. REQ-26 names a stock test that runs unchanged, and REQ-27, REQ-28, REQ-29, REQ-32 and REQ-35 name a documentation test that reads the two files.
 
 | Id | Source | Requirement | Covering scenario | Test | Status |
 |---|---|---|---|---|---|
@@ -65,3 +65,4 @@ This item is not an item of a fork feature, so no scenario proves a requirement.
 | REQ-32 | problem 5 | The reference page MUST list the outputs that keep Apache Cassandra's version string on a ChronitonDB node: `bin/cassandra -v`, the start log line `Cassandra version:`, the cqlsh banner, `nodetool describecluster`, `nodetool gossipinfo`, and `nodetool version` run from an Apache Cassandra nodetool or a ChronitonDB nodetool older than this feature. | none | `org.chronitondb.version.ReleaseVersionDocsTest.knownLimitationsAreDocumented` | Covered |
 | REQ-33 | problem 4 | The value of the key `ReleaseVersion` in `org/apache/cassandra/config/version.properties`, after `String.trim()`, MUST match in full `5\.0-chronitondb([1-9][0-9]*|-SNAPSHOT)`, the release version form of release.md, Version numbers, or the default, on every build that runs the unit tests, which the gate, CI and the release pipeline all do. | none | `org.chronitondb.version.ReleaseVersionTest.valueHasTheReleaseForm` | Covered |
 | REQ-34 | problem 7 | When the attribute `Enabled` of the MBean is read, the node MUST return the current value of `nodetool_release_version_enabled`. | none | `org.chronitondb.version.ReleaseVersionReporterTest.enabledReadsTheSwitch` | Covered |
+| REQ-35 | problem 7 | The reference page MUST contain each of these exact texts: `nodetool_release_version_enabled`, `enablereleaseversion`, `disablereleaseversion`, `org.chronitondb:type=ReleaseVersion`, `org.chronitondb.metrics:type=ReleaseVersion,name=Reported`, `Unknown`, `5.0-chronitondb-SNAPSHOT` and `the node has no ChronitonDB release version reporter`. | none | `org.chronitondb.version.ReleaseVersionDocsTest.exactNamesAreDocumented` | Covered |

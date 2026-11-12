@@ -370,7 +370,7 @@ No line above TRACE carries a key, a term, a literal or a secret: the lines carr
 
 **Rollback path.** Before a node runs an Apache Cassandra binary again, or a ChronitonDB build older than this change, the operator removes `nodetool_release_version_enabled` from its `cassandra.yaml`, because Apache's loader refuses an unknown key and the node does not start (`YamlConfigurationLoader.java:423`). A yaml that never named the key needs nothing. The reference page and `NEWS-chronitondb.txt` carry this line (REQ-27, REQ-29). There is no runbook page on this line yet, see section 15.
 
-**Surfaces touched and their versions.** Command line tools and arguments: the output of `nodetool version` on a node with the switch on, and two new commands, no stock command renamed, `nodetool help` lists two more. Configuration: one new key, which `ConfigCompatibilityTest` accepts, since it checks that no past key disappears (`test/unit/org/apache/cassandra/config/ConfigCompatibilityTest.java:166` to `192`). JMX MBeans and metrics: one new MBean and one new metric under fork domains, no stock name changed. Virtual tables: one new row in `system_views.settings`, section 3. The build's `version.properties`: one more key, which the stock readers ignore. Gossip, messaging, native protocol, sstables, commit log, hints, caches and operational routines: untouched, with the stock suites of section 14 passing unchanged as the proof.
+**Surfaces touched and their versions.** Command line tools and arguments: the output of `nodetool version` on a node with the switch on, and two new commands, no stock command renamed, `nodetool help` lists two more. Configuration: one new key, which `ConfigCompatibilityTest` accepts, since it checks that no past key disappears (`test/unit/org/apache/cassandra/config/ConfigCompatibilityTest.java:166` to `192`). JMX MBeans and metrics: one new MBean and one new metric under fork domains, no stock name changed, with `JMXCompatibilityTest`, which checks the stock names against its gold set and ignores additions by design (`test/unit/org/apache/cassandra/tools/JMXCompatibilityTest.java:45` to `48`), `JMXStandardsTest` and `JMXAuthTest` running unchanged. Virtual tables: one new row in `system_views.settings`, section 3. The build's `version.properties`: one more key, which the stock readers ignore. Gossip, messaging, native protocol, sstables, commit log, hints, caches and operational routines: untouched, with the stock suites of section 14 passing unchanged as the proof.
 
 **What the switch writes to shared state.** Nothing, off or on.
 
@@ -454,6 +454,9 @@ org.apache.cassandra.db.virtual.SettingsTableTest
 org.apache.cassandra.service.StorageServiceTest
 org.apache.cassandra.tools.nodetool.GetAuditLogTest
 org.apache.cassandra.auth.jmx.AuthorizationProxyTest
+org.apache.cassandra.auth.jmx.JMXAuthTest
+org.apache.cassandra.tools.JMXCompatibilityTest
+org.apache.cassandra.tools.JMXStandardsTest
 org.apache.cassandra.metrics.CassandraMetricsRegistryTest
 
 ### Tracing test

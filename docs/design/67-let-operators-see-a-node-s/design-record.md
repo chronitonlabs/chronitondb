@@ -237,7 +237,7 @@ Everything else stays stock. `FBUtilities.getReleaseVersionString()` and `getGit
 
 ### Stock hook points
 
-There is no feature spec for a one item change, so the hook points are listed here with their delta entry, `docs/delta/nodetool-version-shows-release-version.md`.
+There is no feature spec for a one item change, so the hook points are listed here with their delta entry, `docs/delta/nodetool-version-shows-release-version.md`. The entry records the stock edits of this list and the stock behaviour changes of the departures table above, as `docs/delta/README.md`, Keeping it current, item 1 asks of every pull request that changes stock code or stock behaviour.
 
 1. `src/java/org/apache/cassandra/tools/nodetool/Version.java`: one import and one line at the top of `execute`, calling `org.chronitondb.tools.nodetool.VersionOutput.print(probe, verbose)`.
 2. `src/java/org/apache/cassandra/tools/NodeTool.java`: two imports and two entries in the command list (lines 98 to 246), `EnableReleaseVersion.class` and `DisableReleaseVersion.class`.
@@ -411,7 +411,7 @@ No documentation page exists on this line yet, and [conventions.md, Where things
 8. Known limitations (REQ-32): `bin/cassandra -v`, the start log line `Cassandra version:` and the cqlsh banner show Apache's version, by release.md item 5, `nodetool describecluster` and `nodetool gossipinfo` show the versions gossip carries, and an Apache Cassandra nodetool or a ChronitonDB nodetool older than this feature prints Apache's string for a ChronitonDB node.
 9. The rollback line: remove the key from `cassandra.yaml` before running an Apache Cassandra binary or an older ChronitonDB build (REQ-27, and REQ-29 for the news file).
 
-`NEWS-chronitondb.txt` is created with its first entry, since the line has none yet and conventions.md, Change logs and release notes, item 2 says it is written in the pull request that makes the change: the new output of `nodetool version`, the key, and the rollback line (REQ-29). The delta entry `docs/delta/nodetool-version-shows-release-version.md` with its row in `docs/delta/README.md` records the stock edits. `docs/process/release.md` item 4 still says the feature is not built yet: a process page changes only through the documentation only path (governance.md, Changes to this page), so that edit is a follow-up, not part of this item. `ReleaseVersionDocsTest` of section 14 reads the reference page and the news file for the lines REQ-27, REQ-28, REQ-29 and REQ-32 require and the exact names REQ-35 requires.
+`NEWS-chronitondb.txt` is created with its first entry, since the line has none yet and conventions.md, Change logs and release notes, item 2 says it is written in the pull request that makes the change: the new output of `nodetool version`, the key, and the rollback line (REQ-29). The delta entry `docs/delta/nodetool-version-shows-release-version.md` with its row in `docs/delta/README.md` records the stock edits and the stock behaviour changes of section 3. `docs/process/release.md` item 4 still says the feature is not built yet: a process page changes only through the documentation only path (governance.md, Changes to this page), so that edit is a follow-up, not part of this item. `ReleaseVersionDocsTest` of section 14 reads the reference page and the news file for the lines REQ-27, REQ-28, REQ-29 and REQ-32 require and the exact names REQ-35 requires.
 
 ## 14. Testing
 

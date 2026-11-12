@@ -27,7 +27,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Coverage
 
-This item is not an item of a fork feature, so no scenario proves a requirement. Every requirement has one row naming its JUnit test. "Problem n" is item n of the record's Where problems could occur. REQ-26 names a stock test that runs unchanged, and REQ-27, REQ-28, REQ-29, REQ-32 and REQ-35 name a documentation test that reads the two files.
+This item is not an item of a fork feature, so no scenario proves a requirement. Every requirement has one row naming its JUnit test. "Problem n" is item n of the record's Where problems could occur. REQ-26 names a stock test that runs unchanged, with the gate's check that no pre-existing test changed as the other half of its proof, and REQ-27, REQ-28, REQ-29, REQ-32 and REQ-35 name a documentation test that reads the two files.
 
 | Id | Source | Requirement | Covering scenario | Test | Status |
 |---|---|---|---|---|---|
@@ -56,7 +56,7 @@ This item is not an item of a fork feature, so no scenario proves a requirement.
 | REQ-23 | problem 5 | If `nodetool enablereleaseversion` runs with no JMX connection, then nodetool MUST end on the usage error path with the message `enablereleaseversion needs a JMX connection`. | none | `org.chronitondb.tools.nodetool.VersionOutputStubTest.enableWithoutConnectionFails` | Covered |
 | REQ-24 | problem 5 | If `nodetool disablereleaseversion` runs with no JMX connection, then nodetool MUST end on the usage error path with the message `disablereleaseversion needs a JMX connection`. | none | `org.chronitondb.tools.nodetool.VersionOutputStubTest.disableWithoutConnectionFails` | Covered |
 | REQ-25 | problem 4 | When the build target `_createVersionPropFile` runs, the build MUST write the value of the Ant property `chronitondb.version` as the key `ReleaseVersion` of `org/apache/cassandra/config/version.properties`. | none | `org.chronitondb.version.ReleaseVersionTest.buildWritesTheKey` | Covered |
-| REQ-26 | decision record 0002 | The change MUST leave every pre-existing test unchanged. | none | `org.apache.cassandra.distributed.test.NodeToolTest.testVersionIncludesGitSHAWhenVerbose, run unchanged, with the gate's check that no pre-existing test changed` | Covered |
+| REQ-26 | decision record 0002 | The change MUST leave every pre-existing test unchanged. | none | `org.apache.cassandra.distributed.test.NodeToolTest.testVersionIncludesGitSHAWhenVerbose` | Covered |
 | REQ-27 | problem 2 | The reference page MUST state that the operator removes `nodetool_release_version_enabled` from `cassandra.yaml` before the node runs an Apache Cassandra binary or a ChronitonDB build older than this feature. | none | `org.chronitondb.version.ReleaseVersionDocsTest.rollbackLineOnReferencePage` | Covered |
 | REQ-28 | problem 5 | The reference page MUST state the JMX permissions a role needs on `org.chronitondb:type=ReleaseVersion` under the authorization proxy, `cassandra.jmx.authorizer`: `DESCRIBE` and `SELECT` to see the release version with `nodetool version`, `DESCRIBE` and `MODIFY` to run the two commands. | none | `org.chronitondb.version.ReleaseVersionDocsTest.permissionsAreDocumented` | Covered |
 | REQ-29 | problem 2 | `NEWS-chronitondb.txt` MUST state that the operator removes `nodetool_release_version_enabled` from `cassandra.yaml` before the node runs an Apache Cassandra binary or a ChronitonDB build older than this feature. | none | `org.chronitondb.version.ReleaseVersionDocsTest.rollbackLineInNews` | Covered |

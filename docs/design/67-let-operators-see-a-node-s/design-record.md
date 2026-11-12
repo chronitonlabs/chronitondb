@@ -479,6 +479,7 @@ no
 8. The metrics reference page generated from the registry, with its doc test, does not exist yet. The reference page of section 13 lists the metric by hand until then.
 9. `docs/process/release.md` item 4 says the feature is not built yet. After the code merges, a documentation only change updates it, as governance.md, Changes to this page, requires. Candidate issue, for a maintainer to open when the code merges. The code merge does not depend on it.
 10. Shell completion for the two commands. Apache's `debian/nodetool-completion` stays untouched by release.md, Packaging, item 5, so the fork's own completion file under `packaging/` gains the two names when the packaging item creates it.
+11. The decision record template in `docs/decisions/README.md` has no BCP 14 sentence, where its rule 4 asks for BCP 14 key words in the decision outcome. Records 0002 and 0003 carry the sentence. A documentation only change adds it to the template. Candidate issue, for a maintainer to open.
 
 ## New terms
 

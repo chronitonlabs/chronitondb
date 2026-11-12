@@ -25,6 +25,8 @@ limitations under the License.
 | Deciders | The maintainers |
 | References | Issue #67, the design record in `docs/design/67-let-operators-see-a-node-s/`, [release.md, What nodetool version shows](../process/release.md#what-nodetool-version-shows), [release.md, Packaging](../process/release.md#packaging), decision record 0002 |
 
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
+
 ## Contents
 
 - [Context and problem statement](#context-and-problem-statement)

@@ -94,7 +94,7 @@ Timeouts, missing replicas and limits do not apply: the command reads one value 
 
 ## Known limitations
 
-These keep Apache Cassandra's version string on a ChronitonDB node: `cassandra -v`, the start log line `Cassandra version:`, the cqlsh banner, `nodetool describecluster` and `nodetool gossipinfo`, which show the versions gossip carries, and `nodetool version` run from an Apache Cassandra nodetool or a ChronitonDB nodetool older than this feature, because the choice is made in the nodetool process. Check a rolling upgrade with the new nodetool.
+These keep Apache Cassandra's version string on a ChronitonDB node: `cassandra -v`, the start log line `Cassandra version:`, the cqlsh banner, `nodetool describecluster` and `nodetool gossipinfo`, which show the versions gossip carries, and `nodetool version` run from an Apache Cassandra nodetool or a ChronitonDB nodetool older than this feature, because the choice is made in the nodetool process. A rolling upgrade is checked with a nodetool from this feature on.
 
 Every release candidate of a release prints the release version itself, for example `5.0-chronitondb3`, not the candidate's package version `5.0-chronitondb3~rc1`. `nodetool version --verbose` tells two candidates apart by their git SHA.
 

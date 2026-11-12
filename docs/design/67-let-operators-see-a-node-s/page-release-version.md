@@ -90,6 +90,8 @@ The release pipeline passes `-Dchronitondb.version=<release version>` to the bui
 | the node asked has no MBean | `nodetool version` prints Apache Cassandra's output, the toggles end with status 1 and the line above |
 | the switch is off | `nodetool version` prints Apache Cassandra's output |
 
+Timeouts, missing replicas and limits do not apply: the command reads one value from one node over JMX.
+
 ## Known limitations
 
 These keep Apache Cassandra's version string on a ChronitonDB node: `cassandra -v`, the start log line `Cassandra version:`, the cqlsh banner, `nodetool describecluster` and `nodetool gossipinfo`, which show the versions gossip carries, and `nodetool version` run from an Apache Cassandra nodetool or a ChronitonDB nodetool older than this feature, because the choice is made in the nodetool process. Check a rolling upgrade with the new nodetool.

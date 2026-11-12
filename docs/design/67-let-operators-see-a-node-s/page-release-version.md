@@ -76,7 +76,7 @@ A ChronitonDB node applies the JMX access mode Apache Cassandra configures, one 
 
 ## Build
 
-The release pipeline passes `-Dchronitondb.version=<release version>` to the build. The build writes it as the key `ReleaseVersion` of `org/apache/cassandra/config/version.properties` inside the jar, next to Apache Cassandra's own `CassandraVersion` and `GitSHA` keys. Without the property the value is `5.0-chronitondb-SNAPSHOT`. The build writes what it is given and checks nothing: the release pipeline passes the value, and the release verification checks it on the installed candidate. The git SHA is Apache Cassandra's own, from the same build.
+The release pipeline passes `-Dchronitondb.version=<release version>` to the build. The build writes it as the key `ReleaseVersion` of `org/apache/cassandra/config/version.properties` inside the jar, next to Apache Cassandra's own `CassandraVersion` and `GitSHA` keys. Without the property the value is `5.0-chronitondb-SNAPSHOT`. The build writes what it is given. A unit test fails a blank or malformed value, the release pipeline passes the value, and the release verification checks it on the installed candidate. The git SHA is Apache Cassandra's own, from the same build.
 
 ## Failure behaviour
 

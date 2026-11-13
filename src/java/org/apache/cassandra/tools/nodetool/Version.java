@@ -21,6 +21,7 @@ import io.airlift.airline.Command;
 import io.airlift.airline.Option;
 import org.apache.cassandra.tools.NodeProbe;
 import org.apache.cassandra.tools.NodeTool.NodeToolCmd;
+import org.chronitondb.tools.nodetool.VersionOutput;
 
 @Command(name = "version", description = "Print cassandra version")
 public class Version extends NodeToolCmd
@@ -33,6 +34,7 @@ public class Version extends NodeToolCmd
     @Override
     public void execute(NodeProbe probe)
     {
+        if (VersionOutput.print(probe, verbose)) return;
         probe.output().out.println("ReleaseVersion: " + probe.getReleaseVersion());
         if (verbose)
             probe.output().out.println("GitSHA: " + probe.getGitSHA());

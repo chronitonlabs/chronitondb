@@ -34,6 +34,7 @@
 
     <!-- default version and SCM information -->
     <property name="base.version" value="5.0.10"/>
+    <property name="chronitondb.version" value="5.0-chronitondb-SNAPSHOT"/>
     <property name="scm.connection" value="scm:https://gitbox.apache.org/repos/asf/cassandra.git"/>
     <property name="scm.developerConnection" value="scm:https://gitbox.apache.org/repos/asf/cassandra.git"/>
     <property name="scm.url" value="https://gitbox.apache.org/repos/asf?p=cassandra.git"/>
@@ -495,6 +496,7 @@
       <propertyfile file="${version.properties.dir}/version.properties">
         <entry key="CassandraVersion" value="${version}"/>
         <entry key="GitSHA" value="${git.sha}"/>
+        <entry key="ReleaseVersion" value="${chronitondb.version}"/>
       </propertyfile>
     </target>
 

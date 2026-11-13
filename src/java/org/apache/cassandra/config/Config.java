@@ -110,6 +110,7 @@ public class Config
 
     public boolean auto_bootstrap = true;
     public volatile boolean hinted_handoff_enabled = true;
+    public volatile boolean nodetool_release_version_enabled = true;
     public Set<String> hinted_handoff_disabled_datacenters = Sets.newConcurrentHashSet();
     @Replaces(oldName = "max_hint_window_in_ms", converter = Converters.MILLIS_DURATION_INT, deprecated = true)
     public volatile DurationSpec.IntMillisecondsBound max_hint_window = new DurationSpec.IntMillisecondsBound("3h");

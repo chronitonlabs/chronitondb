@@ -51,6 +51,7 @@ public class ReleaseVersionReporterTest {
   private static final ObjectName REPORTED =
       name("org.chronitondb.metrics:type=ReleaseVersion,name=Reported");
   private static final MBeanServer SERVER = ManagementFactory.getPlatformMBeanServer();
+  private static final String MISSING = "org/chronitondb/version/no-such.properties";
 
   private final ListAppender<ILoggingEvent> appender = new ListAppender<>();
   private final Logger[] loggers = {
@@ -129,7 +130,7 @@ public class ReleaseVersionReporterTest {
 
     assertEquals("Unknown", answer(ReleaseVersion.fromProperties(new Properties())));
     assertEquals("Unknown", answer(ReleaseVersion.fromProperties(blank)));
-    assertEquals("Unknown", answer(ReleaseVersion.fromResource("org/chronitondb/no-such.properties")));
+    assertEquals("Unknown", answer(ReleaseVersion.fromResource(MISSING)));
     assertEquals(0, warnings());
     assertEquals("Unknown", answer(ReleaseVersion.fromStream(broken)));
     assertEquals(1, warnings());
@@ -191,6 +192,14 @@ public class ReleaseVersionReporterTest {
     Properties props = new Properties();
     props.setProperty(ReleaseVersion.KEY, value);
     return new ReleaseVersionReporter(ReleaseVersion.fromProperties(props));
+  }
+
+  private static String answer(ReleaseVersion releaseVersion) {
+    return new ReleaseVersionReporter(releaseVersion).getReleaseVersion();
+  }
+
+  private long warnings() {
+    return appender.list.stream().filter(e -> e.getLevel() == Level.WARN).count();
   }
 
   private long count(Level level, String message) {

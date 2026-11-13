@@ -55,6 +55,8 @@ import org.apache.cassandra.tools.nodetool.*;
 import org.apache.cassandra.tools.nodetool.GuardrailsConfigCommand.GetGuardrailsConfig;
 import org.apache.cassandra.tools.nodetool.GuardrailsConfigCommand.SetGuardrailsConfig;
 import org.apache.cassandra.utils.FBUtilities;
+import org.chronitondb.tools.nodetool.DisableReleaseVersion;
+import org.chronitondb.tools.nodetool.EnableReleaseVersion;
 
 import com.google.common.collect.Maps;
 
@@ -241,6 +243,8 @@ public class NodeTool
                 UpgradeSSTable.class,
                 Verify.class,
                 Version.class,
+                EnableReleaseVersion.class,
+                DisableReleaseVersion.class,
                 ViewBuildStatus.class,
                 ForceCompact.class
         );

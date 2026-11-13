@@ -100,4 +100,4 @@ Every release candidate of a release prints the release version itself, for exam
 
 ## Rollback to Apache Cassandra
 
-Before a node runs an Apache Cassandra binary, or a ChronitonDB build older than this feature, `cassandra.yaml` MUST NOT contain `nodetool_release_version_enabled`. Apache Cassandra, and an older ChronitonDB build, refuse to start on a yaml with a key they do not know.
+Before a node runs an Apache Cassandra binary, or a ChronitonDB build older than this feature, remove `nodetool_release_version_enabled` from its `cassandra.yaml`. Apache Cassandra, and an older ChronitonDB build, refuse to start on a yaml with a key they do not know.

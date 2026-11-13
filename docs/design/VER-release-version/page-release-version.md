@@ -57,7 +57,7 @@ A build made without a release version shows `5.0-chronitondb-SNAPSHOT`. A build
 | `nodetool enablereleaseversion` | sets `nodetool_release_version_enabled` to `true` on the node, in memory | nothing on success |
 | `nodetool disablereleaseversion` | sets it to `false` on the node, in memory | nothing on success |
 
-Against a node without the MBean below, both end with status 1 and print `nodetool: enablereleaseversion: the node has no ChronitonDB release version reporter. It runs Apache Cassandra or an older ChronitonDB build, or the reporter failed to register at start.` on standard output, or the same line with `disablereleaseversion` in its place, followed by the usual `See 'nodetool help'` line. Under the authorization proxy, `cassandra.jmx.authorizer`, a role that lacks `DESCRIBE` or `MODIFY` on the MBean gets `error: Access Denied`, as from any stock command without a grant. Under the JDK access file, a `readonly` user gets `error: Access Denied` too, and a `readwrite` user runs both. On the stock default, local JMX with authentication off, no access control applies.
+Against a node without the MBean below, both end with status 1 and print `nodetool: enablereleaseversion: the node has no ChronitonDB release version reporter. It runs Apache Cassandra or an older ChronitonDB build, or the reporter failed to register at start.` on standard output, or the same line with `disablereleaseversion` in its place, followed by the usual `See 'nodetool help'` line. Under the authorization proxy, `cassandra.jmx.authorizer`, a role that lacks `DESCRIBE` or `MODIFY` on the MBean gets `error: Access Denied`, as from any stock command without a grant. Under the JDK access file, `com.sun.management.jmxremote.access.file`, the toggles of a `readonly` user end with `error:`, the JDK's own refusal and status 2, and a `readwrite` user runs both. On the stock default, local JMX with authentication off, no access control applies.
 
 ## JMX
 
@@ -84,7 +84,7 @@ The release pipeline passes `-Dchronitondb.version=<release version>` to the bui
 |---|---|
 | the properties file is missing, cannot be loaded, lacks the key `ReleaseVersion` or holds it blank | the node reports `Unknown` and, for a file that cannot be loaded, logs one WARN line |
 | the JMX role may not read the MBean, under the authorization proxy, with authorization required and neither superuser status nor a grant on the JMX root | `nodetool version` prints Apache Cassandra's output and nothing else, the toggles fail with `error: Access Denied` as any stock command without a grant |
-| the JMX user may read but not write, a `readonly` user of the JDK access file | `nodetool version` prints the release version, the toggles fail with `error: Access Denied` |
+| the JMX user may read but not write, a `readonly` user of the JDK access file | `nodetool version` prints the release version, the toggles fail with `error:`, the JDK's own refusal and exit code 2 |
 | the JMX connection fails in another way | `nodetool version` fails with `error:` and exit code 2, as it does for Apache Cassandra's own calls |
 | nodetool runs with no JMX connection, as inside the in-JVM test framework | `nodetool version` prints Apache Cassandra's output, the two commands end with status 1 and `nodetool: enablereleaseversion needs a JMX connection`, or the same for `disablereleaseversion` |
 | the node asked has no MBean | `nodetool version` prints Apache Cassandra's output, the toggles end with status 1 and the line above |

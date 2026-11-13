@@ -189,7 +189,7 @@ REQ-VER-026 (ubiquitous): The change MUST leave every pre-existing test unchange
 
 REQ-VER-027 (ubiquitous): The reference page MUST state that the operator removes `nodetool_release_version_enabled` from `cassandra.yaml` before the node runs an Apache Cassandra binary or a ChronitonDB build older than this feature. Source: problem 2.
 
-REQ-VER-028 (ubiquitous): The reference page MUST state the JMX permissions a role needs on `org.chronitondb:type=ReleaseVersion` under the authorization proxy, `cassandra.jmx.authorizer`: `DESCRIBE` and `SELECT` to see the release version with `nodetool version`, `DESCRIBE` and `MODIFY` to run the two commands, and that a superuser role, a role granted the JMX root resource, or an authorizer that requires no authorization needs none of them. Source: problem 5.
+REQ-VER-028 (ubiquitous): The reference page MUST state the JMX permissions a role needs on `org.chronitondb:type=ReleaseVersion` under the authorization proxy, `cassandra.jmx.authorizer`: `DESCRIBE` and `SELECT` to see the release version with `nodetool version`, `DESCRIBE` and `MODIFY` to run the two commands, and that a superuser role, a role granted that permission on the JMX root resource, or an authorizer that requires no authorization needs none of them. Source: problem 5.
 
 REQ-VER-029 (ubiquitous): The file `NEWS-chronitondb.txt` MUST state that the operator removes `nodetool_release_version_enabled` from `cassandra.yaml` before the node runs an Apache Cassandra binary or a ChronitonDB build older than this feature. Source: problem 2.
 

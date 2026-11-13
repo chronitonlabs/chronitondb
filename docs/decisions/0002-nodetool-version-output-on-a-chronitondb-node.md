@@ -23,7 +23,7 @@ limitations under the License.
 | Status | Accepted |
 | Date | 2026-11-10 |
 | Deciders | The maintainers |
-| References | Issue #67, the design record in `docs/design/67-let-operators-see-a-node-s/`, [release.md, What nodetool version shows](../process/release.md#what-nodetool-version-shows) |
+| References | Issue #67, the design record in `docs/design/VER-release-version/`, [release.md, What nodetool version shows](../process/release.md#what-nodetool-version-shows) |
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
@@ -58,4 +58,4 @@ On a ChronitonDB node with the feature on, `nodetool version` MUST print one lin
 
 ## More information
 
-The design record in `docs/design/67-let-operators-see-a-node-s/` implements this decision in its requirements REQ-1 and REQ-2 and in its Stock behaviour preservation section.
+The design record in `docs/design/VER-release-version/` implements this decision in its requirements REQ-VER-001 and REQ-VER-002 and in its Stock behaviour preservation section.

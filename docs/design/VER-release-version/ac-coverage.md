@@ -27,7 +27,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Coverage
 
-This item is a fork feature that fits one item, with the key `VER`. It adds no scenario, for the reason the design record gives under its control table, so every requirement has one row naming its JUnit test. "Problem n" is item n of the record's Where problems could occur. REQ-VER-026 names a stock test that runs unchanged, with the gate's check that no pre-existing test changed as the other half of its proof, and REQ-VER-027, REQ-VER-028, REQ-VER-029, REQ-VER-032 and REQ-VER-035 name a documentation test that reads the two files.
+This item is a fork feature that fits one item, with the key `VER`. It adds no scenario, under waiver 2 of the design record's Waivers, so every requirement has one row naming its JUnit test. "Problem n" is item n of the record's Where problems could occur. REQ-VER-026 names a stock test that runs unchanged, with the gate's check that no pre-existing test changed as the other half of its proof, and REQ-VER-027, REQ-VER-028, REQ-VER-029, REQ-VER-032 and REQ-VER-035 name a documentation test that reads the two files.
 
 | Id | Source | Requirement | Covering scenario | Test | Status |
 |---|---|---|---|---|---|

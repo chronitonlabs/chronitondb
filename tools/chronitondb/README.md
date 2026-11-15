@@ -134,6 +134,15 @@ Findings, one per line, then a summary:
 
 Exit 0 when nothing is found, 1 on a finding, 2 on a usage error.
 
+### The delta register
+
+`doclint.py delta` is the check of [the delta register](../../docs/delta/README.md#keeping-it-current), run by the CI workflow `.github/workflows/chronitondb-delta.yml` on every pull request into a `chronitondb-*` branch, with this file taken from the base branch.
+
+    tools/chronitondb/doclint.py delta --repo . --base origin/chronitondb-5.0 --source worktree
+    tools/chronitondb/doclint.py delta --repo . --base origin/chronitondb-5.0 --source HEAD --branch BRANCH --body DESCRIPTION-FILE
+
+A file is ChronitonDB's own when it falls under a path of the table Where things live in [conventions.md](../../docs/process/conventions.md#where-things-live), read from the line. Every other file is a stock file. A change that adds, edits, deletes or renames a stock file adds or changes an entry under `docs/delta/`, unless its branch imports a whole Apache release or Apache's branch (`import/cassandra-<...>`), or its description has a line `No delta entry: <reason>`. Each entry it adds or changes passes the delta entry rules of `document`, with an Origin commit link, its index row with the same Area and Lines, and on an update a new Last-Update. No entry is renamed or deleted. It prints `stock PATH` for each stock file it finds.
+
 ### The Contents index
 
 When a document's template on the line has a `## Contents` section, the document must have one too, as [conventions.md](../../docs/process/conventions.md#contents-index-of-process-documents) sets out: the first section after the title, a nested list with one link per heading below the title, in order, each entry two spaces deeper than the nearest heading above it of a higher level (a `##` not indented), each showing its heading's text and linking its GitHub anchor. Duplicate headings link `-1`, `-2` as GitHub numbers them. A decision record is asked for its index only when it is new, not yet on the line, since a merged record is never edited. A new record also takes the next number after the highest one merged on the line. The check refuses a missing or misplaced section, a heading left out, an entry out of order or at the wrong depth, a link no heading of the file answers, and any other text in the section.

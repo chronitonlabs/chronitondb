@@ -94,3 +94,6 @@ Chosen option: "<option>", because <reason>.
 4. [0004. The commit log disk check is off by default](0004-commit-log-disk-check-off-by-default.md), 2026-11-15, Accepted.
 5. [0005. The commit log disk check is switched under startup_checks](0005-commit-log-disk-check-switched-under-startup-checks.md), 2026-11-15, Accepted.
 6. [0006. The commit log disk check compares file systems](0006-commit-log-disk-check-compares-file-systems.md), 2026-11-15, Accepted.
+7. [0007. The startup checks view lives in system_views](0007-startup-checks-view-lives-in-system-views.md), 2026-11-15, Accepted.
+8. [0008. The startup checks that always run take the names of Apache Cassandra 6.0](0008-always-run-startup-checks-take-apache-6-0-names.md), 2026-11-15, Accepted.
+9. [0009. A startup check named in cassandra.yaml shows the source yaml](0009-startup-check-named-in-yaml-shows-source-yaml.md), 2026-11-15, Accepted.

@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # Startup checks view
 
-Skeleton of the reference page `docs/reference/startup-checks-view.md`. The developer fills each placeholder in angle brackets and moves the file to that path in the code pull request. The page is a reference page: facts only, no steps, no background. This skeleton follows a draft of the design record with three open points, and changes with it.
+Skeleton of the reference page `docs/reference/startup-checks-view.md`. The developer fills each placeholder in angle brackets and moves the file to that path in the code pull request. The page is a reference page: facts only, no steps, no background.
 
 A ChronitonDB™ node can show over CQL which startup checks it runs, whether each one is on, and where that value came from. The view is off by default. Apache Cassandra® has no such view.
 
@@ -32,7 +32,9 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## The view
 
-<The name of the view, its three columns `name`, `enabled` and `source` with their types, and the example of section 1 of the design record.>
+The view is the table `system_views.startup_checks`.
+
+<Its three columns `name`, `enabled` and `source` with their types, and the example of section 1 of the design record.>
 
 ## Where a value comes from
 
@@ -47,15 +49,15 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Rows
 
-<One line for each row name: the four switchable checks and the 15 checks that always run, with what each check does.>
+<One line for each row name, with what the check does. The four checks that can be switched: `check_data_resurrection`, `check_dc`, `check_filesystem_ownership` and `check_rack`. The 15 checks that always run: `data_dirs`, `jemalloc`, `jmx_ports`, `jmx_properties`, `jvm_options`, `kernel_bug_1057843`, `legacy_auth_tables`, `lz4_native`, `max_map_count`, `native_library_initialization`, `process_environment`, `read_ahead_kb_setting`, `sstables_format`, `system_keyspace_state` and `valid_launch_date`.>
 
 ## Who may read the view
 
-<The permission a role needs, and what a role without it gets.>
+<On a node with authorisation on, a role needs `SELECT` granted on the table or on the keyspace `system_views`. What a role without it gets.>
 
 ## Errors, log lines and metrics
 
-<The refusal text of a read while the view is off. The INFO line of a change by nodetool. The WARN line of a failed switch. The line a nodetool command prints against a node without the view.>
+<The refusal text of a read while the view is off. The INFO line of a change by nodetool. The WARN line of a failed switch, and the exit status of the nodetool command then. The line a nodetool command prints against a node without the view.>
 
 | Metric | Counts |
 |---|---|
@@ -65,7 +67,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Known limitations
 
-<A row says whether a check is on, not what it found. The two checks that do nothing on a platform other than Linux. The start option `cassandra.ignore_kernel_bug_1057843_check`. A yaml entry without the key `enabled`. The view is local to the node that answers.>
+<A row says whether a check is on, not what it found. The two checks that do nothing on a platform other than Linux. The start option `cassandra.ignore_kernel_bug_1057843_check`. A yaml entry without the key `enabled` shows `yaml`. A read of the view at the moment it is switched on can fail once. The view is local to the node that answers.>
 
 ## Rollback
 

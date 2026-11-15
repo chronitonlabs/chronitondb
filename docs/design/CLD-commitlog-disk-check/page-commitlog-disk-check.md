@@ -88,9 +88,9 @@ Timeouts, coordinator failure, missing replicas, limits and indexes that are not
 
 ## Known limitations
 
-Two file systems on one physical device get no warning, for example two partitions of one disk or two logical volumes of one volume group. The check compares file systems, not devices.
+Two file systems on one physical device get no warning, for example two partitions of one disk or two logical volumes of one volume group. The check does not look at the disk under a file system.
 
-<Whether two subvolumes of one file system that report a device id each, as btrfs is said to do, get a warning: the developer checks it and states it here.>
+Two subvolumes of one file system get no warning when the file system reports a device id of its own for each subvolume. The check compares device ids and nothing more.
 
 The hints, saved caches and CDC directories are not compared.
 

@@ -41,12 +41,12 @@ The issue asks for a warning when the commit log shares a disk with the data dir
 
 ## Considered options
 
-1. Same file system only. The check warns when the file store of the commit log directory equals the file store of a data directory. Exact on every platform. Two file systems on one physical device get no warning.
+1. Same file system only. The check warns when the commit log directory and a data directory are on one file system, as the operating system reports it. It behaves the same on every platform. Two file systems on one physical device get no warning.
 2. Also the same physical device, read from `/sys` on Linux. It catches two partitions of one disk. It is best effort: volume managers, RAID and cloud volumes can hide a shared device or show a false one, and other platforms behave as option 1.
 
 ## Decision outcome
 
-Chosen option: "Same file system only", because the comparison is exact on every platform and it is what the issue asks for.
+Chosen option: "Same file system only", because the comparison is never a guess and it is what the issue asks for.
 
 The commit log disk check MUST treat two directories as sharing a disk when, and only when, they are on the same file system. The check MUST NOT read the physical device under a file system. The reference page MUST state that two file systems on one physical device get no warning.
 

@@ -44,7 +44,7 @@ Any value but `true` leaves the check off. Other keys in the entry are not read.
 
 ## What the check compares
 
-With the check on, the node compares, once at each start and after its other startup checks, the file system of `commitlog_directory` with the file system of each entry of `data_file_directories` and of `local_system_data_file_directory` when it is set. Symbolic links are followed. The node starts whatever the check finds.
+With the check on, the node compares, once at each start and after its other startup checks, the file system of `commitlog_directory` with the file system of each entry of `data_file_directories` and of `local_system_data_file_directory` when it is set. Symbolic links are followed. The check tells a file system by the device id the operating system reports for it, so one file system mounted at two places, as two bind mounts or two container volumes of one host file system are, is found. The node starts whatever the check finds.
 
 ## Warnings
 

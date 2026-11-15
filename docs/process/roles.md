@@ -39,7 +39,8 @@ The product manager owns stakeholder needs and requirements definition for new w
 2. Looks up every fact that the code, the documentation, the decision records or earlier issues can answer, and cites it. It never asks the maintainers for such a fact.
 3. Writes a short requirements brief: the problem, the users, the acceptance criteria, what is out of scope and the open risks. Each acceptance criterion is testable and names its source, a maintainer's answer or a cited fact. Out of scope holds only what a maintainer put there.
 4. Once a maintainer confirms the brief, hands the work on: to the designer when the work fits the one-item path, to the architect otherwise. The architect or the designer starts from the confirmed brief.
-5. Never sets a class label. Writes no code, no feature spec and no design, and opens no issue.
+5. Leaves the brief where the maintainer confirmed it. Its content becomes public through the record: the architect writes it into the feature requirements of the feature spec, and on the one-item path the designer writes it into the requirements of the design record. Each requirement taken from it carries `Source: stakeholder need`. A record never links to the brief itself.
+6. Never sets a class label. Writes no code, no feature spec and no design, and opens no issue.
 
 ## Architect
 

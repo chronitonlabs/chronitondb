@@ -37,15 +37,15 @@ Location: `docs/design/CLD-commitlog-disk-check/`, the directory of the fork fea
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
-The Risk, Size and Reach rows are the item's class, as [classification.md](../../process/classification.md) defines it, and match the issue's `risk:normal`, `size:low-hanging-fruit` and `reach:one-area` labels. The issue also carries `kind:additive`, so the item is a fork feature small enough for one item and takes the one-item path of [maintenance.md](../../process/maintenance.md#the-one-item-path) with a feature key: this directory, the ids `REQ-CLD-nnn`, and the feature class stated in [section 3](#3-stock-behaviour-preservation).
+The Risk, Size and Reach rows are the item's class, as [classification.md](../../process/classification.md) defines it, and match the issue's `risk:normal`, `size:low-hanging-fruit` and `reach:one-area` labels. The issue also carries `kind:additive`, so the item is a fork feature small enough for one item and takes the one-item path of [maintenance.md](../../process/maintenance.md#the-one-item-path) with a feature key: this directory, the ids `REQ-CLD-nnn`, and the feature class stated in [section 3](#3-apache-cassandra-behaviour-preservation).
 
 ## Contents
 
 - [1. Problem, acceptance criteria and requirements](#1-problem-acceptance-criteria-and-requirements)
   - [Requirements](#requirements)
 - [2. Decisions implemented](#2-decisions-implemented)
-- [3. Stock behaviour preservation](#3-stock-behaviour-preservation)
-  - [Stock hook points](#stock-hook-points)
+- [3. Apache Cassandra behaviour preservation](#3-apache-cassandra-behaviour-preservation)
+  - [Apache Cassandra hook points](#apache-cassandra-hook-points)
 - [4. Prior art reviewed](#4-prior-art-reviewed)
 - [5. Idiom and consistency](#5-idiom-and-consistency)
 - [6. Quality requirements](#6-quality-requirements)
@@ -55,7 +55,7 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../..
   - [Isolation levers](#isolation-levers)
   - [Benchmarks that prove it](#benchmarks-that-prove-it)
   - [Regression threshold and gate](#regression-threshold-and-gate)
-  - [Stock guard](#stock-guard)
+  - [Apache Cassandra guard](#apache-cassandra-guard)
   - [What was not measured](#what-was-not-measured)
 - [8. Observability](#8-observability)
 - [9. Compatibility](#9-compatibility)
@@ -66,7 +66,7 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../..
 - [14. Testing](#14-testing)
   - [Tests for this change](#tests-for-this-change)
   - [Existing suites at risk](#existing-suites-at-risk)
-  - [Stock suites run unchanged](#stock-suites-run-unchanged)
+  - [Apache Cassandra suites run unchanged](#apache-cassandra-suites-run-unchanged)
   - [Tracing test](#tracing-test)
   - [Formats and configurations](#formats-and-configurations)
 - [15. Not covered and follow-ups](#15-not-covered-and-follow-ups)
@@ -172,13 +172,13 @@ REQ-CLD-021 (ubiquitous): The check MUST register the counter `FailedRuns` befor
 
 As of 2026-11-15 the register on the line holds records 0001 to 0003. Records 0002 and 0003 are about `nodetool version` and its tests. Records 0004 to 0006 are added by this pull request. No newer record exists on startup checks, configuration or the commit log.
 
-## 3. Stock behaviour preservation
+## 3. Apache Cassandra behaviour preservation
 
 This statement and the switch table below it follow the form of [section 2.8 of the feature spec template](../../process/templates/feature-spec.md#28-feature-class-and-switches), because a fork feature that fits one item has no feature spec.
 
 Feature class: behaviour-changing, because with its switch on it adds a WARN line to the start log of a node, and a warning is something stock Apache Cassandra already does (branching-and-review.md, Feature switches and defaults, item 4).
 
-| Switch | Class | Reason | Default per line | Stock operations it changes |
+| Switch | Class | Reason | Default per line | Apache Cassandra operations it changes |
 |---|---|---|---|---|
 | `enabled` in the entry `check_commitlog_shared_disk` under `startup_checks` in `cassandra.yaml`, read at start only, with no nodetool toggle (decision record 0005) | behaviour-changing | with the switch on, a node may log one or more WARN lines at start that a stock node does not log, and holds three more counters | `chronitondb-sandbox`: off (decision record 0004) | node start: the start log and the list of metrics |
 
@@ -186,7 +186,7 @@ Item 2 of the same list says a switch refuses to turn on before the feature's fi
 
 Rows 1 and 2 of the table below apply only with the switch on. Row 3 is a presence on every node, switch on or off: a departure from [branching-and-review.md](../../process/branching-and-review.md#feature-switches-and-defaults) item 7, which says that with a feature off no new memory is used. The maintainers approve it by merging this record.
 
-| Stock behaviour today (file and line) | This change | Switch that controls it | Error text naming the switch |
+| Apache Cassandra behaviour today (file and line) | This change | Switch that controls it | Error text naming the switch |
 |---|---|---|---|
 | The startup checks say nothing about where the commit log is. `StartupChecks.checkDataDirs` checks that each directory exists and is writable and does not compare them (`src/java/org/apache/cassandra/service/StartupChecks.java:561` to `594` at `8d744bb0ac`) | with the switch on, the start log holds the shared warning when a data directory shares a file system with the commit log directory, and one unreadable warning for each directory whose file system lookup threw, and the failed warning when a run fails | `check_commitlog_shared_disk`, key `enabled` | none: the switch refuses nothing. The shared warning, the unreadable warning and the failed warning all name `check_commitlog_shared_disk` |
 | The metrics registry holds Apache's metrics only. `CassandraMetricsRegistry.counter` registers a counter and its MBean (`src/java/org/apache/cassandra/metrics/CassandraMetricsRegistry.java:55` to `61` at `8d744bb0ac`) | with the switch on, the registry holds three more counters, `SharedDataDirectories`, `UnreadableDirectories` and `FailedRuns`, of the fork's own type `CommitLogDiskCheck` in the group `org.chronitondb.metrics`, from the first run of the check. No stock metric changes | `check_commitlog_shared_disk`, key `enabled` | none |
@@ -196,7 +196,7 @@ Everything else stays stock. No existing constant of `StartupChecks.StartupCheck
 
 While the switch is off the check logs nothing. This differs on purpose from the stock `FileSystemOwnershipCheck`, which logs `Filesystem ownership check is not enabled.` at INFO when it is off (`FileSystemOwnershipCheck.execute`, `src/java/org/apache/cassandra/service/FileSystemOwnershipCheck.java:125` at `8d744bb0ac`): a line of that kind would change the start log of every node.
 
-### Stock hook points
+### Apache Cassandra hook points
 
 There is no feature spec for a one-item change, so the hook points are listed here with their delta entry, `docs/delta/commit-log-disk-check.md`. The entry records the two stock edits of this list and the stock behaviour changes of the departures table above.
 
@@ -281,7 +281,7 @@ No request type touches the new code. Coordinator reads and writes, replica read
 
 ### Expected cost
 
-| Path | Metric | Stock today | Expected with the change | Why (mechanism) |
+| Path | Metric | Apache Cassandra today | Expected with the change | Why (mechanism) |
 |---|---|---|---|---|
 | Node start, switch off | work | the stock checks | one more call of `StartupChecksOptions.isDisabled` | one lookup in an `EnumMap` and one `Boolean.parseBoolean` |
 | Node start, switch on | file system lookups | one `Files.getFileStore` for each data directory, in `StartupChecks.checkReadAheadKbSetting` | one device id read for the commit log directory and one for each data directory | `Files.getAttribute` with `unix:dev` once for each directory, then one comparison of two numbers for each data directory |
@@ -301,7 +301,7 @@ The yaml entry `check_commitlog_shared_disk` with the key `enabled`. Off, the de
 
 No benchmark gates this pull request. The gate runs the tests of section 14.
 
-### Stock guard
+### Apache Cassandra guard
 
 The stock suites of section 14 run unchanged. They run with the switch at its default, off, which is the state in which the node must match stock, so one run is the guard. `CommitLogDiskCheckTest.offDoesNothing` and `CommitLogDiskCheckStartTest.defaultNodeLogsNothingNew` prove the off state itself.
 
@@ -372,7 +372,7 @@ Apache's `conf/cassandra.yaml` stays untouched, so the commented `startup_checks
 
 ## 14. Testing
 
-Three unit test classes under `test/unit/org/chronitondb/startup/` and one in-JVM distributed test class under `test/distributed/org/chronitondb/startup/test/`. [conventions.md, Where things live](../../process/conventions.md#where-things-live) gives both roots. The last directory of the distributed test is named `test` because the stock target that runs the whole in-JVM suite takes only classes in a directory of that name (the target `test-jvm-dtest`, `build.xml:1762` to `1763` at `8d744bb0ac`). A class one level up would run when named alone and never with the suite. The distributed test starts one node. Nothing is multi node in behaviour, each node checks itself, so replication factor does not apply. No sstable format or compaction is touched. The parity suite does not exist on this line yet, see waiver 1. This item adds no scenario, under waiver 2, so the template's `Scenario runner` and `Scenario tags` lines are left out. Existing suites at risk names the stock suites whose files or behaviour this change touches, and Stock suites run unchanged is the wider set that proves stock behaviour and includes the first. Every test sets its own starting state, so none depends on the order JUnit runs them in.
+Three unit test classes under `test/unit/org/chronitondb/startup/` and one in-JVM distributed test class under `test/distributed/org/chronitondb/startup/test/`. [conventions.md, Where things live](../../process/conventions.md#where-things-live) gives both roots. The last directory of the distributed test is named `test` because the stock target that runs the whole in-JVM suite takes only classes in a directory of that name (the target `test-jvm-dtest`, `build.xml:1762` to `1763` at `8d744bb0ac`). A class one level up would run when named alone and never with the suite. The distributed test starts one node. Nothing is multi node in behaviour, each node checks itself, so replication factor does not apply. No sstable format or compaction is touched. The parity suite does not exist on this line yet, see waiver 1. This item adds no scenario, under waiver 2, so the template's `Scenario runner` and `Scenario tags` lines are left out. Existing suites at risk names the stock suites whose files or behaviour this change touches, and Apache Cassandra suites run unchanged is the wider set that proves stock behaviour and includes the first. Every test sets its own starting state, so none depends on the order JUnit runs them in.
 
 The test seam. `CommitLogDiskCheck` has three constructors. The one without arguments, which the daemon calls, reads nothing (REQ-CLD-013): it hands on two lambdas, in the form of the stock constructor `FileSystemOwnershipCheck.FileSystemOwnershipCheck` (`FileSystemOwnershipCheck.java:100` to `106` at `8d744bb0ac`), which the daemon runs at the same point today. The lambdas call `DatabaseDescriptor.getCommitLogLocation` and `DatabaseDescriptor.getAllDataFileLocations` only when `execute` calls them. It also hands on the file system lookup that reads `unix:dev`. The second constructor, for most tests, takes three arguments: the supplier of the commit log directory, the supplier of the data directories and the lookup. `FileSystemOwnershipCheck` takes its directories through a supplier for its tests in the same way (`FileSystemOwnershipCheck.FileSystemOwnershipCheck`, `FileSystemOwnershipCheck.java:108` to `112` at `8d744bb0ac`). The third constructor, for the tests that make a counter or a log call throw, takes those three and two more: the function that registers a counter and hands back its raise, and the function that logs a warning. The first two constructors pass on `CassandraMetricsRegistry.counter` with the `inc` of the counter it returns, and the WARN call of the class's logger. The lookup takes a directory as the string its getter returned and returns the device id as a `long`, or throws, so it has no empty answer. The unit tests give the check directory names and a lookup that answers a fixed number for each name, or throws. The log lines are asserted through the logback appender the stock tests use. The counters live in the registry of the JVM. A test reads a counter from the registry's map of counters, the Dropwizard `MetricRegistry.getCounters` that `CassandraMetricsRegistry` inherits, never through `CassandraMetricsRegistry.counter`, which would create it. It takes a counter that is not in the map as 0 and asserts the difference from the value it read before the run.
 
@@ -421,7 +421,7 @@ org.apache.cassandra.service.DiskFailurePolicyTest
 org.apache.cassandra.utils.JVMStabilityInspectorTest
 org.apache.cassandra.db.commitlog.CommitLogFailurePolicyTest
 
-### Stock suites run unchanged
+### Apache Cassandra suites run unchanged
 
 org.apache.cassandra.config.StartupCheckOptionsTest
 org.apache.cassandra.service.StartupChecksTest

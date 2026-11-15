@@ -20,7 +20,7 @@ squash or merge commit on the line, and the subjects of the commits a push
 brings to a line. The CI workflow chronitondb-subjects.yml runs it on every
 pull request and on every push to a line.
 
-    subjectlint.py title --repo DIR --rules REF [--body FILE] TITLE
+    subjectlint.py title --repo DIR --rules REF [--commits RANGE] [--body FILE] TITLE
     subjectlint.py commits --repo DIR --rules REF RANGE
 
 REF is where the rules are read, the line itself, never the change being
@@ -31,14 +31,20 @@ A subject is checked for:
 
   1. the form "type(scope): description", with "!" after the scope for a
      breaking change, a type of the list and a scope
-  2. at most N characters. On a line, GitHub's " (#<number>)" at the end
-     of a squash or merge commit subject is not counted
+  2. at most N characters, not counting a trailing " (chronitondb-<line>)"
+     that names the line, nor GitHub's " (#<number>)" at the end of a
+     squash or merge commit subject. An import carries its original
+     subject unchanged and has no length limit
   3. no file listed: no word in the description that is a path, such as
      ".build/run-ci", "docs/process/" or "Foo.java"
   4. "!" with a footer line "BREAKING CHANGE: <what breaks and what to
-     do>", and the footer only with "!". The footer is read from FILE, the
-     pull request's description, for a title, and from the commit message
-     for a commit
+     do>", and the footer only with "!". The footer belongs in a commit
+     message, since the squash commit on a line carries the messages of
+     the pull request's commits, never its description. For a title it is
+     read from the messages of the commits of RANGE, the pull request's
+     commits. A footer only in FILE, the pull request's description, is
+     refused with where to put it. For a commit on a line it is read from
+     the commit message
   5. a subject of type import takes one of the import forms of
      conventions.md and upstream.md, and no "!":
        import(CASSANDRA-<n>): <original Apache subject>
@@ -65,6 +71,7 @@ CONVENTIONS = "docs/process/conventions.md"
 FORM = re.compile(r"^([A-Za-z]+)(?:\(([^()]*)\))?(!)?: (\S.*)$")
 SCOPE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 GITHUB_NUMBER = re.compile(r" \(#[0-9]+\)$")
+LINE_SUFFIX = re.compile(r" \(chronitondb-[A-Za-z0-9.]+\)$")
 FOOTER = re.compile(r"^BREAKING CHANGE: \S")
 FILE_NAME = re.compile(r"^[\w-]+\.(?:java|py|sh|ya?ml|xml|md|txt|g|json|cql|properties|html|cfg|conf|asc)$")
 DOT_FILE = re.compile(r"^\.[A-Za-z][\w.-]*$")
@@ -152,39 +159,66 @@ def check_import(scope, description, bang):
     return ["the import scope '%s' is not one of the import forms: %s" % (scope, IMPORT_FORMS)]
 
 
-def check_subject(subject, body, types, limit):
-    """The findings for one subject. body is the pull request description
-    or the commit message after the subject, where the footer is read."""
-    errors = []
-    if limit is not None and len(subject) > limit:
-        errors.append("the subject has %d characters, at most %d are allowed" % (len(subject), limit))
+def has_footer(text):
+    return any(FOOTER.match(line) for line in (text or "").splitlines())
+
+
+def check_length(subject, limit):
+    counted = LINE_SUFFIX.sub("", GITHUB_NUMBER.sub("", subject))
+    if limit is not None and len(counted) > limit:
+        return ["the subject has %d characters, at most %d are allowed, not counting a trailing ' (chronitondb-<line>)'" % (len(counted), limit)]
+    return []
+
+
+def check_footer(kind, scope, bang, description, messages, pr_body):
+    """The footer of a breaking change, read from messages, the commit
+    messages the commit on the line carries. pr_body is the pull request
+    description, None for a commit, where a footer never reaches the
+    line."""
+    footer = has_footer(messages)
+    stray = pr_body is not None and has_footer(pr_body) and not footer
+    where = "Put the line 'BREAKING CHANGE: <what breaks and what to do>' in a commit message of the pull request, which the squash commit on the line carries"
+    if bang and not footer:
+        if stray:
+            return ["the 'BREAKING CHANGE:' footer is only in the pull request description, which never reaches the line. " + where]
+        if pr_body is not None:
+            return ["a breaking change with '!' also takes a footer. " + where]
+        return ["a breaking change with '!' also takes a footer line 'BREAKING CHANGE: <what breaks and what to do>' in its commit message"]
+    if footer and not bang:
+        return ["a 'BREAKING CHANGE:' footer also takes '!' after the scope, as in '%s(%s)!: %s'" % (kind, scope, description)]
+    if stray:
+        return ["the pull request description has a 'BREAKING CHANGE:' footer. A breaking change takes '!' after the scope, and the footer goes in a commit message of the pull request"]
+    return []
+
+
+def check_subject(subject, messages, types, limit, pr_body=None):
+    """The findings for one subject. messages is the text where the footer
+    of a breaking change is read: the pull request's commit messages for
+    a title, the commit message after the subject for a commit. pr_body is
+    the pull request description for a title, None for a commit."""
     match = FORM.match(subject)
     if not match:
-        errors.append("the subject has the form 'type(scope): description', for example 'feat(fulltext): add the phrase operator'")
-        return errors
+        return check_length(subject, limit) + ["the subject has the form 'type(scope): description', for example 'feat(fulltext): add the phrase operator'"]
     kind, scope, bang, description = match.groups()
     if kind not in types:
-        errors.append("the type '%s' is not one of %s" % (kind, ", ".join(types)))
+        return check_length(subject, limit) + ["the type '%s' is not one of %s" % (kind, ", ".join(types))]
+    if kind == "import":
+        if not scope:
+            return ["an import takes one of the import forms: %s" % IMPORT_FORMS]
+        errors = check_import(scope, description, bang)
+        if has_footer(messages):
+            errors.append("an import carries no 'BREAKING CHANGE:' footer")
         return errors
+    errors = check_length(subject, limit)
     if not scope:
         errors.append("the subject names its scope, the area of the change, as in '%s(<scope>): %s'" % (kind, description))
         return errors
-    footer = any(FOOTER.match(line) for line in (body or "").splitlines())
-    if kind == "import":
-        errors += check_import(scope, description, bang)
-        if footer:
-            errors.append("an import carries no 'BREAKING CHANGE:' footer")
-        return errors
     if not SCOPE.match(scope):
         errors.append("the scope '%s' is one word naming the area, for example fulltext, build or github" % scope)
-    listed = paths_in(description)
+    listed = paths_in(LINE_SUFFIX.sub("", description))
     if listed:
         errors.append("the subject lists files (%s). Say what the change does, not which files it touches" % ", ".join(listed))
-    if bang and not footer:
-        errors.append("a breaking change with '!' also takes a footer line 'BREAKING CHANGE: <what breaks and what to do>'")
-    if footer and not bang:
-        errors.append("a 'BREAKING CHANGE:' footer also takes '!' after the scope, as in '%s(%s)!: %s'" % (kind, scope, description))
-    return errors
+    return errors + check_footer(kind, scope, bang, description, messages, pr_body)
 
 
 def load_rules(repo, ref):
@@ -218,7 +252,7 @@ def main(argv):
     if not argv or argv[0] not in ("title", "commits"):
         sys.stderr.write(__doc__)
         return 2
-    found, rest = options(argv[1:], ("--repo", "--rules", "--body"))
+    found, rest = options(argv[1:], ("--repo", "--rules", "--body", "--commits"))
     if found is None or "--repo" not in found or "--rules" not in found or len(rest) != 1:
         sys.stderr.write(__doc__)
         return 2
@@ -235,7 +269,13 @@ def main(argv):
             except (OSError, UnicodeDecodeError):
                 sys.stderr.write("the pull request description %s cannot be read\n" % found["--body"])
                 return 2
-        errors = check_subject(rest[0], body, types, limit)
+        messages = ""
+        if "--commits" in found:
+            messages = git(repo, "log", "--no-show-signature", "--format=%B", found["--commits"])
+            if messages is None:
+                sys.stderr.write("the range %s cannot be read. Fetch it first\n" % found["--commits"])
+                return 2
+        errors = check_subject(rest[0], messages, types, limit, body)
         for error in errors:
             sys.stderr.write("title: %s\n" % error)
         print("title %s" % ("failed" if errors else "passed"))

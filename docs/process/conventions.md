@@ -32,7 +32,7 @@ ChronitonDB uses Conventional Commits. This is a project rule on top of the orga
 
 1. The subject has the form `type(scope): description`.
 2. The description is imperative and in plain words, for example `feat(fulltext): add the phrase operator`.
-3. The subject is at most 72 characters.
+3. The subject is at most 72 characters. A trailing ` (chronitondb-<line>)` that names the line is not counted, nor GitHub's ` (#<number>)` on the commit on the line. An import subject carries the original subject unchanged, so it has no length limit, and it keeps its exact import form.
 4. The subject never lists files. A subject such as `Update <path>`, as GitHub writes for a suggestion, is refused. Apply suggestions locally with a real subject.
 5. The scope names the area of the change, for example `fulltext`, `analyzer`, `build` or `github`.
 
@@ -54,7 +54,7 @@ ChronitonDB uses Conventional Commits. This is a project rule on top of the orga
 
 ### Breaking changes
 
-A breaking change takes `!` after the type or scope, for example `feat(fulltext)!: rename the analyzer option`. It also takes a footer `BREAKING CHANGE: <what breaks and what to do>`. One without the other is refused.
+A breaking change takes `!` after the type or scope, for example `feat(fulltext)!: rename the analyzer option`. It also takes a footer `BREAKING CHANGE: <what breaks and what to do>` in a commit message of the pull request. The squash commit on the line carries the messages of the pull request's commits, never its description, so a footer only in the description is refused. One without the other is refused.
 
 ### Body
 
@@ -86,7 +86,7 @@ See [upstream.md](upstream.md).
 
 ### Pull request titles
 
-Our own pull requests are squash merged, and the title becomes the subject of the commit on the line. The title MUST follow the same Conventional Commits rules. Import pull requests are merged with a merge commit, so the imported commits reach the line as they are.
+Our own pull requests are squash merged, and the title becomes the subject of the commit on the line. The title MUST follow the same Conventional Commits rules. Import pull requests are merged with a merge commit, so the imported commits reach the line as they are. The `pr-title` check refuses a title that breaks these rules or the import forms, and reads the `BREAKING CHANGE:` footer from the pull request's commit messages. The `line-subjects` check runs on each push to a line and fails on a new commit whose subject breaks them, such as a subject edited in the merge dialog.
 
 ## Change logs and release notes
 
@@ -121,8 +121,11 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Governance records | `docs/governance/` |
 | Contribution guide | `.github/CONTRIBUTING.md` |
 | Our CI workflows | `.github/workflows/chronitondb-*.yml` |
+| Code owners of the sensitive paths | `.github/CODEOWNERS` |
+| Editor settings for ChronitonDB code | `.editorconfig` |
+| ChronitonDB's configuration file | `conf/cassandra_chronitondb.yaml` |
 
-1. Apache's own files stay untouched: `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like. ChronitonDB's files sit beside them, as listed above. A change to an Apache file is made only where we need it, with its [delta entry](../delta/README.md). See [upstream.md](upstream.md#apache-files-stay-untouched).
+1. Apache's own files stay untouched: `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like. ChronitonDB's files sit beside them, as listed above. A change to an Apache file is made only where we need it, with its [delta entry](../delta/README.md). See [upstream.md](upstream.md#apache-files-stay-untouched). The `delta-register` check reads the table above: a file under none of its paths is a stock file.
 2. All ChronitonDB documentation lives in `docs/`.
 3. User and operator documentation follows Diátaxis: tutorials, how-to guides, reference and explanation, one kind per page. Its folder layout will be defined with the documentation site.
 4. Each line keeps its own documentation on its own branch.

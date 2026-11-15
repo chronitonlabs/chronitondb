@@ -117,6 +117,19 @@ SpotBugs 4.10.5 with the FindSecBugs 1.14.0 plugin on the compiled `org.chronito
 
 The jars come from Maven Central into `build/chronitondb-shape/spotbugs-4.10.5`, each refused unless its sha256 matches the pin in the script. The set is the `lib/` of the SpotBugs release, so `java -jar spotbugs.jar` finds them through its manifest.
 
+## Commit subjects: `subjectlint.py`
+
+Checks commit subjects against [conventions.md](../../docs/process/conventions.md#commit-messages), Commit messages: the form `type(scope): description` with a type of the Types table and a scope, at most 72 characters not counting a trailing ` (chronitondb-<line>)` or GitHub's ` (#<number>)`, no file listed, `!` together with a `BREAKING CHANGE:` footer in a commit message, and for an import, which has no length limit, one of the forms `import(CASSANDRA-<n>)`, `import(apache-<version>)`, `import(apache-<x.y>-branch)` and `import(<owner>/<repo>@<12 character hash>)`. The type list and the length limit are read from conventions.md on the ref given with `--rules`, the line. Python 3 only, no other dependency.
+
+    tools/chronitondb/subjectlint.py title --repo . --rules origin/chronitondb-5.0 --commits origin/chronitondb-5.0..HEAD --body DESCRIPTION-FILE "feat(fulltext): add the phrase operator"
+    tools/chronitondb/subjectlint.py commits --repo . --rules origin/chronitondb-5.0 origin/chronitondb-5.0~5..origin/chronitondb-5.0
+
+The repository makes the pull request title the subject of the squash or merge commit, so the CI workflow `.github/workflows/chronitondb-subjects.yml` runs `title` on every pull request into a line, with this file taken from the base branch. It reads the footer from the pull request's commit messages, which the squash commit carries, and refuses a footer that is only in the description. On each push to a line it runs `commits` on the new commits of the line's first parent history, the squash and merge commits, never the commits an import merge brings. GitHub's ` (#<number>)` at the end of those subjects is not counted. Exit 0 when nothing is found, 1 on a finding, 2 on a usage error.
+
+`test/subjectlint/` holds its unit tests, run by the same workflow:
+
+    python3 -m unittest discover -s tools/chronitondb/test/subjectlint
+
 ## Process documents: `doclint.py`
 
 Checks the process documents under `docs/` against their templates on the line, and the rules [docs/process/](../../docs/process/README.md) sets for them: the document control table, every numbered section in order, the Contents index, no template placeholder and no `[NEEDS CLARIFICATION` marker left, and per document type the feature spec, plan, milestone report, decision record and delta entry rules. It also checks the feature keys and requirement ids of [additive.md](../../docs/process/additive.md#feature-keys-and-requirement-ids) across the lines, the library declarations of [compliance.md](../../docs/process/compliance.md), and that `conf/cassandra_chronitondb.yaml` holds every setting of Apache's two yaml files ([release.md](../../docs/process/release.md#the-configuration-file)). `markdown.py` beside it is its Markdown reader. Python 3 only, no other dependency.
@@ -133,6 +146,15 @@ Findings, one per line, then a summary:
     documents 1 checked 1 failed
 
 Exit 0 when nothing is found, 1 on a finding, 2 on a usage error.
+
+### The delta register
+
+`doclint.py delta` is the check of [the delta register](../../docs/delta/README.md#keeping-it-current), run by the CI workflow `.github/workflows/chronitondb-delta.yml` on every pull request into a `chronitondb-*` branch, with this file taken from the base branch.
+
+    tools/chronitondb/doclint.py delta --repo . --base origin/chronitondb-5.0 --source worktree
+    tools/chronitondb/doclint.py delta --repo . --base origin/chronitondb-5.0 --source HEAD --branch BRANCH --body DESCRIPTION-FILE
+
+A file is ChronitonDB's own when it falls under a path of the table Where things live in [conventions.md](../../docs/process/conventions.md#where-things-live), read from the line. Every other file is a stock file. A change that adds, edits, deletes or renames a stock file adds or changes an entry under `docs/delta/`, unless its branch imports a whole Apache release or Apache's branch (`import/cassandra-<...>`), or its description has a line `No delta entry: <reason>`. Each entry it adds or changes passes the delta entry rules of `document`, with an Origin commit link, its index row with the same Area and Lines, and on an update a new Last-Update. No entry is renamed or deleted. It prints `stock PATH` for each stock file it finds.
 
 ### The Contents index
 

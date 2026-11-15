@@ -91,3 +91,6 @@ Chosen option: "<option>", because <reason>.
 1. [0001. The first maintainers](0001-initial-maintainers.md), 2026-11-01, Accepted.
 2. [0002. What nodetool version prints on a ChronitonDB node](0002-nodetool-version-output-on-a-chronitondb-node.md), 2026-11-10, Accepted.
 3. [0003. Where the tests prove the release version before a package exists](0003-release-version-tests-before-a-package-exists.md), 2026-11-11, Accepted.
+4. [0004. The commit log disk check is off by default](0004-commit-log-disk-check-off-by-default.md), 2026-11-15, Accepted.
+5. [0005. The commit log disk check is switched under startup_checks](0005-commit-log-disk-check-switched-under-startup-checks.md), 2026-11-15, Accepted.
+6. [0006. The commit log disk check compares file systems](0006-commit-log-disk-check-compares-file-systems.md), 2026-11-15, Accepted.

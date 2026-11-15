@@ -22,7 +22,7 @@ limitations under the License.
 | Title | Import order check suppressed for ChronitonDB code |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 3 |
+| Version | 4 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
 | References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
@@ -49,12 +49,12 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Bug-ChronitonDB | none |
 | Forwarded | Not needed. It applies to ChronitonDB code only. |
 | Added | 2026-10-30 |
-| Last-Update | 2026-11-04 |
-| Pull requests | `chronitondb-6.0`: [#36](https://github.com/chronitonlabs/chronitondb/pull/36), commit `bd0a4f3a85`. |
+| Last-Update | 2026-11-15 |
+| Pull requests | `chronitondb-6.0`: [#36](https://github.com/chronitonlabs/chronitondb/pull/36) and [#66](https://github.com/chronitonlabs/chronitondb/pull/66), commits `bd0a4f3a85` and `9f9b4f94b4`. |
 
 ## What
 
-Apache's checkstyle suppressions skip the `ImportOrder` check for files under `org/chronitondb`. The suppression carries a comment saying why.
+Apache's checkstyle suppressions skip the `ImportOrder` check for files under `org/chronitondb`. The suppression carries a comment saying why. #66 reworded that comment only.
 
 ## Why
 

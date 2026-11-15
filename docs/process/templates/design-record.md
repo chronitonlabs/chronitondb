@@ -84,7 +84,7 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../cl
 
 ### Requirements
 
-{One requirement per entry, on one line: an id, one EARS shape, one BCP 14 key word, and its source. The id is `REQ-<KEY>-nnn` for feature work, with the feature key and three digits numbered across the whole feature, and `REQ-n` for any other item. For an item of a feature, the source is an acceptance criterion in the plan, and through it a FREQ. Otherwise it is an acceptance criterion in the issue, a risk this record names, or a decision record. Each id is proven by a scenario that carries it as a tag, or has exactly one row in `ac-coverage.md` naming its test or the reason it is deliberately not tested.}
+{One requirement per entry, on one line: an id, one EARS shape, one BCP 14 key word, and its source. The id is `REQ-<KEY>-nnn` for feature work, with the feature key and three digits numbered across the whole feature, and `REQ-n` for any other item. For an item of a feature, the source is an acceptance criterion in the plan, and through it a FREQ. Otherwise it is an acceptance criterion in the issue, a risk this record names, a decision record or a stakeholder need. Each id is proven by a scenario that carries it as a tag, or has exactly one row in `ac-coverage.md` naming its test or the reason it is deliberately not tested.}
 
 The five EARS shapes, one example each:
 

@@ -49,7 +49,7 @@ Each change also has a class, its risk and its size, carried by one `risk:`, one
 
 The maintainers decide stakeholder needs, scope, priority, releases and security disclosure, and approve every step by merging its pull request. Eight roles do the work:
 
-1. The product manager asks the maintainers what new work is for and writes the requirements brief they confirm.
+1. The requirements analyst asks the maintainers what new work is for and writes the requirements brief they confirm.
 2. The architect writes the feature spec, the plan, the delivery plan and the milestone reports of a large feature.
 3. The designer writes the design record or fix record of one item.
 4. The developer writes the code, its tests and its documentation.

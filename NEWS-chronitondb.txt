@@ -1,0 +1,36 @@
+Copyright 2026 AxonOps Limited
+SPDX-License-Identifier: Apache-2.0
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+
+ChronitonDB news
+================
+
+Upgrade notes and user facing changes of ChronitonDB, newest first. Apache
+Cassandra's own notes are in NEWS.txt.
+
+
+Unreleased
+----------
+
+New features
+ - A new startup check warns when the commit log directory is on the same
+   file system as a data directory. It is off by default. Switch it on with
+   the entry check_commitlog_shared_disk, key enabled: true, under
+   startup_checks in cassandra.yaml. The node starts whatever the check
+   finds. Three counters of the type CommitLogDiskCheck count what it found.
+   See docs/reference/commitlog-disk-check.md.
+
+Rollback
+ - Before a node runs an Apache Cassandra binary, or a ChronitonDB build older than this feature, remove check_commitlog_shared_disk from its cassandra.yaml, and remove startup_checks as well when it then holds no other entry.

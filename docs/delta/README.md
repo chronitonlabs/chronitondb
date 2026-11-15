@@ -61,3 +61,4 @@ Ordered by area, then by name.
 | [run-ci routes 6.0 versions on the 5.0 line](run-ci-6.0-version-routing.md) | Build scripts | 5.0 | Not needed, Apache has it on 6.0 | 2026-10-30 | 2026-11-04 | none |
 | [Apache GitHub checks run on pull requests to the lines](github-checks-on-pull-requests.md) | Continuous integration | 5.0, 6.0 | Not needed | 2026-10-31 | 2026-11-04 | none |
 | [Apache workflow actions pinned to commits](github-actions-pinned.md) | Continuous integration | 5.0, 6.0 | Not needed | 2026-10-30 | 2026-11-04 | none |
+| [Commit log disk check](commit-log-disk-check.md) | Startup checks | sandbox | Not needed | 2026-11-15 | 2026-11-15 | [#112](https://github.com/chronitonlabs/chronitondb/issues/112) |

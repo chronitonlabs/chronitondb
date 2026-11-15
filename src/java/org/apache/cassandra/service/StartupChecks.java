@@ -110,7 +110,8 @@ public class StartupChecks
         check_filesystem_ownership(true),
         check_dc,
         check_rack,
-        check_data_resurrection(true);
+        check_data_resurrection(true),
+        check_commitlog_shared_disk(true);
 
         public final boolean disabledByDefault;
 

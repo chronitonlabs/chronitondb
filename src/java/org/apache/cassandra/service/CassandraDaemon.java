@@ -79,6 +79,7 @@ import org.apache.cassandra.utils.concurrent.Future;
 import org.apache.cassandra.utils.concurrent.FutureCombiner;
 import org.apache.cassandra.utils.logging.LoggingSupportFactory;
 import org.apache.cassandra.utils.logging.VirtualTableAppender;
+import org.chronitondb.startup.CommitLogDiskCheck;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.apache.cassandra.config.CassandraRelevantProperties.CASSANDRA_FOREGROUND;
@@ -217,7 +218,7 @@ public class CassandraDaemon
     public CassandraDaemon(boolean runManaged)
     {
         this.runManaged = runManaged;
-        this.startupChecks = new StartupChecks().withDefaultTests().withTest(new FileSystemOwnershipCheck());
+        this.startupChecks = new StartupChecks().withDefaultTests().withTest(new FileSystemOwnershipCheck()).withTest(new CommitLogDiskCheck());
         this.setupCompleted = false;
     }
 

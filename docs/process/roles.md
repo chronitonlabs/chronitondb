@@ -17,11 +17,11 @@ limitations under the License.
 
 # Roles
 
-The maintainers and seven roles carry the work. The roles follow the technical processes of ISO/IEC/IEEE 12207, including its integration and transition processes. A role MAY be carried out by a person or by an automated agent. Approvals are always made by a maintainer, or by a committer for a pull request within their area or line.
+The maintainers and eight roles carry the work. The roles follow the technical processes of ISO/IEC/IEEE 12207, including its integration and transition processes. A role MAY be carried out by a person or by an automated agent. Approvals are always made by a maintainer, or by a committer for a pull request within their area or line.
 
 ## Maintainer
 
-The maintainers own stakeholder needs and every approval.
+The maintainers decide stakeholder needs and own every approval. For new work they answer the product manager's questions and confirm its requirements brief.
 
 1. They decide scope and priority, and set the maintenance category of each change they ask for. An item opened by the integrator, the security engineer or the release engineer carries the category its source gives it: adaptive for a whole release import or branch merge, the fix's category for a cherry-pick, corrective for a dependency patch or a test failure.
 2. They approve each step by merging its pull request: the feature spec, the plan with its delivery plan, each milestone report, each design record or fix record, each code pull request and each import pull request. They merge pull requests after the reviewer's review is posted on them. Committers may also merge, within their area or line.
@@ -30,6 +30,16 @@ The maintainers own stakeholder needs and every approval.
 5. They decide which features are offered to Apache Cassandra, case by case, and file the Apache JIRA and patch for each stock bug fix.
 6. They approve each release twice, both times by merging a pull request: the release proposal before its candidate is built, and the promotion after the soak and verification. Between the two, a maintainer starts the candidate run by hand, since it is expensive. See [release.md](release.md).
 7. They decide commit rights and changes to the process. Maintainers are appointed by AxonOps Limited as copyright owner. See [governance.md](governance.md).
+
+## Product manager
+
+The product manager owns stakeholder needs and requirements definition for new work, after that process of ISO/IEC/IEEE 12207 and the elicitation of ISO/IEC/IEEE 29148. It runs first on new work a maintainer asks for: before the architect on a feature that needs several items, and before the designer on the one-item path. Emergency work and documentation only changes skip it.
+
+1. Asks the maintainers what the work is for, in rounds of up to three questions. Each question is non technical, such as who the work is for, the problem, what success looks like, what is out of scope and what must not change. Each question carries a recommendation.
+2. Looks up every fact that the code, the documentation, the decision records or earlier issues can answer, and cites it. It never asks the maintainers for such a fact.
+3. Writes a short requirements brief: the problem, the users, the acceptance criteria, what is out of scope and the open risks. Each acceptance criterion is testable and names its source, a maintainer's answer or a cited fact. Out of scope holds only what a maintainer put there.
+4. Once a maintainer confirms the brief, hands the work on: to the designer when the work fits the one-item path, to the architect otherwise. The architect or the designer starts from the confirmed brief.
+5. Never sets a class label. Writes no code, no feature spec and no design, and opens no issue.
 
 ## Architect
 
@@ -114,4 +124,4 @@ The release engineer turns the lines into releases, after the transition process
 3. The work items of an approved plan are requested by the maintainer who approved the plan. Items opened from a scheduled check are requested by the maintainer who set up that check.
 4. Anyone who finds a possible security vulnerability stops the public part of the work on it and tells the maintainers privately. See [security.md](security.md).
 5. Until the project's automation can open GitHub issues, a maintainer opens the issue that a role carried out by an automated agent would open.
-6. Once a maintainer approves a step, the next step starts without further request. The order is fixed: the feature spec, then the plan with its delivery plan, then the items of the current milestone. For each item: design record, implementation, review, merge.
+6. Once a maintainer confirms the requirements brief or approves a step, the next step starts without further request. The order is fixed: the confirmed requirements brief, then the feature spec, then the plan with its delivery plan, then the items of the current milestone. On the one-item path the confirmed brief comes before the design record. For each item: design record, implementation, review, merge.

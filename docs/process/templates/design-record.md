@@ -104,11 +104,11 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 
 ## 3. Stock behaviour preservation
 
-{One row per departure from stock, in this table. Write "No departures from stock." in place of the table when there are none. Code defaults in stock classes unchanged. In the switch column, link each departure to its switch's row in the feature spec's section 2.8. A fork feature that fits one item has no feature spec: state its class and the class of each switch above the table, in the form of [section 2.8 of the feature spec](feature-spec.md#28-feature-class-and-switches), and link to that. Tooling reads this table, so keep its columns.}
+{One row per departure from stock, in this table. Write "No departures from stock." in place of the table when there are none. Code defaults in stock classes unchanged. In the switch column, link each departure to its switch's row in the feature spec's section 2.8. A fork feature that fits one item has no feature spec: state its class and the class of each switch above the table, in the form of [section 2.8 of the feature spec](feature-spec.md#28-feature-class-and-switches), and link to that. Tooling reads this table, so keep its columns. Cite each behaviour in the first column as [conventions.md](../conventions.md#claims-about-code) says: `Apache Cassandra <branch> at <hash>`, the symbol, and the file and line.}
 
 | Stock behaviour today (file and line) | This change | Switch that controls it | Error text naming the switch |
 |---|---|---|---|
-| {stock behaviour} | {change} | {switch} | {error text} |
+| {Apache Cassandra behaviour, cited} | {change} | {switch} | {error text} |
 
 ### Stock hook points
 
@@ -116,7 +116,7 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 
 ## 4. Prior art reviewed
 
-{Stock code on each line with file and line. Other projects by behaviour. Apache JIRA tickets read with their comments. What each got right or wrong for this problem.}
+{Apache Cassandra code and our own, each cited as [conventions.md](../conventions.md#claims-about-code) says, with our line, the Apache Cassandra release it is based on and Apache Cassandra upstream now kept apart. Other projects by behaviour. Apache JIRA tickets read with their comments. What each got right or wrong for this problem.}
 
 These rules apply to every source:
 
@@ -126,7 +126,7 @@ These rules apply to every source:
 
 ## 5. Idiom and consistency
 
-{For each user visible choice: whether it matches stock, earlier decisions and the idiom it follows, and the reason for any deliberate difference.}
+{For each user visible choice: whether it matches Apache Cassandra, earlier decisions and the idiom it follows, and the reason for any deliberate difference.}
 
 ## 6. Quality requirements
 
@@ -278,7 +278,7 @@ Check every requirement against these seven qualities before asking for approval
 2. **Unambiguous:** it has one reading. No "fast", "large", "quickly" or "efficient" without a number and a unit.
 3. **Singular:** one requirement, one BCP 14 key word, one EARS shape. Two requirements joined by "and" are split into two ids.
 4. **Verifiable:** one scenario, test or benchmark can prove it, and a scenario tag or `ac-coverage.md` names it.
-5. **Feasible:** the mechanism exists in the tree or in this design, cited with file and line.
+5. **Feasible:** the mechanism exists in the tree or in this design, cited with the project, branch and commit, the symbol, and the file and line.
 6. **Consistent:** it contradicts no other requirement, no decision record and no stock behaviour rule.
 7. **Traceable:** it has an id, a source, and a scenario tag or exactly one coverage row.
 

@@ -42,8 +42,8 @@ A report that arrives in public is handled privately. Nobody repeats its details
 | Phase (ISO/IEC 30111) | What happens |
 |---|---|
 | Receipt | The report arrives through private vulnerability reporting. The maintainers acknowledge it. |
-| Verification | The security engineer triages the report: it reproduces the fault, finds the affected lines and releases, proposes a CVSS severity and says whether stock Apache Cassandra code is affected. The maintainers decide whether it is valid and its severity. |
-| Remediation | The fix follows the corrective order below, in the advisory's private fork. Apache is notified when stock code is affected. |
+| Verification | The security engineer triages the report: it reproduces the fault, finds the affected lines and releases, proposes a CVSS severity and says whether Apache Cassandra code is affected, in the release the line is based on and upstream now, each with its branch and commit. The maintainers decide whether it is valid and its severity. |
+| Remediation | The fix follows the corrective order below, in the advisory's private fork. Apache is notified when Apache Cassandra code is affected. |
 | Release | The release engineer prepares fixed releases on every affected supported line, in private. Each proposal names the commit in the advisory's private fork, and each release candidate is built and verified in private. The packages publish at the moment of disclosure, together with the advisory, on the date the maintainers set, as Debian and Ubuntu handle embargoed security updates. Security releases skip the release candidate soak once verified. The advisory is published. GitHub assigns the CVE as the CVE numbering authority. The security engineer updates the VEX statements. |
 | Post release | The reporter is credited unless they ask not to be. The maintainers check that the fix reached every line. |
 

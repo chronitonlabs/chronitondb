@@ -107,7 +107,7 @@ class Anchors(unittest.TestCase):
         return [anchor for _, _, _, anchor in doclint.anchors(Markdown("x.md", text))]
 
     def test_lower_case_and_spaces_to_hyphens(self):
-        self.assertEqual(doclint.slug("Stock hook points"), "stock-hook-points")
+        self.assertEqual(doclint.slug("Apache Cassandra hook points"), "apache-cassandra-hook-points")
 
     def test_punctuation_removed_hyphens_kept(self):
         self.assertEqual(doclint.slug("2.1 Context and scope"), "21-context-and-scope")

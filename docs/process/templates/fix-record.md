@@ -53,7 +53,7 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../cl
 - [10. Tests the change runs](#10-tests-the-change-runs)
   - [Tests for this change](#tests-for-this-change)
   - [Existing suites at risk](#existing-suites-at-risk)
-  - [Stock suites run unchanged](#stock-suites-run-unchanged)
+  - [Apache Cassandra suites run unchanged](#apache-cassandra-suites-run-unchanged)
   - [Tracing test](#tracing-test)
   - [Formats and configurations](#formats-and-configurations)
 - [Where problems could occur](#where-problems-could-occur)
@@ -119,7 +119,7 @@ Scenario tags: {the requirement tags section 5 lists and this record's fix tag, 
 
 {Unit test suites and in-JVM distributed test suites this fix could break.}
 
-### Stock suites run unchanged
+### Apache Cassandra suites run unchanged
 
 {Apache Cassandra's own suites that MUST pass without modification.}
 

@@ -75,8 +75,9 @@ Changes that need a design record follow [maintenance.md](maintenance.md) or [ad
 1. Workflow runs on pull requests from first time and outside contributors wait for a maintainer's approval before CI runs.
 2. Your pull request runs the GitHub checks and the tests of the changed areas on GitHub's own runners. The required checks MUST pass. See [branching-and-review.md](branching-and-review.md#required-checks) and [testing.md](testing.md#full-test-suites).
 3. Changes to sensitive paths request a review from the code owners. See [branching-and-review.md](branching-and-review.md#sensitive-paths).
-4. The reviewer reviews your pull request first and posts its review on it. Review follows [branching-and-review.md](branching-and-review.md#reviews). Answer each finding with its own commit.
-5. Only maintainers and committers merge, after the review is posted. See [governance.md](governance.md).
+4. A maintainer adds the label `triage:accepted` to your pull request before it is reviewed. No review starts without it.
+5. The reviewer then reviews your pull request first and posts its review on it. Review follows [branching-and-review.md](branching-and-review.md#reviews). Answer each finding with its own commit.
+6. Only maintainers and committers merge, after the review is posted. See [governance.md](governance.md).
 
 ### AI assistance
 

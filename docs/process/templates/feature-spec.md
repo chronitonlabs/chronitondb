@@ -193,7 +193,7 @@ FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, risk o
 
 ## 12. Prior art
 
-{Required for every class, one line at Low Hanging Fruit. How other systems and projects solved this problem, what each got right and wrong, and why ChronitonDB chooses differently where it does. Cite each source.}
+{Required for every class, one line at Low Hanging Fruit. How other systems and projects solved this problem, what each got right and wrong, and why ChronitonDB chooses differently where it does. Cite each source. Cite code as [conventions.md](../conventions.md#claims-about-code) says, with our line, the Apache Cassandra release it is based on and Apache Cassandra upstream now kept apart.}
 
 These rules apply to every source:
 

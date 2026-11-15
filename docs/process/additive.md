@@ -19,6 +19,16 @@ limitations under the License.
 
 A new feature is additive maintenance in ISO/IEC/IEEE 14764:2022. A feature that needs several items takes three levels of specification. A feature that fits in one item takes the one-item path. On both paths the work starts from the requirements brief that the requirements analyst writes and a maintainer confirms. The brief stays where the maintainer confirmed it. The architect writes its content into the feature requirements of the feature spec, and on the one-item path the designer writes it into the requirements of the design record. Each requirement taken from it carries `Source: stakeholder need`. A record never links to the brief itself. See [roles.md](roles.md#requirements-analyst).
 
+## Work intake
+
+Every piece of work has a GitHub issue. Work MAY start committed, with its kind label. Two optional labels mark work that is not committed yet, and either MAY be skipped: an idea MAY go straight to the work, and a spike MAY be opened directly.
+
+1. **An idea** carries the label `idea`: should we do this? The requirements analyst writes a short decision brief: the problem, the value, the options, a rough size and risk, and a recommendation. The maintainers decide to do it, not to do it, or to ask for a spike first.
+2. **A spike** carries the label `spike`: how would we do this, or can it be done? The architect investigates and writes a research report in `docs/research/<issue>-<slug>.md` from [templates/research-report.md](templates/research-report.md), and a maintainer merges it. The report's pull request changes documentation only and carries the labels of a documentation only change. The report approves no work.
+3. **Do it.** A decision record holds the go and its reasons, in its own words. It never links to the decision brief. The `idea` and `spike` labels come off, and the kind and class labels go on. Until then the issue carries no kind and no class label. The requirements brief, and then the feature spec or design record, cite the research report and the decision record.
+4. **Do not.** The issue is closed as not planned, with the reason in a comment.
+5. **One idea, several features.** The idea's issue becomes the parent issue. Each feature gets its own issue, which links back to the parent.
+
 ## Size boundary
 
 1. A feature that fits one item, one design record and one pull request per line takes the one-item path described in [maintenance.md](maintenance.md#the-one-item-path). Its design record carries the feature spec's mandatory sections in small form.
@@ -49,11 +59,13 @@ Every fork feature has a feature key: 3 to 5 capital letters, for example `LUC`.
 1. The feature's directory is `docs/design/<KEY>-<slug>/`, for example `docs/design/LUC-fulltext-search/`.
 2. The merge of the pull request that creates the directory reserves the key. For a feature that needs several items, that is the feature spec pull request. For a feature that fits one item, the designer proposes a free key in the design record pull request: a key that no feature directory and no open pull request uses. The key is reserved when a maintainer merges that pull request.
 3. A key is never reused. A withdrawn feature keeps its directory.
-4. Feature requirements in the feature spec have ids `FREQ-<KEY>-nnn`. Requirements in the feature's design records have ids `REQ-<KEY>-nnn`, numbered across the whole feature. `nnn` is three digits, for example `FREQ-LUC-001` and `REQ-LUC-014`.
-5. The item design records of a feature that needs several items stay in `docs/design/<issue>-<slug>/`.
-6. A feature that fits one item has no feature spec. Its design record lives in the feature's directory and states the feature class. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
-7. Fix records and other items that are not feature work keep `docs/design/<issue>-<slug>/` and plain ids `REQ-n`.
-8. A required pull request check enforces these rules: directory names are well formed and keys are unique, every keyed id uses a reserved key, each id is defined exactly once (a FREQ in its feature spec, a REQ in one design record of its feature), every requirement tag on a scenario names a defined id, and removing a feature directory fails the check.
+4. Later work that extends a feature that already has a key keeps that key. It continues the feature's `REQ-<KEY>-nnn` numbering, and its records go in the feature's folders as rules 7 and 8 place them. It never opens a second key for the same feature.
+5. A new key SHOULD read well. It MAY use up to 5 letters where 3 read poorly, for example `STCHK` rather than `SCV`.
+6. Feature requirements in the feature spec have ids `FREQ-<KEY>-nnn`. Requirements in the feature's design records have ids `REQ-<KEY>-nnn`, numbered across the whole feature. `nnn` is three digits, for example `FREQ-LUC-001` and `REQ-LUC-014`.
+7. The item design records of a feature that needs several items stay in `docs/design/<issue>-<slug>/`.
+8. A feature that fits one item has no feature spec. Its design record lives in the feature's directory and states the feature class. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
+9. Fix records and other items that are not feature work keep `docs/design/<issue>-<slug>/` and plain ids `REQ-n`.
+10. A required pull request check enforces these rules: directory names are well formed and keys are unique, every keyed id uses a reserved key, each id is defined exactly once (a FREQ in its feature spec, a REQ in one design record of its feature), every requirement tag on a scenario names a defined id, and removing a feature directory fails the check.
 
 ### Level 1: the feature spec
 

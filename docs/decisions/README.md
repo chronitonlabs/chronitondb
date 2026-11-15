@@ -97,3 +97,4 @@ Chosen option: "<option>", because <reason>.
 7. [0007. The startup checks view lives in system_views](0007-startup-checks-view-lives-in-system-views.md), 2026-11-15, Accepted.
 8. [0008. The startup checks that always run take the names of Apache Cassandra 6.0](0008-always-run-startup-checks-take-apache-6-0-names.md), 2026-11-15, Accepted.
 9. [0009. A startup check named in cassandra.yaml shows the source yaml](0009-startup-check-named-in-yaml-shows-source-yaml.md), 2026-11-15, Accepted.
+10. [0010. No test of what the startup checks log in the startup checks view item](0010-no-test-of-what-the-startup-checks-log.md), 2026-11-15, Accepted.

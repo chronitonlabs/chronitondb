@@ -54,10 +54,10 @@ When one or more data directories are on the commit log directory's file system,
 The commit log directory <commit log directory> is on the same file system as the data directories [<data directory>, <data directory>]. One failure of that file system loses the commit log and the data together, and on spinning disks commit log writes compete with reads, flushes and compaction. Put commitlog_directory on a file system of its own. This warning comes from the startup check check_commitlog_shared_disk.
 ```
 
-When the file system of a directory cannot be read, the node logs one line at WARN for that directory, with the cause, leaves it out and compares the others:
+When the file system of a directory cannot be read, the node logs one line at WARN for that directory, with the cause. A data directory is then not compared, and the others are. When the directory is the commit log directory, nothing is compared:
 
 ```
-The startup check check_commitlog_shared_disk could not read the file system of <directory> and left that directory out.
+The startup check check_commitlog_shared_disk could not read the file system of <directory> and did not compare that directory.
 ```
 
 When any other exception ends the check, the node logs one line at WARN, with the cause:

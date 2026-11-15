@@ -30,7 +30,7 @@ Every piece of work has a GitHub issue. Work may start committed, with its kind 
 1. `idea`: should we do this? The requirements analyst writes a short decision brief, and the maintainers decide to do it, not to do it, or to ask for a spike.
 2. `spike`: how would we do this, or can it be done? The architect investigates and writes a research report in `docs/research/`, which a maintainer merges.
 
-On do it, a decision record holds the go and its reasons, and the kind and class labels go on. On do not, the issue is closed as not planned, with the reason. [additive.md](additive.md#work-intake) has the detail.
+A spike issue carries documentation labels while it is researched. On do it, a decision record holds the go and its reasons, and the work's own kind and class labels go on. On do not, the issue is closed as not planned, with the reason. [additive.md](additive.md#work-intake) has the detail.
 
 ## Pick the path for a change
 

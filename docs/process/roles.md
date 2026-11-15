@@ -37,8 +37,8 @@ The requirements analyst elicits the requirements of new work from the maintaine
 
 1. Asks the maintainers what the work is for, in rounds of up to three questions. Each question is non technical, such as who the work is for, the problem, what success looks like, what is out of scope and what must not change. Each question carries a recommendation.
 2. Looks up every fact that the code, the documentation, the decision records or earlier issues can answer, and cites it. It never asks the maintainers for such a fact.
-3. Writes a short requirements brief: the problem, the users, the acceptance criteria, what is out of scope and the open risks. Each acceptance criterion is testable and names its source, a maintainer's answer or a cited fact. Out of scope holds only what a maintainer put there. A brief for work that started as an idea or a spike cites its research report and its decision record.
-4. Once a maintainer confirms the brief, hands the work on: to the designer when the work fits the one-item path, to the architect otherwise. The architect or the designer starts from the confirmed brief.
+3. Writes a short requirements brief: the problem, the users, the acceptance criteria, what is out of scope, the open risks and a proposed class in plain words. Each acceptance criterion is testable and names its source, a maintainer's answer or a cited fact. The brief proposes out of scope candidates, and out of scope holds only those the maintainers confirm. A brief for work that started as an idea or a spike cites its research report and its decision record.
+4. Once a maintainer confirms the brief and sets the class labels, hands the work on: to the designer when the work fits the one-item path, to the architect otherwise. The architect or the designer starts from the confirmed brief.
 5. Leaves the brief where the maintainer confirmed it. Its content becomes public through the record: the architect writes it into the feature requirements of the feature spec, and on the one-item path the designer writes it into the requirements of the design record. Each requirement taken from it carries `Source: stakeholder need`. A record never links to the brief itself.
 6. For an issue labelled `idea`, writes a short decision brief instead: the problem, the value, the options, a rough size and risk, and a recommendation. The maintainers decide. See [additive.md](additive.md#work-intake).
 7. Never decides scope or priority, and never sets a class label. Writes no code, no feature spec and no design, and opens no issue.
@@ -81,7 +81,7 @@ The reviewer owns verification of each pull request, as an ISO/IEC 20246 inspect
 2. Records each finding with a severity: blocker, major, minor or nit.
 3. Gives a verdict in a review comment. A clean verdict marks the pull request ready for a maintainer.
 4. Checks that documentation, the delta entry and the decision records the change needs are present. In a library update it checks that the notice and licence text matches what the security engineer named.
-5. Reviews every pull request: our own, outside contributors', imports and dependency updates. An outside contributor's pull request is reviewed only once a maintainer has added the label `triage:accepted`. The review is posted on the pull request before a maintainer or committer merges it.
+5. Reviews every pull request: our own, outside contributors', imports and dependency updates. A pull request that the project's automated agents did not write is reviewed only after a maintainer adds the label `triage:accepted`, the maintainers' own pull requests and outside contributors' alike. The review is posted on the pull request before a maintainer or committer merges it.
 
 ## Integrator
 

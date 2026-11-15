@@ -637,11 +637,13 @@ NEWS-chronitondb.txt new
 
 The three stock files carry the hook points of section 3 and nothing else. `StartupChecksView` holds the switch, the MBean operations, the counters and the two log lines, and `StartupChecksViewMBean` is its MBean interface. `StartupChecksTable` is the virtual table. `StartupCheckRows` works out the rows by the rules of section 1. The two commands toggle the switch. The coverage file and the page skeleton next to this record are design files and are not in the list. No protected path and no library file is in the list.
 
-The open pull requests were listed on 2026-11-15: there is none. The merged design record of the release version feature plans edits to `Config.java` and `NodeTool.java` too. The merged design record of the commit log disk check plans edits to `CassandraDaemon.java` and to `StartupChecks.java`, where it adds the constant `check_commitlog_shared_disk`, which gives this view one more row (section 15 item 2). It registers its check in the daemon after the ownership check, so REQ-SCV-035 holds when it lands. Both merged records plan `NEWS-chronitondb.txt` and `docs/delta/README.md`. Their code pull requests are not open yet.
+The open pull requests were listed on 2026-11-15. One of those into this line changes a planned file: #123, which closes no issue and so is named by its own number, changes `docs/delta/README.md`. It rewrites item 1 of Keeping it current, changes the date in two rows of the index and adds one row. This item adds one row of its own to that index and edits no line that is there today, so the overlap is soft. If the new row sorts next to a row #123 changes, the pull request that merges second takes the line in and keeps both rows. #123 also adds a check of the delta register on every pull request, which then holds the delta entry of this item and its index row to the template. The other open pull requests into this line change no planned file. The merged design record of the release version feature plans edits to `Config.java` and `NodeTool.java` too. The merged design record of the commit log disk check plans edits to `CassandraDaemon.java` and to `StartupChecks.java`, where it adds the constant `check_commitlog_shared_disk`, which gives this view one more row (section 15 item 2). It registers its check in the daemon after the ownership check, so REQ-SCV-035 holds when it lands. Both merged records plan `NEWS-chronitondb.txt` and `docs/delta/README.md`. Their code pull requests are not open yet.
 
 ### Shared with open items
 
-None.
+| Item | Shared file | Kind |
+|---|---|---|
+| #123 | docs/delta/README.md | soft |
 
 ### Waivers
 

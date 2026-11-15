@@ -37,7 +37,7 @@ Location: `docs/design/VER-release-version/`, the directory of the fork feature 
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
-The Risk, Size and Reach rows are the item's class, as [classification.md](../../process/classification.md) defines it, and match the issue's `risk:normal`, `size:low-hanging-fruit` and `reach:one-area` labels. The issue also carries `kind:additive`, so the item is a fork feature small enough for one item and takes the one-item path of [maintenance.md](../../process/maintenance.md#the-one-item-path) with a feature key: this directory, named by the key `VER`, the ids `REQ-VER-nnn`, and the feature class stated in [section 3](#3-stock-behaviour-preservation) ([additive.md, Feature keys and requirement ids](../../process/additive.md#feature-keys-and-requirement-ids), items 2, 4 and 6). No feature spec and no plan exist, so each requirement cites an acceptance criterion of the issue, a problem this record names or a decision record. Each requirement is proven by a JUnit test with one row in `ac-coverage.md`, and this item adds no scenario, under waiver 2 of [Waivers](#waivers). The switch rules of [branching-and-review.md](../../process/branching-and-review.md#feature-switches-and-defaults) bind it, because release.md gives this change a switch. In this record, "release.md item n" means item n of the list under [What nodetool version shows](../../process/release.md#what-nodetool-version-shows). Any other list of that page is named with its section. "Problem n" means item n of [Where problems could occur](#where-problems-could-occur). "The reference page" means `docs/reference/release-version.md` of [section 13](#13-documentation).
+The Risk, Size and Reach rows are the item's class, as [classification.md](../../process/classification.md) defines it, and match the issue's `risk:normal`, `size:low-hanging-fruit` and `reach:one-area` labels. The issue also carries `kind:additive`, so the item is a fork feature small enough for one item and takes the one-item path of [maintenance.md](../../process/maintenance.md#the-one-item-path) with a feature key: this directory, named by the key `VER`, the ids `REQ-VER-nnn`, and the feature class stated in [section 3](#3-apache-cassandra-behaviour-preservation) ([additive.md, Feature keys and requirement ids](../../process/additive.md#feature-keys-and-requirement-ids), items 2, 4 and 6). No feature spec and no plan exist, so each requirement cites an acceptance criterion of the issue, a problem this record names or a decision record. Each requirement is proven by a JUnit test with one row in `ac-coverage.md`, and this item adds no scenario, under waiver 2 of [Waivers](#waivers). The switch rules of [branching-and-review.md](../../process/branching-and-review.md#feature-switches-and-defaults) bind it, because release.md gives this change a switch. In this record, "release.md item n" means item n of the list under [What nodetool version shows](../../process/release.md#what-nodetool-version-shows). Any other list of that page is named with its section. "Problem n" means item n of [Where problems could occur](#where-problems-could-occur). "The reference page" means `docs/reference/release-version.md` of [section 13](#13-documentation).
 
 ## Contents
 
@@ -45,8 +45,8 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../..
   - [How it works](#how-it-works)
   - [Requirements](#requirements)
 - [2. Decisions implemented](#2-decisions-implemented)
-- [3. Stock behaviour preservation](#3-stock-behaviour-preservation)
-  - [Stock hook points](#stock-hook-points)
+- [3. Apache Cassandra behaviour preservation](#3-apache-cassandra-behaviour-preservation)
+  - [Apache Cassandra hook points](#apache-cassandra-hook-points)
 - [4. Prior art reviewed](#4-prior-art-reviewed)
 - [5. Idiom and consistency](#5-idiom-and-consistency)
 - [6. Quality requirements](#6-quality-requirements)
@@ -56,7 +56,7 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../..
   - [Isolation levers](#isolation-levers)
   - [Benchmarks that prove it](#benchmarks-that-prove-it)
   - [Regression threshold and gate](#regression-threshold-and-gate)
-  - [Stock guard](#stock-guard)
+  - [Apache Cassandra guard](#apache-cassandra-guard)
   - [What was not measured](#what-was-not-measured)
 - [8. Observability](#8-observability)
 - [9. Compatibility](#9-compatibility)
@@ -67,7 +67,7 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../..
 - [14. Testing](#14-testing)
   - [Tests for this change](#tests-for-this-change)
   - [Existing suites at risk](#existing-suites-at-risk)
-  - [Stock suites run unchanged](#stock-suites-run-unchanged)
+  - [Apache Cassandra suites run unchanged](#apache-cassandra-suites-run-unchanged)
   - [Tracing test](#tracing-test)
   - [Formats and configurations](#formats-and-configurations)
 - [15. Not covered and follow-ups](#15-not-covered-and-follow-ups)
@@ -214,19 +214,19 @@ REQ-VER-035 (ubiquitous): The reference page MUST contain each of these exact te
 
 As of 2026-11-11 the register on the line holds record 0001. Records 0002 and 0003 are added by this pull request. No newer record exists on versions, nodetool, testing or configuration.
 
-## 3. Stock behaviour preservation
+## 3. Apache Cassandra behaviour preservation
 
 This statement and the switch table below it follow the form of [section 2.8 of the feature spec template](../../process/templates/feature-spec.md#28-feature-class-and-switches), because a fork feature that fits one item has no feature spec.
 
 Feature class: behaviour-changing, because it changes what the stock command `nodetool version` prints, the one behaviour-changing feature the maintainers allow on by default (release.md, What a release may contain, item 4).
 
-| Switch | Class | Reason | Default per line | Stock operations it changes |
+| Switch | Class | Reason | Default per line | Apache Cassandra operations it changes |
 |---|---|---|---|---|
 | `nodetool_release_version_enabled`, with `nodetool enablereleaseversion` and `nodetool disablereleaseversion` | behaviour-changing | it replaces the value on the first line of `nodetool version` with the node's ChronitonDB release version | `true` on every line (release.md, What a release may contain, item 4) | `nodetool version`, with and without `--verbose` |
 
 Rows 2 to 6 of the table below are presences on a node with the switch off: a `Config` field and its settings row, two listed commands, a start log line, an MBean and a counter, and one more key in the properties file inside the jar, which the start log line of row 4 reads whatever the switch says. Each is a departure from [branching-and-review.md](../../process/branching-and-review.md#feature-switches-and-defaults) item 7, which says that with a feature off no new memory is used and stock operations behave as Apache's do. The maintainers approve each by merging this record.
 
-| Stock behaviour today (file and line) | This change | Switch that controls it | Error text naming the switch |
+| Apache Cassandra behaviour today (file and line) | This change | Switch that controls it | Error text naming the switch |
 |---|---|---|---|
 | `nodetool version` prints `ReleaseVersion: ` and the value of `StorageServiceMBean.getReleaseVersion()`, which is Apache's build version (`src/java/org/apache/cassandra/tools/nodetool/Version.java:36`, `src/java/org/apache/cassandra/service/StorageService.java:3985` to `3988`) | with the switch on and the MBean present, the line carries the node's ChronitonDB release version instead. The `GitSHA:` line under `--verbose` (`Version.java:37` to `38`) keeps its label, its flag and its value | `nodetool_release_version_enabled`, in memory through `nodetool disablereleaseversion` | none: the switch refuses nothing, it only picks the value. The toggles against a node without the MBean print the line of REQ-VER-012 or REQ-VER-013, which names the command |
 | `system_views.settings` lists one row per `Config` field (`src/java/org/apache/cassandra/db/virtual/SettingsTable.java:154`), and the start log line `Node configuration:` prints every field (`src/java/org/apache/cassandra/config/Config.java:1347` to `1376`) | both show one more entry, `nodetool_release_version_enabled`, on every node, switch on or off. A departure from branching-and-review.md item 7, for the maintainers to approve with this record | none: the key exists whether the feature is on or off, because Apache's loader refuses a key without a `Config` field (`src/java/org/apache/cassandra/config/YamlConfigurationLoader.java:423`) and the toggle of branching-and-review.md item 1 needs the field | none |
@@ -237,7 +237,7 @@ Rows 2 to 6 of the table below are presences on a node with the switch off: a `C
 
 Everything else stays stock. `FBUtilities.getReleaseVersionString()` and `getGitSHA()` (`FBUtilities.java:460` to `474`) are not touched, so gossip, `system.local`, drivers, `bin/cassandra -v` (`bin/cassandra:236` to `237`, which runs `org.apache.cassandra.tools.GetVersion`, `src/java/org/apache/cassandra/tools/GetVersion.java:22` to `25`), the cqlsh banner and the start log lines `Cassandra version:` and `Git SHA:` (`StorageService.java:969` to `970`) print what they print today, and none of those files is in the Planned file list. No existing code default in a stock class changes: the one field `Config` gains is new, with the default the maintainers set. No stock metric, MBean, file, thread or name changes. REQ-VER-026 keeps every pre-existing test as it is, and the lint of the gate refuses a modified pre-existing test.
 
-### Stock hook points
+### Apache Cassandra hook points
 
 There is no feature spec for a one item change, so the hook points are listed here with their delta entry, `docs/delta/nodetool-version-shows-release-version.md`. The entry records the stock edits of this list and the stock behaviour changes of the departures table above, as `docs/delta/README.md`, Keeping it current, item 1 asks of every pull request that changes stock code or stock behaviour.
 
@@ -316,7 +316,7 @@ No request type touches the new code. Coordinator reads and writes, replica read
 
 ### Expected cost
 
-| Path | Metric | Stock today | Expected with the change | Why (mechanism) |
+| Path | Metric | Apache Cassandra today | Expected with the change | Why (mechanism) |
 |---|---|---|---|---|
 | Node start | wall time | one properties load for `version.properties` | two properties loads of the same file | one more `getResourceAsStream` and `Properties.load` of a three entry file, well under a millisecond |
 | Node start | heap | one `Properties` object | two `Properties` objects, one MBean, one counter | a few hundred bytes together, allocated once |
@@ -338,7 +338,7 @@ The yaml key `nodetool_release_version_enabled` and the toggle pair. Off: `nodet
 
 No benchmark gates this pull request. The gate runs the tests of section 14.
 
-### Stock guard
+### Apache Cassandra guard
 
 The stock suites of section 14 run twice, unchanged: once at the default of the switch, on, and once with the switch off through stock's own override of a `Config` field from a system property, `-Dcassandra.config.allow_system_properties=true -Dcassandra.settings.nodetool_release_version_enabled=false` in `test.jvm.args`. With the first property set (`src/java/org/apache/cassandra/config/CassandraRelevantProperties.java:175`), the loader writes every `cassandra.settings.` property into the loaded `Config` (`src/java/org/apache/cassandra/config/YamlConfigurationLoader.java:71` and `152` to `170`), on the yaml path (`YamlConfigurationLoader.java:143`) and on the map path the in-JVM framework builds each instance from (`YamlConfigurationLoader.java:231`, `test/distributed/org/apache/cassandra/distributed/impl/Instance.java:832`), and `build.xml` passes `test.jvm.args` to every test JVM (`build.xml:94` and `1192`, inside `testmacrohelper` at line `1123`, which the unit and the in-JVM targets share). No file under `test/conf/` changes. The developer attaches both runs to the code pull request. `VersionOutputTest.switchOffPrintsStockOutput` proves the off output itself. No timing claim is made, so no stock run must stay within a number.
 
@@ -417,7 +417,7 @@ No documentation page exists on this line yet, and [conventions.md, Where things
 
 ## 14. Testing
 
-Unit tests under `test/unit/org/chronitondb/`, on real JMX where nodetool talks to a node, and on a stub connection where a failure of the connection is the case under test. Nothing is multi node in behaviour, each node answers for itself, so replication factor does not apply. The in-JVM distributed framework runs nodetool with no JMX connection, so it cannot exercise the fork output and this item adds no distributed test. No sstable format or compaction is touched. The parity suite does not exist on this line yet. This item is a fork feature that fits one item and adds no scenario, under waiver 2 of the Waivers, so the template's `Scenario runner` and `Scenario tags` lines are left out. The two stock lists below relate as follows: Existing suites at risk names the stock suites whose files or behaviour this change touches, which the gate runs first, and Stock suites run unchanged is the wider set that proves stock behaviour and includes the first. Both lists run twice, as the Stock guard of section 7 and waiver 1 say: once at the default of the switch, on, and once with the switch off. Every test sets its own starting state, so none depends on the order JUnit runs them in.
+Unit tests under `test/unit/org/chronitondb/`, on real JMX where nodetool talks to a node, and on a stub connection where a failure of the connection is the case under test. Nothing is multi node in behaviour, each node answers for itself, so replication factor does not apply. The in-JVM distributed framework runs nodetool with no JMX connection, so it cannot exercise the fork output and this item adds no distributed test. No sstable format or compaction is touched. The parity suite does not exist on this line yet. This item is a fork feature that fits one item and adds no scenario, under waiver 2 of the Waivers, so the template's `Scenario runner` and `Scenario tags` lines are left out. The two stock lists below relate as follows: Existing suites at risk names the stock suites whose files or behaviour this change touches, which the gate runs first, and Apache Cassandra suites run unchanged is the wider set that proves stock behaviour and includes the first. Both lists run twice, as the Stock guard of section 7 and waiver 1 say: once at the default of the switch, on, and once with the switch off. Every test sets its own starting state, so none depends on the order JUnit runs them in.
 
 What each test of the list under Tests for this change proves:
 
@@ -445,7 +445,7 @@ org.apache.cassandra.config.ConfigCompatibilityTest
 org.apache.cassandra.db.virtual.SettingsTableTest
 org.apache.cassandra.service.StorageServiceTest
 
-### Stock suites run unchanged
+### Apache Cassandra suites run unchanged
 
 org.apache.cassandra.distributed.test.NodeToolTest
 org.apache.cassandra.tools.GetVersionTest
@@ -552,7 +552,7 @@ None.
 
 ### Waivers
 
-1. Exit criterion 4 of [testing.md](../../process/testing.md#exit-criteria), the parity suite passes with every fork feature off. The parity suite does not exist on this line. In its place the stock suites of section 14 run a second time with the switch off, through the system property override the Stock guard of section 7 names, which changes no file under `test/conf/`, and `VersionOutputTest.switchOffPrintsStockOutput` compares the off output with the stock output on both streams and in the status. Waived because there is no parity suite to run. The maintainers approve the waiver with this record.
+1. Exit criterion 4 of [testing.md](../../process/testing.md#exit-criteria), the parity suite passes with every fork feature off. The parity suite does not exist on this line. In its place the stock suites of section 14 run a second time with the switch off, through the system property override the Apache Cassandra guard of section 7 names, which changes no file under `test/conf/`, and `VersionOutputTest.switchOffPrintsStockOutput` compares the off output with the stock output on both streams and in the status. Waived because there is no parity suite to run. The maintainers approve the waiver with this record.
 2. [testing.md, Scenarios](../../process/testing.md#scenarios) item 6 and policy item 7: the designer writes the scenarios of a feature item in this pull request, tagged `@wip`, as the executable form of its requirements with the switch off and on. Waived because nothing that runs a scenario exists on this line: no `test/bdd/` module, no shared step library of CQL and cluster steps (Scenarios item 1), and no Cucumber runner, whose library is a new dependency that only its own item through the security engineer adds, never a feature item ([maintenance.md, Dependency patch-version updates](../../process/maintenance.md#dependency-patch-version-updates), last paragraph). A scenario written now could not fail before the code and pass after it (Scenarios item 5), and the developer's gate could not run it, so it would prove nothing in this item. Every requirement is proven instead by a JUnit test named in `ac-coverage.md`, which exit criterion 1 accepts. The scenarios of this feature are section 15 item 12. The maintainers approve the waiver with this record.
 
 ## Requirement quality checklist (ISO/IEC/IEEE 29148)

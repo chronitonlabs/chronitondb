@@ -72,7 +72,7 @@ A start that finds nothing logs nothing.
 
 The three counters exist only on a node that ran the check. A node with the check off has none of them. A failed run of the check keeps the counts it made before it failed.
 
-The start log is the record of a run. The counters repeat it as far as they can. When the check itself failed, a counter can be missing or behind, and the failed warning in the log says so. When the MBean of a counter could not be registered, JMX does not show that counter, and the log holds an ERROR line that starts with `Error in MBean wrapper: `.
+The start log is the record of a run. The counters repeat it as far as they can. When the check itself failed, a counter can be missing or behind. The log of that start then holds the failed warning, whose text names no counter. When the MBean of a counter could not be registered, JMX does not show that counter, and the log holds an ERROR line that starts with `Error in MBean wrapper: `.
 
 | Metric | Kind | What it counts |
 |---|---|---|

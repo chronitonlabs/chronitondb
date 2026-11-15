@@ -47,15 +47,16 @@ Each change also has a class, its risk and its size, carried by one `risk:`, one
 
 ## Roles
 
-The maintainers decide scope, priority, releases and security disclosure, and approve every step by merging its pull request. Seven roles do the work:
+The maintainers decide scope, priority, releases and security disclosure, and approve every step by merging its pull request. Eight roles do the work:
 
-1. The architect writes the feature spec, the plan, the delivery plan and the milestone reports of a large feature.
-2. The designer writes the design record or fix record of one item.
-3. The developer writes the code, its tests and its documentation.
-4. The reviewer reviews every pull request and posts its review on it.
-5. The integrator keeps the lines current with Apache Cassandra and prepares the import pull requests.
-6. The security engineer watches every shipped library for vulnerabilities and triages private reports.
-7. The release engineer proposes each release and runs the release pipeline once a maintainer approves it.
+1. The product manager asks the maintainers what new work is for and writes the requirements brief they confirm.
+2. The architect writes the feature spec, the plan, the delivery plan and the milestone reports of a large feature.
+3. The designer writes the design record or fix record of one item.
+4. The developer writes the code, its tests and its documentation.
+5. The reviewer reviews every pull request and posts its review on it.
+6. The integrator keeps the lines current with Apache Cassandra and prepares the import pull requests.
+7. The security engineer watches every shipped library for vulnerabilities and triages private reports.
+8. The release engineer proposes each release and runs the release pipeline once a maintainer approves it.
 
 A role MAY be carried out by a person or by an automated agent. Approvals are always made by a maintainer, or by a committer for a pull request within their area or line. [roles.md](roles.md) has the detail, and [governance.md](governance.md) says how someone becomes a committer or a maintainer.
 

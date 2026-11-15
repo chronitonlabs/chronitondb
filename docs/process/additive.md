@@ -17,7 +17,7 @@ limitations under the License.
 
 # New features (additive maintenance)
 
-A new feature is additive maintenance in ISO/IEC/IEEE 14764:2022. A feature that needs several items takes three levels of specification. A feature that fits in one item takes the one-item path.
+A new feature is additive maintenance in ISO/IEC/IEEE 14764:2022. A feature that needs several items takes three levels of specification. A feature that fits in one item takes the one-item path. On both paths the work starts from the requirements brief that the product manager writes and a maintainer confirms. See [roles.md](roles.md#product-manager).
 
 ## Size boundary
 

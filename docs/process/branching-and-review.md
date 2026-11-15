@@ -87,12 +87,16 @@ These checks run on every pull request to a line. Each MUST pass before a mainta
 | `license/cla` | Every contributor to the pull request has signed the contributor agreement. See [contributing.md](contributing.md) |
 | `kind-label` | The pull request carries exactly one kind label. See [README.md](README.md) |
 | `class-label` | The pull request carries exactly one `risk:`, one `size:` and one `reach:` label. See [classification.md](classification.md) |
+| `pr-title` | The pull request title, the subject of its commit on the line, follows the Conventional Commits rules and the import forms of [conventions.md](conventions.md#commit-messages). The checker and the rules come from the line |
+| `subjectlint-tests` | The unit tests of the subject checker, as the pull request changes it |
 | `documents` | The process documents and feature keys the pull request changes: the template rules, the Contents index of each document (see [conventions.md](conventions.md#contents-index-of-process-documents)), the clarification markers and the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids). The checker and the templates come from the line, never from the pull request |
 | `doclint-tests` | The unit tests of the process document checker, as the pull request changes it |
 | `delta-register` | A pull request that changes a stock file adds or updates its entry in the [delta register](../delta/README.md#keeping-it-current), and each entry it adds or changes is in its template's form with its index row. The checker and the rules come from the line, never from the pull request |
 | CodeQL | Code scanning. Blocks on high or critical security alerts and on errors |
 
 The `kind-label` and `class-label` checks pass a release proposal or promotion pull request, which changes only `docs/releases/` and carries no kind or class. The `documents` check runs on every pull request, a person's or an agent's, and passes one that changes no file under `docs/` or `test/bdd/`.
+
+On each push to a line, the `line-subjects` check runs the same rules on the subject of every new commit on the line. It cannot block a merge that has happened. It fails the run on that commit, and GitHub notifies the maintainer who merged.
 
 Apache's Build Scripts check also runs on pull requests that touch `.build/` or the workflows, and Apache's CI Check on pull requests that touch `.jenkins/` or the CI scripts under `.build/`. Both are advisory, since a check filtered by path cannot be required.
 

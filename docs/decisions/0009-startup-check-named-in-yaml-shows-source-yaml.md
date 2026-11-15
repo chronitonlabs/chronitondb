@@ -46,7 +46,7 @@ Each row of the startup checks view has a column `source` that says where the on
 
 ## Decision outcome
 
-Chosen option: "Show `yaml` for every check that `cassandra.yaml` names", because the on or off value is right in both cases and no code runs at node start on a node that does not use the view.
+Chosen option: "Show `yaml` for every check that `cassandra.yaml` names", because the on or off value is right in both cases and no code is added to the loading of the configuration.
 
 The row of a switchable check that `cassandra.yaml` names under `startup_checks`, and whose start option is not set, MUST show `source` as `yaml`. The feature MUST NOT add code to the loading of the configuration that notes which entries wrote the key `enabled`.
 

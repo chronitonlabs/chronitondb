@@ -89,6 +89,7 @@ These checks run on every pull request to a line. Each MUST pass before a mainta
 | `class-label` | The pull request carries exactly one `risk:`, one `size:` and one `reach:` label. See [classification.md](classification.md) |
 | `documents` | The process documents and feature keys the pull request changes: the template rules, the Contents index of each document (see [conventions.md](conventions.md#contents-index-of-process-documents)), the clarification markers and the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids). The checker and the templates come from the line, never from the pull request |
 | `doclint-tests` | The unit tests of the process document checker, as the pull request changes it |
+| `delta-register` | A pull request that changes a stock file adds or updates its entry in the [delta register](../delta/README.md#keeping-it-current), and each entry it adds or changes is in its template's form with its index row. The checker and the rules come from the line, never from the pull request |
 | CodeQL | Code scanning. Blocks on high or critical security alerts and on errors |
 
 The `kind-label` and `class-label` checks pass a release proposal or promotion pull request, which changes only `docs/releases/` and carries no kind or class. The `documents` check runs on every pull request, a person's or an agent's, and passes one that changes no file under `docs/` or `test/bdd/`.

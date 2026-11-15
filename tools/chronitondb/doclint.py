@@ -25,6 +25,7 @@ before they commit.
     doclint.py dependencies --repo DIR --base REF --line REF [--source SRC] FILE...
     doclint.py settings --repo DIR --base REF [--source SRC]
     doclint.py index [--write | --check] FILE...
+    doclint.py delta --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE]
 
 SRC is where the documents are read: "index" (the default, the staged
 version), "worktree", or a commit. REF is where the rules are read, the line
@@ -143,9 +144,14 @@ highest milestone of the delivery plan, has no row delivered in part.
 
 A delta entry is also checked for: the Header table holds the DEP-3 fields
 of the template, each in its form (Origin, Bug, Bug-ChronitonDB, Forwarded,
-dates YYYY-MM-DD), and the register's index has its row with the same
-Forwarded, Added, Last update and Issue. It prints "issue N PATH" on stdout
-for each Bug-ChronitonDB issue, which the caller checks exists.
+dates YYYY-MM-DD), an Origin other than ChronitonDB links its commit (an
+Apache one on github.com/apache/cassandra, another fork's on that fork,
+never on chronitonlabs) and a hash it shows in backticks is the linked one,
+and the register's index has its row with the same Forwarded, Added, Last
+update and Issue, the Area the entry's Area section opens with, and the
+lines its Lines section names as chronitondb-<x.y>. It prints "issue N
+PATH" on stdout for each Bug-ChronitonDB issue, which the caller checks
+exists.
 
 keys is the feature key check of additive.md, Feature keys and requirement
 ids, over the whole tree at SRC against the line at REF: every directory of
@@ -192,15 +198,38 @@ flagged on a line "# Apache removed: <name>". Ours removed while the line
 had it fails. With no file of ours on the line yet the check has nothing to
 compare and says so.
 
+delta is the delta register check of docs/delta/README.md, Keeping it
+current, on the change at SRC since its merge base with REF. A file is
+ChronitonDB's own when it falls under a path of the table Where things live
+in docs/process/conventions.md at REF: a directory ("docs/"), a pattern
+(".github/workflows/chronitondb-*.yml"), the directory before a "<...>"
+placeholder, or one file. Every other file is a stock file, a file that
+came from Apache Cassandra. A change that adds, edits, deletes or renames a
+stock file adds or changes at least one entry docs/delta/<name>.md. It
+passes without one when NAME, the pull request's branch, is an import of a
+whole Apache release or of Apache's branch, import/cassandra-<...>, which
+brings Apache Cassandra's own code, or when FILE, the pull request's
+description, has a line "No delta entry: <reason>" with a reason of three
+words or more, which the reviewer judges. Every entry the change adds or
+changes passes the document rules of a delta entry above, against the
+template at REF, and a changed entry has a Last-Update later than at REF,
+or the same date when that is the date of the change, the date of the
+commit SRC. No entry is renamed or deleted: its file name is its id, and a
+change no longer carried keeps its entry with Status Dropped. It prints
+"stock PATH" on stdout for each stock file, and the reason a change passes
+without an entry.
+
 Findings go to stderr as "PATH:LINE: reason", exit 1 when there is one.
 A usage error exits 2.
 """
 
+import fnmatch
 import html
 import os
 import re
 import subprocess
 import sys
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from markdown import Markdown, first_heading, first_table, outer_braces, table_cells  # noqa: E402
@@ -1094,8 +1123,10 @@ def check_delta(doc, path, source, rules):
     origin, line = value("Origin")
     if origin and not re.match(r"^(ChronitonDB\b|Apache commit\b|Backport of Apache commit\b|Another fork\b|[A-Za-z0-9 ._-]+ fork\b)", origin):
         doc.error(line, "Origin is ChronitonDB, Apache commit <hash>, Backport of Apache commit <hash>, or another fork with its link")
-    if origin and re.match(r"^(Apache commit|Backport of Apache commit)", origin) and not re.search(r"[0-9a-f]{7,40}", origin):
+    elif origin and re.match(r"^(Apache commit|Backport of Apache commit)", origin) and not re.search(r"[0-9a-f]{7,40}", origin):
         doc.error(line, "an Apache Origin names the commit hash")
+    elif origin:
+        check_origin_link(doc, line, origin)
     bug, line = value("Bug")
     if bug and bug.lower() != "none" and not JIRA.search(bug):
         doc.error(line, "Bug is the Apache JIRA as a link, https://issues.apache.org/jira/browse/CASSANDRA-<n>, or none")
@@ -1161,6 +1192,243 @@ def check_delta(doc, path, source, rules):
         doc.error(0, "the register's Index row for %s names the issue %s, the entry's Bug-ChronitonDB is none" % (name, shown))
     if issue is not None and not re.search(r"#?\b%s\b" % issue, shown):
         doc.error(0, "the register's Index row for %s does not name issue #%s" % (name, issue))
+    check_area_and_lines(doc, name, row)
+
+
+APACHE_REPO = ("apache", "cassandra")
+COMMIT_LINK = re.compile(r"https://github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)/commit/([0-9a-f]{7,40})(?![0-9A-Za-z])")
+SHOWN_HASH = re.compile(r"`([0-9a-f]{7,40})`")
+LINE_NAME = re.compile(r"\bchronitondb-([0-9]+\.[0-9]+|sandbox)\b")
+
+
+def check_origin_link(doc, line, origin):
+    """An Origin other than ChronitonDB links the commit it came from: an
+    Apache commit on github.com/apache/cassandra, another fork's commit on
+    the fork's own repository, never Apache's and never one of
+    chronitonlabs, whose work is ours (upstream.md, Commits from other
+    projects). A hash shown in backticks is the start of the linked one."""
+    if origin.startswith("ChronitonDB"):
+        return
+    links = COMMIT_LINK.findall(origin)
+    if origin.startswith(("Apache commit", "Backport of Apache commit")):
+        wanted = [link for link in links if link[:2] == APACHE_REPO]
+        if not wanted:
+            doc.error(line, "an Apache Origin links its commit, https://github.com/apache/cassandra/commit/<hash>")
+            return
+    else:
+        wanted = [link for link in links if link[:2] != APACHE_REPO and link[0].lower() != "chronitonlabs"]
+        if not wanted:
+            if any(link[:2] == APACHE_REPO for link in links):
+                doc.error(line, "a fork Origin links an Apache commit. An Apache commit is Origin Apache commit or Backport of Apache commit, even when a fork holds it")
+            elif any(link[0].lower() == "chronitonlabs" for link in links):
+                doc.error(line, "a fork Origin links a chronitonlabs repository. The work of our own organisation is Origin ChronitonDB")
+            else:
+                doc.error(line, "a fork Origin links the fork's commit, https://github.com/<owner>/<repo>/commit/<hash>")
+            return
+    for shown in SHOWN_HASH.findall(origin):
+        if not any(link[2].startswith(shown) or shown.startswith(link[2]) for link in wanted):
+            doc.error(line, "Origin shows the commit `%s` and links %s" % (shown, ", ".join(link[2] for link in wanted)))
+
+
+def check_area_and_lines(doc, name, row):
+    """The entry's Area section opens with the register's Area for it,
+    then a colon or a full stop, and its Lines section names, as
+    chronitondb-<x.y>, the same lines as the register's Lines column."""
+    span = plain_section_span(doc, "Area")
+    if span is not None:
+        text = [line for _, line in text_lines(doc, span) if line.strip()]
+        opening = text[0].split(":", 1)[0].strip().rstrip(".") if text else ""
+        if opening != row["Area"].strip():
+            doc.error(span[0], "the Area section opens with '%s', the register's Index row for %s says Area '%s'. Open the section with the same area, then a colon and the files" % (opening, name, row["Area"].strip()))
+    span = plain_section_span(doc, "Lines")
+    if span is not None:
+        named = set()
+        for _, line in text_lines(doc, span):
+            named.update(LINE_NAME.findall(line))
+        listed = set(part.strip() for part in re.split(r",|\band\b", row["Lines"]) if part.strip())
+        if not named:
+            doc.error(span[0], "the Lines section names no line. Name each one as `chronitondb-<x.y>`")
+        elif named != listed:
+            doc.error(span[0], "the Lines section names %s, the register's Index row for %s says Lines %s" % (", ".join(sorted(named)), name, ", ".join(sorted(listed))))
+
+
+# The delta register check: the page that says which files are
+# ChronitonDB's own, the line of a pull request description that waives
+# the entry, and the import branches that bring Apache's own code.
+CONVENTIONS = "docs/process/conventions.md"
+WAIVER = re.compile(r"^No delta entry:\s*(.*?)\s*$")
+WHOLE_IMPORT = re.compile(r"^import/cassandra-[0-9]")
+ENTRY = re.compile(r"^docs/delta/[^/]+\.md$")
+
+
+def own_paths(text):
+    """The paths of ChronitonDB's own files: every path in backticks in
+    the table of conventions.md, Where things live. A path ending in "/"
+    is a directory, a path with "*" a pattern, a path with a "<...>"
+    placeholder the directory before it, any other path one file."""
+    doc = Markdown(CONVENTIONS, text)
+    span = plain_section_span(doc, "Where things live")
+    if span is None:
+        return []
+    paths = []
+    for _, cells in first_table(doc, span[0], span[1]):
+        for token in re.findall(r"`([^`]+)`", cells[1] if len(cells) > 1 else ""):
+            if "<" in token:
+                token = token[:token.index("<")]
+                token = token[:token.rfind("/") + 1]
+            if token and token not in paths:
+                paths.append(token)
+    return paths
+
+
+def is_own(path, paths):
+    for own in paths:
+        if own.endswith("/"):
+            if path.startswith(own):
+                return True
+        elif "*" in own:
+            if fnmatch.fnmatchcase(path, own):
+                return True
+        elif path == own:
+            return True
+    return False
+
+
+def is_entry(path):
+    return bool(path) and bool(ENTRY.match(path)) and path != "docs/delta/README.md"
+
+
+def changes(repo, base, where):
+    """(status, path, old path) of each file changed at SRC since its merge
+    base with REF, with renames found, or None when there is no merge
+    base. The worktree also counts its untracked files as added."""
+    head = "HEAD" if where in ("index", "worktree") else where
+    merge_base = git(repo, "merge-base", base, head)
+    if merge_base is None:
+        return None
+    args = ["diff", "--name-status", "-z", "-M"]
+    if where == "index":
+        args.append("--cached")
+    args.append(merge_base.strip())
+    if where not in ("index", "worktree"):
+        args.append(where)
+    out = git(repo, *args)
+    if out is None:
+        return None
+    words = out.split("\0")
+    found = []
+    index = 0
+    while index + 1 < len(words) and words[index]:
+        status = words[index]
+        if status[0] in "RC":
+            found.append((status[0], words[index + 2], words[index + 1]))
+            index += 3
+        else:
+            found.append((status[0], words[index + 1], None))
+            index += 2
+    if where == "worktree":
+        others = git(repo, "ls-files", "--others", "--exclude-standard", "-z") or ""
+        found += [("A", path, None) for path in others.split("\0") if path]
+    return found
+
+
+def change_date(repo, where):
+    """The date of the change, YYYY-MM-DD in UTC: the date of the commit
+    SRC, or today for the index and the worktree."""
+    if where not in ("index", "worktree"):
+        date = git(repo, "log", "-1", "--no-show-signature", "--format=%ct", where)
+        if date and date.strip().isdigit():
+            return time.strftime("%Y-%m-%d", time.gmtime(int(date.strip())))
+    return time.strftime("%Y-%m-%d", time.gmtime())
+
+
+def header_value(text, field):
+    doc = Markdown("entry", text)
+    span = plain_section_span(doc, "Header")
+    if span is None:
+        return None
+    for _, cells in first_table(doc, span[0], span[1]):
+        if len(cells) >= 2 and cells[0] == field:
+            return cells[1]
+    return None
+
+
+def check_entry(repo, base, source, path, status, template_text, today):
+    """An added or changed entry: the document rules of its template, its
+    Contents index, its DEP-3 header and its Index row, and for a changed
+    entry a Last-Update later than the line's, or the line's when that is
+    already the date of the change."""
+    text = source.read(path) or ""
+    doc = Markdown(path, text)
+    check_common(doc, "delta-entry", template_text, path)
+    if has_contents(Markdown(TEMPLATES["delta-entry"], template_text)):
+        check_index(doc, path)
+    check_delta(doc, path, source, {"delta-template": Markdown("delta-entry.md", template_text)})
+    if status == "M":
+        before = git(repo, "show", "%s:%s" % (base, path))
+        old = header_value(before, "Last-Update") if before else None
+        new = header_value(text, "Last-Update")
+        if old and new and DATE.match(old) and DATE.match(new):
+            if new < old:
+                doc.error(0, "Last-Update %s is before the line's %s" % (new, old))
+            elif new == old and old != today:
+                doc.error(0, "the entry changes and its Last-Update stays %s, as on the line. Set it to the date of this change, %s, in the entry and in its Index row" % (old, today))
+    return doc.errors
+
+
+def waiver_of(body):
+    """The reason on the line "No delta entry: <reason>" of a pull request
+    description, "" when the line gives none, None when there is no such
+    line."""
+    for line in (body or "").splitlines():
+        match = WAIVER.match(line.strip())
+        if match:
+            return match.group(1)
+    return None
+
+
+def check_register(repo, base, where, branch, body):
+    """The delta register check. Returns the findings, the stock files the
+    change touches, the number of entries it adds or changes, and the note
+    on what lets it pass without an entry."""
+    conventions = git(repo, "show", "%s:%s" % (base, CONVENTIONS))
+    paths = own_paths(conventions) if conventions else []
+    if not paths:
+        return ["%s on %s has no Where things live table, so ChronitonDB's own files cannot be told from stock files" % (CONVENTIONS, base)], [], 0, None
+    changed = changes(repo, base, where)
+    if changed is None:
+        return ["no merge base of %s and %s, so the change cannot be read. Fetch the line first" % (base, where)], [], 0, None
+    template_text = git(repo, "show", "%s:%s" % (base, TEMPLATES["delta-entry"]))
+    source = Source(repo, where)
+    today = change_date(repo, where)
+    errors, stock, entries = [], [], 0
+    for status, path, old in changed:
+        for name in (old, path):
+            if name and not is_own(name, paths) and name not in stock:
+                stock.append(name)
+        if status == "R" and is_entry(old):
+            errors.append("%s: the entry is renamed to %s. An entry's file name is its id and never changes (docs/delta/README.md, Entries). Keep the old name" % (old, path))
+        elif status == "D" and is_entry(path):
+            errors.append("%s: the entry is deleted. An entry's file name is its id and stays. A change no longer carried keeps its entry, with Status Dropped" % path)
+        elif is_entry(path):
+            entries += 1
+            if template_text is None:
+                errors.append("%s: no delta entry template at %s on %s, so the entry cannot be checked" % (path, TEMPLATES["delta-entry"], base))
+            else:
+                errors += check_entry(repo, base, source, path, "A" if status in "AC" else "M", template_text, today)
+    note = None
+    waiver = waiver_of(body)
+    if waiver is not None and len(waiver.split()) < REASON_WORDS:
+        errors.append("the pull request's line 'No delta entry:' gives no reason. Write the reason after the colon, in %d words or more" % REASON_WORDS)
+    elif stock and not entries:
+        if branch and WHOLE_IMPORT.match(branch):
+            note = "the branch %s imports a whole Apache release or Apache's branch, which brings Apache Cassandra's own code and needs no entry" % branch
+        elif waiver is not None:
+            note = "no delta entry, as the pull request says: %s" % waiver
+        else:
+            shown = ", ".join(stock[:10]) + (" and %d more" % (len(stock) - 10) if len(stock) > 10 else "")
+            errors.append("the change touches %d stock file(s), %s, and adds or updates no entry in docs/delta/. Add its entry from docs/process/templates/delta-entry.md with its row in the Index of docs/delta/README.md, or update the entry of the change it extends, with a new Last-Update. Only when no entry applies, give the reason in the pull request description on a line 'No delta entry: <reason>'" % (len(stock), shown))
+    return errors, stock, entries, note
 
 
 MILESTONE_STATUSES = ("delivered", "not delivered", "delivered in part, as planned")
@@ -1943,9 +2211,53 @@ def check_settings(repo, base, where):
     return errors, len(apache_now)
 
 
+def run_delta(args):
+    repo, base, where, branch, body = None, None, "index", None, None
+    index = 0
+    while index < len(args):
+        if args[index] in ("--repo", "--base", "--source", "--branch", "--body") and index + 1 < len(args):
+            value = args[index + 1]
+            if args[index] == "--repo":
+                repo = value
+            elif args[index] == "--base":
+                base = value
+            elif args[index] == "--source":
+                where = value
+            elif args[index] == "--branch":
+                branch = value
+            else:
+                body = value
+            index += 2
+            continue
+        sys.stderr.write(__doc__)
+        return 2
+    if not repo or not base:
+        sys.stderr.write(__doc__)
+        return 2
+    text = None
+    if body:
+        try:
+            with open(body, encoding="utf-8") as handle:
+                text = handle.read()
+        except (OSError, UnicodeDecodeError):
+            sys.stderr.write("the pull request description %s cannot be read\n" % body)
+            return 2
+    errors, stock, entries, note = check_register(repo, base, where, branch, text)
+    for path in stock:
+        print("stock %s" % path)
+    if note:
+        print(note)
+    for error in errors:
+        sys.stderr.write(error + "\n")
+    print("delta %d stock files %d entries %s" % (len(stock), entries, "failed" if errors else "passed"))
+    return 1 if errors else 0
+
+
 def main(argv):
     if argv and argv[0] == "index":
         return run_index(argv[1:])
+    if argv and argv[0] == "delta":
+        return run_delta(argv[1:])
     if argv and argv[0] == "settings":
         repo, base, where = None, None, "index"
         args = argv[1:]

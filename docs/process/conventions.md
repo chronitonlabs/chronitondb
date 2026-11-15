@@ -121,8 +121,11 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Governance records | `docs/governance/` |
 | Contribution guide | `.github/CONTRIBUTING.md` |
 | Our CI workflows | `.github/workflows/chronitondb-*.yml` |
+| Code owners of the sensitive paths | `.github/CODEOWNERS` |
+| Editor settings for ChronitonDB code | `.editorconfig` |
+| ChronitonDB's configuration file | `conf/cassandra_chronitondb.yaml` |
 
-1. Apache's own files stay untouched: `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like. ChronitonDB's files sit beside them, as listed above. A change to an Apache file is made only where we need it, with its [delta entry](../delta/README.md). See [upstream.md](upstream.md#apache-files-stay-untouched).
+1. Apache's own files stay untouched: `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like. ChronitonDB's files sit beside them, as listed above. A change to an Apache file is made only where we need it, with its [delta entry](../delta/README.md). See [upstream.md](upstream.md#apache-files-stay-untouched). The `delta-register` check reads the table above: a file under none of its paths is a stock file.
 2. All ChronitonDB documentation lives in `docs/`.
 3. User and operator documentation follows Diátaxis: tutorials, how-to guides, reference and explanation, one kind per page. Its folder layout will be defined with the documentation site.
 4. Each line keeps its own documentation on its own branch.

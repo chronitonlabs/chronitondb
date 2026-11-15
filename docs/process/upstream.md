@@ -106,7 +106,7 @@ The [delta register](../delta/README.md) lists every change ChronitonDB carries 
 2. **Declined,** with the Apache JIRA and a one line reason.
 3. **Not needed,** with the reason.
 
-Every pull request that changes stock code or stock behaviour adds or updates its entry. The reviewer checks this. Entries that Apache has since fixed are dropped at the next import.
+Every pull request that changes stock code or stock behaviour adds or updates its entry. The `delta-register` check enforces it for stock files, and the reviewer checks it for stock behaviour. Entries that Apache has since fixed are dropped at the next import.
 
 ## Offering changes upstream
 

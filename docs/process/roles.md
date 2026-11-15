@@ -79,7 +79,7 @@ The reviewer owns verification of each pull request, as an ISO/IEC 20246 inspect
 2. Records each finding with a severity: blocker, major, minor or nit.
 3. Gives a verdict in a review comment. A clean verdict marks the pull request ready for a maintainer.
 4. Checks that documentation, the delta entry and the decision records the change needs are present. In a library update it checks that the notice and licence text matches what the security engineer named.
-5. Reviews every pull request: our own, outside contributors', imports and dependency updates. The review is posted on the pull request before a maintainer or committer merges it.
+5. Reviews every pull request: our own, outside contributors', imports and dependency updates. An outside contributor's pull request is reviewed only once a maintainer has added the label `triage:accepted`. The review is posted on the pull request before a maintainer or committer merges it.
 
 ## Integrator
 

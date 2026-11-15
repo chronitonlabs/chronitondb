@@ -64,12 +64,13 @@ A start that finds nothing logs nothing.
 
 ## Metrics
 
-Both counters exist only on a node that ran the check. A node with the check off has neither.
+The three counters exist only on a node that ran the check. A node with the check off has none of them.
 
 | Metric | Kind | What it counts |
 |---|---|---|
 | `org.chronitondb.metrics:type=CommitLogDiskCheck,name=SharedDataDirectories` | counter | the data directories found on the commit log directory's file system at this start |
 | `org.chronitondb.metrics:type=CommitLogDiskCheck,name=UnreadableDirectories` | counter | the directories whose file system could not be read at this start |
+| `org.chronitondb.metrics:type=CommitLogDiskCheck,name=FailedRuns` | counter | 1 when the check ended with an error of its own at this start |
 
 <An alert on `SharedDataDirectories` above 0 finds a node that logged the warning.>
 
@@ -80,6 +81,7 @@ Both counters exist only on a node that ran the check. A node with the check off
 | the check is off | nothing is compared, logged or counted |
 | the file system of the commit log directory cannot be read | one WARN line for it, nothing is compared, the node starts |
 | the file system of a data directory cannot be read | one WARN line for it, the other data directories are compared, the node starts |
+| the platform has no `unix` file attribute view | one WARN line for the commit log directory at every start with the check on, nothing is compared, the node starts |
 | any other error in the check | one WARN line, `The startup check check_commitlog_shared_disk failed and compared nothing more.`, with the cause, the node starts |
 
 Timeouts, coordinator failure, missing replicas, limits and indexes that are not built do not apply: no request reaches the check.
@@ -96,4 +98,4 @@ The value is read at start only. A change needs a restart of the node.
 
 ## Rollback to Apache Cassandra
 
-Before a node runs an Apache Cassandra binary, or a ChronitonDB build older than this feature, remove check_commitlog_shared_disk from its cassandra.yaml. <One sentence on what such a binary does with the entry, once section 15 item 7 of the design record is settled.>
+Before a node runs an Apache Cassandra binary, or a ChronitonDB build older than this feature, remove check_commitlog_shared_disk from its cassandra.yaml, and remove startup_checks as well when it then holds no other entry. <One sentence on what such a binary does with the entry, once section 15 item 7 of the design record is settled.>

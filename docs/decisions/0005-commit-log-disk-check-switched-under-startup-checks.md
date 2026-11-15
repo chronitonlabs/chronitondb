@@ -41,7 +41,7 @@ Every fork feature sits behind a switch, and the switch rules ask for a yaml set
 
 ## Considered options
 
-1. An entry under the stock `startup_checks` block, named `check_commitlog_shared_disk`, with the key `enabled`, read at start only. No nodetool command. It needs one constant in the stock enum of startup check names and one line in the daemon that registers the check.
+1. An entry under the stock `startup_checks` block, named `check_commitlog_shared_disk`, with the key `enabled`, read at start only. No nodetool command. It needs one constant in the stock enum of startup check names and one import and one call in the daemon that registers the check.
 2. A top level yaml key of its own, with a pair of nodetool commands that enable and disable the check, where enabling at runtime runs the check once. It needs a field in the stock configuration class and two entries in the stock command list, and a settings row, two commands and an MBean exist on every node, switch on or off.
 
 ## Decision outcome

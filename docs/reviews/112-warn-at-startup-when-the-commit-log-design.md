@@ -21,10 +21,10 @@ limitations under the License.
 |---|---|
 | Title | Review record: design record of #112 Warn at startup when the commit log shares a disk with the data directories |
 | Document type | Record (ISO/IEC/IEEE 15289) |
-| Status | Open |
+| Status | Closed |
 | Work product | Design record: `docs/design/CLD-commitlog-disk-check/design-record.md` |
 | Pull request | #116 |
-| Version reviewed | `b210d52a66` |
+| Version reviewed | `20b18cc901` |
 | Review type | Technical review (ISO/IEC 20246) |
 | Reviewer | chronitondb-agent |
 | Author | Designer: chronitondb-agent |
@@ -50,6 +50,7 @@ The author keeps this record current and commits it with the change: when the pu
 | Round | Date | Version reviewed | Scope | Verdict | Blockers | Majors | Minors | Nits |
 |---|---|---|---|---|---|---|---|---|
 | 1 | 2026-11-15 | `b210d52a66` | The whole change | Changes requested | 0 | 1 | 6 | 0 |
+| 2 | 2026-11-15 | `20b18cc901` | The changes since `b210d52a66` | Clean | 0 | 0 | 2 | 0 |
 
 ## 2. Anomaly list
 
@@ -64,6 +65,8 @@ One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A f
 | R1-5 | `4. Prior art reviewed`, `design-record.md:210` at `b210d52a66` | The citations at lines 210, 222 and 331 give one commit after several line ranges, so each earlier range reads as a bare file and line. The claims were verified. | Minor | Fixed in `02d6292df5` |
 | R1-6 | `4. Prior art reviewed`, `design-record.md:223` at `b210d52a66` | The 6.0 port claim omits that `StartupChecks.withServiceLoaderTests`, `StartupChecks.java:199` at `2249e37b51`, refuses a name Apache also uses. The record should name the risk. | Minor | Fixed in `99687daaf5` |
 | R1-7 | `3. Stock behaviour preservation`, `design-record.md:183` at `b210d52a66` | The record never says how item 2 of Feature switches and defaults, refuse to turn on before the final gate, applies to a feature that fits one item. | Minor | Fixed in `3a9e890e55` |
+| R2-1 | `4. Prior art reviewed`, `design-record.md:219` at `20b18cc901` | The fix of R1-4 says `YamlConfigurationLoader.loadConfig` catches one exception type. It also catches `IOException` and throws `AssertionError`, `YamlConfigurationLoader.java:129` to `133` at `8d744bb0ac`. Only the try that builds the Config catches one type. | Minor | Fixed in `edd8f309d0` |
+| R2-2 | `4. Prior art reviewed`, `design-record.md:212` at `20b18cc901` | Stock item 1 says the checks run before the node changes any local state. `CassandraDaemon.setup` runs `migrateSystemDataIfNeeded` and `CommitLog.instance.start` first, `CassandraDaemon.java:239` and `256` at `8d744bb0ac`. Nothing depends on it. | Minor | Fixed in `ac585d3604` |
 
 1. **Fixed in `<hash>`**: the commit that fixes the finding. Several commits are joined with "and". A finding on the pull request's title or body is "Fixed in the pull request title" or "body".
 2. **Accepted: `<reason>`**: the work product stays as it is, for the reason given. The reviewer judges the reason in the next round.
@@ -78,6 +81,8 @@ No decisions.
 
 Round 1 did not read the class loader filter of the in-JVM test library, which problem 8 of the design record rests on. Its source is outside what the review could read, as the design record says.
 
+Round 2 did not read it either, for the same reason. Round 2 read the changes up to `20b18cc901`. The two fixes of its findings, `edd8f309d0` and `ac585d3604`, came after it and no round read them.
+
 ## 5. Exit decision
 
-Open.
+Accept: round 2 on `20b18cc901` found no blocker and no major, and every finding has a disposition. The maintainers decide by merging.

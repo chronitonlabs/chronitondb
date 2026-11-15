@@ -61,8 +61,8 @@ IMPORTS = (
 )
 
 
-def check(title, body=""):
-    return subjectlint.check_subject(title, body, TYPES, LIMIT)
+def check(title, messages="", pr_body=None):
+    return subjectlint.check_subject(title, messages, TYPES, LIMIT, pr_body)
 
 
 def run(*args):
@@ -118,11 +118,22 @@ class Titles(unittest.TestCase):
         self.assertEqual(len(title), 72)
         self.assertEqual(check(title), [])
         errors = check(title + "b")
-        self.assertEqual(errors, ["the subject has 73 characters, at most 72 are allowed"])
+        self.assertEqual(errors, ["the subject has 73 characters, at most 72 are allowed, not counting a trailing ' (chronitondb-<line>)'"])
 
     def test_a_too_long_title_fails(self):
-        errors = check("docs(process): fix records, kind labels, release rules and new templates (chronitondb-5.0)")
-        self.assertIn("the subject has 90 characters, at most 72 are allowed", errors)
+        errors = check("docs(process): describe how ChronitonDB is developed, maintained and released")
+        self.assertEqual(errors, ["the subject has 77 characters, at most 72 are allowed, not counting a trailing ' (chronitondb-<line>)'"])
+
+    def test_the_line_suffix_is_not_counted(self):
+        title = "docs(process): fix records, kind labels, release rules and new templates"
+        self.assertEqual(len(title), 72)
+        for line in ("5.0", "6.0", "sandbox"):
+            self.assertEqual(check("%s (chronitondb-%s)" % (title, line)), [], line)
+        self.assertIn("73 characters", check(title.replace("fix", "fixe") + " (chronitondb-sandbox)")[0])
+
+    def test_a_suffix_that_names_no_line_is_counted(self):
+        title = "docs(process): fix records, kind labels, release rules and new templates (all lines)"
+        self.assertIn("84 characters", check(title)[0])
 
     def test_a_title_listing_files_fails(self):
         for title, listed in (("fix(build): update .build/run-ci", ".build/run-ci"),
@@ -141,20 +152,42 @@ class Titles(unittest.TestCase):
 
 class BreakingChanges(unittest.TestCase):
 
-    def test_a_breaking_change_with_its_footer_passes(self):
-        body = "## What and why\n\nRenames it.\n\nBREAKING CHANGE: the option analyzer is now tokenizer. Rename it in each index.\n"
-        self.assertEqual(check("feat(fulltext)!: rename the analyzer option", body), [])
+    TITLE = "feat(fulltext)!: rename the analyzer option"
+    COMMIT = "feat(fulltext)!: rename the analyzer option\n\nBREAKING CHANGE: the option analyzer is now tokenizer. Rename it in each index.\n"
+    DESCRIPTION = "## What and why\n\nRenames it.\n\nBREAKING CHANGE: the option analyzer is now tokenizer. Rename it in each index.\n"
+    WHERE = "Put the line 'BREAKING CHANGE: <what breaks and what to do>' in a commit message of the pull request, which the squash commit on the line carries"
 
-    def test_a_breaking_change_without_its_footer_fails(self):
-        errors = check("feat(fulltext)!: rename the analyzer option", "## What and why\n\nRenames it.\n")
-        self.assertEqual(errors, ["a breaking change with '!' also takes a footer line 'BREAKING CHANGE: <what breaks and what to do>'"])
+    def test_a_title_with_the_footer_in_a_commit_passes(self):
+        self.assertEqual(check(self.TITLE, self.COMMIT, pr_body="## What and why\n\nRenames it.\n"), [])
+
+    def test_a_title_with_the_footer_in_a_commit_and_the_description_passes(self):
+        self.assertEqual(check(self.TITLE, self.COMMIT, pr_body=self.DESCRIPTION), [])
+
+    def test_a_title_with_the_footer_only_in_the_description_fails(self):
+        errors = check(self.TITLE, "feat(fulltext)!: rename the analyzer option\n", pr_body=self.DESCRIPTION)
+        self.assertEqual(errors, ["the 'BREAKING CHANGE:' footer is only in the pull request description, which never reaches the line. " + self.WHERE])
+
+    def test_a_title_without_any_footer_fails(self):
+        errors = check(self.TITLE, "feat(fulltext)!: rename the analyzer option\n", pr_body="Renames it.\n")
+        self.assertEqual(errors, ["a breaking change with '!' also takes a footer. " + self.WHERE])
+
+    def test_a_footer_only_in_the_description_without_the_bang_fails(self):
+        errors = check("feat(fulltext): rename the analyzer option", "", pr_body=self.DESCRIPTION)
+        self.assertEqual(errors, ["the pull request description has a 'BREAKING CHANGE:' footer. A breaking change takes '!' after the scope, and the footer goes in a commit message of the pull request"])
+
+    def test_a_commit_with_its_footer_passes(self):
+        self.assertEqual(check(self.TITLE, "\nBREAKING CHANGE: rename it in each index.\n"), [])
+
+    def test_a_commit_without_its_footer_fails(self):
+        errors = check(self.TITLE, "\nRenames it.\n")
+        self.assertEqual(errors, ["a breaking change with '!' also takes a footer line 'BREAKING CHANGE: <what breaks and what to do>' in its commit message"])
 
     def test_a_footer_without_the_bang_fails(self):
         errors = check("feat(fulltext): rename the analyzer option", "BREAKING CHANGE: rename it in each index.\n")
         self.assertEqual(errors, ["a 'BREAKING CHANGE:' footer also takes '!' after the scope, as in 'feat(fulltext)!: rename the analyzer option'"])
 
     def test_a_footer_inside_a_line_does_not_count(self):
-        errors = check("feat(fulltext)!: rename the analyzer option", "See the BREAKING CHANGE: section.\n")
+        errors = check(self.TITLE, "See the BREAKING CHANGE: section.\n")
         self.assertIn("a breaking change with '!' also takes a footer line", errors[0])
 
 
@@ -194,9 +227,18 @@ class Imports(unittest.TestCase):
     def test_an_import_keeps_file_names_of_the_original_subject(self):
         self.assertEqual(check("import(CASSANDRA-21319): Fix NPE in StorageService.java"), [])
 
-    def test_an_import_too_long_fails(self):
-        title = "import(CASSANDRA-21319): " + "Fix " * 15
-        self.assertIn("at most 72 are allowed", check(title.strip())[0])
+    def test_an_import_keeps_a_long_original_subject(self):
+        for title in ("import(CASSANDRA-21319): Fix the token allocation of a new node when the keyspace uses NetworkTopologyStrategy",
+                      "import(rustyrazorblade/cassandra@579e35ae6c12): Add the easy-cass-lab profile for local clusters"):
+            self.assertGreater(len(title), 72)
+            self.assertEqual(check(title), [], title)
+
+    def test_a_long_import_still_takes_its_exact_form(self):
+        title = "import(apache-5.0.8): merge Apache Cassandra 5.0.8 with the fixes of the month and more words"
+        self.assertEqual(check(title), ["an import of an Apache release reads 'import(apache-5.0.8): merge Apache Cassandra 5.0.8'"])
+
+    def test_an_import_without_its_scope_fails(self):
+        self.assertIn("an import takes one of the import forms", check("import: bring in a fix")[0])
 
 
 class Command(unittest.TestCase):
@@ -241,8 +283,30 @@ class Command(unittest.TestCase):
         self.assertIn("title: the subject has the form", err)
         self.assertEqual(out, "title failed\n")
 
-    def test_the_footer_is_read_from_the_description(self):
-        rc, _, err = self.title("feat(fulltext)!: rename the analyzer option", "BREAKING CHANGE: rename it in each index.\n")
+    def test_the_footer_is_read_from_the_pull_requests_commits(self):
+        self.git("checkout", "-q", "-b", "work")
+        self.commit("rename the analyzer option\n\nBREAKING CHANGE: rename it in each index.")
+        self.commit("answer the review")
+        rc, _, err = run("title", "--repo", self.repo, "--rules", "line", "--commits", "line..work",
+                         "feat(fulltext)!: rename the analyzer option")
+        self.assertEqual((rc, err), (0, ""))
+
+    def test_a_footer_only_in_the_description_is_refused(self):
+        self.git("checkout", "-q", "-b", "work")
+        self.commit("rename the analyzer option")
+        path = os.path.join(self.repo, ".git", "body.txt")
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write("BREAKING CHANGE: rename it in each index.\n")
+        rc, out, err = run("title", "--repo", self.repo, "--rules", "line", "--commits", "line..work", "--body", path,
+                           "feat(fulltext)!: rename the analyzer option")
+        self.assertEqual(rc, 1)
+        self.assertIn("title: the 'BREAKING CHANGE:' footer is only in the pull request description", err)
+        self.assertIn("in a commit message of the pull request", err)
+
+    def test_line_suffix_and_number_are_not_counted_on_the_line(self):
+        start = self.git("rev-parse", "HEAD")
+        self.commit("docs(process): fix records, kind labels, release rules and new templates (chronitondb-5.0) (#74)")
+        rc, _, err = run("commits", "--repo", self.repo, "--rules", "line", "%s..line" % start)
         self.assertEqual((rc, err), (0, ""))
 
     def test_squash_and_merge_subjects_on_the_line(self):

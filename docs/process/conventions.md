@@ -86,7 +86,7 @@ See [upstream.md](upstream.md).
 
 ### Pull request titles
 
-Our own pull requests are squash merged, and the title becomes the subject of the commit on the line. The title MUST follow the same Conventional Commits rules. Import pull requests are merged with a merge commit, so the imported commits reach the line as they are.
+Our own pull requests are squash merged, and the title becomes the subject of the commit on the line. The title MUST follow the same Conventional Commits rules. Import pull requests are merged with a merge commit, so the imported commits reach the line as they are. The `pr-title` check refuses a title that breaks these rules or the import forms, and reads the `BREAKING CHANGE:` footer from the description. The `line-subjects` check runs on each push to a line and fails on a new commit whose subject breaks them, such as a subject edited in the merge dialog.
 
 ## Change logs and release notes
 

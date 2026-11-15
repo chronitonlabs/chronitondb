@@ -143,6 +143,15 @@ Each document is one file, so each carries an index of its headings near the top
 4. The index is never written by hand. After any heading is added, removed or renamed, and before the commit, the author regenerates it with `tools/chronitondb/doclint.py index --write <file>`. It refuses, and leaves the file unchanged, when the Contents section holds anything but the list. `tools/chronitondb/doclint.py index <file>` prints it, and `index --check <file>` reports what is wrong with it.
 5. The process document check refuses a document of a templated kind, a decision record only when it is new to the line, whose index is missing, not first, misses a heading, lists a heading out of order or at the wrong depth, or links an anchor that no heading of the file has. It also refuses a new decision record that does not take the next number after the highest one merged on the line. See [the tools README](../../tools/chronitondb/README.md#process-documents-doclintpy).
 
+## Claims about code
+
+A claim about what code does names the code it was read in. This applies to the process pages and to every document written from a template.
+
+1. A claim about Apache Cassandra code says "Apache Cassandra", never "stock".
+2. Each claim names the project, the branch and the commit, in one of these forms: `Apache Cassandra cassandra-5.0 at <hash>`, `Apache Cassandra trunk at <hash>` or `ChronitonDB chronitondb-5.0 at <hash>`. Next to it stand the symbol and the file and line, for example `CompactionManager.submitBackground`, `src/java/org/apache/cassandra/db/compaction/CompactionManager.java:<line>`.
+3. Analysis keeps three sources apart and says which one each claim holds for: our line, the Apache Cassandra release our line is based on, and Apache Cassandra upstream now, meaning the head of the same branch, the next major version's branch and trunk.
+4. "Stock behaviour" still names the rule that Apache Cassandra behaviour does not change for anyone not using a fork feature. See [quality-requirements.md](quality-requirements.md#stock-behaviour-unchanged).
+
 ## Code layout
 
 1. Fork logic lives in classes under `org.chronitondb`, in packages named for what they are, for example `org.chronitondb.fulltext`.

@@ -50,6 +50,8 @@ The type of each PATH comes from where it lives:
                                            register)
     docs/releases/<line>-plan.md           line plan
     docs/releases/*.md                     release proposal
+    docs/research/<issue>-<slug>.md        research report (README.md is
+                                           not one)
 
 Any other path is not a document of the process and is passed over, except
 that no file under docs/design/ may keep a clarification marker.
@@ -141,6 +143,10 @@ A milestone report is also checked for: each row of its Requirements
 delivered table has the status delivered, not delivered, or delivered in
 part, as planned, and the report of the feature's final milestone, the
 highest milestone of the delivery plan, has no row delivered in part.
+
+A research report is also checked for: its file name is
+docs/research/<issue>-<slug>.md, the slug lower case words joined by
+single hyphens, and its References row names that issue as #<issue>.
 
 A delta entry is also checked for: the Header table holds the DEP-3 fields
 of the template, each in its form (Origin, Bug, Bug-ChronitonDB, Forwarded,
@@ -326,6 +332,7 @@ TEMPLATES = {
     "delta-entry": "docs/process/templates/delta-entry.md",
     "release-proposal": "docs/process/templates/release-proposal.md",
     "ac-coverage": "docs/process/templates/ac-coverage.md",
+    "research-report": "docs/process/templates/research-report.md",
     "decision": "docs/decisions/README.md",
 }
 # Unnumbered sections the type requires beside the numbered ones.
@@ -403,7 +410,27 @@ def doc_type(path, text):
         return "line-plan"
     if re.match(r"^docs/releases/[^/]+\.md$", path):
         return "release-proposal"
+    if re.match(r"^docs/research/[^/]+\.md$", path) and path != "docs/research/README.md":
+        return "research-report"
     return None
+
+
+RESEARCH_NAME = re.compile(r"^docs/research/([0-9]+)-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
+
+
+def check_research(doc, path):
+    """A research report's file name is docs/research/<issue>-<slug>.md,
+    and its References row names that issue (additive.md, Work intake)."""
+    match = RESEARCH_NAME.match(path)
+    if not match:
+        doc.error(0, "a research report is docs/research/<issue>-<slug>.md, the issue number of its spike and a slug of lower case words joined by single hyphens")
+        return
+    fields, _ = control_table(doc)
+    if not fields or "References" not in fields:
+        return
+    value, line = fields["References"]
+    if not re.search(r"(?<![0-9A-Za-z])#%s(?![0-9])" % match.group(1), value):
+        doc.error(line, "the References row names the spike's issue as #%s, the number in the file name" % match.group(1))
 
 
 def control_table(doc):
@@ -2421,6 +2448,8 @@ def main(argv):
                 check_plan(doc, path, source)
             elif kind == "milestone-report":
                 check_milestone(doc, path, source)
+            elif kind == "research-report":
+                check_research(doc, path)
             elif kind == "delta-entry":
                 if "delta-template" not in rules:
                     rules["delta-template"] = Markdown("delta-entry.md", template_text)

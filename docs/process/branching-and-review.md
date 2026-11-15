@@ -117,7 +117,7 @@ Query parsing and analyzers are not sensitive paths.
 
 ## Reviews
 
-Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer first: our own, outside contributors', imports and dependency updates. The reviewer posts its review on the pull request. A maintainer reads it and then merges, or requests changes.
+Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer first: our own, outside contributors', imports and dependency updates. An outside contributor's pull request is reviewed only after a maintainer adds the label `triage:accepted`. See [contributing.md](contributing.md#checks-and-review). The reviewer posts its review on the pull request. A maintainer reads it and then merges, or requests changes.
 
 | Work product | Review type | Reviewed by | Approver |
 |---|---|---|---|

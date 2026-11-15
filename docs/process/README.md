@@ -23,6 +23,15 @@ ChronitonDB is a downstream distribution of Apache Cassandra, in the way Ubuntu 
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in these documents are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
+## Work intake
+
+Every piece of work has a GitHub issue. Work may start committed, with its kind label, as described below. Two optional labels mark work that is not committed yet:
+
+1. `idea`: should we do this? The requirements analyst writes a short decision brief, and the maintainers decide to do it, not to do it, or to ask for a spike.
+2. `spike`: how would we do this, or can it be done? The architect investigates and writes a research report in `docs/research/`, which a maintainer merges.
+
+On do it, a decision record holds the go and its reasons, and the kind and class labels go on. On do not, the issue is closed as not planned, with the reason. [additive.md](additive.md#work-intake) has the detail.
+
 ## Pick the path for a change
 
 Every change has one maintenance category from ISO/IEC/IEEE 14764:2022. The category and the size of the change pick the path.
@@ -49,8 +58,8 @@ Each change also has a class, its risk and its size, carried by one `risk:`, one
 
 The maintainers decide stakeholder needs, scope, priority, releases and security disclosure, and approve every step by merging its pull request. Eight roles do the work:
 
-1. The requirements analyst asks the maintainers what new work is for and writes the requirements brief they confirm.
-2. The architect writes the feature spec, the plan, the delivery plan and the milestone reports of a large feature.
+1. The requirements analyst asks the maintainers what new work is for and writes the requirements brief they confirm, and the decision brief of an idea.
+2. The architect writes the feature spec, the plan, the delivery plan and the milestone reports of a large feature, and the research report of a spike.
 3. The designer writes the design record or fix record of one item.
 4. The developer writes the code, its tests and its documentation.
 5. The reviewer reviews every pull request and posts its review on it.
@@ -91,7 +100,7 @@ The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. 
 ## Glossary
 
 1. **Line**: a long lived branch that ships releases, one per Apache Cassandra major version. Today `chronitondb-5.0` and `chronitondb-6.0`.
-2. **Stock**: code or behaviour exactly as Apache Cassandra has it.
+2. **Stock**: code or behaviour exactly as Apache Cassandra has it. A claim about code says Apache Cassandra instead, with its branch and commit. See [conventions.md](conventions.md#claims-about-code).
 3. **Item**: one unit of work with one public GitHub issue, one design record or fix record, and one pull request per line it targets. A security fix has no public issue until disclosure. It is tracked in its private advisory.
 4. **Feature spec**: the top level description of a large feature, with feature requirements `FREQ-<KEY>-nnn`.
 5. **Plan**: the list of items that deliver a feature spec.
@@ -112,3 +121,6 @@ The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. 
 20. **Feature key**: 3 to 5 capital letters that name a fork feature, used in its directory `docs/design/<KEY>-<slug>/` and in its requirement ids.
 21. **Feature class**: purely additive, for a feature reachable only through syntax, index types or settings that stock Apache Cassandra rejects, or behaviour-changing, for a feature that changes something stock Apache Cassandra already does. A purely additive feature may be on by default from a line's first release. A behaviour-changing feature is always off by default, except the one exception in [release.md](release.md#what-a-release-may-contain).
 22. **Scenario**: the executable form of a fork feature's EARS requirements, written in Gherkin and kept in `test/bdd/`.
+23. **Idea**: an issue labelled `idea`, work the maintainers have not yet decided to do.
+24. **Spike**: an issue labelled `spike`, a question of how to do something or whether it can be done, answered by a research report.
+25. **Research report**: the architect's report on a spike, in `docs/research/<issue>-<slug>.md`.

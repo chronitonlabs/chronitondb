@@ -129,7 +129,7 @@ The security engineer watches Apache security announcements and dependency advis
 
 ## Security coordination with Apache
 
-When a vulnerability affects stock Apache Cassandra code, we follow the norm Linux distributions use. The full process is in [security.md](security.md#when-stock-apache-cassandra-is-affected). The steps below are the whole rule.
+When a vulnerability affects Apache Cassandra code, we follow the norm Linux distributions use. The full process is in [security.md](security.md#when-stock-apache-cassandra-is-affected). The steps below are the whole rule.
 
 1. We fix it privately at once.
 2. We notify the Apache Cassandra security team at once, with the fix.

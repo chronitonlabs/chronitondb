@@ -40,7 +40,7 @@ startup_checks:
     enabled: true
 ```
 
-Any value but `true` leaves the check off. Other keys in the entry are not read.
+The node reads `enabled` as Apache Cassandra reads it for its own startup checks. Without the key the check is off. Other keys in the entry are not read.
 
 ## What the check compares
 
@@ -80,6 +80,7 @@ Both counters exist only on a node that ran the check. A node with the check off
 | the check is off | nothing is compared, logged or counted |
 | the file system of the commit log directory cannot be read | one WARN line for it, nothing is compared, the node starts |
 | the file system of a data directory cannot be read | one WARN line for it, the other data directories are compared, the node starts |
+| any other error in the check | one WARN line, `The startup check check_commitlog_shared_disk failed and compared nothing more.`, with the cause, the node starts |
 
 Timeouts, coordinator failure, missing replicas, limits and indexes that are not built do not apply: no request reaches the check.
 
@@ -87,10 +88,12 @@ Timeouts, coordinator failure, missing replicas, limits and indexes that are not
 
 Two file systems on one physical device get no warning, for example two partitions of one disk or two logical volumes of one volume group. The check compares file systems, not devices.
 
+<Whether two subvolumes of one file system that report a device id each, as btrfs is said to do, get a warning: the developer checks it and states it here.>
+
 The hints, saved caches and CDC directories are not compared.
 
 The value is read at start only. A change needs a restart of the node.
 
 ## Rollback to Apache Cassandra
 
-Before a node runs an Apache Cassandra binary, or a ChronitonDB build older than this feature, remove `check_commitlog_shared_disk` from its `cassandra.yaml`. <One sentence on what such a binary does with the entry, once section 15 item 7 of the design record is settled.>
+Before a node runs an Apache Cassandra binary, or a ChronitonDB build older than this feature, remove check_commitlog_shared_disk from its cassandra.yaml. <One sentence on what such a binary does with the entry, once section 15 item 7 of the design record is settled.>

@@ -22,7 +22,7 @@ limitations under the License.
 | Title | Apache GitHub checks run on pull requests to the lines |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 3 |
+| Version | 4 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
 | References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
@@ -49,12 +49,12 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Bug-ChronitonDB | none |
 | Forwarded | Not needed. The triggers and job name fit this repository's branch names and required checks. |
 | Added | 2026-10-31 |
-| Last-Update | 2026-11-04 |
-| Pull requests | `chronitondb-5.0`: [#47](https://github.com/chronitonlabs/chronitondb/pull/47), [#50](https://github.com/chronitonlabs/chronitondb/pull/50) and [#51](https://github.com/chronitonlabs/chronitondb/pull/51), commits `47c549d102`, `757e5bba84` and `11a4cd80c8`. `chronitondb-6.0`: [#48](https://github.com/chronitonlabs/chronitondb/pull/48) and [#52](https://github.com/chronitonlabs/chronitondb/pull/52), commits `9c9cb0b00b` and `6363396f38`. |
+| Last-Update | 2026-11-15 |
+| Pull requests | `chronitondb-5.0`: [#47](https://github.com/chronitonlabs/chronitondb/pull/47), [#50](https://github.com/chronitonlabs/chronitondb/pull/50), [#51](https://github.com/chronitonlabs/chronitondb/pull/51) and [#65](https://github.com/chronitonlabs/chronitondb/pull/65), commits `47c549d102`, `757e5bba84`, `11a4cd80c8` and `5cb388f9a6`. `chronitondb-6.0`: [#48](https://github.com/chronitonlabs/chronitondb/pull/48), [#52](https://github.com/chronitonlabs/chronitondb/pull/52) and [#66](https://github.com/chronitonlabs/chronitondb/pull/66), commits `9c9cb0b00b`, `6363396f38` and `9f9b4f94b4`. |
 
 ## What
 
-Apache's Ant Check and Build Scripts workflows run on every pull request to a `chronitondb-*` line and on pushes to the lines, not on every branch push. The Ant Check job is named `ant-check` on both lines. Build Scripts keeps its path filter.
+Apache's Ant Check and Build Scripts workflows run on every pull request to a `chronitondb-*` line and on pushes to the lines, not on every branch push. The Ant Check job is named `ant-check` on both lines. Build Scripts keeps its path filter. A comment starting `ChronitonDB:` in each workflow says what changed. #65 and #66 reworded those comments only.
 
 ## Why
 

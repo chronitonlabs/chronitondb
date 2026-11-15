@@ -60,7 +60,7 @@ When the file system of a directory cannot be read, the node logs one line at WA
 The startup check check_commitlog_shared_disk could not read the file system of <directory> and left that directory out.
 ```
 
-When any other error ends the check, the node logs one line at WARN, with the cause:
+When any other exception ends the check, the node logs one line at WARN, with the cause:
 
 ```
 The startup check check_commitlog_shared_disk failed and compared nothing more.
@@ -70,7 +70,9 @@ A start that finds nothing logs nothing.
 
 ## Metrics
 
-The three counters exist only on a node that ran the check. A node with the check off has none of them. A failed start of the check keeps the counts it made before it failed.
+The three counters exist only on a node that ran the check. A node with the check off has none of them. A failed run of the check keeps the counts it made before it failed.
+
+The start log is the record of a run. The counters repeat it as far as they can. When the check itself failed, a counter can be missing or behind, and the failed warning in the log says so. When the MBean of a counter could not be registered, JMX does not show that counter, and the log holds an ERROR line that starts with `Error in MBean wrapper: `.
 
 | Metric | Kind | What it counts |
 |---|---|---|
@@ -88,7 +90,7 @@ The three counters exist only on a node that ran the check. A node with the chec
 | the file system of the commit log directory cannot be read | one WARN line for it, nothing is compared, the node starts |
 | the file system of a data directory cannot be read | one WARN line for it, the other data directories are compared, the node starts |
 | the platform has no `unix` file attribute view | one WARN line for the commit log directory at every start with the check on, nothing is compared, the node starts |
-| any other error in the check | one WARN line, the failed warning above, with the cause, nothing more is compared, the node starts |
+| any other exception in the check | the failed warning above, with the cause, nothing more is compared, the node starts |
 
 Timeouts, coordinator failure, missing replicas, limits and indexes that are not built do not apply: no request reaches the check.
 

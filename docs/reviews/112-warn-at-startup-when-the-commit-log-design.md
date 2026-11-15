@@ -24,7 +24,7 @@ limitations under the License.
 | Status | Open |
 | Work product | Design record: `docs/design/CLD-commitlog-disk-check/design-record.md` |
 | Pull request | #116 |
-| Version reviewed | Not reviewed yet |
+| Version reviewed | `b210d52a66` |
 | Review type | Technical review (ISO/IEC 20246) |
 | Reviewer | chronitondb-agent |
 | Author | Designer: chronitondb-agent |
@@ -49,6 +49,7 @@ The author keeps this record current and commits it with the change: when the pu
 
 | Round | Date | Version reviewed | Scope | Verdict | Blockers | Majors | Minors | Nits |
 |---|---|---|---|---|---|---|---|---|
+| 1 | 2026-11-15 | `b210d52a66` | The whole change | Changes requested | 0 | 1 | 6 | 0 |
 
 ## 2. Anomaly list
 
@@ -56,6 +57,13 @@ One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A f
 
 | Id | Location | Description | Classification | Disposition |
 |---|---|---|---|---|
+| R1-1 | `14. Testing`, `design-record.md:397` at `b210d52a66` | Test 19 asserts that neither other counter exists, but step 3 of the run and REQ-CLD-021 leave the order of those two counters open. A correct build fails the test. | Major | Fixed in `e83b7e3976` |
+| R1-2 | `8. Observability`, `design-record.md:314` at `b210d52a66` | The unreadable warning says "left that directory out" for the commit log directory too, where step 5 of the run compares nothing. Lines 57 and 90 of the page skeleton disagree. | Minor | Fixed in `5d1408a7ba` |
+| R1-3 | `8. Observability`, `design-record.md:312` at `b210d52a66` | The record and line 75 of the page skeleton say the failed warning shows a missing or stale counter. Its text names no counter. | Minor | Fixed in `7acd225289` |
+| R1-4 | `4. Prior art reviewed`, `design-record.md:217` at `b210d52a66` | `YamlConfigurationLoader.loadConfig` catches `YAMLException` only, `YamlConfigurationLoader.java:146` at `8d744bb0ac`, not any failure. The conclusion holds. | Minor | Fixed in `b629bdeb53` |
+| R1-5 | `4. Prior art reviewed`, `design-record.md:210` at `b210d52a66` | The citations at lines 210, 222 and 331 give one commit after several line ranges, so each earlier range reads as a bare file and line. The claims were verified. | Minor | Fixed in `02d6292df5` |
+| R1-6 | `4. Prior art reviewed`, `design-record.md:223` at `b210d52a66` | The 6.0 port claim omits that `StartupChecks.withServiceLoaderTests`, `StartupChecks.java:199` at `2249e37b51`, refuses a name Apache also uses. The record should name the risk. | Minor | Fixed in `99687daaf5` |
+| R1-7 | `3. Stock behaviour preservation`, `design-record.md:183` at `b210d52a66` | The record never says how item 2 of Feature switches and defaults, refuse to turn on before the final gate, applies to a feature that fits one item. | Minor | Fixed in `3a9e890e55` |
 
 1. **Fixed in `<hash>`**: the commit that fixes the finding. Several commits are joined with "and". A finding on the pull request's title or body is "Fixed in the pull request title" or "body".
 2. **Accepted: `<reason>`**: the work product stays as it is, for the reason given. The reviewer judges the reason in the next round.
@@ -68,7 +76,7 @@ No decisions.
 
 ## 4. Limits
 
-None.
+Round 1 did not read the class loader filter of the in-JVM test library, which problem 8 of the design record rests on. Its source is outside what the review could read, as the design record says.
 
 ## 5. Exit decision
 

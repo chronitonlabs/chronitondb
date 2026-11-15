@@ -67,7 +67,7 @@ The view is the table `system_views.startup_checks`.
 
 ## Known limitations
 
-<A row says whether a check is on, not what it found. The two checks that do nothing on a platform other than Linux. The start option `cassandra.ignore_kernel_bug_1057843_check`. A yaml entry without the key `enabled` shows `yaml`. A read of the view at the moment it is switched on can fail once. The view is local to the node that answers.>
+<A row says whether a check is on, not what it found. The two checks that do nothing on a platform other than Linux. The start option `cassandra.ignore_kernel_bug_1057843_check`. A yaml entry without the key `enabled` shows `yaml`. The view is local to the node that answers.>
 
 ## Rollback
 

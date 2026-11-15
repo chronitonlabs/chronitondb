@@ -25,25 +25,19 @@ limitations under the License.
 | Version | 1 |
 | Author | Designer: chronitondb-agent |
 | Approver | The maintainer who merges the pull request |
-| References | Issue #112. Line `chronitondb-sandbox`, read at commit `8d744bb0ac`. Apache base commit `76550e931481e965ae3283d8cf4a59c320d74c55` (Apache `cassandra-5.0`). No feature spec and no plan: the one-item path. Process pages [branching-and-review.md](../../process/branching-and-review.md#feature-switches-and-defaults) and [quality-requirements.md](../../process/quality-requirements.md). Decision record 0001. |
-| Risk | Normal: the issue's label. Open: the worst Bug Category is named when the maintainers have answered the three open points below. |
-| Size | Low Hanging Fruit: one fork class for the check, one or two small edits to stock files, no dependency on other work. |
-| Reach | One area: the startup checks of one node, in `org.apache.cassandra.service` and one new package under `org.chronitondb`. |
-| Touches | public interface (configuration), stock behaviour (the start log of a node), new feature or switch. Open: the list is final when the maintainers have answered the three open points below. |
+| References | Issue #112. Line `chronitondb-sandbox`, read at commit `8d744bb0ac`. Apache base commit `76550e931481e965ae3283d8cf4a59c320d74c55` (Apache `cassandra-5.0`). No feature spec and no plan: the one-item path. Process pages [branching-and-review.md](../../process/branching-and-review.md#feature-switches-and-defaults) and [quality-requirements.md](../../process/quality-requirements.md). Decision records 0001, 0004, 0005 and 0006. |
+| Risk | Normal: the issue's label. The floor applies, because the change touches configuration and stock behaviour. The worst Bug Category the change could cause if it were wrong is Availability, a node that does not start, if the check or its hook threw at startup. [classification.md](../../process/classification.md#risk) rates that category Critical. REQ-CLD-006 bounds it, and the maintainers confirm the class when they merge this record. |
+| Size | Low Hanging Fruit: one fork class for the check, two small edits to stock files, no dependency on other work. |
+| Reach | One area: the startup checks of one node, in `org.apache.cassandra.service` and the new package `org.chronitondb.startup`. |
+| Touches | public interface (configuration), public interface (jmx mbeans, including metrics), stock behaviour (the start log of a node whose operator switched the check on), new feature or switch |
 
 Change history: the git history of this file.
 
-Location: `docs/design/CLD-commitlog-disk-check/`, the directory of the fork feature with the key `CLD`, which this record proposes and the merge of its pull request reserves ([additive.md, Feature keys and requirement ids](../../process/additive.md#feature-keys-and-requirement-ids), item 2). Every section is filled, or carries a waiver with its reason.
+Location: `docs/design/CLD-commitlog-disk-check/`, the directory of the fork feature with the key `CLD`, which this record proposes and the merge of its pull request reserves ([additive.md, Feature keys and requirement ids](../../process/additive.md#feature-keys-and-requirement-ids), item 2), with the coverage file `ac-coverage.md` next to it. Every section is filled, or carries a waiver with its reason.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
 The Risk, Size and Reach rows are the item's class, as [classification.md](../../process/classification.md) defines it, and match the issue's `risk:normal`, `size:low-hanging-fruit` and `reach:one-area` labels. The issue also carries `kind:additive`, so the item is a fork feature small enough for one item and takes the one-item path of [maintenance.md](../../process/maintenance.md#the-one-item-path) with a feature key: this directory, the ids `REQ-CLD-nnn`, and the feature class stated in [section 3](#3-stock-behaviour-preservation).
-
-**This record is not finished.** Three points wait for the maintainers' answer, and each changes what is built. Sections 1 and 4 are written. Every other section says `Open` until the answers are in.
-
-1. **The default.** A new warning in the start log changes what a stock node logs, so the switch rules make the feature off by default. Whether it stays off by default, or becomes a second exception that is on by default.
-2. **The switch.** Whether the check is switched on under the stock `startup_checks` block of `cassandra.yaml`, with no nodetool command, as every stock startup check is, or with a yaml key of its own and a pair of nodetool commands.
-3. **What "shares a disk" means.** Whether the check compares file systems only, as the issue's text says, or also the physical device under two file systems.
 
 ## Contents
 
@@ -88,53 +82,122 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../..
 
 An operator can put the commit log on the same disk as the data files by mistake, and nothing tells them. On spinning disks the commit log's sequential writes then compete with reads, flushes and compaction, and write latency suffers. On any disk, one failure takes out the commit log and the data together.
 
-Stock Apache Cassandra advises against it only in a comment of `conf/cassandra.yaml`: "when running on magnetic HDD, this should be a separate spindle than the data directories" (`conf/cassandra.yaml:405` to `406` at `8d744bb0ac`). The node itself checks one thing: `DatabaseDescriptor.applySimpleConfig` refuses to start when `commitlog_directory` is the same path as a data directory, with `commitlog_directory must not be the same as any data_file_directories` (`DatabaseDescriptor.java:706` to `707` at `8d744bb0ac`). Two different paths on one file system pass without a word.
+Stock Apache Cassandra advises against it only in the comment above the key `commitlog_directory` in `conf/cassandra.yaml`: "when running on magnetic HDD, this should be a separate spindle than the data directories" (`conf/cassandra.yaml:405` to `406` at `8d744bb0ac`). The node itself checks one thing: `DatabaseDescriptor.applySimpleConfig` refuses to start when `commitlog_directory` is the same path as a data directory, with `commitlog_directory must not be the same as any data_file_directories` (`DatabaseDescriptor.java:706` to `707` at `8d744bb0ac`). Two different paths on one file system pass without a word.
 
-That is also the layout of every node that sets neither directory. `DatabaseDescriptor.applySimpleConfig` puts the commit log in `<storagedir>/commitlog` (`DatabaseDescriptor.java:624` to `627` at `8d744bb0ac`) and the data in `<storagedir>/data` (`DatabaseDescriptor.java:693` to `696` at `8d744bb0ac`), and `bin/cassandra.in.sh` sets the storage directory to `$CASSANDRA_HOME/data` (`bin/cassandra.in.sh:48` at `8d744bb0ac`). So a check that is on by default would warn on every node that runs the default layout, which includes every development install and every test node.
+That is also the layout of every node that sets neither directory. `DatabaseDescriptor.applySimpleConfig` puts the commit log in `<storagedir>/commitlog` (`DatabaseDescriptor.java:624` to `627` at `8d744bb0ac`) and the data in `<storagedir>/data` (`DatabaseDescriptor.java:693` to `696` at `8d744bb0ac`), and the variable `cassandra_storagedir` of `bin/cassandra.in.sh` sets the storage directory to `$CASSANDRA_HOME/data` (`bin/cassandra.in.sh:48` at `8d744bb0ac`). So a check that is on by default would warn on every node that runs the default layout, which includes every development install and every test node. Decision record 0004 keeps the check off by default for that reason.
 
 Acceptance criteria, from the issue:
 
 1. The node logs a clear warning at startup when the commit log directory is on the same file system as any data directory.
 2. The node still starts as it does today.
 
+What this record builds, in short. One new startup check, `org.chronitondb.startup.CommitLogDiskCheck`, which an operator switches on in `cassandra.yaml`:
+
+```
+startup_checks:
+  check_commitlog_shared_disk:
+    enabled: true
+```
+
+With the switch on, the check runs once at each start, after the stock checks. It compares the file system of the commit log directory with the file system of each data directory. When one or more data directories are on the commit log's file system it logs one WARN line that names them. It never stops the node. With the switch off, which is the default, the check returns at once and the node logs and holds what a stock node does, except for the three small presences row 3 of the departures table in section 3 lists.
+
+The words this record uses with one fixed meaning are in [New terms](#new-terms): the switch, the data directories, shares a file system, the shared warning and the unreadable warning.
+
 ### Requirements
 
-Open: the requirements are written when the maintainers have answered the three open points above, because each answer changes them.
+REQ-CLD-001 (event driven): When the startup checks run with the switch on and the commit log directory shares a file system with one or more data directories, the check MUST log exactly one line at WARN with the text of the shared warning. Source: acceptance criterion 1.
+
+REQ-CLD-002 (ubiquitous): The shared warning MUST list every data directory that shares a file system with the commit log directory and no other directory. Source: acceptance criterion 1 and decision record 0006.
+
+REQ-CLD-003 (event driven): When the startup checks run with the switch on and no data directory shares a file system with the commit log directory, the check MUST NOT log the shared warning. Source: acceptance criterion 1 and decision record 0006.
+
+REQ-CLD-004 (state driven): While the switch is off, the check MUST return without a file store lookup, a log line or a metric. Source: decision record 0004 and [branching-and-review.md](../../process/branching-and-review.md#feature-switches-and-defaults) item 7.
+
+REQ-CLD-005 (ubiquitous): The switch MUST be off on a node whose `cassandra.yaml` does not set `enabled` to `true` in the entry `check_commitlog_shared_disk` under `startup_checks`. Source: decision records 0004 and 0005.
+
+REQ-CLD-006 (ubiquitous): The check MUST return normally from every run, whatever a file store lookup returns or throws. Source: acceptance criterion 2 and problem 1.
+
+REQ-CLD-007 (unwanted behaviour): If the file store lookup of the commit log directory or of a data directory throws, then the check MUST log one line at WARN with the text of the unreadable warning for that directory. Source: problem 6.
+
+REQ-CLD-008 (unwanted behaviour): If the file store lookup of a data directory throws, then the check MUST still compare every other data directory with the commit log directory. Source: problem 6.
+
+REQ-CLD-009 (event driven): When the startup checks run with the switch on, the check MUST raise the counter `org.chronitondb.metrics:type=CommitLogDiskCheck,name=SharedDataDirectories` by the number of data directories that share a file system with the commit log directory. Source: problem 7 and [quality-requirements.md](../../process/quality-requirements.md#observability).
+
+REQ-CLD-010 (event driven): When the startup checks run with the switch on, the check MUST raise the counter `org.chronitondb.metrics:type=CommitLogDiskCheck,name=UnreadableDirectories` by the number of directories whose file store lookup threw. Source: problem 6 and [quality-requirements.md](../../process/quality-requirements.md#observability).
+
+REQ-CLD-011 (ubiquitous): A node that starts through `CassandraDaemon` MUST run the check as one of its startup checks. Source: acceptance criterion 1 and problem 5.
+
+REQ-CLD-012 (ubiquitous): The change MUST NOT modify a test that exists on the line. Source: problem 3 and [conventions.md, Code layout](../../process/conventions.md#code-layout) item 5.
+
+REQ-CLD-013 (ubiquitous): The reference page `docs/reference/commitlog-disk-check.md` MUST hold one line that names `check_commitlog_shared_disk`, `cassandra.yaml`, `Apache Cassandra` and `older`, the rollback line. Source: problem 2.
+
+REQ-CLD-014 (ubiquitous): `NEWS-chronitondb.txt` MUST hold one line that names `check_commitlog_shared_disk`, `cassandra.yaml`, `Apache Cassandra` and `older`, the rollback line. Source: problem 2.
+
+REQ-CLD-015 (ubiquitous): The reference page MUST contain each of these exact texts: `check_commitlog_shared_disk`, `org.chronitondb.metrics:type=CommitLogDiskCheck,name=SharedDataDirectories`, `org.chronitondb.metrics:type=CommitLogDiskCheck,name=UnreadableDirectories`, the fixed text of the shared warning and the fixed text of the unreadable warning. Source: problem 7.
 
 ## 2. Decisions implemented
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+1. Decision record 0001, The first maintainers, 2026-11-01: the maintainers who approve this record. Nothing in it binds the design.
+2. Decision record 0004, The commit log disk check is off by default, 2026-11-15, added in this pull request with the status Accepted, which the maintainer's merge of this pull request makes true. The check runs only on a node whose operator switched it on. REQ-CLD-004 and REQ-CLD-005 implement it.
+3. Decision record 0005, The commit log disk check is switched under `startup_checks`, 2026-11-15, added in this pull request the same way. The switch is the entry `check_commitlog_shared_disk` with the key `enabled` under the stock `startup_checks` block. The feature has no top level yaml key and no nodetool command. REQ-CLD-005, section 3 and waiver 3 implement it.
+4. Decision record 0006, The commit log disk check compares file systems, 2026-11-15, added in this pull request the same way. Two directories share a disk, for this check, when they are on the same file system. Two file systems on one physical device get no warning. REQ-CLD-001 to REQ-CLD-003 and the known limitation in section 13 implement it.
+5. The process pages, read on the line at commit `8d744bb0ac`: [branching-and-review.md, Feature switches and defaults](../../process/branching-and-review.md#feature-switches-and-defaults) item 4 (a behaviour-changing feature is off by default) and item 7 (stock behaviour with the feature off), [quality-requirements.md](../../process/quality-requirements.md) (the checklist in section 6), [maintenance.md, The one-item path](../../process/maintenance.md#the-one-item-path), [conventions.md, Names](../../process/conventions.md#names) (no `cassandra` or `axon` in a new name, fork metrics under their own types), [conventions.md, Code layout](../../process/conventions.md#code-layout) (fork code under `org.chronitondb`, a stock edit is the hook only) and [conventions.md, Change logs and release notes](../../process/conventions.md#change-logs-and-release-notes) item 2 (`NEWS-chronitondb.txt` is written in the pull request that makes the change).
+
+As of 2026-11-15 the register on the line holds records 0001 to 0003. Records 0002 and 0003 are about `nodetool version` and its tests. Records 0004 to 0006 are added by this pull request. No newer record exists on startup checks, configuration or the commit log.
 
 ## 3. Stock behaviour preservation
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+This statement and the switch table below it follow the form of [section 2.8 of the feature spec template](../../process/templates/feature-spec.md#28-feature-class-and-switches), because a fork feature that fits one item has no feature spec.
+
+Feature class: behaviour-changing, because with its switch on it adds a WARN line to the start log of a node, and a warning is something stock Apache Cassandra already does (branching-and-review.md, Feature switches and defaults, item 4).
+
+| Switch | Class | Reason | Default per line | Stock operations it changes |
+|---|---|---|---|---|
+| `enabled` in the entry `check_commitlog_shared_disk` under `startup_checks` in `cassandra.yaml`, read at start only, with no nodetool toggle (decision record 0005) | behaviour-changing | with the switch on, a node may log one or more WARN lines at start that a stock node does not log, and holds two more counters | `chronitondb-sandbox`: off (decision record 0004) | node start: the start log and the list of metrics |
+
+Rows 1 and 2 of the table below apply only with the switch on. Row 3 is a presence on every node, switch on or off: a departure from [branching-and-review.md](../../process/branching-and-review.md#feature-switches-and-defaults) item 7, which says that with a feature off no new memory is used. The maintainers approve it by merging this record.
+
+| Stock behaviour today (file and line) | This change | Switch that controls it | Error text naming the switch |
+|---|---|---|---|
+| The startup checks say nothing about where the commit log is. `StartupChecks.checkDataDirs` checks that each directory exists and is writable and does not compare them (`src/java/org/apache/cassandra/service/StartupChecks.java:561` to `594` at `8d744bb0ac`) | with the switch on, the start log holds the shared warning when a data directory shares a file system with the commit log directory, and one unreadable warning for each directory whose file store lookup threw | `check_commitlog_shared_disk`, key `enabled` | none: the switch refuses nothing. The shared warning and the unreadable warning both name `check_commitlog_shared_disk` |
+| The metrics registry holds Apache's metrics only. `CassandraMetricsRegistry.counter` registers a counter and its MBean (`src/java/org/apache/cassandra/metrics/CassandraMetricsRegistry.java:55` to `61` at `8d744bb0ac`) | with the switch on, the registry holds two more counters, `SharedDataDirectories` and `UnreadableDirectories`, of the fork's own type `CommitLogDiskCheck` in the group `org.chronitondb.metrics`, from the first run of the check. No stock metric changes | `check_commitlog_shared_disk`, key `enabled` | none |
+| `StartupChecks.StartupCheckType` has five constants (`StartupChecks.java:106` to `125` at `8d744bb0ac`), `StartupChecksOptions.apply` keeps one options map for each constant (`src/java/org/apache/cassandra/config/StartupChecksOptions.java:81` to `96` at `8d744bb0ac`), and the `CassandraDaemon` constructor registers the default checks and `FileSystemOwnershipCheck` (`src/java/org/apache/cassandra/service/CassandraDaemon.java:220` at `8d744bb0ac`) | one more constant, `check_commitlog_shared_disk`, declared disabled by default, so one more options map that holds `enabled` as `false`, and one more registered check, whose `execute` returns at its first statement while the switch is off. Together a few hundred bytes, allocated once at start. No log line, no file, no thread and no metric | none: the name must be a constant of the enum for a `cassandra.yaml` that names it to load, and the check must be registered to read the switch | none |
+
+Everything else stays stock. No existing constant of `StartupChecks.StartupCheckType` changes its name, its place or its default: the new constant is the last one. No stock check changes what it does or when it runs: the new check is added after `FileSystemOwnershipCheck`, the last one the daemon registers today. No code default in a stock class changes. `Config.startup_checks` keeps its type and its default, an empty map (`Config.startup_checks`, `src/java/org/apache/cassandra/config/Config.java:960` at `8d744bb0ac`), so the row `startup_checks` of `system_views.settings` and the start log line `Node configuration:` show what they show today on a node that does not name the entry. No stock file under `conf/` changes. REQ-CLD-012 keeps every pre-existing test as it is.
+
+While the switch is off the check logs nothing. This differs on purpose from the stock `FileSystemOwnershipCheck`, which logs `Filesystem ownership check is not enabled.` at INFO when it is off (`FileSystemOwnershipCheck.execute`, `src/java/org/apache/cassandra/service/FileSystemOwnershipCheck.java:125` at `8d744bb0ac`): a line of that kind would change the start log of every node.
 
 ### Stock hook points
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+There is no feature spec for a one-item change, so the hook points are listed here with their delta entry, `docs/delta/commit-log-disk-check.md`. The entry records the two stock edits of this list and the stock behaviour changes of the departures table above.
+
+1. `src/java/org/apache/cassandra/service/StartupChecks.java`: one constant in the enum `StartupChecks.StartupCheckType`, `check_commitlog_shared_disk(true)`, after `check_data_resurrection(true)` at line 113. It is a constant, not a hook that imports fork code, but it is a stock edit and so it is listed.
+2. `src/java/org/apache/cassandra/service/CassandraDaemon.java`: one import and one call on line 220 in the constructor `CassandraDaemon(boolean)`, `.withTest(new CommitLogDiskCheck())` after `.withTest(new FileSystemOwnershipCheck())`.
+
+The new package `org.chronitondb.startup` imports from `org.apache.cassandra.config`, `org.apache.cassandra.service`, `org.apache.cassandra.io.util`, `org.apache.cassandra.metrics` and `org.apache.cassandra.exceptions`, all through public members. It needs no package private access to a stock package.
 
 ## 4. Prior art reviewed
 
 Stock Apache Cassandra, read on this line at commit `8d744bb0ac`:
 
-1. `StartupChecks.verify` runs every registered `StartupCheck` once, before the node changes any local state (`StartupChecks.java:176` to `192` at `8d744bb0ac`). `CassandraDaemon.setup` calls it through `CassandraDaemon.runStartupChecks` (`CassandraDaemon.java:258` and `457` to `466` at `8d744bb0ac`). A check that throws `StartupException` stops the node. A check that only logs lets it start.
-2. Stock checks that only warn exist already. `StartupChecks.checkReadAheadKbSetting` finds the file store of each data directory with `Files.getFileStore` and logs a WARN when the device's read ahead is high (`StartupChecks.java:433` to `511` at `8d744bb0ac`). `StartupChecks.checkMaxMapCount` logs a WARN for a low `vm.max_map_count` (`StartupChecks.java:513` to `559` at `8d744bb0ac`). Neither stops the node. The new check has the same shape.
-3. `StartupChecks.checkDataDirs` already reads the data directories, the commit log directory, the saved caches directory and the hints directory, and checks that each exists and is writable (`StartupChecks.java:561` to `594` at `8d744bb0ac`). It does not compare them.
-4. A check is added to the daemon with `StartupChecks.withTest` (`StartupChecks.java:164` to `168` at `8d744bb0ac`). The `CassandraDaemon` constructor adds `FileSystemOwnershipCheck` that way (`CassandraDaemon.java:220` at `8d744bb0ac`). One more `withTest` call on that line is the hook a fork check needs.
-5. A stock check that an operator can configure has a constant in the enum `StartupChecks.StartupCheckType` (`StartupChecks.java:106` to `125` at `8d744bb0ac`) and is set under `startup_checks` in `cassandra.yaml`, by that constant's name, with the key `enabled` (`conf/cassandra.yaml:2283` to `2303` at `8d744bb0ac`). `Config.startup_checks` is a map keyed by that enum (`Config.java:960` at `8d744bb0ac`). `StartupChecksOptions.apply` gives every constant an `enabled` value: `false` for a constant declared disabled by default, as `check_filesystem_ownership` and `check_data_resurrection` are, and `true` for the others (`StartupChecksOptions.java:81` to `96` at `8d744bb0ac`). No stock startup check has a nodetool command.
-6. Stock code decides that two paths are on the same file system by comparing their `FileStore` objects with `equals`: `Directories.getWriteableLocationToLoadFile` (`Directories.java:377` to `391` at `8d744bb0ac`). The new check can use the same comparison.
-7. The in-JVM distributed test framework runs the startup checks of every instance, through `CassandraDaemon.getInstanceForTesting().runStartupChecks()` (`test/distributed/org/apache/cassandra/distributed/impl/Instance.java:628` at `8d744bb0ac`). Every instance of such a test keeps its commit log and its data on one file system.
-8. Apache's yaml loader refuses a top level key it does not know: `YamlConfigurationLoader.PropertiesChecker.check` throws `Invalid yaml. Please remove properties ... from your cassandra.yaml` (`YamlConfigurationLoader.java:417` to `424` at `8d744bb0ac`). So a `cassandra.yaml` that names a new top level key does not load on an Apache Cassandra binary. A new name under `startup_checks` is a key of a map typed by the enum (`Config.java:960` at `8d744bb0ac`), which an Apache Cassandra binary does not have. What that binary does with it is unverified: the next run of this record settles it with a single test run before any requirement rests on it.
+1. `StartupChecks.verify` runs every registered `StartupCheck` once, before the node changes any local state (`StartupChecks.java:176` to `192` at `8d744bb0ac`). `CassandraDaemon.setup` calls it through `CassandraDaemon.runStartupChecks` (`CassandraDaemon.java:258` and `457` to `466` at `8d744bb0ac`). `runStartupChecks` catches `StartupException` only, so a check that throws that exception stops the node with its message, any other exception leaves `setup` as it is thrown, and a check that only logs lets the node start.
+2. Stock checks that only warn exist already. `StartupChecks.checkReadAheadKbSetting` finds the file store of each data directory with `Files.getFileStore`, logs a WARN and goes on when that lookup throws `IOException`, and logs a WARN when the device's read ahead is high (`StartupChecks.java:433` to `511` at `8d744bb0ac`). `StartupChecks.checkMaxMapCount` logs a WARN for a low `vm.max_map_count` (`StartupChecks.java:513` to `559` at `8d744bb0ac`). Neither stops the node. The new check has the same shape.
+3. `StartupChecks.checkDataDirs` reads the data directories from `DatabaseDescriptor.getAllDataFileLocations`, the commit log directory, the saved caches directory and the hints directory, creates each one that is missing, and stops the node when one cannot be created or is not writable (`StartupChecks.java:561` to `594` at `8d744bb0ac`). It does not compare them. `DatabaseDescriptor.getAllDataFileLocations` returns every entry of `data_file_directories`, with `local_system_data_file_directory` in front when it is set (`DatabaseDescriptor.java:2791` to `2797` at `8d744bb0ac`).
+4. A check is added to the daemon with `StartupChecks.withTest`, which appends it after the checks already registered (`StartupChecks.java:164` to `168` at `8d744bb0ac`). The `CassandraDaemon` constructor adds `FileSystemOwnershipCheck` that way, after the default checks (`CassandraDaemon.java:220` at `8d744bb0ac`). One more `withTest` call on that line is the hook a fork check needs, and it places the check after `checkDataDirs`, so every directory exists when the check runs.
+5. A stock check that an operator can configure has a constant in the enum `StartupChecks.StartupCheckType` (`StartupChecks.java:106` to `125` at `8d744bb0ac`) and is set under `startup_checks` in `cassandra.yaml`, by that constant's name, with the key `enabled` (the commented block `startup_checks`, `conf/cassandra.yaml:2283` to `2303` at `8d744bb0ac`). `Config.startup_checks` is a map keyed by that enum (`Config.java:960` at `8d744bb0ac`). `StartupChecksOptions.apply` gives every constant an `enabled` value: `false` for a constant declared disabled by default, as `check_filesystem_ownership` and `check_data_resurrection` are, and `true` for the others (`StartupChecksOptions.java:81` to `96` at `8d744bb0ac`). `StartupChecksOptions.isDisabled` reads it (`StartupChecksOptions.java:71` to `74` at `8d744bb0ac`). No stock startup check has a nodetool command.
+6. Stock code decides that two paths are on the same file system by comparing their `FileStore` objects with `equals`: `Directories.getWriteableLocationToLoadFile` (`src/java/org/apache/cassandra/db/Directories.java:377` to `391` at `8d744bb0ac`). The new check uses the same comparison.
+7. The in-JVM distributed test framework runs the startup checks of every instance, through `CassandraDaemon.getInstanceForTesting().runStartupChecks()` in `Instance.startup` (`test/distributed/org/apache/cassandra/distributed/impl/Instance.java:628` at `8d744bb0ac`). A test sets `startup_checks` for an instance as a map keyed by the enum: `DataResurrectionCheckTest.testDataResurrectionCheck` (`test/distributed/org/apache/cassandra/distributed/test/DataResurrectionCheckTest.java:71` to `72` at `8d744bb0ac`).
+8. Apache's yaml loader refuses a top level key it does not know: `YamlConfigurationLoader.PropertiesChecker.check` throws `Invalid yaml. Please remove properties ... from your cassandra.yaml` (`src/java/org/apache/cassandra/config/YamlConfigurationLoader.java:417` to `424` at `8d744bb0ac`). A name under `startup_checks` is a key of a map typed by the enum, and `YamlConfigurationLoader.loadConfig` turns any failure to build the `Config` into `Invalid yaml` (`YamlConfigurationLoader.java:148` at `8d744bb0ac`). What a binary whose enum lacks the name does with a `cassandra.yaml` that names it was not run: this workspace holds no build and no Apache binary. This record therefore assumes the worse case, that such a node does not start, in problem 2 and in the rollback line of REQ-CLD-013 and REQ-CLD-014, which is right in either case.
 
 Apache `cassandra-6.0` and trunk, read from `apache/cassandra` at commit `2249e37b51` (trunk) and `84bca651ef` (`cassandra-6.0`):
 
 1. Commit `585f89bb42`, "Support custom StartupCheck implementations via SPI", for CASSANDRA-21093, replaced the enum with a name. `StartupCheck.name` returns the name a check has under `startup_checks` in `cassandra.yaml`, `StartupCheck.isConfigurable` and `StartupCheck.isDisabledByDefault` say whether an operator can set it and whether it runs when the yaml does not name it (`StartupCheck.java:44`, `63` and `76` at `2249e37b51`). `StartupChecks.withServiceLoaderTests` loads every `StartupCheck` a jar on the classpath declares through `java.util.ServiceLoader` (`StartupChecks.java:164` to `207` at `2249e37b51`). Both branches carry it.
-2. So on the 6.0 line a check of our own needs no edit to a stock file: it is a class under `org.chronitondb` with a service entry, named and switched under `startup_checks`. A check that is configured under `startup_checks` on this line ports to 6.0 with the same yaml.
-3. Neither branch has a check that compares the commit log's file system with the data directories'. The default checks on trunk are listed at `StartupChecks.java:123` to `141` at `2249e37b51`.
+2. So on a 6.0 line a check of our own needs no edit to a stock file: it is a class under `org.chronitondb` with a service entry, named and switched under `startup_checks`. A check that is configured under `startup_checks` on this line ports to 6.0 with the same yaml.
+3. Neither branch has a check that compares the commit log's file system with the data directories'. The default checks on trunk are the list `StartupChecks.DEFAULT_TESTS` (`StartupChecks.java:123` to `141` at `2249e37b51`).
 
-Apache JIRA and the dev list were not read for this record. The JIRA search this run tried was refused by the maintainers' automation on the worker, twice, so no ticket about a warning for a shared commit log disk is cited or ruled out here. The git history of the line names none: no commit subject under `src/java` mentions a shared disk, volume, device or file system. The next run of this record reads JIRA before the record goes to review.
+Apache JIRA and the dev list were not read for this record. The one JIRA search this record's author tried was refused by the maintainers' automation on the worker, so no ticket about a warning for a shared commit log disk is cited or ruled out here. The git history of the line names none: no commit subject under `src/java` mentions a shared disk, volume, device or file system. Section 15 item 6 keeps the search as a follow-up for the maintainers.
 
-Other systems, by behaviour: Open, with the answers.
+Other systems, by behaviour: OpenSearch runs a fixed list of bootstrap checks at node start, `BootstrapChecks.checks` (`server/src/main/java/org/opensearch/bootstrap/BootstrapChecks.java:213` to `243` at `83addf7027`, in `opensearch-project/OpenSearch`, Apache License 2.0). None of them compares the storage paths of a node, so OpenSearch has no equivalent of this check and no default to compare with.
 
 No patents were searched or read.
 
@@ -146,120 +209,272 @@ These rules apply to every source:
 
 ## 5. Idiom and consistency
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+OpenSearch has no equivalent of any choice below, as section 4 says, so each item names stock, the earlier decisions and the idiom only.
+
+1. **Off by default.** Stock match: the two stock checks that are declared disabled by default, `check_filesystem_ownership` and `check_data_resurrection`. Earlier decision match: decision record 0004, and branching-and-review.md item 4. Idiom: a behaviour-changing feature is opt in.
+2. **The switch under `startup_checks`, with no nodetool command.** Stock match: every configurable stock startup check is switched there and none has a nodetool command. Earlier decision match: decision record 0005, which sets aside the nodetool toggle of branching-and-review.md item 1 for this feature, because a startup check has run before nodetool can reach the node. Idiom: stock `startup_checks`, which Apache 6.0 extends to custom checks by name.
+3. **The entry name `check_commitlog_shared_disk`.** Stock match: the stock names are `check_` and what is checked, in lower case, the words joined by `_`. Earlier decision match: decision record 0005 names it, and conventions.md, Names, item 1 is met. Idiom: stock.
+4. **Same file system, not same device.** Stock match: `Directories.getWriteableLocationToLoadFile` compares `FileStore` objects the same way. Earlier decision match: decision record 0006. Idiom: the sentence of the issue. A deliberate limit: two file systems on one physical device get no warning, and the reference page says so.
+5. **Which directories are data directories.** Every directory `DatabaseDescriptor.getAllDataFileLocations` returns: each entry of `data_file_directories`, and `local_system_data_file_directory` when it is set. Stock match: the set `StartupChecks.checkDataDirs` and `FileSystemOwnershipCheck` treat as the data directories. Earlier decision match: none on this point. Idiom: stock. The hints, saved caches and CDC directories are not compared, because the issue names the data directories only.
+6. **One WARN line per start, naming every sharing directory.** Stock match: `StartupChecks.checkReadAheadKbSetting` and `StartupChecks.checkMaxMapCount` warn at WARN and let the node start. Earlier decision match: none. Idiom: stock.
+7. **Nothing logged on a clean pass, and nothing while off.** Stock match: the stock warning checks log nothing when they find nothing. The stock ownership check logs an INFO line when it is off, and this check does not, for the reason section 3 gives. Earlier decision match: branching-and-review.md item 7. Idiom: stock. An operator tells a clean pass from a check that did not run by the two counters, which exist only after a run.
+8. **An unreadable file system warns and the check goes on.** Stock match: `StartupChecks.checkReadAheadKbSetting` logs a WARN with the exception and goes on when `Files.getFileStore` throws. Earlier decision match: none. Idiom: stock.
+9. **The counters `SharedDataDirectories` and `UnreadableDirectories` of the type `CommitLogDiskCheck`.** Stock match: Dropwizard counters through `CassandraMetricsRegistry.counter` (`CassandraMetricsRegistry.java:55` at `8d744bb0ac`), named by a `CassandraMetricsRegistry.MetricName` from its five argument constructor (`CassandraMetricsRegistry.java:818` at `8d744bb0ac`), so the MBean name is exactly the one REQ-CLD-009 and REQ-CLD-010 give. Earlier decision match: conventions.md, Names, items 3 and 4, fork metrics use their own type and the `org.chronitondb` domain, and quality-requirements.md, every outcome has a counter. Idiom: a counter named for what it counts.
 
 ## 6. Quality requirements
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+| ISO/IEC 25010 characteristic | Line | Requirements, or the reason it does not apply |
+|---|---|---|
+| Performance efficiency | Fastest correct design, with benchmarks in the design and in the gates | Does not apply, because no request path runs the code: the check runs once at node start. Section 7. |
+| Performance efficiency | Memory budgets on coordinator and replica | Does not apply, because the only memory is one check object and one options map on every node, and two counters with the switch on, a few hundred bytes together, allocated once. |
+| Reliability | Isolation levers on coordinator and replica: thread pools, limits, load shedding, timeouts, kill switch | REQ-CLD-004 and REQ-CLD-005: the kill switch is the yaml entry, off by default. No thread, pool, limit or timeout exists, because the check does its work once, on the thread that runs the stock startup checks. |
+| Reliability | Automatic fallbacks opt-in, with yaml setting, nodetool toggle, metric and rate-limited log line | Does not apply, because there is no fallback to a costlier path. A lookup that throws is left out, logged by REQ-CLD-007 and counted by REQ-CLD-010. |
+| Reliability | Coordination between nodes model checked, when the design changes it | Does not apply, because each node checks its own directories and nothing crosses the network. |
+| Compatibility | Stock Apache Cassandra behaviour unchanged | REQ-CLD-004, REQ-CLD-005, REQ-CLD-012. Section 3: the two changes behind the switch and the one presence, with its reason. |
+| Compatibility | Stock behaviour unchanged with the feature off | REQ-CLD-004. `CommitLogDiskCheckTest.offDoesNothing` and `CommitLogDiskCheckStartTest.defaultNodeLogsNothingNew` prove it, and the stock suites of section 14 run unchanged with the switch at its default, off. While off the node holds the presences of row 3 of the departures table in section 3, a departure from branching-and-review.md item 7 for the maintainers to approve. |
+| Compatibility | Mixed-version cluster, upgrade and rollback (see the Compatibility section) | REQ-CLD-013, REQ-CLD-014 and section 9. |
+| Functional suitability | CQL validity and results independent of replication factor, data centres and replica count | Does not apply, because the change has no CQL and reads no data. |
+| Flexibility | Settings per index or per table over global ones, with global, include and exclude modes | Does not apply, because the setting is a property of the node, not of data. |
+| Interaction capability | nodetool toggles change the in-memory value only, yaml holds the startup value | Does not apply, because the feature has no nodetool toggle (decision record 0005, waiver 3). The yaml holds the only value. |
+| Interaction capability | Error messages name the setting or toggle that controls the behaviour | REQ-CLD-001 and REQ-CLD-007: both warnings name `check_commitlog_shared_disk`. The switch refuses nothing, so there is no error. |
+| Maintainability | Observability: metrics, traces and diagnostics as a gate item | REQ-CLD-001, REQ-CLD-007, REQ-CLD-009, REQ-CLD-010. Section 8. |
+| Security | Threat model answered (see the Threat model section) | Section 10: no new entry point. |
+| Safety | Any risk of data loss or corruption named, with its mitigation | None from the code: the check reads two settings and the file store of each directory, and writes nothing to disk, to the commit log or to any table. A missed warning leaves the operator's layout as it was, see problem 5. |
+
+The design changes no coordination between nodes, so it carries no model.
 
 ## 7. Performance
 
-Open: written when the maintainers have answered the three open points at the top of this record.
-
 ### Hot path statement
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+No request type touches the new code. Coordinator reads and writes, replica reads, memtable writes, flush, compaction, streaming and repair never call it. The code runs once at node start, on the thread that runs the stock startup checks.
 
 ### Expected cost
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+| Path | Metric | Stock today | Expected with the change | Why (mechanism) |
+|---|---|---|---|---|
+| Node start, switch off | work | the stock checks | one more call of `StartupChecksOptions.isDisabled` | one lookup in an `EnumMap` and one `Boolean.parseBoolean` |
+| Node start, switch on | file store lookups | one for each data directory, in `StartupChecks.checkReadAheadKbSetting` | one more for the commit log directory and one more for each data directory | `Files.getFileStore` once for each directory, then one `FileStore.equals` for each data directory |
+| Node start | heap | the stock checks and their options | one more check object and options map, and with the switch on two counters | a few hundred bytes, allocated once |
 
 ### Isolation levers
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+The yaml entry `check_commitlog_shared_disk` with the key `enabled`. Off, the default: the check returns at its first statement. No thread pool, no memory limit and no timeout exist, since the check runs once, at start.
 
 ### Benchmarks that prove it
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+| Claim | Benchmark | Command | Pairs | Threshold |
+|---|---|---|---|---|
+| none | none, there is no request path to measure | none | none | none |
 
 ### Regression threshold and gate
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+No benchmark gates this pull request. The gate runs the tests of section 14.
 
 ### Stock guard
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+The stock suites of section 14 run unchanged. They run with the switch at its default, off, which is the state in which the node must match stock, so one run is the guard. `CommitLogDiskCheckTest.offDoesNothing` and `CommitLogDiskCheckStartTest.defaultNodeLogsNothingNew` prove the off state itself.
 
 ### What was not measured
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+Nothing was measured, because the change is off every request path. No follow-up issue is needed.
 
 ## 8. Observability
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+1. **Counted.** Two counters, created in the first run of the check with the switch on and never while it is off. `org.chronitondb.metrics:type=CommitLogDiskCheck,name=SharedDataDirectories` rises by the number of data directories found on the commit log directory's file system (REQ-CLD-009). `org.chronitondb.metrics:type=CommitLogDiskCheck,name=UnreadableDirectories` rises by the number of directories whose file store lookup threw (REQ-CLD-010). The check runs once in the life of a node process, so each counter holds the result of that run. The three outcomes are all visible: both at 0 after a clean pass, the first above 0 after a shared warning, the second above 0 after an unreadable warning. A node without the counters did not run the check.
+2. **Timed.** Nothing: no duration to measure.
+3. **Logged.** The shared warning, once for each start, at WARN (REQ-CLD-001). Its text, with the two SLF4J placeholders: `The commit log directory {} is on the same file system as the data directories {}. One failure of that file system loses the commit log and the data together, and on spinning disks commit log writes compete with reads, flushes and compaction. Put commitlog_directory on a file system of its own. This warning comes from the startup check check_commitlog_shared_disk.` The first placeholder is the commit log directory as `DatabaseDescriptor.getCommitLogLocation` returns it. The second is the sharing data directories, in the order `DatabaseDescriptor.getAllDataFileLocations` returns them, in square brackets and separated by a comma and a space, as a Java `List` prints. The unreadable warning, once for each directory whose lookup threw, at WARN, with the exception as the last logging argument (REQ-CLD-007). Its text: `The startup check check_commitlog_shared_disk could not read the file system of {} and left that directory out.` The placeholder is the directory as its setting gives it. Nothing is logged on a clean pass or while the switch is off. Nothing is rate limited, since the check runs once.
+4. **Traced.** Does not apply: no query runs, so there is no trace session to write to.
+5. **Client visible.** Nothing: no client request reaches the check.
+6. **Exposed.** The two counters over JMX and through any configured metrics reporter. The switch shows in the row `startup_checks` of `system_views.settings` and in the start log line `Node configuration:`, which `Config.log` writes for every field (`Config.java:1347` to `1376` at `8d744bb0ac`), on a node whose yaml names the entry.
+7. **Toggled.** In `cassandra.yaml` only, read at start. No nodetool toggle (decision record 0005).
+8. **Audited.** Nothing: the check changes no data and no access.
+9. **Released on drop.** The counters live as long as the node. Nothing drops them.
+10. **Documented.** The reference page of section 13 lists the entry, both warnings and both counters by exact name (REQ-CLD-015).
+11. **Tested.** `CommitLogDiskCheckTest` asserts the log lines and the counters, and `CommitLogDiskCheckStartTest` asserts the shared warning in the log of a started node. No tracing test, see section 14.
+
+No line above TRACE carries a key, a term, a literal or a secret: the lines carry directory paths, which the stock start log line `Node configuration:` already prints.
 
 ## 9. Compatibility
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+1. **On-disk format changes.** None. The check writes no file.
+2. **Mixed-version cluster.** Does not apply to behaviour between nodes: each node checks its own directories at its own start, and nothing crosses the network.
+3. **Upgrade path and prerequisites.** None. A `cassandra.yaml` that does not name the entry loads on Apache Cassandra, on an older ChronitonDB build and on a build with this change, and behaves the same on all three.
+4. **Rollback path.** An operator who wrote the entry into `cassandra.yaml` MUST remove it before starting an Apache Cassandra binary or a ChronitonDB build older than this change on that node. Such a binary does not know the name, and this record assumes it does not start (section 4, stock item 8). REQ-CLD-013 and REQ-CLD-014 put that line on the reference page and in `NEWS-chronitondb.txt`.
+5. **Runbook entries.** No runbook exists on this line. The rollback line lives on the reference page and in `NEWS-chronitondb.txt` until a runbook item creates one.
+6. **Surfaces touched.** Configuration: one new name under `startup_checks`, which no existing yaml uses. JMX and metrics: two new counters under a fork type, with the switch on only. The start log: one or more new WARN lines, with the switch on only. No version of any surface is bumped, and the stock tests `StartupCheckOptionsTest`, `StartupChecksTest`, `YamlConfigurationLoaderTest` and `SettingsTableTest` pass unchanged.
+7. **Shared state.** The switch writes nothing to shared state, off or on. The check reads `cassandra.yaml` through the stock options and the local file systems.
+8. **The other line.** The item carries one line label, `chronitondb-sandbox`. On a 6.0 line the check is a service entry and needs no stock edit, with the same yaml (section 4). That port is section 15 item 2.
 
 ## 10. Threat model and security
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+No new entry point. The only input is `cassandra.yaml`, which the operator who runs the node writes, and which the stock loader parses. The check reads one value of it, `enabled`, through `StartupChecksOptions.isDisabled`, which parses it with `Boolean.parseBoolean`, so any value but `true` in any letter case means off. Other keys under the entry are not read. The check opens no port, adds no CQL, no MBean operation and no permission, and needs none.
+
+By STRIDE, for the code that runs with the switch on. Spoofing, tampering, repudiation and elevation of privilege do not apply: the check authenticates nobody, writes nothing and grants nothing. Information disclosure: the two warnings carry directory paths and, for the unreadable warning, the exception of the lookup. The stock start log already carries the same paths in its `Node configuration:` line, and the counters carry two numbers. Denial of service: a check that threw would stop the node, which REQ-CLD-006 excludes. The number of lookups is bounded by the number of configured data directories plus one.
+
+No audit entry, no limit with warn and fail thresholds and no client error exists, because no client request reaches the code.
 
 ## 11. Dependencies
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+No new dependency.
 
 ## 12. Compliance impact
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+The check copies no user data, so nothing needs erasure, masking, retention or a residency rule, and backups and snapshots hold nothing new. It logs directory paths and counts directories, never row data, keys or credentials. It uses no cryptography and adds no library, so the supply chain is unchanged. The default is the safe one: off. The isolation lever is the switch.
+
+For operators: the check is switched with `enabled` in the entry `check_commitlog_shared_disk` under `startup_checks` in `cassandra.yaml`. It is off unless that value is `true`. It reads the settings `commitlog_directory`, `data_file_directories` and `local_system_data_file_directory`, and writes nothing.
 
 ## 13. Documentation
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+This item adds one reference page, `docs/reference/commitlog-disk-check.md`, written by the developer from the skeleton `page-commitlog-disk-check.md` next to this record, because documentation ships in the same pull request as the code (conventions.md, Where things live, item 5). The path follows the reference page the design record of the release version feature proposes, `docs/reference/release-version.md`. The maintainers approve the path with this record, and a later item moves the page when a layout is decided. The page is a reference page in the Diátaxis sense and carries:
+
+1. The entry `check_commitlog_shared_disk` under `startup_checks`, its key `enabled`, type boolean, default `false`, read at start only, with the yaml example of section 1.
+2. What the check compares: the file system of `commitlog_directory` with the file system of each entry of `data_file_directories` and of `local_system_data_file_directory` when it is set.
+3. The shared warning and the unreadable warning, each with its fixed text.
+4. The two counters by their full names, what each counts, and that they exist only on a node that ran the check.
+5. Failure behaviour: the node starts in every case. A directory whose file system cannot be read is left out, with the unreadable warning. Timeouts, coordinator failure, a missing replica, a limit and an index that is not built do not apply, because no request reaches the check.
+6. Known limitations. Two file systems on one physical device, such as two partitions of one disk or two logical volumes of one volume group, get no warning (decision record 0006). The hints, saved caches and CDC directories are not compared. The value is read at start only, so a change needs a restart.
+7. The rollback line of REQ-CLD-013.
+
+`NEWS-chronitondb.txt` gains an entry for the new check and the rollback line (REQ-CLD-014). The delta entry `docs/delta/commit-log-disk-check.md` with its row in `docs/delta/README.md` records the stock edits and the stock behaviour changes of section 3. `CommitLogDiskCheckDocsTest` of section 14 reads the reference page and the news file for the lines REQ-CLD-013 and REQ-CLD-014 require and the exact texts REQ-CLD-015 requires.
+
+Apache's `conf/cassandra.yaml` stays untouched, so the commented `startup_checks` block there does not list the new entry. `conf/cassandra_chronitondb.yaml` does not exist on this line, see section 15 item 3.
 
 ## 14. Testing
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+Two unit test classes under `test/unit/org/chronitondb/startup/` and one in-JVM distributed test class under `test/distributed/org/chronitondb/startup/`, the paths [conventions.md, Where things live](../../process/conventions.md#where-things-live) gives. The distributed test starts one node. Nothing is multi node in behaviour, each node checks itself, so replication factor does not apply. No sstable format or compaction is touched. The parity suite does not exist on this line yet, see waiver 1. This item adds no scenario, under waiver 2, so the template's `Scenario runner` and `Scenario tags` lines are left out. Existing suites at risk names the stock suites whose files or behaviour this change touches, and Stock suites run unchanged is the wider set that proves stock behaviour and includes the first. Every test sets its own starting state, so none depends on the order JUnit runs them in.
+
+The test seam. `CommitLogDiskCheck` has the constructor without arguments the daemon uses, which reads the directories from `DatabaseDescriptor` and the file stores from `Files.getFileStore`, and a second constructor for tests that takes the commit log directory, the data directories and the file store lookup, as `FileSystemOwnershipCheck` takes its directories through a supplier for its tests (`FileSystemOwnershipCheck.FileSystemOwnershipCheck`, `FileSystemOwnershipCheck.java:108` to `112` at `8d744bb0ac`). The unit tests give it directory names and a lookup that answers a stub `FileStore` for each name, or throws. The log lines are asserted through the logback appender the stock tests use. The counters live in the registry of the JVM, so each test asserts the difference from the value it read before.
+
+What each test of the list under Tests for this change proves:
+
+1. `CommitLogDiskCheckTest.sharedFileSystemWarnsOnce`: with the switch on, a commit log directory on store A and three data directories on stores A, B and A, the check logs exactly one WARN line, and that line equals the shared warning with the commit log directory and the first and third data directory, in that order (REQ-CLD-001, REQ-CLD-002).
+2. `CommitLogDiskCheckTest.separateFileSystemsLogNothing`: with the switch on and every data directory on a store other than the commit log's, the check logs no line at WARN or above (REQ-CLD-003).
+3. `CommitLogDiskCheckTest.offDoesNothing`: the test first removes both counters from the registry with `CassandraMetricsRegistry.remove` (`CassandraMetricsRegistry.java:208` at `8d744bb0ac`). Then, with the options of `new StartupChecksOptions()` and a lookup that fails the test when called, `execute` returns, the lookup was not called, the check's logger wrote no line, and the registry holds neither counter (REQ-CLD-004).
+4. `CommitLogDiskCheckTest.switchIsOffByDefault`: `new StartupChecksOptions().isDisabled(check_commitlog_shared_disk)` is `true`, and it is `false` after the options are built from a map that sets `enabled` to `true` for the entry (REQ-CLD-005).
+5. `CommitLogDiskCheckTest.neverThrows`: with the switch on, `execute` returns normally when the lookup throws `IOException` for every directory, when it throws `SecurityException`, a `RuntimeException`, for every directory, and when it returns `null` (REQ-CLD-006).
+6. `CommitLogDiskCheckTest.unreadableDirectoryWarns`: with the switch on and a lookup that throws `IOException` for the commit log directory, the check logs exactly one WARN line, the unreadable warning with that directory, and no shared warning. With a lookup that throws for the second of three data directories only, it logs the unreadable warning with that directory (REQ-CLD-007).
+7. `CommitLogDiskCheckTest.unreadableDirectoryDoesNotHideOthers`: with the switch on, the commit log directory and the first and third data directories on store A, and a lookup that throws for the second, the check logs the shared warning with the first and third data directory (REQ-CLD-008).
+8. `CommitLogDiskCheckTest.countsSharedDirectories`: in the case of test 1 the counter `SharedDataDirectories` rises by 2, and in the case of test 2 it exists and rises by 0 (REQ-CLD-009).
+9. `CommitLogDiskCheckTest.countsUnreadableDirectories`: in the second case of test 6 the counter `UnreadableDirectories` rises by 1, and in the case of test 1 it exists and rises by 0 (REQ-CLD-010).
+10. `CommitLogDiskCheckStartTest.enabledNodeWarnsAndStarts`: an in-JVM cluster of one node, configured with `startup_checks` holding the entry with `enabled` set to `true`, starts, answers `SELECT * FROM system.local`, and its log holds exactly one line that contains `check_commitlog_shared_disk`, at WARN, that names the instance's commit log directory and each of its data directories. The framework keeps all directories of an instance under one root, and the test first asserts with `Files.getFileStore` that they are on one file system, so a test host that splits them fails with that message and not with a missing warning (REQ-CLD-011, and acceptance criteria 1 and 2 end to end).
+11. `CommitLogDiskCheckStartTest.defaultNodeLogsNothingNew`: an in-JVM cluster of one node with the default configuration starts, and its log holds no line that contains `check_commitlog_shared_disk` (REQ-CLD-004 end to end, and the proof that the hook is silent while off).
+12. `CommitLogDiskCheckDocsTest`, reading the files from the project root the tests run in, one line of text at a time: `rollbackLineOnReferencePage`, `docs/reference/commitlog-disk-check.md` has a line that contains `check_commitlog_shared_disk`, `cassandra.yaml`, `Apache Cassandra` and `older` (REQ-CLD-013). `rollbackLineInNews`, the same for `NEWS-chronitondb.txt` (REQ-CLD-014). `exactNamesAreDocumented`, the reference page contains each of the five texts of REQ-CLD-015, the two warnings without their placeholders as the text before, between and after them, one assertion for each text naming the text that is missing (REQ-CLD-015).
+
+The proof of REQ-CLD-012 is the stock suites below running unchanged, `StartupCheckOptionsTest` first among them, with the gate's check that no pre-existing test changed.
 
 ### Tests for this change
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+org.chronitondb.startup.CommitLogDiskCheckTest
+org.chronitondb.startup.CommitLogDiskCheckStartTest
+org.chronitondb.startup.CommitLogDiskCheckDocsTest
 
 ### Existing suites at risk
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+org.apache.cassandra.config.StartupCheckOptionsTest
+org.apache.cassandra.service.StartupChecksTest
+org.apache.cassandra.service.YamlBasedFileSystemOwnershipCheckTest
+org.apache.cassandra.service.SystemPropertiesBasedFileSystemOwnershipCheckTest
+org.apache.cassandra.distributed.test.DataResurrectionCheckTest
 
 ### Stock suites run unchanged
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+org.apache.cassandra.config.StartupCheckOptionsTest
+org.apache.cassandra.service.StartupChecksTest
+org.apache.cassandra.service.YamlBasedFileSystemOwnershipCheckTest
+org.apache.cassandra.service.SystemPropertiesBasedFileSystemOwnershipCheckTest
+org.apache.cassandra.distributed.test.DataResurrectionCheckTest
+org.apache.cassandra.config.YamlConfigurationLoaderTest
+org.apache.cassandra.config.DatabaseDescriptorTest
+org.apache.cassandra.config.ConfigCompatibilityTest
+org.apache.cassandra.db.virtual.SettingsTableTest
+org.apache.cassandra.metrics.CassandraMetricsRegistryTest
 
 ### Tracing test
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+does not apply, because no query runs through the change, so there is no trace session to show it in
 
 ### Formats and configurations
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+no
 
 ## 15. Not covered and follow-ups
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+1. The physical device under two file systems is not compared, by decision record 0006. The reference page lists the limitation.
+2. The port to a 6.0 line, where the check is a class with a `java.util.ServiceLoader` entry and no stock file is edited (section 4). This item carries one line label. Candidate issue, for a maintainer to open when a 6.0 line takes the feature.
+3. `conf/cassandra_chronitondb.yaml` does not exist on this line. When the item that creates it lands, the entry goes into it, commented out with its default. Candidate issue, for a maintainer to open. The code merge does not depend on it.
+4. A nodetool command or a JMX operation that runs the check on a live node is out, by decision record 0005.
+5. The hints, saved caches and CDC directories are not compared with the data directories or with each other. The issue names the commit log and the data directories only.
+6. Apache JIRA and the dev list were not searched for earlier discussion of such a warning, see section 4. Candidate task for a maintainer: the search `project = CASSANDRA AND text ~ "commitlog data directory same disk"`. Nothing in this record depends on its result, since no Apache branch read here has the check.
+7. What an Apache Cassandra binary does with a `cassandra.yaml` that names the entry was not run, see section 4, stock item 8. The rollback line is written for the worse case. A maintainer with an Apache 5.0 binary can settle it with one start.
+8. [branching-and-review.md](../../process/branching-and-review.md#feature-switches-and-defaults) item 1 says every fork feature has a nodetool toggle. Decision record 0005 sets it aside for this feature. Whether the page should name startup checks as a standing exception is a documentation only change for the maintainers to decide. Candidate issue.
+9. The scenarios of the feature `CLD`, once the scenario module `test/bdd/`, its runner and the shared step library exist on the line. Candidate issue, for a maintainer to open when the module lands. The code merge does not depend on it, see waiver 2.
+10. `NEWS-chronitondb.txt` and `docs/reference/` do not exist on the line today, and the design record of the release version feature plans to create both. The Planned file list names `NEWS-chronitondb.txt` as `new`. If that feature's code merges first, the word becomes `edit`, through change control.
 
 ## New terms
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+1. **The switch**: the value of the key `enabled` in the entry `check_commitlog_shared_disk` under `startup_checks` in `cassandra.yaml`, as `StartupChecksOptions.isEnabled` reads it. On means `true`. Off means anything else, a missing entry included. In code the enum constant `StartupChecks.StartupCheckType.check_commitlog_shared_disk`, in docs "the check's `enabled` key".
+2. **The data directories**: the directories `DatabaseDescriptor.getAllDataFileLocations` returns, every entry of `data_file_directories` and `local_system_data_file_directory` when it is set.
+3. **Shares a file system**: two directories share a file system when `Files.getFileStore` returns, for the two paths, `FileStore` objects that are equal by `FileStore.equals`. The lookup follows symbolic links, so it answers for the place the files are in.
+4. **The shared warning**: the WARN line of section 8, item 3, with its fixed text and its two placeholders.
+5. **The unreadable warning**: the WARN line of section 8, item 3, for one directory whose file store lookup threw.
+6. **Commit log disk check**: the feature, key `CLD`. In code `org.chronitondb.startup.CommitLogDiskCheck`, in yaml `check_commitlog_shared_disk`, in docs "commit log disk check".
 
 ## Where problems could occur
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+1. **A node does not start.** Seen by an operator as a node that exits during startup, on every node if the hook in the `CassandraDaemon` constructor or the constructor of the check throws, or on nodes with the switch on if `execute` lets an exception out, since `CassandraDaemon.runStartupChecks` catches `StartupException` only. From the hook line and from `CommitLogDiskCheck.execute`. REQ-CLD-006 makes `execute` return normally whatever a lookup does.
+2. **A node rolled back to an Apache Cassandra binary, or to an older ChronitonDB build, does not start.** Seen as an `Invalid yaml` error at start, on a node whose operator wrote the entry into the yaml. From the new name under `startup_checks`. Not from the default: a yaml that never names the entry loads on every binary.
+3. **A node that does not use the feature logs, counts or holds something a stock node does not.** Seen as a new line in the start log of every node, a new metric on every dashboard, or a stock startup check that behaves differently because the enum grew. From the hook, from the new constant, or from a check that works before it reads the switch. REQ-CLD-004 and REQ-CLD-012 exclude it, and row 3 of the departures table names what is held.
+4. **The warning is wrong.** Seen by an operator as a shared warning that names a directory on another file system, or that misses one that shares, so that the operator moves a directory for nothing or trusts a wrong list. From the comparison in `CommitLogDiskCheck`. REQ-CLD-002 and REQ-CLD-003.
+5. **The warning is missing.** Seen as a silent start log on a node whose commit log and data share a file system, with the switch on, so that the operator believes the layout is sound. From a hook that does not register the check, from a comparison that never matches, or from the limit of decision record 0006: two file systems on one physical device. REQ-CLD-001 and REQ-CLD-011 cover the first two. The third is by decision, and the reference page says it.
+6. **The file system of a directory cannot be read.** Seen as no warning and no hint why, on a file system or under a security policy where `Files.getFileStore` throws. From the lookup. REQ-CLD-007, REQ-CLD-008 and REQ-CLD-010 make it one WARN line for that directory, a count, and a full comparison of the rest.
+7. **An operator cannot tell whether the check ran, or finds the page naming the entry, a counter or a warning wrongly.** Seen as a clean start log that could mean a clean layout or a check that never ran, or as a documented name the node does not know. From the silence on a clean pass and from a page written by hand. REQ-CLD-009 and REQ-CLD-010 give the two counters, which exist only after a run, and REQ-CLD-015 pins the exact names on the page.
 
 ### Test plan
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+1. Problem 1: `CommitLogDiskCheckTest.neverThrows` makes the lookup throw a checked and an unchecked exception and return `null`, and asserts that `execute` returns. `CommitLogDiskCheckStartTest.enabledNodeWarnsAndStarts` and `defaultNodeLogsNothingNew` start a real node through the hook, switch on and off, and `DataResurrectionCheckTest` and `StartupChecksTest` run unchanged.
+2. Problem 2: no test on this line can start an Apache binary. `CommitLogDiskCheckDocsTest.rollbackLineOnReferencePage` and `rollbackLineInNews` prove the rollback line is in both files. Watched through the reference page and the `NEWS-chronitondb.txt` entry, and settled by the one start of section 15 item 7.
+3. Problem 3: `CommitLogDiskCheckTest.offDoesNothing` asserts no lookup, no log line and no counter with the switch off, `CommitLogDiskCheckStartTest.defaultNodeLogsNothingNew` asserts a start log without the entry's name on a real node, and the stock suites of section 14 run unchanged, `StartupCheckOptionsTest` and `SettingsTableTest` among them.
+4. Problem 4: `CommitLogDiskCheckTest.sharedFileSystemWarnsOnce` compares the whole line, so a directory too many or too few fails, and `separateFileSystemsLogNothing` asserts silence when nothing shares.
+5. Problem 5: `CommitLogDiskCheckStartTest.enabledNodeWarnsAndStarts` fails when the hook is missing or the comparison never matches on real directories. No test can see the physical device under two file systems: that limit is by decision record 0006 and is watched through the known limitation on the reference page.
+6. Problem 6: `CommitLogDiskCheckTest.unreadableDirectoryWarns`, `unreadableDirectoryDoesNotHideOthers` and `countsUnreadableDirectories`.
+7. Problem 7: `CommitLogDiskCheckTest.countsSharedDirectories` and `countsUnreadableDirectories` assert that both counters exist after a run, at 0 when nothing was found, and `offDoesNothing` that they do not exist without one. `CommitLogDiskCheckDocsTest.exactNamesAreDocumented` checks each exact name on the page.
 
 ## Planned file list
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+```
+src/java/org/apache/cassandra/service/StartupChecks.java stock
+src/java/org/apache/cassandra/service/CassandraDaemon.java stock
+src/java/org/chronitondb/startup/CommitLogDiskCheck.java new
+test/unit/org/chronitondb/startup/CommitLogDiskCheckTest.java test
+test/unit/org/chronitondb/startup/CommitLogDiskCheckDocsTest.java test
+test/distributed/org/chronitondb/startup/CommitLogDiskCheckStartTest.java test
+docs/reference/commitlog-disk-check.md new
+docs/delta/commit-log-disk-check.md new
+docs/delta/README.md edit
+NEWS-chronitondb.txt new
+```
+
+The two stock files carry the hook points of section 3 and nothing else. `CommitLogDiskCheck` holds the whole feature: the switch test, the lookups, the comparison, the two warnings and the two counters. The coverage file next to this record is not in the list: it changes only with this record, through change control. No protected path and no library file is in the list.
 
 ### Shared with open items
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+None.
 
 ### Waivers
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+1. Exit criterion 4 of [testing.md](../../process/testing.md#exit-criteria), the parity suite passes with every fork feature off. The parity suite does not exist on this line. In its place the stock suites of section 14 run unchanged with the switch at its default, off, and `CommitLogDiskCheckTest.offDoesNothing` and `CommitLogDiskCheckStartTest.defaultNodeLogsNothingNew` prove the off state. Waived because there is no parity suite to run. The maintainers approve the waiver with this record.
+2. [testing.md, Scenarios](../../process/testing.md#scenarios) item 6: the designer writes the scenarios of a feature item in this pull request, tagged `@wip`. Waived because nothing that runs a scenario exists on this line: no `test/bdd/` module, no shared step library and no Cucumber runner, whose library is a new dependency that only its own update item adds. A scenario written now could not fail before the code and pass after it, and the gate could not run it. Every requirement is proven instead by a JUnit test named in `ac-coverage.md`, which exit criterion 1 accepts. The scenarios of this feature are section 15 item 9. The maintainers approve the waiver with this record.
+3. [branching-and-review.md, Feature switches and defaults](../../process/branching-and-review.md#feature-switches-and-defaults) item 1: every fork feature has a yaml setting and a nodetool toggle. The feature has the yaml setting and no nodetool toggle, by decision record 0005: the check has run before nodetool can reach the node, so a toggle could change nothing.
 
 ## Requirement quality checklist (ISO/IEC/IEEE 29148)
 
-Open: written when the maintainers have answered the three open points at the top of this record.
+Each of REQ-CLD-001 to REQ-CLD-015 was checked against the seven qualities before this record went to review:
+
+1. **Necessary:** each traces to an acceptance criterion of the issue, a problem named in Where problems could occur, or a decision record. REQ-CLD-009 and REQ-CLD-010 also answer the observability line of quality-requirements.md.
+2. **Unambiguous:** each names an exact text, an exact entry, an exact counter or an exact count, and the five fixed terms are defined in New terms. No "fast" or "large" appears.
+3. **Singular:** one key word and one EARS shape each. The two counters have their own ids, REQ-CLD-009 and REQ-CLD-010, the unreadable case is REQ-CLD-007 for the line and REQ-CLD-008 for the rest of the comparison, and the two files of the rollback line are REQ-CLD-013 and REQ-CLD-014.
+4. **Verifiable:** each has one row in `ac-coverage.md` naming its test.
+5. **Feasible:** each mechanism is cited by symbol, file and line in sections 3 and 4, or is the new code of the Planned file list.
+6. **Consistent:** REQ-CLD-001 and REQ-CLD-003 split the cases with the switch on, REQ-CLD-004 covers the switch off, REQ-CLD-006 holds in all of them, and none contradicts a decision record or a stock behaviour rule.
+7. **Traceable:** each has an id, a source and exactly one coverage row.

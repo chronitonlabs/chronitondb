@@ -25,7 +25,7 @@ limitations under the License.
 | Version | {n} |
 | Author | Designer: {GitHub username} |
 | Approver | The maintainer who merges the pull request |
-| References | Issue #{issue}. Apache JIRA `CASSANDRA-<n>` if stock is affected. Delta entry. |
+| References | Issue #{issue}. Apache JIRA `CASSANDRA-<n>` if Apache Cassandra is affected. Delta entry. |
 | Risk | {Critical, Normal or Low}: {the worst Bug Category the change could cause if wrong, and the floor if one applied} |
 | Size | {Low Hanging Fruit, Normal, Challenging or Byzantine}: {why} |
 | Reach | {One area or Cross-cutting}: {why, naming the packages touched} |
@@ -67,11 +67,11 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../cl
 
 ## 2. Root cause
 
-{Why it happens, with file and line on each affected line.}
+{Why it happens, with the symbol and the file and line on each affected line, each cited as [conventions.md](../conventions.md#claims-about-code) says, for example `ChronitonDB chronitondb-5.0 at <hash>`.}
 
 ## 3. Affected lines and releases
 
-{Each line and release that carries the fault, and whether stock Apache Cassandra carries it too.}
+{Each line and release that carries the fault, and whether Apache Cassandra carries it too. Keep the Apache Cassandra release the line is based on apart from Apache Cassandra upstream now: the head of the same branch, the next major version's branch and trunk. Cite each as [conventions.md](../conventions.md#claims-about-code) says.}
 
 ## 4. Fix
 
@@ -95,7 +95,7 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../cl
 
 ## 8. Upstream
 
-{For a stock fault: the Apache JIRA and the delta entry that records it in its Bug and Forwarded fields. Otherwise "ChronitonDB code only".}
+{For a fault Apache Cassandra also has: the Apache JIRA and the delta entry that records it in its Bug and Forwarded fields. Otherwise "ChronitonDB code only".}
 
 ## 9. Order of pull requests
 

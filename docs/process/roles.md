@@ -101,7 +101,7 @@ The security engineer watches for vulnerabilities in what ChronitonDB ships. See
 3. Opens a corrective item for a patch-version update, or an emergency item when the vulnerability is serious. Anything else goes to the maintainers as a decision.
 4. Handles every library update, including one a maintainer asks for that is not a security fix: checks the new version, names the notice and licence text it needs and the tests covering every use of the library, and hands it to the developer.
 5. Opens an item to remove a library that ChronitonDB does not use at all.
-6. Triages each private vulnerability report in private for the maintainers: reproduction, affected lines, a proposed CVSS severity, and whether stock Apache Cassandra is affected.
+6. Triages each private vulnerability report in private for the maintainers: reproduction, affected lines, a proposed CVSS severity, and whether Apache Cassandra is affected, in the release the line is based on and upstream now.
 7. Watches Apache Cassandra security announcements with the integrator.
 8. Never decides severity, the CVE, the disclosure date or publication.
 

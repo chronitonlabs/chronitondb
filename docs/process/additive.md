@@ -19,6 +19,16 @@ limitations under the License.
 
 A new feature is additive maintenance in ISO/IEC/IEEE 14764:2022. A feature that needs several items takes three levels of specification. A feature that fits in one item takes the one-item path. On both paths the work starts from the requirements brief that the requirements analyst writes and a maintainer confirms. The brief stays where the maintainer confirmed it. The architect writes its content into the feature requirements of the feature spec, and on the one-item path the designer writes it into the requirements of the design record. Each requirement taken from it carries `Source: stakeholder need`. A record never links to the brief itself. See [roles.md](roles.md#requirements-analyst).
 
+## Work intake
+
+Every piece of work has a GitHub issue. Work MAY start committed, with its kind label. Two optional labels mark work that is not committed yet, and either MAY be skipped: an idea MAY go straight to the work, and a spike MAY be opened directly.
+
+1. **An idea** carries the label `idea`: should we do this? The requirements analyst writes a short decision brief: the problem, the value, the options, a rough size and risk, and a recommendation. The maintainers decide to do it, not to do it, or to ask for a spike first.
+2. **A spike** carries the label `spike`: how would we do this, or can it be done? The architect investigates and writes a research report in `docs/research/<issue>-<slug>.md` from [templates/research-report.md](templates/research-report.md), and a maintainer merges it. The report's pull request changes documentation only and carries the labels of a documentation only change. The report approves no work.
+3. **Do it.** A decision record holds the go and its reasons, in its own words. It never links to the decision brief. The `idea` and `spike` labels come off, and the kind and class labels go on. Until then the issue carries no kind and no class label. The requirements brief, and then the feature spec or design record, cite the research report and the decision record.
+4. **Do not.** The issue is closed as not planned, with the reason in a comment.
+5. **One idea, several features.** The idea's issue becomes the parent issue. Each feature gets its own issue, which links back to the parent.
+
 ## Size boundary
 
 1. A feature that fits one item, one design record and one pull request per line takes the one-item path described in [maintenance.md](maintenance.md#the-one-item-path). Its design record carries the feature spec's mandatory sections in small form.

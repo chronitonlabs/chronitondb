@@ -60,17 +60,23 @@ When the file system of a directory cannot be read, the node logs one line at WA
 The startup check check_commitlog_shared_disk could not read the file system of <directory> and left that directory out.
 ```
 
+When any other error ends the check, the node logs one line at WARN, with the cause:
+
+```
+The startup check check_commitlog_shared_disk failed and compared nothing more.
+```
+
 A start that finds nothing logs nothing.
 
 ## Metrics
 
-The three counters exist only on a node that ran the check. A node with the check off has none of them.
+The three counters exist only on a node that ran the check. A node with the check off has none of them. A failed start of the check keeps the counts it made before it failed.
 
 | Metric | Kind | What it counts |
 |---|---|---|
 | `org.chronitondb.metrics:type=CommitLogDiskCheck,name=SharedDataDirectories` | counter | the data directories found on the commit log directory's file system at this start |
 | `org.chronitondb.metrics:type=CommitLogDiskCheck,name=UnreadableDirectories` | counter | the directories whose file system could not be read at this start |
-| `org.chronitondb.metrics:type=CommitLogDiskCheck,name=FailedRuns` | counter | 1 when the check ended with an error of its own at this start |
+| `org.chronitondb.metrics:type=CommitLogDiskCheck,name=FailedRuns` | counter | 1 when the check ended with the failed warning at this start |
 
 <An alert on `SharedDataDirectories` above 0 finds a node that logged the warning.>
 
@@ -82,7 +88,7 @@ The three counters exist only on a node that ran the check. A node with the chec
 | the file system of the commit log directory cannot be read | one WARN line for it, nothing is compared, the node starts |
 | the file system of a data directory cannot be read | one WARN line for it, the other data directories are compared, the node starts |
 | the platform has no `unix` file attribute view | one WARN line for the commit log directory at every start with the check on, nothing is compared, the node starts |
-| any other error in the check | one WARN line, `The startup check check_commitlog_shared_disk failed and compared nothing more.`, with the cause, the node starts |
+| any other error in the check | one WARN line, the failed warning above, with the cause, nothing more is compared, the node starts |
 
 Timeouts, coordinator failure, missing replicas, limits and indexes that are not built do not apply: no request reaches the check.
 

@@ -48,7 +48,7 @@ The commit log disk check warns at startup when the commit log directory is on t
 
 Chosen option: "Off by default", because stock behaviour stays unchanged for everyone who does not use the feature, and a check that is on by default would warn on every default install.
 
-The commit log disk check MUST be off on a node whose configuration does not switch it on. While it is off, the node MUST NOT log a line or register a metric for it.
+The commit log disk check MUST be off on a node whose configuration does not switch it on. While it is off, the check MUST NOT log a line or register a metric.
 
 ### Consequences
 

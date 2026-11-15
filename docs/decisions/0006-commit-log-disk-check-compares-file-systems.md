@@ -61,4 +61,4 @@ The commit log disk check MUST treat two directories as sharing a disk when, and
 
 ## More information
 
-The design record in `docs/design/CLD-commitlog-disk-check/` applies this decision in REQ-CLD-001 to REQ-CLD-003, in its New terms, and in the known limitations of section 13.
+The design record in `docs/design/CLD-commitlog-disk-check/` applies this decision in REQ-CLD-001 to REQ-CLD-003, in its New terms, and in the known limitations of section 13. That the operating system reports one device id for two mounts of one file system was not run for the design record, which says so in its section 15 item 11.

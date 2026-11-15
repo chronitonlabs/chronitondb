@@ -40,10 +40,10 @@ Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-
 - [5. Tests run](#5-tests-run)
   - [Tests for this change](#tests-for-this-change)
   - [Existing suites at risk](#existing-suites-at-risk)
-  - [Stock suites run unchanged](#stock-suites-run-unchanged)
+  - [Apache Cassandra suites run unchanged](#apache-cassandra-suites-run-unchanged)
   - [Tracing test](#tracing-test)
   - [Formats and configurations](#formats-and-configurations)
-- [6. Stock behaviour confirmed](#6-stock-behaviour-confirmed)
+- [6. Apache Cassandra behaviour confirmed](#6-apache-cassandra-behaviour-confirmed)
 - [7. Security](#7-security)
 - [8. Configuration changes](#8-configuration-changes)
 
@@ -75,7 +75,7 @@ Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-
 
 {Unit test suites and in-JVM distributed test suites around the changed areas.}
 
-### Stock suites run unchanged
+### Apache Cassandra suites run unchanged
 
 {Apache Cassandra's own suites, which run with every fork feature off and pass without modification.}
 
@@ -87,7 +87,7 @@ Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-
 
 {`yes` when the import touches compaction or an on-disk format, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
 
-## 6. Stock behaviour confirmed
+## 6. Apache Cassandra behaviour confirmed
 
 {The parity suite result with every fork feature off.}
 

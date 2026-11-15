@@ -44,8 +44,8 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../cl
 - [1. Problem, acceptance criteria and requirements](#1-problem-acceptance-criteria-and-requirements)
   - [Requirements](#requirements)
 - [2. Decisions implemented](#2-decisions-implemented)
-- [3. Stock behaviour preservation](#3-stock-behaviour-preservation)
-  - [Stock hook points](#stock-hook-points)
+- [3. Apache Cassandra behaviour preservation](#3-apache-cassandra-behaviour-preservation)
+  - [Apache Cassandra hook points](#apache-cassandra-hook-points)
 - [4. Prior art reviewed](#4-prior-art-reviewed)
 - [5. Idiom and consistency](#5-idiom-and-consistency)
 - [6. Quality requirements](#6-quality-requirements)
@@ -55,7 +55,7 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../cl
   - [Isolation levers](#isolation-levers)
   - [Benchmarks that prove it](#benchmarks-that-prove-it)
   - [Regression threshold and gate](#regression-threshold-and-gate)
-  - [Stock guard](#stock-guard)
+  - [Apache Cassandra guard](#apache-cassandra-guard)
   - [What was not measured](#what-was-not-measured)
 - [8. Observability](#8-observability)
 - [9. Compatibility](#9-compatibility)
@@ -66,7 +66,7 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../cl
 - [14. Testing](#14-testing)
   - [Tests for this change](#tests-for-this-change)
   - [Existing suites at risk](#existing-suites-at-risk)
-  - [Stock suites run unchanged](#stock-suites-run-unchanged)
+  - [Apache Cassandra suites run unchanged](#apache-cassandra-suites-run-unchanged)
   - [Tracing test](#tracing-test)
   - [Formats and configurations](#formats-and-configurations)
 - [15. Not covered and follow-ups](#15-not-covered-and-follow-ups)
@@ -102,15 +102,15 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 
 {Each decision record by number, with a one line reminder and its date. A statement that no newer record exists on the same subject as of the date of this record.}
 
-## 3. Stock behaviour preservation
+## 3. Apache Cassandra behaviour preservation
 
 {One row per departure from stock, in this table. Write "No departures from stock." in place of the table when there are none. Code defaults in stock classes unchanged. In the switch column, link each departure to its switch's row in the feature spec's section 2.8. A fork feature that fits one item has no feature spec: state its class and the class of each switch above the table, in the form of [section 2.8 of the feature spec](feature-spec.md#28-feature-class-and-switches), and link to that. Tooling reads this table, so keep its columns. Cite each behaviour in the first column as [conventions.md](../conventions.md#claims-about-code) says: `Apache Cassandra <branch> at <hash>`, the symbol, and the file and line.}
 
-| Stock behaviour today (file and line) | This change | Switch that controls it | Error text naming the switch |
+| Apache Cassandra behaviour today (file and line) | This change | Switch that controls it | Error text naming the switch |
 |---|---|---|---|
 | {Apache Cassandra behaviour, cited} | {change} | {switch} | {error text} |
 
-### Stock hook points
+### Apache Cassandra hook points
 
 {Each stock Apache Cassandra file this item makes import ChronitonDB code, with its hook point in the feature spec (section 2.7) and its delta entry. Write "None." when there are none. A hook point not in the spec needs the spec changed first.}
 
@@ -142,7 +142,7 @@ These rules apply to every source:
 
 ### Expected cost
 
-| Path | Metric | Stock today | Expected with the change | Why (mechanism) |
+| Path | Metric | Apache Cassandra today | Expected with the change | Why (mechanism) |
 |---|---|---|---|---|
 
 {Mechanism means the data structure and the count of operations.}
@@ -160,7 +160,7 @@ These rules apply to every source:
 
 {Which benchmarks gate the pull request. Pull request gates block only on counted values and on benchmarks that fail to run, never on timing.}
 
-### Stock guard
+### Apache Cassandra guard
 
 {The stock runs that must not move, and the run with the switch off that must match stock.}
 
@@ -214,7 +214,7 @@ Scenario tags: {the tag expression for this item's scenarios}
 
 {Unit test suites and in-JVM distributed test suites this change could break.}
 
-### Stock suites run unchanged
+### Apache Cassandra suites run unchanged
 
 {Apache Cassandra's own suites that MUST pass without modification.}
 

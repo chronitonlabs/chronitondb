@@ -42,7 +42,12 @@ This register lists every change ChronitonDB carries on top of Apache Cassandra 
 
 ## Keeping it current
 
-1. Every pull request that changes stock code or stock behaviour adds or updates its entry, with a new Last-Update and its row in the index below. A pull request check enforces it once it exists, and the reviewer reads the entry.
+1. Every pull request that changes stock code or stock behaviour adds or updates its entry, with a new Last-Update and its row in the index below. The `delta-register` check enforces it on every pull request, with the checker and the rules taken from the line, and the reviewer reads the entry. The check:
+    1. Finds the stock files the pull request adds, changes, deletes or renames: every file outside the paths of [Where things live](../process/conventions.md#where-things-live).
+    2. Fails when a stock file changes and no entry is added or updated. An import of a whole Apache release or of Apache's branch, from an `import/cassandra-<...>` branch, brings Apache Cassandra's own code and needs no entry. A single Apache fix or a commit from another project does.
+    3. Passes without an entry only when the pull request description has a line `No delta entry: <reason>`, with a reason of three words or more, for a stock change no entry describes. The reviewer judges the reason.
+    4. Checks every entry the pull request adds or changes: each field of the template in its form, a link to the Origin commit unless the Origin is ChronitonDB, a Last-Update later than on the line, and one row in the index below with the same Area, Lines, Forwarded, Added, Last update and Issue. An entry is never renamed or deleted. A change no longer carried keeps its entry with Status Dropped.
+    5. Does not see a change to stock behaviour made only in ChronitonDB's own files. The reviewer looks for it.
 2. Every fix to stock code gets an Apache JIRA, filed by the maintainers. Its entry records it in Bug and Forwarded.
 3. Features are offered to Apache Cassandra only when the maintainers decide, case by case.
 4. The integrator keeps the register current. Its upstream radar flags entries that Apache Cassandra has since fixed. Those entries are dropped at the next import, and its import record in `docs/imports/` lists them.

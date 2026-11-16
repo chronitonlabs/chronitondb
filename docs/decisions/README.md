@@ -103,3 +103,6 @@ Chosen option: "<option>", because <reason>.
 13. [0013. A node starts with the build details view hidden when its configuration turns the view on before the final gate](0013-build-details-view-hidden-before-the-final-gate.md), 2026-11-16, Accepted.
 14. [0014. A node that shows the build details view counts its reads](0014-build-details-view-counts-its-reads.md), 2026-11-16, Accepted.
 15. [0015. A grant on the build details view that outlives the view is documented](0015-grant-on-the-build-details-view-that-outlives-the-view.md), 2026-11-16, Accepted.
+16. [0016. A node starts without the build details view when the start step of the view fails](0016-node-starts-without-the-build-details-view-when-its-start-step-fails.md), 2026-11-16, Accepted.
+17. [0017. The build details view stays at Normal risk with its start fault named](0017-build-details-view-stays-at-normal-risk-with-its-start-fault-named.md), 2026-11-16, Accepted.
+18. [0018. The read counter of the build details view counts each fetch](0018-read-counter-of-the-build-details-view-counts-each-fetch.md), 2026-11-16, Accepted.

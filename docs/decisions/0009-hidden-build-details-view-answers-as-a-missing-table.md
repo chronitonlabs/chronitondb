@@ -57,4 +57,4 @@ While the view is hidden, a statement that names it MUST get the answer Apache C
 
 ## More information
 
-The feature spec in `docs/design/BUILD-build-details-view/feature-spec.md` applies this decision in FREQ-BUILD-017, FREQ-BUILD-018 and FREQ-BUILD-019 and in its section 2.8.
+The feature spec in `docs/design/BUILD-build-details-view/feature-spec.md` applies this decision in FREQ-BUILD-015, FREQ-BUILD-016 and FREQ-BUILD-017 and in its section 2.8.

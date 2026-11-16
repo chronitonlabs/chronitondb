@@ -97,3 +97,6 @@ Chosen option: "<option>", because <reason>.
 7. [0007. The build details view builds the release version key and its reader](0007-build-details-view-builds-the-release-version-reader.md), 2026-11-16, Accepted.
 8. [0008. The build details view obeys Apache compatibility mode through an internal check](0008-build-details-view-obeys-apache-compatibility-mode.md), 2026-11-16, Accepted.
 9. [0009. A hidden build details view answers as a table that does not exist](0009-hidden-build-details-view-answers-as-a-missing-table.md), 2026-11-16, Accepted.
+10. [0010. The build details view stays at Normal risk](0010-build-details-view-stays-at-normal-risk.md), 2026-11-16, Accepted.
+11. [0011. The build details view is switched by its yaml setting only](0011-build-details-view-switched-by-yaml-setting-only.md), 2026-11-16, Accepted.
+12. [0012. The build details view follows the Apache Cassandra permission rule where authorization is off](0012-build-details-view-readable-where-authorization-is-off.md), 2026-11-16, Accepted.

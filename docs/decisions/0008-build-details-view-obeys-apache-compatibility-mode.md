@@ -58,4 +58,4 @@ The view MUST ask one internal check whether Apache compatibility mode is on, an
 
 ## More information
 
-The feature spec in `docs/design/BUILD-build-details-view/feature-spec.md` applies this decision in FREQ-BUILD-015 and FREQ-BUILD-022 and in its section 2.2.
+The feature spec in `docs/design/BUILD-build-details-view/feature-spec.md` applies this decision in FREQ-BUILD-014 and FREQ-BUILD-019 and in its section 2.2.

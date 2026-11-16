@@ -94,3 +94,6 @@ Chosen option: "<option>", because <reason>.
 4. [0004. The commit log disk check is off by default](0004-commit-log-disk-check-off-by-default.md), 2026-11-15, Accepted.
 5. [0005. The commit log disk check is switched under startup_checks](0005-commit-log-disk-check-switched-under-startup-checks.md), 2026-11-15, Accepted.
 6. [0006. The commit log disk check compares file systems](0006-commit-log-disk-check-compares-file-systems.md), 2026-11-15, Accepted.
+7. [0007. The build details view builds the release version key and its reader](0007-build-details-view-builds-the-release-version-reader.md), 2026-11-16, Accepted.
+8. [0008. The build details view obeys Apache compatibility mode through an internal check](0008-build-details-view-obeys-apache-compatibility-mode.md), 2026-11-16, Accepted.
+9. [0009. A hidden build details view answers as a table that does not exist](0009-hidden-build-details-view-answers-as-a-missing-table.md), 2026-11-16, Accepted.

@@ -20,7 +20,7 @@ limitations under the License.
 | Field | Value |
 |---|---|
 | Document type | Record (ISO/IEC/IEEE 15289), MADR |
-| Status | Accepted |
+| Status | Superseded by 0022 |
 | Date | 2026-11-16 |
 | Deciders | The maintainers |
 | References | Issue #141, the feature spec in `docs/design/BUILD-build-details-view/`, [classification.md](../process/classification.md), the [design record of the commit log disk check](../design/CLD-commitlog-disk-check/design-record.md), decision records 0010 and 0016 |
@@ -59,4 +59,4 @@ The work on the build details view stays at Normal risk. The label on the issue 
 
 ## More information
 
-The feature spec in `docs/design/BUILD-build-details-view/feature-spec.md` carries this decision in its Risk row and in problem 1 of its section 4. FREQ-BUILD-027, FREQ-BUILD-036 and FREQ-BUILD-037 are the requirements that exclude the fault.
+Decision record 0022 supersedes this record. It keeps the work at Normal risk and names the start faults as they are now. The feature spec in `docs/design/BUILD-build-details-view/feature-spec.md` carries that in its Risk row and in problem 1 of its section 4.

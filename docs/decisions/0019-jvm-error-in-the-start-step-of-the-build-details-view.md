@@ -20,7 +20,7 @@ limitations under the License.
 | Field | Value |
 |---|---|
 | Document type | Record (ISO/IEC/IEEE 15289), MADR |
-| Status | Accepted |
+| Status | Superseded by 0022 |
 | Date | 2026-11-16 |
 | Deciders | The maintainers |
 | References | Issue #141, the feature spec in `docs/design/BUILD-build-details-view/`, decision record 0016 |
@@ -61,4 +61,4 @@ This narrows decision record 0016 to a throwable that the JVM stability check re
 
 ## More information
 
-The feature spec in `docs/design/BUILD-build-details-view/feature-spec.md` applies this decision in FREQ-BUILD-027 and FREQ-BUILD-040, in its section 2.2 and in problem 1 of its section 4.
+Decision record 0022 supersedes this record. The start step of the view has no guard any more, so it hands no throwable to the JVM stability check: every throwable ends the start of the node.

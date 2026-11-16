@@ -20,7 +20,7 @@ limitations under the License.
 | Field | Value |
 |---|---|
 | Document type | Record (ISO/IEC/IEEE 15289), MADR |
-| Status | Accepted |
+| Status | Superseded by 0022 |
 | Date | 2026-11-16 |
 | Deciders | The maintainers |
 | References | Issue #141, the feature spec in `docs/design/BUILD-build-details-view/`, [quality-requirements.md, Automatic fallbacks are opt-in and counted](../process/quality-requirements.md#automatic-fallbacks-are-opt-in-and-counted), decision records 0013, 0014 and 0019 |
@@ -62,4 +62,4 @@ The feature counts no failed start step. The node holds no metric and no MBean o
 
 ## More information
 
-The feature spec in `docs/design/BUILD-build-details-view/feature-spec.md` applies this decision in FREQ-BUILD-027, FREQ-BUILD-028 and FREQ-BUILD-036, in its sections 2.2 and 2.8 and in problem 1 of its section 4.
+Decision record 0022 supersedes this record. The feature spec in `docs/design/BUILD-build-details-view/feature-spec.md` no longer applies it: a throwable in the start step of the view ends the start of the node.

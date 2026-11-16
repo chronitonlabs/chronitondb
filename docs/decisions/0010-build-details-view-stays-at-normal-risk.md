@@ -59,4 +59,4 @@ The work on the build details view stays at Normal risk. The label on the issue 
 
 ## More information
 
-The feature spec in `docs/design/BUILD-build-details-view/feature-spec.md` carries this decision in its Risk row, in problem 3 of its section 4 and in its section 6. FREQ-BUILD-009 keeps the feature out of the permission code.
+The feature spec in `docs/design/BUILD-build-details-view/feature-spec.md` carries this decision in its Risk row, in problem 4 of its section 4 and in its section 6. FREQ-BUILD-009 keeps the feature out of the permission code.

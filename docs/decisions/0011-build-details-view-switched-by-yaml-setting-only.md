@@ -55,7 +55,7 @@ The switch of the build details view is the yaml setting `build_view_enabled` an
 
 - Good: with the switch off, a node shows one trace of the feature over CQL and JMX, the settings row, where the first option shows three.
 - Good: the state of the view is fixed from start to stop. The feature needs no lock, no step that hides the view under running statements, and no error for a refused toggle.
-- Good: a rolling upgrade restarts every node anyway, so the setting can be put in place before a node's upgrade restart.
+- Good: a rolling upgrade restarts every node anyway, so the setting can be put in place when a node gets its new binary, before it starts on it.
 - Bad: an operator cannot show or hide the view on a running node. Each change costs a restart of that node.
 - Bad: the rule that a runtime change of a setting is logged with its old and new value has no case here, since no runtime change exists. The start log shows the value the node started with.
 - Bad: the view departs from the switch rules, so an operator who knows the toggles of other features finds none for this one. The reference page has to say so.

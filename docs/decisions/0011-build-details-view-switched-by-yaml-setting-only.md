@@ -49,11 +49,11 @@ The switch rules ask for a yaml setting and a nodetool toggle for every feature.
 
 Chosen option: "The yaml setting only", because a node with the switch off then differs from Apache Cassandra by one settings row, and the switch is still set where operators set every other switch.
 
-The switch of the build details view is the yaml setting `build_view_enabled` and nothing else. The node MUST read it at start, and a change MUST take a restart of the node to have effect. The feature MUST NOT add a nodetool command or an MBean. The settings row and the line of the start log that prints the configuration are accepted on every node, whatever the switch says. This is a departure from the rule that every feature has a nodetool toggle, made for this view only.
+The switch of the build details view is the yaml setting `build_view_enabled` and nothing else. The node MUST read it at start, and a change MUST take a restart of the node to have effect. The feature MUST NOT add a nodetool command, or an MBean that reads or changes the switch. Whether the feature has a metric, which Apache Cassandra registers as an MBean, is decided in decision record 0014. The settings row and the line of the start log that prints the configuration are accepted on every node, whatever the switch says. This is a departure from the rule that every feature has a nodetool toggle, made for this view only.
 
 ### Consequences
 
-- Good: with the switch off, a node shows one trace of the feature over CQL and JMX, the settings row, where the first option shows three.
+- Good: with the switch off, a node shows one trace of the feature, the settings row with its line in the start log, where the first option shows three.
 - Good: the state of the view is fixed from start to stop. The feature needs no lock, no step that hides the view under running statements, and no error for a refused toggle.
 - Good: a rolling upgrade restarts every node anyway, so the setting can be put in place when a node gets its new binary, before it starts on it.
 - Bad: an operator cannot show or hide the view on a running node. Each change costs a restart of that node.

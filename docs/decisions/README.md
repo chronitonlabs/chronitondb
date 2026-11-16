@@ -100,3 +100,6 @@ Chosen option: "<option>", because <reason>.
 10. [0010. The build details view stays at Normal risk](0010-build-details-view-stays-at-normal-risk.md), 2026-11-16, Accepted.
 11. [0011. The build details view is switched by its yaml setting only](0011-build-details-view-switched-by-yaml-setting-only.md), 2026-11-16, Accepted.
 12. [0012. The build details view follows the Apache Cassandra permission rule where authorization is off](0012-build-details-view-readable-where-authorization-is-off.md), 2026-11-16, Accepted.
+13. [0013. A node starts with the build details view hidden when its configuration turns the view on before the final gate](0013-build-details-view-hidden-before-the-final-gate.md), 2026-11-16, Accepted.
+14. [0014. A node that shows the build details view counts its reads](0014-build-details-view-counts-its-reads.md), 2026-11-16, Accepted.
+15. [0015. A grant on the build details view that outlives the view is documented](0015-grant-on-the-build-details-view-that-outlives-the-view.md), 2026-11-16, Accepted.

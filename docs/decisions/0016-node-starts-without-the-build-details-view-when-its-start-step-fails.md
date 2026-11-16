@@ -23,7 +23,7 @@ limitations under the License.
 | Status | Accepted |
 | Date | 2026-11-16 |
 | Deciders | The maintainers |
-| References | Issue #141, the feature spec in `docs/design/BUILD-build-details-view/`, [quality-requirements.md, Automatic fallbacks are opt-in and counted](../process/quality-requirements.md#automatic-fallbacks-are-opt-in-and-counted), decision records 0013 and 0014 |
+| References | Issue #141, the feature spec in `docs/design/BUILD-build-details-view/`, [quality-requirements.md, Automatic fallbacks are opt-in and counted](../process/quality-requirements.md#automatic-fallbacks-are-opt-in-and-counted), decision records 0013, 0014 and 0019 |
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
@@ -48,7 +48,7 @@ A node whose configuration turns the build details view on runs the start step o
 
 Chosen option: "The node goes on with its start. The view stays hidden, and the log holds one error that names the view", because a fault of one read-only table that no other part of the node depends on then never keeps a node down, as decision record 0013 chose for a view turned on before the final gate.
 
-When a throwable is thrown in the start step of the view after the step read the setting as `true`, the start step MUST return normally and the node MUST go on with its start. The node MUST keep the view hidden until its next start. It MUST log one ERROR line that names the view. The node MUST NOT refuse to start because the start step of the view failed.
+When a throwable is thrown in the start step of the view after the step read the setting as `true`, the start step MUST return normally and the node MUST go on with its start. The node MUST keep the view hidden until its next start. It MUST log one ERROR line that names the view. The node MUST NOT refuse to start because the start step of the view failed. Decision record 0019 narrows this to a throwable that Apache Cassandra's JVM stability check returns from.
 
 The feature counts no failed start step. The node holds no metric and no MBean of the feature after the failure, as on every node that hides the view. The failure has no yaml setting and no nodetool toggle of its own. This is a departure from the rule on automatic fallbacks in quality-requirements.md, made for this feature only. The ERROR line is written once at a start, so it needs no rate limit.
 

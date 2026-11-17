@@ -42,8 +42,8 @@ Supported versions are listed in the README of the repository.
 
 ## What a release may contain
 
-1. Any release MAY ship fixes, imports from Apache Cassandra and security fixes.
-2. A release MAY ship a finished feature behind its feature switch, which the operator sets with yaml or nodetool.
+1. Any release MAY ship changes of every maintenance category but additive: fixes, security fixes, imports from Apache Cassandra, and preventive, adaptive and perfective changes.
+2. A release MAY ship a finished feature behind its feature switch, which the operator sets as the feature's design says.
 3. Within a line, a feature's default MUST NOT change. Upgrading within a line never changes behaviour by itself.
 4. A purely additive feature's default MAY be on from a line's first release. A behaviour-changing feature's default MUST be off on every line, with one exception the maintainers made: `nodetool version` showing the release version and the git SHA is on by default, see [What nodetool version shows](#what-nodetool-version-shows). No other behaviour-changing feature is on by default. That feature ships before each line's first release, `5.0-chronitondb1` and `6.0-chronitondb1`: it blocks a line's first release until it is in. So it is in every release of a line from the first, and no release within a line changes what `nodetool version` shows.
 5. A feature finished after its line's first release ships with its default off on that line.

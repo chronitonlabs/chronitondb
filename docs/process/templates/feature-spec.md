@@ -119,13 +119,13 @@ The Risk, Size and Reach rows are the feature's class, as [classification.md](..
 
 ### 2.8 Feature class and switches
 
-{Required for every class. The class of the feature and of each switch, each with its reason. A purely additive feature or switch is reachable only through new syntax, new index types or new settings that stock Apache Cassandra rejects. Its default MAY be on from a line's first release. A behaviour-changing feature or switch changes something stock Apache Cassandra already does: results, errors, warnings or the performance of existing operations. Its default MUST be off on every line, except the one exception in [release.md](../release.md#what-a-release-may-contain). A default never changes within a line. A feature that passes its final milestone gate after a line's first release is off by default on that line. Name the stock operations each behaviour-changing switch changes. Each departure in a design record's Apache Cassandra behaviour table links to its switch's row here. See [branching-and-review.md](../branching-and-review.md#feature-switches-and-defaults).}
+{Required for every class. The class of the feature and of each switch, each with its reason. A purely additive feature or switch is reachable only through something stock Apache Cassandra does not have or rejects, for example new CQL syntax, a new index type, a new nodetool command, a new virtual table or a new setting. Its default MAY be on from a line's first release. A behaviour-changing feature or switch changes something stock Apache Cassandra already does: results, errors, warnings or the performance of existing operations. Its default MUST be off on every line, except the one exception in [release.md](../release.md#what-a-release-may-contain). A default never changes within a line. A feature that passes its final milestone gate after a line's first release is off by default on that line. Name the stock operations each behaviour-changing switch changes. Each departure in a design record's Apache Cassandra behaviour table links to its switch's row here. A feature with nothing to turn off says so below the feature class line, with the reason, and leaves the table out. See [branching-and-review.md](../branching-and-review.md#feature-switches-and-defaults).}
 
 Feature class: {purely additive or behaviour-changing}, because {reason}.
 
 | Switch | Class | Reason | Default per line | Apache Cassandra operations it changes |
 |---|---|---|---|---|
-| {yaml setting and nodetool toggle} | {class} | {reason} | {line: on or off} | {operations, or none} |
+| {the switch: its name and how an operator sets it} | {class} | {reason} | {line: on or off} | {operations, or none} |
 
 ## 3. Feature requirements
 

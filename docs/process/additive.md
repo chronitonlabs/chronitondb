@@ -139,7 +139,7 @@ Only the current milestone is in progress. When all its items are merged:
 4. A maintainer approves the gate by merging the report's pull request.
 5. The next milestone starts only after that merge.
 
-Until its final milestone gate, the feature's switch refuses to turn on, whatever its default. The final gate makes the feature switchable with yaml or nodetool. From then on the switch starts from the default the feature spec sets for the line, and that default never changes within the line. A feature that passes its final gate after its line's first release ships with its default off on that line. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults) and [release.md](release.md#what-a-release-may-contain).
+Until its final milestone gate, the feature's switch refuses to turn on, whatever its default. The final gate makes the feature switchable, by the means its design chose. From then on the switch starts from the default the feature spec sets for the line, and that default never changes within the line. A feature that passes its final gate after its line's first release ships with its default off on that line. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults) and [release.md](release.md#what-a-release-may-contain).
 
 ## Change control after a merge
 

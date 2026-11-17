@@ -24,10 +24,10 @@ This page is the ChronitonDB test policy and test strategy in the sense of ISO/I
 1. Every requirement has at least one test that proves it. A requirement without a test is not done, unless the item's coverage file records why it is deliberately not tested. That reason is part of the design record and is approved with it.
 2. A fix starts with a test that reproduces the fault, written by the designer on the item's code branch. It MUST fail before the fix and pass after it. The test and the fix merge together, so the line never carries a failing test. A fix to a fork feature MAY use a scenario as its reproducing test, see [Scenarios](#scenarios). A fix to stock Apache Cassandra code uses a plain JUnit test.
 3. With every fork feature off, every line MUST behave exactly as stock Apache Cassandra, apart from the fixes to stock code that the [delta register](../delta/README.md) lists. The parity suite proves it.
-4. A test that existed before a change MUST NOT be weakened. A change to a pre-existing test is additive and named in the design record.
+4. A test that existed before a change MUST NOT be weakened. A change to a pre-existing test only adds, and is named in the design record. A pre-existing test of stock Apache Cassandra changes in any other way only when the maintainers approved the named change in a decision record, or when the change arrives unchanged in an import from Apache Cassandra.
 5. Tests MUST NOT depend on wall clock timing. Seeds are printed so a run can be repeated.
 6. Results that depend on cluster topology are a fault. Multi node behaviour is tested at replication factor 1 and replication factor 3. See [quality-requirements.md](quality-requirements.md).
-7. Scenarios are the executable form of a fork feature's EARS requirements. They are for fork features only. Apache Cassandra's own tests stay as they are. See [Scenarios](#scenarios).
+7. Scenarios are the executable form of a fork feature's EARS requirements. They are for fork features only. Apache Cassandra's own tests are not rewritten as scenarios, and change only as rule 4 allows. See [Scenarios](#scenarios).
 8. A dependency patch-version update has no design record. Every one goes through the security engineer, also one a maintainer asks for that is not a security fix. The security engineer names the test classes that cover every use of the library in ChronitonDB. Those tests MUST pass before the update merges. See [maintenance.md](maintenance.md#dependency-patch-version-updates).
 
 ## Test levels

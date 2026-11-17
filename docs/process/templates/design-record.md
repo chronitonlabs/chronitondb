@@ -258,7 +258,7 @@ The four words:
 1. `new`: a file the line does not have yet.
 2. `edit`: an existing ChronitonDB file.
 3. `stock`: an existing Apache Cassandra file that is not a test.
-4. `test`: any test file, new or existing. A stock test stays add only: its existing tests are not changed.
+4. `test`: any test file, new or existing. A stock test stays add only: its existing tests are not changed, unless a decision record approves the named change. See [testing.md](../testing.md#policy).
 
 ```
 src/java/org/apache/cassandra/example/Example.java stock

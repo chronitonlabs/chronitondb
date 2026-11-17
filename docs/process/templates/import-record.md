@@ -26,6 +26,8 @@ limitations under the License.
 | Author | Integrator: {GitHub username} |
 | Approver | The maintainer who merges the import pull request |
 | References | Issue #{issue}. Apache release tag or commit hash, or the other project's commit link. Import pull request. |
+| Areas | {one or more areas of [areas.md](../areas.md), joined by commas} |
+| Source | {apache-cherry-pick, apache-merge or third-party, as [areas.md](../areas.md#the-sources) names them} |
 
 Revision history, one row for each version:
 

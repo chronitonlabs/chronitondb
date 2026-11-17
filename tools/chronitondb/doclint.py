@@ -26,6 +26,7 @@ before they commit.
     doclint.py settings --repo DIR --base REF [--source SRC]
     doclint.py index [--write | --check] FILE...
     doclint.py history --repo DIR --templates REF [--write | --check] PATH...
+    doclint.py indexes --repo DIR --templates REF [--source SRC] [--write]
     doclint.py delta --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE]
 
 SRC is where the documents are read: "index" (the default, the staged
@@ -225,6 +226,27 @@ place, with one row for the document's Version and today's date, whose
 change and decision record the author fills in. With --check it reports
 what is wrong with the revision history and its link, whatever REF holds
 of the document.
+
+A document with an Areas row names one area or more of the list of
+docs/process/areas.md at REF, joined by commas, each once, and one with a
+Source row names one source of that page's list. A document merged at REF
+without a row its template gained later, Areas, Supersedes or Source, keeps
+none while it is at the Version it was merged at, a decision record for
+good.
+
+The supersede links of decision records hold both ways: each record a
+Supersedes row names says "Superseded by" that record in its Status, and a
+record whose Status says "Superseded by" another is named in that one's
+Supersedes row, when it has the row.
+
+indexes checks the generated indexes of the tree at SRC, and with --write
+writes them into the working tree: docs/index/documents.md, every document
+under docs/ whose document control table has a Document type row, by kind,
+docs/index/decisions.md, every decision record, docs/index/areas.md, the
+same under each area of the areas page at REF, and INDEX.md in each
+feature directory docs/design/<KEY>-<slug>/, its documents, the design
+records that define its REQ ids and its decision records. A page that is
+not what the documents give is a finding.
 
 settings is the setting name check of release.md, The configuration file.
 A setting name is a top level key of a yaml file, active ("name:") or
@@ -572,7 +594,7 @@ def check_requirement(doc, index, rid, text, unit):
         doc.error(index, "%s uses an unmeasured word without a number" % rid)
 
 
-def check_common(doc, kind, template_text, path):
+def check_common(doc, kind, template_text, path, late=()):
     for index, line in enumerate(doc.lines):
         if MARKER in line:
             doc.error(index, "a clarification marker is left: every [NEEDS CLARIFICATION: ...] is answered and removed before the document merges")
@@ -586,7 +608,8 @@ def check_common(doc, kind, template_text, path):
         else:
             for field, (template_value, _) in wanted.items():
                 if field not in fields:
-                    doc.error(table_line, "the document control table has no '%s' row (ISO/IEC/IEEE 15289)" % field)
+                    if field not in late:
+                        doc.error(table_line, "the document control table has no '%s' row (ISO/IEC/IEEE 15289)" % field)
                     continue
                 value, line = fields[field]
                 # A template value in braces or angle brackets is a placeholder.
@@ -1924,6 +1947,155 @@ def check_record(doc, path, repo, templates, where, rules):
         doc.error(0, "a new decision record takes the next number of its key, in order with no gap: after %s, %s here, and this one is %s (docs/decisions/README.md, rule 1)" % (before, span, name))
 
 
+AREAS_PAGE = "docs/process/areas.md"
+AREA_NAME = re.compile(r"^`([a-z][a-z0-9]*(?:-[a-z0-9]+)*)`$")
+# The rows a template gained after documents were merged from it. A
+# document merged without one keeps none until it is at another version
+# than on the line, a decision record, which has no version, for good.
+LATE_ROWS = ("Areas", "Supersedes", "Source")
+
+
+def names_at(repo, ref, section, rules=None):
+    """The names of one closed list of docs/process/areas.md at ref, in the
+    page's order: the names in backticks in the first column of the table
+    of the section. None when the page or the table is not there."""
+    if rules is not None and ("names", section) in rules:
+        return rules[("names", section)]
+    found = None
+    text = git(repo, "show", "%s:%s" % (ref, AREAS_PAGE))
+    if text is not None:
+        doc = Markdown(AREAS_PAGE, text)
+        span = plain_section_span(doc, section)
+        if span is not None:
+            names = [AREA_NAME.match(cells[0]) for _, cells in first_table(doc, span[0], span[1]) if cells]
+            found = [match.group(1) for match in names if match] or None
+    if rules is not None:
+        rules[("names", section)] = found
+    return found
+
+
+def areas_at(repo, ref, rules=None):
+    return names_at(repo, ref, "The areas", rules)
+
+
+def late_rows(doc, path, kind, repo, templates):
+    """The rows of LATE_ROWS this document may lack: the ones it lacked
+    when it was merged at the rules ref, while it is the version it was
+    merged at. A decision record is never edited (README rule 2), so it
+    keeps the rows it was merged with."""
+    merged = git(repo, "show", "%s:%s" % (templates, path))
+    if merged is None:
+        return ()
+    old_fields, _ = control_table(Markdown(path, merged))
+    fields, _ = control_table(doc)
+    if not old_fields or not fields:
+        return ()
+    if kind != "decision" and old_fields.get("Version", ("",))[0] != fields.get("Version", ("",))[0]:
+        return ()
+    return tuple(row for row in LATE_ROWS if row not in old_fields and row not in fields)
+
+
+def areas_of(value):
+    return [word.strip().strip("`") for word in value.split(",") if word.strip()]
+
+
+def check_areas(doc, repo, templates, rules):
+    """The Areas row names one area or more of docs/process/areas.md on the
+    line, joined by commas, and nothing else."""
+    fields, _ = control_table(doc)
+    if not fields or "Areas" not in fields:
+        return
+    value, line = fields["Areas"]
+    if not value or outer_braces(value) or re.search(r"<[^>]+>", value):
+        return
+    known = areas_at(repo, templates, rules)
+    if known is None:
+        doc.error(line, "no list of areas at %s on %s, so the Areas row cannot be checked" % (AREAS_PAGE, templates))
+        return
+    named = areas_of(value)
+    for name in named:
+        if name not in known:
+            doc.error(line, "'%s' is not an area. The Areas row names one or more of %s, joined by commas (%s). A new area is a change to that page" % (name, ", ".join(known), AREAS_PAGE))
+    if len(set(named)) != len(named):
+        doc.error(line, "the Areas row names an area twice")
+
+
+def check_source(doc, repo, templates, rules):
+    """The Source row names one source of the list on the areas page: how
+    the change came into the line."""
+    fields, _ = control_table(doc)
+    if not fields or "Source" not in fields:
+        return
+    value, line = fields["Source"]
+    if not value or outer_braces(value):
+        return
+    known = names_at(repo, templates, "The sources", rules)
+    if known is None:
+        doc.error(line, "no list of sources at %s on %s, so the Source row cannot be checked" % (AREAS_PAGE, templates))
+    elif value.strip("`") not in known:
+        doc.error(line, "'%s' is not a source. The Source row names one of %s (%s)" % (value, ", ".join(known), AREAS_PAGE))
+
+
+RECORD_REF = re.compile(r"(?<![0-9A-Za-z-])(" + DECISION_ID + r"|[0-9]{4})(?![0-9A-Za-z])")
+
+
+def own_record_name(path):
+    """The id a decision record is cited by: its id, or its number for a
+    record merged before the ids."""
+    found = record_id(path)
+    if found:
+        return found[0]
+    match = OLD_RECORD.match(path)
+    return match.group(1) if match else None
+
+
+def check_supersedes(doc, path, source, repo, where):
+    """Supersede links hold both ways (README rule 2): each record this
+    one's Supersedes row names says "Superseded by" this one in its Status,
+    and a record whose Status says "Superseded by" another is named in that
+    one's Supersedes row. A record merged before the Supersedes row has
+    none, and is not asked for it."""
+    own = own_record_name(path)
+    fields, _ = control_table(doc)
+    if own is None or not fields:
+        return
+    by_name = {}
+    for other in records_at(repo, where):
+        name = own_record_name(other)
+        if name:
+            by_name.setdefault(name, other)
+
+    def fields_of(name):
+        other = by_name.get(name)
+        text = source.read(other) if other else None
+        if text is None:
+            return other, None
+        return other, control_table(Markdown(other, text))[0] or {}
+
+    if "Supersedes" in fields:
+        value, line = fields["Supersedes"]
+        names = RECORD_REF.findall(re.sub(r"\\([^)]*\\)", "", value))
+        if value != "None" and not names and not re.search(r"<[^>]+>", value):
+            doc.error(line, "the Supersedes row names each record this one replaces by its id, such as DEC-VER-0003, or says None")
+        for name in names:
+            if name == own:
+                doc.error(line, "a record does not supersede itself")
+                continue
+            other, theirs = fields_of(name)
+            if theirs is None:
+                doc.error(line, "this record supersedes %s, and there is no such record" % name)
+            elif theirs.get("Status", ("",))[0] != "Superseded by %s" % own:
+                doc.error(line, "this record supersedes %s, and the Status of %s is '%s'. It becomes 'Superseded by %s' in the same pull request (docs/decisions/README.md, rule 2)" % (name, other, theirs.get("Status", ("",))[0], own))
+    status, line = fields.get("Status", ("", 0))
+    match = re.match(r"^Superseded by (" + DECISION_ID + r"|[0-9]{4})$", status)
+    if match:
+        other, theirs = fields_of(match.group(1))
+        if theirs is None:
+            doc.error(line, "the Status names %s, and there is no such record" % match.group(1))
+        elif "Supersedes" in theirs and own not in RECORD_REF.findall(re.sub(r"\\([^)]*\\)", "", theirs["Supersedes"][0])):
+            doc.error(line, "the Status says this record is superseded by %s, and the Supersedes row of %s does not name %s (docs/decisions/README.md, rule 2)" % (match.group(1), other, own))
+
+
 REVISION_HEAD = ["Version", "Date", "Change", "Decision record"]
 REVISION_INTRO = "Revision history, one row for each version:"
 OLD_HISTORY = "Change history: the git history of this file."
@@ -2140,6 +2312,257 @@ def run_history(args):
     if mode == "--check":
         print("history %d checked %d failed" % (len(paths), failed))
     return 1 if failed else 0
+
+
+INDEX_DIR = "docs/index"
+INDEX_PAGES = {"documents": INDEX_DIR + "/documents.md", "decisions": INDEX_DIR + "/decisions.md", "areas": INDEX_DIR + "/areas.md"}
+FEATURE_INDEX = "INDEX.md"
+INDEX_LICENCE = """<!--
+Copyright 2026 AxonOps Limited
+SPDX-License-Identifier: Apache-2.0
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+"""
+INDEX_NOTE = "This page is generated by `tools/chronitondb/doclint.py indexes --write` from the document control table of each document. It is never edited by hand."
+# The kind of a document is the word before the colon of its title, as its
+# template writes it. These read better with their noun.
+KIND_NAMES = {"Design": "Design record", "Fix": "Fix record", "Import": "Import record", "Release": "Release proposal", "Delta": "Delta entry"}
+KIND_ORDER = ("Feature spec", "Plan", "Delivery plan", "Milestone report", "Design record", "Fix record", "Import record",
+              "Research report", "Line plan", "Release proposal", "Delta entry", "Review record")
+NO_AREA = "Documents with no Areas row"
+JIRA_ID = re.compile(r"\bCASSANDRA-[0-9]+\b")
+UPSTREAM = re.compile(r"`([0-9a-f]{7,40}|cassandra-[0-9][0-9A-Za-z.-]*)`|\b(cassandra-[0-9]+\.[0-9]+(?:\.[0-9]+)?(?:-[a-z0-9]+)?)\b")
+
+
+def docs_at(repo, where):
+    if where == "index":
+        listing = git(repo, "ls-files", "--", "docs/")
+    elif where == "worktree":
+        listing = git(repo, "ls-files", "--cached", "--others", "--exclude-standard", "--", "docs/")
+    else:
+        listing = git(repo, "ls-tree", "-r", "--name-only", where, "--", "docs/")
+    return sorted(line for line in (listing or "").split("\n") if line.endswith(".md"))
+
+
+def cell(text):
+    return re.sub(r"\s+", " ", text).replace("|", "\\|").strip()
+
+
+def indexed_documents(repo, where):
+    """Every document of docs/ at where that carries the common header: a
+    document control table with a Document type row. A template, a generated
+    index and a page with no such table are not documents. Each is a dict
+    of its path, kind, title, status, version, areas and, by kind, what
+    its header says more."""
+    source = Source(repo, where)
+    found = []
+    for path in docs_at(repo, where):
+        if path.startswith("docs/process/templates/") or path.startswith(INDEX_DIR + "/") or os.path.basename(path) == FEATURE_INDEX:
+            continue
+        text = source.read(path)
+        if text is None:
+            continue
+        doc = Markdown(path, text)
+        fields, _ = control_table(doc)
+        if not fields or "Document type" not in fields:
+            continue
+        heading = first_heading(text)
+        value = lambda name: fields[name][0] if name in fields else ""
+        entry = {"path": path, "heading": heading, "status": value("Status"), "version": value("Version"),
+                 "areas": areas_of(value("Areas")) if "Areas" in fields else None, "references": value("References"),
+                 "title": value("Title") or heading}
+        if doc_type(path, text) == "decision":
+            entry["kind"] = "Decision record"
+            entry["id"] = own_record_name(path) or ""
+            entry["title"] = re.sub(r"^\S+\.\s+", "", heading)
+            entry["date"] = value("Date")
+            entry["supersedes"] = value("Supersedes") if "Supersedes" in fields else ""
+            entry["feature"] = path.split("/")[2] if path.startswith("docs/design/") else ""
+        else:
+            word = heading.split(":")[0].strip() if ":" in heading else ""
+            entry["kind"] = KIND_NAMES.get(word, word) or "Other document"
+            entry["title"] = heading.split(":", 1)[1].strip() if ":" in heading else heading
+        if entry["kind"] == "Import record":
+            both = heading + " " + entry["references"]
+            line = re.search(r" into (\S+)\s*$", heading)
+            entry["line"] = line.group(1) if line else ""
+            entry["source"] = value("Source")
+            entry["jira"] = sorted(set(JIRA_ID.findall(both)), key=lambda name: int(name.split("-")[1]))
+            entry["upstream"] = []
+            for match in UPSTREAM.finditer(both):
+                name = match.group(1) or match.group(2)
+                if name not in entry["upstream"]:
+                    entry["upstream"].append(name)
+        found.append(entry)
+    return found
+
+
+def link(entry, page, text=None):
+    return "[%s](%s)" % (cell(text or entry["title"]), os.path.relpath(entry["path"], os.path.dirname(page)).replace(os.sep, "/"))
+
+
+def kind_key(kind):
+    return (KIND_ORDER.index(kind) if kind in KIND_ORDER else len(KIND_ORDER), kind)
+
+
+def record_key(entry):
+    found = record_id(entry["path"])
+    return (0, "", int(entry["id"])) if not found else (1, found[1], found[2])
+
+
+def table(head, rows):
+    return ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)] + ["| " + " | ".join(row) + " |" for row in rows]
+
+
+def areas_cell(entry):
+    return ", ".join("`%s`" % name for name in entry["areas"]) if entry["areas"] else ""
+
+
+def index_pages(repo, where, rules_ref):
+    """The generated indexes of the tree at where, as a path to text map:
+    every document by kind, every decision record, every document by area,
+    and the documents of each feature in its own directory. The areas and
+    their order come from the areas page at rules_ref, the line."""
+    entries = indexed_documents(repo, where)
+    records = sorted((entry for entry in entries if entry["kind"] == "Decision record"), key=record_key)
+    others = [entry for entry in entries if entry["kind"] != "Decision record"]
+    pages = {}
+
+    def page(path, title, body):
+        pages[path] = "\n".join([INDEX_LICENCE, "# " + title, "", INDEX_NOTE, ""] + body).rstrip("\n") + "\n"
+
+    # Every document, by kind.
+    here = INDEX_PAGES["documents"]
+    body = ["Every document under `docs/` that carries the common header, by kind. The decision records are in [decisions.md](decisions.md), and the same documents by area in [areas.md](areas.md).", ""]
+    for kind in sorted({entry["kind"] for entry in others}, key=kind_key):
+        body += ["## %s" % kind, ""]
+        rows = sorted((entry for entry in others if entry["kind"] == kind), key=lambda entry: entry["path"])
+        if kind == "Import record":
+            body += table(["Import", "Line", "Source", "Apache JIRA", "Release or commit", "Status", "Version", "Areas"],
+                          [[link(entry, here), cell(entry["line"]), cell(entry["source"]), ", ".join(entry["jira"]), ", ".join("`%s`" % name for name in entry["upstream"]),
+                            cell(entry["status"]), cell(entry["version"]), areas_cell(entry)] for entry in rows])
+        else:
+            body += table(["Document", "Status", "Version", "Areas"],
+                          [[link(entry, here), cell(entry["status"]), cell(entry["version"]), areas_cell(entry)] for entry in rows])
+        body += [""]
+    page(here, "Documents", body)
+
+    # Every decision record.
+    here = INDEX_PAGES["decisions"]
+    body = ["Every decision record of the project and of its features, by key and number. The records named by a number alone were merged before records had ids.", ""]
+    body += table(["Id", "Decision", "Feature", "Status", "Date", "Areas", "Supersedes"],
+                  [[link(entry, here, entry["id"]), cell(entry["title"]), "`%s`" % entry["feature"] if entry["feature"] else "", cell(entry["status"]),
+                    cell(entry["date"]), areas_cell(entry), cell(entry["supersedes"])] for entry in records])
+    page(here, "Decision records", body)
+
+    # Every document, by area.
+    here = INDEX_PAGES["areas"]
+    names = areas_at(repo, rules_ref) or []
+    extra = sorted({name for entry in entries for name in (entry["areas"] or []) if name not in names})
+    body = ["Every document and decision record under each of [the areas](../process/areas.md) its `Areas` row names. A document that names several areas is listed under each.", ""]
+    for name in names + extra + [None]:
+        rows = [entry for entry in entries if (name in (entry["areas"] or []) if name else not entry["areas"])]
+        rows.sort(key=lambda entry: (kind_key(entry["kind"]), record_key(entry) if entry["kind"] == "Decision record" else (), entry["path"]))
+        body += ["## %s" % ("`%s`" % name if name else NO_AREA), ""]
+        if not name:
+            body += ["Documents of a kind that has no `Areas` row, and documents merged before the row.", ""]
+        if rows:
+            body += table(["Document", "Kind", "Status", "Version"],
+                          [[link(entry, here, "%s. %s" % (entry["id"], entry["title"]) if entry["kind"] == "Decision record" else None),
+                            entry["kind"], cell(entry["status"]), cell(entry.get("version", ""))] for entry in rows])
+        else:
+            body += ["None."]
+        body += [""]
+    page(here, "Documents by area", body)
+
+    # The documents of each feature, in its directory.
+    source = Source(repo, where)
+    owners = {}
+    for entry in others:
+        if entry["kind"] in ("Design record", "Fix record"):
+            text = source.read(entry["path"]) or ""
+            for rid, _ in requirement_definitions(Markdown(entry["path"], text), r"REQ-[A-Z]{3,5}-[0-9]{3}"):
+                owners.setdefault(rid.split("-")[1], set()).add(entry["path"])
+    features = sorted({path.split("/")[2] for path in docs_at(repo, where) if path.startswith("docs/design/") and path.count("/") >= 3})
+    for name in features:
+        match = DIR_FORM.match(name)
+        if not match or not match.group(1):
+            continue
+        key = match.group(1)
+        here = "docs/design/%s/%s" % (name, FEATURE_INDEX)
+        own = [entry for entry in others if entry["path"].startswith("docs/design/%s/" % name) or entry["path"] in owners.get(key, ())]
+        own.sort(key=lambda entry: (kind_key(entry["kind"]), entry["path"]))
+        body = ["The documents of the feature `%s`: those of this directory, and the design records of its items, which define its `REQ-%s-nnn` requirements." % (key, key), ""]
+        body += table(["Document", "Kind", "Status", "Version", "Areas"],
+                      [[link(entry, here), entry["kind"], cell(entry["status"]), cell(entry["version"]), areas_cell(entry)] for entry in own]) if own else ["None."]
+        body += ["", "## Decision records", ""]
+        mine = [entry for entry in records if entry["feature"] == name]
+        body += table(["Id", "Decision", "Status", "Date", "Areas", "Supersedes"],
+                      [[link(entry, here, entry["id"]), cell(entry["title"]), cell(entry["status"]), cell(entry["date"]), areas_cell(entry), cell(entry["supersedes"])]
+                       for entry in mine]) if mine else ["None."]
+        page(here, "%s: documents of this feature" % key, body)
+    return pages
+
+
+def run_indexes(args):
+    repo, rules_ref, where, write = None, None, "index", False
+    index = 0
+    while index < len(args):
+        word = args[index]
+        if word in ("--repo", "--templates", "--source") and index + 1 < len(args):
+            if word == "--repo":
+                repo = args[index + 1]
+            elif word == "--templates":
+                rules_ref = args[index + 1]
+            else:
+                where = args[index + 1]
+            index += 2
+            continue
+        if word == "--write":
+            write = True
+            index += 1
+            continue
+        sys.stderr.write(__doc__)
+        return 2
+    if not repo or not rules_ref:
+        sys.stderr.write(__doc__)
+        return 2
+    if write:
+        where = "worktree"
+    pages = index_pages(repo, where, rules_ref)
+    source = Source(repo, where)
+    stale = [path for path in sorted(pages) if source.read(path) != pages[path]]
+    gone = [path for path in docs_at(repo, where)
+            if (path.startswith(INDEX_DIR + "/") or (path.startswith("docs/design/") and os.path.basename(path) == FEATURE_INDEX)) and path not in pages]
+    if write:
+        for path in stale:
+            full = os.path.join(repo, path)
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            with open(full, "w", encoding="utf-8") as handle:
+                handle.write(pages[path])
+            print("index %s written" % path)
+        for path in gone:
+            os.remove(os.path.join(repo, path))
+            print("index %s removed" % path)
+        print("indexes %d pages %d written" % (len(pages), len(stale)))
+        return 0
+    for path in stale:
+        sys.stderr.write("%s:0: is not the index the documents give now. doclint.py indexes --write regenerates it, then commit it with the change\n" % path)
+    for path in gone:
+        sys.stderr.write("%s:0: is an index of nothing: no feature directory or index page of this name is generated. doclint.py indexes --write removes it\n" % path)
+    print("indexes %d pages %d stale" % (len(pages), len(stale) + len(gone)))
+    return 1 if stale or gone else 0
 
 
 def decision_template(text):
@@ -2609,6 +3032,8 @@ def main(argv):
         return run_delta(argv[1:])
     if argv and argv[0] == "history":
         return run_history(argv[1:])
+    if argv and argv[0] == "indexes":
+        return run_indexes(argv[1:])
     if argv and argv[0] == "settings":
         repo, base, where = None, None, "index"
         args = argv[1:]
@@ -2746,11 +3171,14 @@ def main(argv):
         if template_text is None:
             doc.error(0, "no %s template at %s on %s, so this document cannot be checked against it" % (kind.replace("-", " "), template_path, templates))
         else:
-            check_common(doc, kind, template_text, path)
+            check_common(doc, kind, template_text, path, late_rows(doc, path, kind, repo, templates))
+            check_areas(doc, repo, templates, rules)
+            check_source(doc, repo, templates, rules)
             if has_contents(Markdown(template_path, template_text)) and needs_index(kind, path, repo, templates, where, rules):
                 check_index(doc, path)
             if kind == "decision":
                 check_record(doc, path, repo, templates, where, rules)
+                check_supersedes(doc, path, source, repo, where)
             check_revision(doc, path, repo, templates, template_text)
             template_doc = Markdown(template_path, template_text)
             template_fields, _ = control_table(template_doc)

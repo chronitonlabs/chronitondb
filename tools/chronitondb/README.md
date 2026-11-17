@@ -182,6 +182,15 @@ A research report, `docs/research/<issue>-<slug>.md`, is checked against the res
 
 A decision record is checked from where it lives: `docs/design/<dir>/decisions/` for a feature or other work, `docs/decisions/` for the whole project. A record new to the line is named `DEC-<KEY>-nnnn-<slug>.md` with the key of its place, its title opens with its id, no other record has that id, and its number is the next of its key. A record merged on the line is never edited, so it is not held to rules made after it. See [the decision records](../../docs/decisions/README.md#rules).
 
+### Areas, sources and the generated indexes
+
+A document's `Areas` row names areas of the list in [areas.md](../../docs/process/areas.md), read from the line, and an import record's `Source` row one of its sources. Supersede links between decision records are checked both ways.
+
+    tools/chronitondb/doclint.py indexes --repo . --templates origin/<line>           report each generated index that is not what the documents give
+    tools/chronitondb/doclint.py indexes --repo . --templates origin/<line> --write   write them: docs/index/documents.md, decisions.md and areas.md, and INDEX.md in each feature directory
+
+`indexes` reads the header of every document under `docs/`. See [conventions.md](../../docs/process/conventions.md#generated-indexes).
+
 ### The class
 
 The class of a change, its risk, size and reach, is set out in [classification.md](../../docs/process/classification.md). When the template on the line carries the class rows, a feature spec's Risk, Size and Reach rows each hold the level, a colon and the reason, and its Touches row lists what the change touches or says none. A Low risk that touches a public interface or stock behaviour is refused. Each section the class requires holds its content. Every other section holds its content or the one line `Not applicable: <reason>`, which covers the section's subsections. The section Where problems could occur and its Test plan never say none or low. A plan and a milestone report repeat the feature spec's levels, and a fix record, and a design record not covered by a feature spec, write Where problems could occur in full.

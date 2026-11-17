@@ -46,6 +46,8 @@ RECORD = """# %s. A decision
 | Date | 2026-11-17 |
 | Deciders | The maintainers |
 | References | Issue 61 |
+| Areas | %s |
+| Supersedes | %s |
 
 ## Context and problem statement
 
@@ -122,6 +124,8 @@ class Repo(unittest.TestCase):
         with open(os.path.join(ROOT, "docs", "decisions", "README.md"), encoding="utf-8") as handle:
             self.put("docs/decisions/README.md", handle.read())
         self.put("docs/process/templates/line-plan.md", TEMPLATE)
+        with open(os.path.join(ROOT, "docs", "process", "areas.md"), encoding="utf-8") as handle:
+            self.put("docs/process/areas.md", handle.read())
 
     def tearDown(self):
         shutil.rmtree(self.repo)
@@ -137,8 +141,9 @@ class Repo(unittest.TestCase):
         with open(full, "w", encoding="utf-8") as handle:
             handle.write(text)
 
-    def record(self, path, name=None):
-        self.put(path, RECORD % (name or os.path.basename(path)[:len("DEC-") + path.split("DEC-")[1].index("-", path.split("DEC-")[1].index("-") + 1)]))
+    def record(self, path, name=None, areas="project", supersedes="None"):
+        own = os.path.basename(path)[:len("DEC-") + path.split("DEC-")[1].index("-", path.split("DEC-")[1].index("-") + 1)]
+        self.put(path, RECORD % (name or own, areas, supersedes))
         run("index", "--write", os.path.join(self.repo, path))
 
     def line(self):
@@ -387,6 +392,255 @@ class Revisions(Repo):
         fields, _ = doclint.control_table(Markdown("record", template))
         self.assertNotIn("Version", fields)
         self.assertIsNone(doclint.revision_rows(Markdown("record", template))[0])
+
+
+class Areas(Repo):
+
+    VER = "docs/design/VER-release-version/decisions/DEC-VER-%s.md"
+
+    def test_the_areas_and_sources_are_read_from_the_page(self):
+        self.line()
+        areas = doclint.areas_at(self.repo, "line")
+        self.assertIn("search", areas)
+        self.assertIn("project", areas)
+        self.assertEqual(len(areas), len(set(areas)))
+        self.assertEqual(doclint.names_at(self.repo, "line", "The sources"), ["original", "apache-cherry-pick", "apache-merge", "third-party"])
+
+    def test_a_word_that_is_no_area_fails(self):
+        self.line()
+        path = self.VER % "0001-a-choice"
+        self.record(path, areas="storage, performance")
+        rc, _, err = self.document(path)
+        self.assertEqual(rc, 1)
+        self.assertIn("'performance' is not an area. The Areas row names one or more of cql, client-protocol", err)
+
+    def test_several_areas_pass_and_one_twice_fails(self):
+        self.line()
+        path = self.VER % "0001-a-choice"
+        self.record(path, areas="storage, `observability`")
+        self.assertEqual(self.document(path)[::2], (0, ""))
+        self.record(path, areas="storage, storage")
+        self.assertIn("names an area twice", self.document(path)[2])
+
+    def test_a_new_record_without_the_row_fails_and_a_merged_one_keeps_none(self):
+        text = (RECORD % ("DEC-VER-0001", "x", "y")).replace("| Areas | x |\n| Supersedes | y |\n", "")
+        merged, new = self.VER % "0001-merged", self.VER % "0002-new"
+        self.put(merged, text)
+        run("index", "--write", os.path.join(self.repo, merged))
+        self.line()
+        self.put(merged, open(os.path.join(self.repo, merged), encoding="utf-8").read().replace("| Status | Accepted |", "| Status | Superseded by DEC-VER-0002 |"))
+        self.record(new, supersedes="DEC-VER-0001")
+        self.assertEqual(self.document(merged, new)[::2], (0, ""))
+        self.put(new, text.replace("DEC-VER-0001", "DEC-VER-0002"))
+        run("index", "--write", os.path.join(self.repo, new))
+        rc, _, err = self.document(new)
+        self.assertEqual(rc, 1)
+        self.assertIn("the document control table has no 'Areas' row", err)
+        self.assertIn("the document control table has no 'Supersedes' row", err)
+
+    def test_a_document_keeps_no_late_row_until_its_next_version(self):
+        template = TEMPLATE.replace("| Version | {n} |", "| Version | {n} |\n| Areas | {areas} |")
+        self.put(PATH, PLAN % ("1", history(("1", "2026-11-01", "First version", "None"))))
+        self.put("docs/process/templates/line-plan.md", template)
+        self.line()
+        self.assertEqual(self.document(PATH)[::2], (0, ""))
+        self.put(PATH, PLAN % ("2", history(("1", "2026-11-01", "First version", "None"), ("2", "2026-11-17", "The dates moved", "None"))))
+        rc, _, err = self.document(PATH)
+        self.assertEqual(rc, 1)
+        self.assertIn("the document control table has no 'Areas' row", err)
+
+    def test_a_source_that_is_not_on_the_list_fails(self):
+        template = TEMPLATE.replace("| Version | {n} |", "| Version | {n} |\n| Source | {source} |")
+        self.put("docs/process/templates/line-plan.md", template)
+        self.line()
+        good = (PLAN % ("1", history(("1", "2026-11-17", "First version", "None")))).replace("| Version | 1 |", "| Version | 1 |\n| Source | apache-merge |")
+        self.put(PATH, good)
+        self.assertEqual(self.document(PATH)[::2], (0, ""))
+        self.put(PATH, good.replace("apache-merge", "backport"))
+        rc, _, err = self.document(PATH)
+        self.assertEqual(rc, 1)
+        self.assertIn("'backport' is not a source. The Source row names one of original, apache-cherry-pick, apache-merge, third-party", err)
+
+
+class Supersedes(Repo):
+
+    OLD = "docs/design/VER-release-version/decisions/DEC-VER-0001-first.md"
+    NEW = "docs/design/VER-release-version/decisions/DEC-VER-0002-second.md"
+
+    def merged_first(self):
+        self.record(self.OLD)
+        self.line()
+
+    def status(self, path, value):
+        full = os.path.join(self.repo, path)
+        with open(full, encoding="utf-8") as handle:
+            text = handle.read()
+        self.put(path, text.replace("| Status | Accepted |", "| Status | %s |" % value))
+
+    def test_both_links_in_one_change_pass(self):
+        self.merged_first()
+        self.record(self.NEW, supersedes="DEC-VER-0001")
+        self.status(self.OLD, "Superseded by DEC-VER-0002")
+        self.assertEqual(self.document(self.OLD, self.NEW)[::2], (0, ""))
+
+    def test_a_new_record_whose_old_one_does_not_say_so_fails(self):
+        self.merged_first()
+        self.record(self.NEW, supersedes="DEC-VER-0001")
+        rc, _, err = self.document(self.NEW)
+        self.assertEqual(rc, 1)
+        self.assertIn("this record supersedes DEC-VER-0001, and the Status of %s is 'Accepted'. It becomes 'Superseded by DEC-VER-0002' in the same pull request" % self.OLD, err)
+
+    def test_an_old_record_whose_new_one_does_not_name_it_fails(self):
+        self.merged_first()
+        self.record(self.NEW)
+        self.status(self.OLD, "Superseded by DEC-VER-0002")
+        rc, _, err = self.document(self.OLD)
+        self.assertEqual(rc, 1)
+        self.assertIn("the Status says this record is superseded by DEC-VER-0002, and the Supersedes row of %s does not name DEC-VER-0001" % self.NEW, err)
+
+    def test_a_record_that_is_not_there_fails_both_ways(self):
+        self.merged_first()
+        self.record(self.NEW, supersedes="DEC-VER-0007")
+        self.assertIn("this record supersedes DEC-VER-0007, and there is no such record", self.document(self.NEW)[2])
+        self.status(self.OLD, "Superseded by DEC-VER-0009")
+        self.assertIn("the Status names DEC-VER-0009, and there is no such record", self.document(self.OLD)[2])
+
+    def test_a_record_merged_before_ids_is_superseded_by_its_number(self):
+        with open(os.path.join(ROOT, "docs", "decisions", "0001-initial-maintainers.md"), encoding="utf-8") as handle:
+            self.put("docs/decisions/0001-initial-maintainers.md", handle.read())
+        self.line()
+        new = "docs/decisions/DEC-GOV-0001-new-maintainers.md"
+        self.record(new, supersedes="0001")
+        self.status("docs/decisions/0001-initial-maintainers.md", "Superseded by DEC-GOV-0001")
+        self.assertEqual(self.document("docs/decisions/0001-initial-maintainers.md", new)[::2], (0, ""))
+
+    def test_the_row_says_none_or_ids(self):
+        self.merged_first()
+        self.record(self.NEW, supersedes="the earlier one")
+        self.assertIn("the Supersedes row names each record this one replaces by its id", self.document(self.NEW)[2])
+
+
+class Indexes(Repo):
+
+    SPEC = """# Feature spec: Release version
+
+| Field | Value |
+|---|---|
+| Title | Release version |
+| Document type | Specification and description (ISO/IEC/IEEE 15289) |
+| Status | Approved |
+| Version | 2 |
+| Areas | tools, observability |
+"""
+    IMPORT = """# Import: CASSANDRA-19999 into chronitondb-5.0
+
+| Field | Value |
+|---|---|
+| Title | Import of CASSANDRA-19999 into chronitondb-5.0 |
+| Document type | Record (ISO/IEC/IEEE 15289) |
+| Status | Approved |
+| Version | 1 |
+| References | Issue #9. Apache commit `0123456789ab`, CASSANDRA-19998. |
+| Areas | storage |
+| Source | apache-cherry-pick |
+"""
+    DESIGN = """# Design: #70 The reader
+
+| Field | Value |
+|---|---|
+| Title | The reader |
+| Document type | Specification and description at item level (ISO/IEC/IEEE 15289) |
+| Status | Draft |
+| Version | 1 |
+| Areas | tools |
+
+## Requirements
+
+- REQ-VER-001: The reader MUST read the key. Source: issue.
+"""
+
+    def tree(self):
+        self.put("docs/design/VER-release-version/feature-spec.md", self.SPEC)
+        self.put("docs/design/70-the-reader/design-record.md", self.DESIGN)
+        self.put("docs/imports/cassandra-19999.md", self.IMPORT)
+        self.put("docs/notes.md", "# Notes\n\nNo header here.\n")
+        self.record("docs/design/VER-release-version/decisions/DEC-VER-0001-first.md", areas="tools")
+        self.record("docs/decisions/DEC-GOV-0001-a-rule.md")
+        self.line()
+
+    def indexes(self, *more):
+        return run("indexes", "--repo", self.repo, "--templates", "line", "--source", "worktree", *more)
+
+    def read(self, path):
+        with open(os.path.join(self.repo, path), encoding="utf-8") as handle:
+            return handle.read()
+
+    def test_missing_indexes_fail_and_write_puts_them_in(self):
+        self.tree()
+        rc, out, err = self.indexes()
+        self.assertEqual(rc, 1)
+        self.assertIn("docs/index/areas.md:0: is not the index the documents give now", err)
+        self.assertIn("indexes 4 pages 4 stale", out)
+        rc, out, _ = self.indexes("--write")
+        self.assertEqual(rc, 0)
+        self.assertIn("indexes 4 pages 4 written", out)
+        self.assertEqual(self.indexes()[::2], (0, ""))
+        self.assertIn("indexes 4 pages 0 written", self.indexes("--write")[1])
+
+    def test_every_kind_is_listed_from_its_header(self):
+        self.tree()
+        self.indexes("--write")
+        documents = self.read("docs/index/documents.md")
+        self.assertIn("## Feature spec\n\n| Document | Status | Version | Areas |\n|---|---|---|---|\n| [Release version](../design/VER-release-version/feature-spec.md) | Approved | 2 | `tools`, `observability` |", documents)
+        self.assertIn("| [CASSANDRA-19999 into chronitondb-5.0](../imports/cassandra-19999.md) | chronitondb-5.0 | apache-cherry-pick | CASSANDRA-19998, CASSANDRA-19999 | `0123456789ab` | Approved | 1 | `storage` |", documents)
+        self.assertNotIn("notes.md", documents)
+        self.assertLess(documents.index("## Feature spec"), documents.index("## Design record"))
+        self.assertLess(documents.index("## Design record"), documents.index("## Import record"))
+
+    def test_the_decisions_page_lists_every_record_by_key_and_number(self):
+        self.tree()
+        self.indexes("--write")
+        decisions = self.read("docs/index/decisions.md")
+        self.assertIn("| [DEC-GOV-0001](../decisions/DEC-GOV-0001-a-rule.md) | A decision |  | Accepted | 2026-11-17 | `project` | None |", decisions)
+        self.assertIn("| [DEC-VER-0001](../design/VER-release-version/decisions/DEC-VER-0001-first.md) | A decision | `VER-release-version` | Accepted | 2026-11-17 | `tools` | None |", decisions)
+        self.assertLess(decisions.index("DEC-GOV-0001"), decisions.index("DEC-VER-0001"))
+
+    def test_the_area_page_lists_a_document_under_each_of_its_areas(self):
+        self.tree()
+        self.indexes("--write")
+        areas = self.read("docs/index/areas.md")
+        tools = areas[areas.index("## `tools`"):areas.index("## `build-and-test`")]
+        for name in ("feature-spec.md", "design-record.md", "DEC-VER-0001-first.md"):
+            self.assertIn(name, tools)
+        self.assertNotIn("cassandra-19999.md", tools)
+        self.assertIn("feature-spec.md", areas[areas.index("## `observability`"):areas.index("## `configuration`")])
+        self.assertIn("## `cql`\n\nNone.", areas)
+        self.assertIn("## Documents with no Areas row", areas)
+
+    def test_a_feature_page_lists_its_documents_its_items_and_its_records(self):
+        self.tree()
+        self.indexes("--write")
+        feature = self.read("docs/design/VER-release-version/INDEX.md")
+        self.assertIn("| [Release version](feature-spec.md) | Feature spec | Approved | 2 | `tools`, `observability` |", feature)
+        self.assertIn("| [#70 The reader](../70-the-reader/design-record.md) | Design record | Draft | 1 | `tools` |", feature)
+        self.assertIn("| [DEC-VER-0001](decisions/DEC-VER-0001-first.md) | A decision | Accepted | 2026-11-17 | `tools` | None |", feature)
+        self.assertFalse(os.path.exists(os.path.join(self.repo, "docs/design/70-the-reader/INDEX.md")))
+
+    def test_a_changed_header_makes_the_index_stale(self):
+        self.tree()
+        self.indexes("--write")
+        self.put("docs/design/VER-release-version/feature-spec.md", self.SPEC.replace("| Version | 2 |", "| Version | 3 |"))
+        rc, _, err = self.indexes()
+        self.assertEqual(rc, 1)
+        self.assertIn("docs/index/documents.md:0: is not the index the documents give now", err)
+        self.assertIn("docs/design/VER-release-version/INDEX.md:0:", err)
+
+    def test_an_index_page_is_no_document(self):
+        self.tree()
+        self.indexes("--write")
+        for path in ("docs/index/areas.md", "docs/design/VER-release-version/INDEX.md"):
+            self.assertIsNone(doclint.doc_type(path, self.read(path)))
+        self.assertNotIn("INDEX.md", self.read("docs/index/documents.md"))
 
 
 if __name__ == "__main__":

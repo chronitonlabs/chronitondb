@@ -423,6 +423,8 @@ class DocumentCheck(unittest.TestCase):
         before records had ids. Returns the text of a new record of the
         whole project, with no index yet."""
         os.makedirs(os.path.join(self.repo, "docs", "decisions"))
+        with open(os.path.join(ROOT, "docs", "process", "areas.md"), encoding="utf-8") as handle:
+            self.put("docs/process/areas.md", handle.read())
         for name in ("README.md", "0001-initial-maintainers.md"):
             with open(os.path.join(ROOT, "docs", "decisions", name), encoding="utf-8") as handle:
                 self.put("docs/decisions/" + name, handle.read())
@@ -430,7 +432,8 @@ class DocumentCheck(unittest.TestCase):
         with open(os.path.join(ROOT, "docs", "decisions", "0001-initial-maintainers.md"), encoding="utf-8") as handle:
             old = handle.read()
         self.assertNotIn("## Contents", old)
-        return old.replace("# 0001. The first maintainers", "# DEC-GOV-0001. A later decision")
+        rows = [line for line in old.split("\n") if line.startswith("| References |")]
+        return old.replace("# 0001. The first maintainers", "# DEC-GOV-0001. A later decision").replace(rows[0], rows[0] + "\n| Areas | project |\n| Supersedes | None |")
 
     def test_a_merged_record_without_an_index_passes(self):
         self.decisions_on_the_line()

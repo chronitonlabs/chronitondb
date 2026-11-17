@@ -39,12 +39,14 @@ The role that asked the question writes the record, in the pull request that fol
    3. A decision of the whole project, such as a rule of the development process or a change of commit rights, lives in this folder under the key `GOV`, which no feature may take: `docs/decisions/DEC-GOV-nnnn-<slug>.md`.
    4. A new record takes the next number of its key after the highest one merged on the line, in order with no gap. No two records share an id.
    5. The records of this folder named by a number alone, `NNNN-<slug>.md`, were merged before records had ids. They stay as they were merged, under rule 2, and are cited by their number.
-2. Records are never edited after they are merged, except to change their status. A later decision that replaces an earlier one is a new record that names the one it supersedes. The earlier record's status becomes "Superseded by" and the id of the later one, for example "Superseded by DEC-VER-0007".
+2. Records are never edited after they are merged, except to change their status. A later decision that replaces an earlier one is a new record that names the one it supersedes in its `Supersedes` row. In the same pull request the earlier record's status becomes "Superseded by" and the id of the later one, for example "Superseded by DEC-VER-0007".
 3. A record states the decision cleanly with its reason. It does not quote the discussion that led to it, and it points to no private material.
 4. The decision outcome uses BCP 14 key words where it is normative.
 5. Each new file carries the ChronitonDB licence header. See [conventions.md](../process/conventions.md#licence-headers).
 6. A record has no version and no revision history. It is never edited, so the record that supersedes it is its history. The documents that do change, such as a feature spec or a design record, carry a version and a revision history that names the record behind each version. See [conventions.md](../process/conventions.md#versions-and-revision-history).
-7. Each new record keeps the template's Contents index, regenerated with `tools/chronitondb/doclint.py index --write <file>`. A record merged before the template had one stays as it was merged, under rule 2. See [conventions.md](../process/conventions.md#contents-index-of-process-documents).
+7. The two links are checked both ways: a record named in a `Supersedes` row says "Superseded by" that record in its status, and a record whose status says "Superseded by" another is named in that one's `Supersedes` row. A record merged before the template had the `Supersedes` or the `Areas` row keeps none.
+8. Each record names its [areas](../process/areas.md) in its `Areas` row.
+9. Each new record keeps the template's Contents index, regenerated with `tools/chronitondb/doclint.py index --write <file>`. A record merged before the template had one stays as it was merged, under rule 2. See [conventions.md](../process/conventions.md#contents-index-of-process-documents).
 
 ## Template
 
@@ -58,6 +60,8 @@ The role that asked the question writes the record, in the pull request that fol
 | Date | <RFC 3339 date> |
 | Deciders | The maintainers |
 | References | <issue, pull request, feature spec, earlier records> |
+| Areas | <one or more areas of docs/process/areas.md, joined by commas> |
+| Supersedes | <the id of each record this one replaces, joined by commas, or None> |
 
 ## Contents
 
@@ -94,11 +98,4 @@ Chosen option: "<option>", because <reason>.
 
 ## Index
 
-The records of the whole project, and the records merged before records had ids. The records of a feature are listed in the Decisions section of its feature spec, or in the Decisions implemented section of its design record where it has no feature spec.
-
-1. [0001. The first maintainers](0001-initial-maintainers.md), 2026-11-01, Accepted.
-2. [0002. What nodetool version prints on a ChronitonDB node](0002-nodetool-version-output-on-a-chronitondb-node.md), 2026-11-10, Accepted.
-3. [0003. Where the tests prove the release version before a package exists](0003-release-version-tests-before-a-package-exists.md), 2026-11-11, Accepted.
-4. [0004. The commit log disk check is off by default](0004-commit-log-disk-check-off-by-default.md), 2026-11-15, Accepted.
-5. [0005. The commit log disk check is switched under startup_checks](0005-commit-log-disk-check-switched-under-startup-checks.md), 2026-11-15, Accepted.
-6. [0006. The commit log disk check compares file systems](0006-commit-log-disk-check-compares-file-systems.md), 2026-11-15, Accepted.
+Every record, of the project and of each feature, is listed in the generated index [docs/index/decisions.md](../index/decisions.md), with its status, areas and what it supersedes. Each feature directory lists its own in its `INDEX.md`. See [conventions.md](../process/conventions.md#generated-indexes).

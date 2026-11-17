@@ -86,9 +86,11 @@ A role MAY be carried out by a person or by an automated agent. Approvals are al
 13. [compliance.md](compliance.md): open source licence compliance, notices, SBOM and VEX.
 14. [quality-requirements.md](quality-requirements.md): the quality checklist every feature spec and design record answers.
 15. [classification.md](classification.md): the risk and size of a change, and what each class changes.
-16. [templates/](templates/): the document templates.
-17. [The delta register](../delta/README.md): every change ChronitonDB carries on top of Apache Cassandra.
-18. [Decision records](../decisions/README.md): answered questions that settle behaviour, scope or process.
+16. [areas.md](areas.md): the areas a document and an issue name, and the sources a change comes from.
+17. [templates/](templates/): the document templates.
+18. [The delta register](../delta/README.md): every change ChronitonDB carries on top of Apache Cassandra.
+19. [Decision records](../decisions/README.md): answered questions that settle behaviour, scope or process.
+20. [The generated indexes](../index/documents.md): every document by kind, [every decision record](../index/decisions.md), and [every document by area](../index/areas.md).
 
 The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. ChronitonDB does not edit it. ChronitonDB's own guide is in [.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md) and in [contributing.md](contributing.md).
 

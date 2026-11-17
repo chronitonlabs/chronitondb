@@ -26,6 +26,7 @@ limitations under the License.
 | Author | Designer: {GitHub username} |
 | Approver | The maintainer who merges the pull request |
 | References | Issue #{issue}. Line `chronitondb-<line>`. Apache base commit `<hash>`. Feature spec and plan item, if any. Decision records. |
+| Areas | {one or more areas of [areas.md](../areas.md), joined by commas} |
 | Risk | {Critical, Normal or Low}: {the worst Bug Category the change could cause if wrong, and the floor if one applied} |
 | Size | {Low Hanging Fruit, Normal, Challenging or Byzantine}: {why} |
 | Reach | {One area or Cross-cutting}: {why, naming the packages touched} |

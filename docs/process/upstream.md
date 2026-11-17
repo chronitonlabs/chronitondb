@@ -72,7 +72,7 @@ A single commit MAY be taken unchanged from a project other than Apache Cassandr
 
 ## The import record
 
-Each import has a short import record at `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project, named after its branch. The integrator writes it from [templates/import-record.md](templates/import-record.md), in the import pull request. It covers:
+Each import has a short import record at `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project, named after its branch. The integrator writes it from [templates/import-record.md](templates/import-record.md), in the import pull request. Its header names the [areas](areas.md) of what came in and its [source](areas.md#the-sources): `apache-merge` for a release or a branch of Apache Cassandra, `apache-cherry-pick` for single commits of it, `third-party` for a commit from another project. It covers:
 
 1. What came in: the Apache release, the Apache commit or the other project's commit, and the range of commits. A single fix and a commit from another project also give their `Reason:` line.
 2. Conflicts with ChronitonDB changes, and how each was resolved.

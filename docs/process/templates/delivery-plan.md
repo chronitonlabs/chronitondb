@@ -26,6 +26,7 @@ limitations under the License.
 | Author | Architect: {GitHub username} |
 | Approver | The maintainer who merges the pull request |
 | References | {feature spec, plan, decision records} |
+| Areas | {one or more areas of [areas.md](../areas.md), joined by commas} |
 
 Revision history, one row for each version:
 

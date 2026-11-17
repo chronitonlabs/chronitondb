@@ -112,6 +112,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Decision records of one feature | `docs/design/<KEY>-<slug>/decisions/DEC-<KEY>-nnnn-<slug>.md` |
 | Decision records of work with no feature key | `docs/design/<issue>-<slug>/decisions/DEC-<issue>-nnnn-<slug>.md` |
 | Decision records of the whole project | `docs/decisions/DEC-GOV-nnnn-<slug>.md`. The records there named by a number alone, `NNNN-<slug>.md`, were merged before records had ids |
+| Generated indexes of the documents | `docs/index/documents.md`, `docs/index/decisions.md`, `docs/index/areas.md`, and `INDEX.md` in each feature directory `docs/design/<KEY>-<slug>/` |
 | Research reports of spikes | `docs/research/<issue>-<slug>.md` |
 | Import records | `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project |
 | Release proposals and their verification results | `docs/releases/<version>.md` |
@@ -156,6 +157,17 @@ A document that can change after it is merged carries its version and says what 
 4. A document merged before its template had the table keeps the line `Change history: the git history of this file.` until its next version. That version adds the table with its own row, which `history --write` starts.
 5. A decision record has no version. It is never edited, and the record that supersedes it is its history. See [the decision records](../decisions/README.md#rules).
 6. The process document check refuses a document that is new to the line, or at another version than on the line, without its revision history. It refuses rows out of order or with a gap, a last row that is not the document's version, a row with no date, change or decision record, a changed row of a merged version, and a history link that is not the commits of the file on its line. `history --check <file>` reports the same.
+
+## Generated indexes
+
+The documents are found through four indexes that the document checker writes from each document's own header. No index is written or edited by hand.
+
+1. [docs/index/documents.md](../index/documents.md) lists every document under `docs/` that carries the common header, by kind, with its status, version and areas. A document counts when its document control table has a `Document type` row, whatever its file is called. An import record is listed with its line, its source, the Apache JIRA tickets and the release or commit its header names.
+2. [docs/index/decisions.md](../index/decisions.md) lists every decision record of the project and of its features, by key and number, with its status, date, areas and the records it supersedes.
+3. [docs/index/areas.md](../index/areas.md) lists the same documents and records under each of the [areas](areas.md) their `Areas` row names. A document of a kind with no `Areas` row, or merged before the row, is listed last.
+4. `INDEX.md` in each feature directory lists the documents of that feature, the design records of its items and its decision records.
+5. After a document is added, or its title, status, version, areas or supersede row changes, the author regenerates the indexes with `tools/chronitondb/doclint.py indexes --repo . --templates origin/<line> --write` and commits them with the change. Two pull requests that both add a document change the same pages: the one merged second runs the command again after it takes in the line.
+6. The process document check refuses a pull request whose indexes are not what the documents give: `tools/chronitondb/doclint.py indexes --repo . --templates origin/<line>` reports each stale page.
 
 ## Claims about code
 

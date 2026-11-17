@@ -90,6 +90,25 @@ jobs:
           done <<< "$out"
           exit "$rc"
 
+      # The generated indexes are what the documents of the pull request
+      # give. A line whose checker has no indexes command asks for none.
+      - name: Generated indexes
+        if: steps.checker.outputs.present == 'yes'
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          if ! grep -q '^    doclint.py indexes ' "$RUNNER_TEMP/doclint/doclint.py"
+          then
+            echo "The checker on the line has no indexes command."
+            exit 0
+          fi
+          if [ -z "$(git diff --name-only "origin/$BASE...HEAD" -- docs)" ]
+          then
+            echo "No document changed."
+            exit 0
+          fi
+          python3 "$RUNNER_TEMP/doclint/doclint.py" indexes --repo . --templates "origin/$BASE" --source HEAD
+
       - name: Feature keys
         if: steps.checker.outputs.present == 'yes'
         env:

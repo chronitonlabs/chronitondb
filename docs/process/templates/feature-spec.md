@@ -26,6 +26,7 @@ limitations under the License.
 | Author | Architect: {GitHub username} |
 | Approver | The maintainer who merges the pull request |
 | References | {line, Apache base commit, related issues, decision records} |
+| Areas | {one or more areas of [areas.md](../areas.md), joined by commas} |
 | Risk | {Critical, Normal or Low}: {the worst Bug Category the feature could cause if wrong, and the floor if one applied} |
 | Size | {Low Hanging Fruit, Normal, Challenging or Byzantine}: {why} |
 | Reach | {One area or Cross-cutting}: {why, naming the packages touched} |

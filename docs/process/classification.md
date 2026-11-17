@@ -152,6 +152,7 @@ The class is three label families on the issue, mirrored on each of its pull req
 3. A maintainer confirms the class: through the class and scope question for Critical work, at the spec merge for Normal work, at the pull request merge for Low work. A maintainer may change any label at any time, and the change takes effect from the next step of the work.
 4. Work that carries no class yet, or a family with no label or with two, is treated as the strictest value of that family: Critical, Byzantine and Cross-cutting.
 5. The required `class-label` check refuses a pull request that does not carry exactly one label of each family, as the kind label check does for the maintenance category. A release proposal or promotion pull request, which changes only `docs/releases/`, has no class, as it has no kind.
+6. The class is not the only label an issue carries. Its areas are `area:<name>` labels and how the change came in is one `source:<name>` label, both from the closed lists of [areas.md](areas.md). They change no rule of the class. They are proposed and set as the class is, and they let work be filtered by any mix of kind, class, line, area and source.
 
 ## Sources
 

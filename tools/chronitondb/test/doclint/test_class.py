@@ -110,7 +110,7 @@ def spec(risk="Normal: a slow use case at worst, no floor applied",
     lines = ["# Feature spec: Test feature", "", "| Field | Value |", "|---|---|"]
     values = {"Title": "Test feature", "Document type": "Specification and description (ISO/IEC/IEEE 15289)",
               "Status": "Draft", "Version": "1", "Author": "Architect: millerjp",
-              "Approver": "The maintainer who merges the pull request", "References": "Issue 61",
+              "Approver": "The maintainer who merges the pull request", "References": "Issue 61", "Areas": "search",
               "Risk": risk, "Size": size, "Reach": reach, "Touches": touches}
     for field, value in values.items():
         lines.append("| %s | %s |" % (field, value))
@@ -139,8 +139,9 @@ class Repo(unittest.TestCase):
         os.makedirs(os.path.join(self.repo, "docs", "process", "templates"))
         for name in os.listdir(TEMPLATES):
             self.put("docs/process/templates/" + name, template(name))
-        with open(os.path.join(ROOT, "docs", "process", "quality-requirements.md"), encoding="utf-8") as handle:
-            self.put("docs/process/quality-requirements.md", handle.read())
+        for page in ("quality-requirements.md", "areas.md"):
+            with open(os.path.join(ROOT, "docs", "process", page), encoding="utf-8") as handle:
+                self.put("docs/process/" + page, handle.read())
         self.git("add", "-A")
         self.git("commit", "-q", "-m", "line")
         self.git("branch", "-f", "line")

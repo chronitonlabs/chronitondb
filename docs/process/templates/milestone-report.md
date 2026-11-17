@@ -26,6 +26,7 @@ limitations under the License.
 | Author | Architect: {GitHub username} |
 | Approver | The maintainer who merges the pull request, which approves the gate |
 | References | Feature spec, plan, delivery plan, the merged pull requests of the milestone |
+| Areas | {one or more areas of [areas.md](../areas.md), joined by commas} |
 | Risk | {the feature spec's risk, Critical, Normal or Low}: {its reason} |
 | Size | {the feature spec's size, Low Hanging Fruit, Normal, Challenging or Byzantine}: {its reason} |
 | Reach | {the feature spec's reach, One area or Cross-cutting}: {its reason} |

@@ -23,7 +23,7 @@ The list is closed. A document names one area or more from it, joined by commas,
 
 ## The areas
 
-The list follows the top level of Apache Cassandra's own JIRA component list, read on 2026-11-17 from the CASSANDRA project, so that a change here and the Apache ticket behind it are named alike. `search` gathers Apache's index components with ChronitonDB's own search work. `project` has no Apache component: it is ChronitonDB's own.
+The list follows the top level of Apache Cassandra's own JIRA component list, read on 2026-11-17 from the CASSANDRA project, so that a change here and the Apache ticket behind it are named alike. `search` gathers Apache's index components with ChronitonDB's own search work. `project` has no Apache component: it is ChronitonDB's own. `dependencies` takes Apache's Dependencies and Jamm components, a library the server ships, apart from the build that pulls them in.
 
 | Area | What it covers | Apache Cassandra components |
 |---|---|---|
@@ -37,7 +37,8 @@ The list follows the top level of Apache Cassandra's own JIRA component list, re
 | `observability` | Metrics, JMX, logging, tracing and virtual tables | Observability, Virtual Tables, Feature/Virtual Tables, Legacy/Observability |
 | `configuration` | Settings and their defaults, startup and shutdown, startup checks, guardrails and rate limits | Local/Config, Local/Startup and Shutdown, Local/Scripts, Feature/Startup Checks, Feature/Guardrails, Feature/Rate Limiting |
 | `tools` | nodetool, cqlsh, the sstable tools, stress, bulk loading and the tools shipped beside the server | Tool, Sidecar, Analytics Library, Legacy/Tools |
-| `build-and-test` | The build, continuous integration, the test suites and harnesses, packaging and libraries | Build, CI, Test, Packaging, Dependencies, Jamm, Legacy/Testing |
+| `build-and-test` | The build, continuous integration, the test suites and harnesses, and packaging | Build, CI, Test, Packaging, Legacy/Testing |
+| `dependencies` | A change that adds, removes or updates a library or another third party component the build pulls in | Dependencies, Jamm |
 | `documentation` | User and operator documentation, NEWS and the website | Documentation, Legacy/Documentation and Website |
 | `project` | ChronitonDB's own process, governance, release management and its relation to Apache Cassandra | None |
 

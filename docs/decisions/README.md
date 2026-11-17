@@ -101,3 +101,6 @@ Chosen option: "<option>", because <reason>.
 11. [0011. A switch change of the node uptime view that fails is not undone](0011-node-uptime-view-failed-switch-change-is-not-undone.md), 2026-11-17, Accepted.
 12. [0012. A node goes on when JMX refuses an MBean of the node uptime view](0012-node-uptime-view-goes-on-when-jmx-refuses-an-mbean.md), 2026-11-17, Accepted.
 13. [0013. enableuptimeview is refused on a node that is between on and off](0013-node-uptime-view-enable-refused-between-on-and-off.md), 2026-11-17, Accepted.
+14. [0014. The node uptime view logs one ERROR line when JMX already holds the name of its read counter](0014-node-uptime-view-logs-an-error-when-jmx-holds-the-counter-name.md), 2026-11-17, Accepted.
+15. [0015. A command of the node uptime view logs its change once the change is made](0015-node-uptime-view-logs-a-switch-change-once-made.md), 2026-11-17, Accepted.
+16. [0016. The node uptime view leaves its entry in ChronitonDB's configuration file to the item that creates the file](0016-node-uptime-view-leaves-its-yaml-entry-to-the-item-that-creates-the-file.md), 2026-11-17, Accepted.

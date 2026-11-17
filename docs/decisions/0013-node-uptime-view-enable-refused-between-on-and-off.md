@@ -55,7 +55,7 @@ While a node is between on and off, it MUST refuse every read of the view. A sta
 ### Consequences
 
 - Good: a switch change to on always starts from a node whose view is off, which holds no read counter. So each one creates a new counter at 0.
-- Good: every command that changes a node logs its INFO line, since the refusal changes nothing.
+- Good: the refusal changes nothing on the node, so it needs no log line.
 - Bad: the operator runs two commands to turn the view on after a failed command, `disableuptimeview` and then `enableuptimeview`.
 - Bad: while a node is between on and off, a statement that is no read can get the answer of a view that is on, while every read is refused.
 

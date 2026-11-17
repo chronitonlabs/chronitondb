@@ -37,7 +37,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Context and problem statement
 
-A nodetool command of the node uptime view changes a running node in several steps. It logs the change, runs the steps that turn the view on or off, and sets the running value of the setting before the last of those steps. Turning the view on or off is itself several steps: the read counter, the registered tables of `system_views` and the view state that the view reads at each read. A step can throw. The table listings, the read counter, the view state and the running value can then disagree. The feature spec had to know what the node does after such a step.
+A nodetool command of the node uptime view changes a running node in several steps. It runs the steps that turn the view on or off, sets the running value of the setting before the last of those steps, and logs the change once the last step has ended. Turning the view on or off is itself several steps: the read counter, the registered tables of `system_views` and the view state that the view reads at each read. A step can throw. The table listings, the read counter, the view state and the running value can then disagree. The feature spec had to know what the node does after such a step.
 
 ## Considered options
 
@@ -63,4 +63,4 @@ A node MUST answer a read of the view with the row only once every other step of
 
 ## More information
 
-The feature spec applies this decision in section 2.2 and in FREQ-UPTIM-029, FREQ-UPTIM-036 and FREQ-UPTIM-038. Problem 6 of its section 4 names the tests.
+The feature spec applies this decision in section 2.2 and in FREQ-UPTIM-029, FREQ-UPTIM-036 and FREQ-UPTIM-038. Problem 6 of its section 4 names the tests. Decision record 0015 says what the node logs for a command that a step ended.

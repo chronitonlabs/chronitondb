@@ -191,6 +191,13 @@ A document's `Areas` row names areas of the list in [areas.md](../../docs/proces
 
 `indexes` reads the header of every document under `docs/`. See [conventions.md](../../docs/process/conventions.md#generated-indexes).
 
+### The document graph: `docgraph.py`
+
+    tools/chronitondb/docgraph.py --repo . --templates origin/<line>           exit 1 when docs/index/graph.json is not what the documents give
+    tools/chronitondb/docgraph.py --repo . --templates origin/<line> --write   write it
+
+Writes the links between the documents as JSON-LD, from the headers `doclint.py indexes` reads, with the context in `docs/index/context.json`. The same tree gives the same bytes. Python 3, no other dependency. See [conventions.md](../../docs/process/conventions.md#the-document-graph).
+
 ### The class
 
 The class of a change, its risk, size and reach, is set out in [classification.md](../../docs/process/classification.md). When the template on the line carries the class rows, a feature spec's Risk, Size and Reach rows each hold the level, a colon and the reason, and its Touches row lists what the change touches or says none. A Low risk that touches a public interface or stock behaviour is refused. Each section the class requires holds its content. Every other section holds its content or the one line `Not applicable: <reason>`, which covers the section's subsections. The section Where problems could occur and its Test plan never say none or low. A plan and a milestone report repeat the feature spec's levels, and a fix record, and a design record not covered by a feature spec, write Where problems could occur in full.

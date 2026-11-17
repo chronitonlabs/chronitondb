@@ -2221,7 +2221,7 @@ def check_revision_table(doc, path, repo, templates):
         doc.error(head, "no link to the commits of this file under the revision history: '%s[commits of this file](%s)'. doclint.py history --write puts it in" % (HISTORY_LABEL, wanted or "https://github.com/<owner>/<repository>/commits/<line>/" + path))
     elif wanted is not None and address != wanted:
         doc.error(line, "the history link is not the commits of this file on its line: '%s[commits of this file](%s)'. doclint.py history --write puts it right" % (HISTORY_LABEL, wanted))
-    elif wanted is None and not re.match(r"^https://github\.com/[^/\s]+/[^/\s]+/commits/[^/\s]+/" + re.escape(path) + "$", address):
+    elif wanted is None and not re.match(r"^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/commits/[A-Za-z0-9._-]+/" + re.escape(path) + "$", address):
         doc.error(line, "the history link is not the commits of this file on GitHub: https://github.com/<owner>/<repository>/commits/<line>/%s" % path)
 
 
@@ -2235,11 +2235,14 @@ def with_history(doc, path, repo, templates, today):
     writes it: the old change history line becomes the table with the row
     of the document's version, which the author fills in, and the history
     link is the one of this file on its line. None when the document has
-    neither the old line nor the table to start from."""
+    neither the old line nor the table to start from, False when the clone
+    has no GitHub remote to build the link from."""
     lines = list(doc.lines)
     start, stop = preamble(doc)
     head, _ = revision_rows(doc)
-    wanted = history_url(repo, templates, path) or "https://github.com/<owner>/<repository>/commits/<line>/" + path
+    wanted = history_url(repo, templates, path)
+    if wanted is None:
+        return False
     link = "%s[commits of this file](%s)" % (HISTORY_LABEL, wanted)
     if head is None:
         old = [index for index in range(start, stop) if lines[index].strip() == OLD_HISTORY]
@@ -2298,7 +2301,10 @@ def run_history(args):
             failed += 1 if doc.errors else 0
         elif mode == "--write":
             new = with_history(doc, path, repo, templates, time.strftime("%Y-%m-%d", time.gmtime()))
-            if new is None:
+            if new is False:
+                sys.stderr.write("%s:0: the clone has no GitHub remote for %s to build the link from, so nothing is written. Add the remote the line is fetched from\n" % (path, templates))
+                failed += 1
+            elif new is None:
                 sys.stderr.write("%s:0: has neither a revision history table nor the line '%s' under its document control table, so there is nothing to write\n" % (path, OLD_HISTORY))
                 failed += 1
             elif new != doc.lines:

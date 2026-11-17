@@ -366,7 +366,17 @@ class Revisions(Repo):
         self.assertEqual(rc, 1)
         self.assertIn("the Change of a revision history row says what changed", err)
 
+    def test_history_write_refuses_a_clone_with_no_remote(self):
+        self.line()
+        self.plan("1", history(("1", "2026-11-17", "First version", "None")))
+        rc, _, err = run("history", "--repo", self.repo, "--templates", "line", "--write", PATH)
+        self.assertEqual(rc, 1)
+        self.assertIn("the clone has no GitHub remote for line to build the link from", err)
+        self.plan("1", history(("1", "2026-11-17", "First version", "None")).replace("example/product", "<owner>/<repository>"))
+        self.assertIn("the history link is not the commits of this file on GitHub", self.errors()[1])
+
     def test_history_write_refuses_a_document_with_nothing_to_start_from(self):
+        self.git("remote", "add", "origin", "https://github.com/someone/product.git")
         self.line()
         self.plan("1", "No history line here.")
         rc, _, err = run("history", "--repo", self.repo, "--templates", "line", "--write", PATH)

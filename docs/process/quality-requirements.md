@@ -54,17 +54,17 @@ Stock Apache Cassandra behaviour is unchanged for anyone not using a ChronitonDB
 
 Whether a CQL statement is valid, and the results it returns, never depend on the replication factor, the number of data centres or the number of replicas. A single node development cluster behaves like a production cluster with three replicas.
 
-### Settings per index or per table over global settings
+### Data dependent settings belong to the schema object
 
-Behaviour that depends on the data is set per index (or per table) as an option. The yaml setting gives the default at `CREATE`, `ALTER` changes it, and a global yaml maximum bounds it. A lever that can apply to several indexes or tables has three mutually exclusive modes:
+Behaviour that depends on the data is set on the schema object that owns the data, not by one global setting: an index option for an index, a table option for a table. A configured default applies when the object is created, altering the object changes the value, and a configured maximum bounds it. A lever that can apply to several such objects has three mutually exclusive modes:
 
 1. **Global:** it applies to all of them.
 2. **Include:** it applies only to the listed ones.
 3. **Exclude:** it applies to all but the listed ones.
 
-### nodetool changes the running value only
+### A runtime command changes the running value only
 
-A nodetool toggle changes the in-memory value on the node where it runs. The yaml file holds the value at startup. There is no separate persistence of nodetool changes. A restart returns to the yaml value.
+A runtime command, such as a nodetool toggle, changes the value in memory only, on the node where it runs. The configuration file holds the value at startup. There is no separate persistence of runtime changes. A restart returns to the configured value. An option on a schema object is not a runtime toggle: it changes through the schema, as the rule above says.
 
 ### A refusal names its control
 
@@ -89,8 +89,8 @@ Copy this table into the feature spec or design record. Fill the last column for
 | Compatibility | Stock behaviour unchanged with the feature off | |
 | Compatibility | Mixed-version cluster, upgrade and rollback (see the Compatibility section) | |
 | Functional suitability | CQL validity and results independent of replication factor, data centres and replica count | |
-| Flexibility | Settings per index or per table over global ones, with global, include and exclude modes | |
-| Interaction capability | nodetool toggles change the in-memory value only, yaml holds the startup value | |
+| Flexibility | Data dependent settings on the schema object that owns the data, with a configured default and maximum, and global, include and exclude modes | |
+| Interaction capability | A runtime command changes the in-memory value only, the configuration file holds the startup value | |
 | Interaction capability | A refusal names what the user or operator can change to lift it | |
 | Maintainability | Observability: metrics, traces and diagnostics as a gate item | |
 | Security | Threat model answered (see the Threat model section) | |

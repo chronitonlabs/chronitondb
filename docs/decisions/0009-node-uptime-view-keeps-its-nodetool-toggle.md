@@ -56,7 +56,7 @@ Every node of a build that holds the feature MAY differ from Apache Cassandra in
 2. The two commands in the output of `nodetool help`.
 3. One MBean, `org.chronitondb.uptime:type=UptimeView`.
 
-Section 2.8 of the feature spec says in full by what a node whose view is off differs from Apache Cassandra, its log lines included. Any other difference is a fault.
+Section 2.8 of the feature spec says in full by what a node whose view is off differs from Apache Cassandra, and lists every line the feature can add to the log of a node. Any other difference is a fault.
 
 ### Consequences
 

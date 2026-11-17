@@ -65,7 +65,7 @@ A change that touches a public interface or stock behaviour is at least Normal, 
 
 ChronitonDB adds one area the page does not name: virtual tables. The page's list ends with an ellipsis, so it is open, but ChronitonDB's list is closed: a new area is a change to this page.
 
-The Touches row names a public interface with its area in brackets, such as public interface (configuration) or public interface (gossip). Stock behaviour is anything stock Apache Cassandra already does: results, errors, warnings, metrics and the performance of existing operations.
+The Touches row names a public interface with its area in brackets, such as public interface (configuration) or public interface (gossip). Stock behaviour is anything stock Apache Cassandra already does: results, errors, warnings and the performance of existing operations, the list that defines a behaviour-changing feature in [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults). A metric is a public interface, area 7 of the list above. Log lines that differ from stock are not a compatibility concern: a new or changed log line does not by itself touch a public interface or stock behaviour.
 
 A change to a file that guards the process is never Low either: it is at least Normal. These files are the CI workflows and scripts (`.github/`, `.build/`, `.circleci/`, `.jenkins/`), the build file `build.xml`, the test configuration under `test/conf/`, the project's checkers under `tools/chronitondb/`, the process pages and templates under `docs/process/`, and the instructions for contributors' tools, `.claude/` and any `CLAUDE.md` or `AGENTS.md` at any depth.
 
@@ -141,7 +141,7 @@ The author of the spec names what the change touches in the Touches row, and the
 | Normal | The spec, the plan and the code, each merged by a maintainer. The maintainer confirms the class when merging the spec |
 | Low | No spec or plan stage. The work goes straight to a pull request whose body carries Where problems could occur and its test plan. A maintainer merges it |
 
-A one-item change takes the same stages with its design record or fix record in place of the spec and plan. A change to documentation only needs no design record at any risk level. The review and the maintainer's merge still apply, and a change to a process page or template is still at least Normal risk, so it takes the checks of Normal risk. See [maintenance.md](maintenance.md#documentation-only-changes). Only maintainers merge, at every level.
+A one-item change takes the same stages with its design record or fix record in place of the spec and plan. A change to documentation only needs no design record at any risk level. The review and the maintainer's merge still apply, and a change to a process page or template is still at least Normal risk, so it takes the checks of Normal risk. See [maintenance.md](maintenance.md#documentation-only-changes). Only maintainers and committers merge, each within their rights, at every level. See [governance.md](governance.md).
 
 ## Labels
 

@@ -78,7 +78,7 @@ Scenarios are written in Gherkin and run with Cucumber, in the fork's own test m
 1. Pull request checks block only on counted values, such as allocations per operation, work counters, bytes written per compaction and index bytes per raw byte, and on benchmarks that fail to run. They never block on timing.
 2. Once dedicated benchmark hardware is in place, timing results are tracked over time, and a change point in the timings blocks the next release.
 3. Absolute timing numbers come only from pinned or dedicated hardware.
-4. Each design record names its benchmarks, their thresholds and the stock runs that must not move. See [templates/design-record.md](templates/design-record.md).
+4. Each design record names its benchmarks, their thresholds and the stock runs that must not move, or gives the reason the checklist line does not apply, as [quality-requirements.md](quality-requirements.md) allows. See [templates/design-record.md](templates/design-record.md).
 
 ## When each test runs
 

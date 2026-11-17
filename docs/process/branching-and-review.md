@@ -144,7 +144,7 @@ Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer fir
 
 ### Review rounds
 
-1. The author answers each finding with its own commit that names the finding, so a reviewer can drop one without the rest.
+1. The author answers each finding with its own commit that names the finding, so a reviewer can drop one without the rest, or with a reply that gives the reason no change is made.
 2. A work product gets at most three review rounds. After the third round, the open points go to a maintainer as a decision.
 
 ### The review record

@@ -62,7 +62,7 @@ Never report a security problem in a public issue, pull request or discussion. R
 
 1. **Its category or its feature.** Say which maintenance category the change is (corrective, preventive, adaptive, perfective or additive), or name the feature spec item it delivers. See [README.md](README.md). A maintainer gives the issue its kind label at triage, and the pull request carries the same one. It also carries the class of the change, one `risk:`, one `size:` and one `reach:` label, see [classification.md](classification.md).
 2. **An issue.** Link it with `Fixes #<issue>`. A change made on several lines writes `Part of #<issue>` on every pull request but the newest line's. See [branching-and-review.md](branching-and-review.md#pull-requests).
-3. **Tests.** A fix includes a test that fails without it and passes with it. A new behaviour includes tests for each of its requirements. See [testing.md](testing.md).
+3. **Tests.** A fix to code includes a test that fails without it and passes with it. A new behaviour includes tests for each of its requirements. See [testing.md](testing.md).
 4. **Documentation.** User and operator documentation and runbook entries the change affects, in the same pull request.
 5. **A delta entry,** if the change touches stock Apache Cassandra code or behaviour. See [the delta register](../delta/README.md).
 6. **A title and commits** in Conventional Commits form. The title becomes the commit subject on the line.

@@ -94,3 +94,5 @@ Chosen option: "<option>", because <reason>.
 4. [0004. The commit log disk check is off by default](0004-commit-log-disk-check-off-by-default.md), 2026-11-15, Accepted.
 5. [0005. The commit log disk check is switched under startup_checks](0005-commit-log-disk-check-switched-under-startup-checks.md), 2026-11-15, Accepted.
 6. [0006. The commit log disk check compares file systems](0006-commit-log-disk-check-compares-file-systems.md), 2026-11-15, Accepted.
+7. [0007. A node starts with the node uptime view off when its configuration turns the view on before the final gate](0007-node-uptime-view-off-before-the-final-gate.md), 2026-11-17, Accepted.
+8. [0008. The node uptime view is delivered in one milestone](0008-node-uptime-view-delivered-in-one-milestone.md), 2026-11-17, Accepted.

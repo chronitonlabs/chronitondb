@@ -99,3 +99,5 @@ Chosen option: "<option>", because <reason>.
 9. [0009. The node uptime view keeps its nodetool toggle](0009-node-uptime-view-keeps-its-nodetool-toggle.md), 2026-11-17, Accepted.
 10. [0010. The node uptime view stays at Normal risk](0010-node-uptime-view-stays-at-normal-risk.md), 2026-11-17, Accepted.
 11. [0011. A switch change of the node uptime view that fails is not undone](0011-node-uptime-view-failed-switch-change-is-not-undone.md), 2026-11-17, Accepted.
+12. [0012. A node goes on when JMX refuses an MBean of the node uptime view](0012-node-uptime-view-goes-on-when-jmx-refuses-an-mbean.md), 2026-11-17, Accepted.
+13. [0013. enableuptimeview is refused on a node that is between on and off](0013-node-uptime-view-enable-refused-between-on-and-off.md), 2026-11-17, Accepted.

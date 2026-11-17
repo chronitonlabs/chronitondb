@@ -94,3 +94,7 @@ Chosen option: "<option>", because <reason>.
 4. [0004. The commit log disk check is off by default](0004-commit-log-disk-check-off-by-default.md), 2026-11-15, Accepted.
 5. [0005. The commit log disk check is switched under startup_checks](0005-commit-log-disk-check-switched-under-startup-checks.md), 2026-11-15, Accepted.
 6. [0006. The commit log disk check compares file systems](0006-commit-log-disk-check-compares-file-systems.md), 2026-11-15, Accepted.
+7. [0007. The node uptime view is switched by its yaml setting only](0007-node-uptime-view-switched-by-yaml-setting-only.md), 2026-11-17, Accepted.
+8. [0008. A node starts with the node uptime view hidden when its configuration turns the view on before the final gate](0008-node-uptime-view-hidden-before-the-final-gate.md), 2026-11-17, Accepted.
+9. [0009. The node uptime view shows the start time read once at start](0009-node-uptime-view-start-time-read-once-at-start.md), 2026-11-17, Accepted.
+10. [0010. A hidden node uptime view answers as a table that does not exist](0010-hidden-node-uptime-view-answers-as-a-missing-table.md), 2026-11-17, Accepted.

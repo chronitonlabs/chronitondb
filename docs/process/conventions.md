@@ -130,7 +130,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Editor settings for ChronitonDB code | `.editorconfig` |
 | ChronitonDB's configuration file | `conf/cassandra_chronitondb.yaml` |
 
-1. Apache's own files stay untouched: `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like. ChronitonDB's files sit beside them, as listed above. A change to an Apache file is made only where we need it, with its [delta entry](../delta/README.md). See [upstream.md](upstream.md#apache-files-stay-untouched). The `delta-register` check reads the table above: a file under none of its paths is a stock file.
+1. Apache's own files stay as Apache has them: `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like. ChronitonDB's files sit beside them, as listed above. A change to an Apache file is made only where we need it, with its [delta entry](../delta/README.md). See [upstream.md](upstream.md#apache-files-change-only-where-needed). The `delta-register` check reads the table above: a file under none of its paths is a stock file.
 2. All ChronitonDB documentation lives in `docs/`.
 3. User and operator documentation follows Diátaxis: tutorials, how-to guides, reference and explanation, one kind per page. Its folder layout will be defined with the documentation site.
 4. Each line keeps its own documentation on its own branch.
@@ -194,7 +194,7 @@ A claim about what code does names the code it was read in. This applies to the 
 
 1. Fork logic lives in classes under `org.chronitondb`, in packages named for what they are, for example `org.chronitondb.fulltext`.
 2. Fork logic MUST NOT be added as a new class under `org.apache.cassandra`. A fork class that needs package private access to a stock package is a design decision, named in the design record and approved with it.
-3. An edit to a stock file is small and additive. It is the hook that calls fork code, nothing more.
+3. An edit to a stock source file is the smallest that does the job. It is a hook that calls fork code, a fix to a defect in stock, or a refactor that lets fork code share stock logic in place of a copy. A refactor is named in the design record and reviewed with it.
 4. Code defaults in stock classes, such as `Config.java`, stay exactly as Apache Cassandra has them.
 5. A test that existed before a change is not weakened. A change to a pre-existing test is additive and named in the design record.
 

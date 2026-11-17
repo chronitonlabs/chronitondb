@@ -21,9 +21,9 @@ ChronitonDB relates to Apache Cassandra as Ubuntu relates to Debian. Apache Cass
 
 The integrator does this work: it watches Apache, prepares every import pull request, resolves conflicts, runs the tests and writes the import record. The reviewer reviews each import pull request and posts its review. A maintainer merges it. See [roles.md](roles.md#integrator).
 
-## Apache files stay untouched
+## Apache files change only where needed
 
-Apache Cassandra's own files stay as Apache has them, so imports never conflict on them. This covers `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like.
+Apache Cassandra's own files stay as Apache has them wherever ChronitonDB can put its own file beside them, so imports rarely conflict on them. This covers `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like.
 
 1. ChronitonDB's own files sit beside them: `.github/README.md`, `CHANGES-chronitondb.txt`, `NEWS-chronitondb.txt`, `docs/`, `packaging/`, `.github/CONTRIBUTING.md` and our own workflows. See [conventions.md](conventions.md#where-things-live).
 2. A change to an Apache file is made only where we need it, and it gets its [delta entry](../delta/README.md).
@@ -110,7 +110,7 @@ Every pull request that changes stock code or stock behaviour adds or updates it
 
 ## Offering changes upstream
 
-1. Every fix to stock code gets an Apache JIRA. A maintainer starts each offer. The integrator drafts the JIRA and the patch, and the maintainers file them.
+1. Every fix to stock code is offered to Apache Cassandra: with a new Apache JIRA, on the existing JIRA when Apache Cassandra already has one, or for a security fix through the Apache Cassandra security team until disclosure, as [Security coordination with Apache](#security-coordination-with-apache) says. A maintainer starts each offer. The integrator drafts the JIRA and the patch, and the maintainers file them.
 2. Features are offered upstream only when the maintainers decide, case by case.
 3. Code offered to Apache is reformatted to Apache Cassandra's style and follows Apache Cassandra's contribution process.
 4. Patches offered to Apache are prepared on [chronitonlabs/chronitondb-upstream](https://github.com/chronitonlabs/chronitondb-upstream), a fork of Apache Cassandra kept apart from the ChronitonDB lines, each on a branch from the Apache branch it targets.

@@ -48,7 +48,7 @@ This register lists every change ChronitonDB carries on top of Apache Cassandra 
     3. Passes without an entry only when the pull request description has a line `No delta entry: <reason>`, with a reason of three words or more, for a stock change no entry describes. The reviewer judges the reason.
     4. Checks every entry the pull request adds or changes: each field of the template in its form, a link to the Origin commit unless the Origin is ChronitonDB, a Last-Update later than on the line, and one row in the index below with the same Area, Lines, Forwarded, Added, Last update and Issue. An entry is never renamed or deleted. A change no longer carried keeps its entry with Status Dropped.
     5. Does not see a change to stock behaviour made only in ChronitonDB's own files. The reviewer looks for it.
-2. Every fix to stock code gets an Apache JIRA, filed by the maintainers. Its entry records it in Bug and Forwarded.
+2. Every fix to stock code is offered to Apache Cassandra, with an Apache JIRA the maintainers file, or for a security fix through the Apache Cassandra security team until disclosure. Its entry records the offer in Bug and Forwarded. See [upstream.md](../process/upstream.md#offering-changes-upstream).
 3. Features are offered to Apache Cassandra only when the maintainers decide, case by case.
 4. The integrator keeps the register current. Its upstream radar flags entries that Apache Cassandra has since fixed. Those entries are dropped at the next import, and its import record in `docs/imports/` lists them.
 

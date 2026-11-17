@@ -31,7 +31,13 @@ limitations under the License.
 | Reach | {One area or Cross-cutting}: {why, naming the packages touched} |
 | Touches | {public interface (its compatibility area, an on-disk file by its area: sstable components, or commitlog, hint log and cache files), stock behaviour, new input or privilege, new dependency, shared state (threads, pools or shared state), request path (a read, write or query path), new feature or switch, or none} |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 1 | {RFC 3339 date} | First version | {the id of the decision record behind this version, or None} |
+
+Full history in git: [commits of this file]({the address `tools/chronitondb/doclint.py history --write` puts here})
 
 Location: `docs/design/<issue>-<slug>/`, or `docs/design/<KEY>-<slug>/` for a fork feature that fits one item (see [feature keys](../additive.md#feature-keys-and-requirement-ids)), with the coverage file `ac-coverage.md` next to it. For a fork feature that fits one item, the designer proposes a free key in this record's pull request, and the key is reserved when a maintainer merges it. Every section is filled, or carries a waiver with its reason. An empty section blocks approval.
 
@@ -100,7 +106,7 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 
 ## 2. Decisions implemented
 
-{Each decision record by number, with a one line reminder and its date. A statement that no newer record exists on the same subject as of the date of this record.}
+{Each decision record by its id, with a one line reminder and its date. A statement that no newer record exists on the same subject as of the date of this record.}
 
 ## 3. Apache Cassandra behaviour preservation
 

@@ -27,7 +27,13 @@ limitations under the License.
 | Approver | The maintainer who merges the pull request |
 | References | Issue #{issue}, labelled `spike`. Its parent issue, if any. |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 1 | {RFC 3339 date} | First version | {the id of the decision record behind this version, or None} |
+
+Full history in git: [commits of this file]({the address `tools/chronitondb/doclint.py history --write` puts here})
 
 Location: `docs/research/<issue>-<slug>.md`. Process: [additive.md](../additive.md#work-intake). The merge approves the report as the record of what was found. It approves no work: the maintainers decide that in a decision record.
 

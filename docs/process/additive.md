@@ -65,7 +65,8 @@ Every fork feature has a feature key: 3 to 5 capital letters, for example `LUC`.
 7. The item design records of a feature that needs several items stay in `docs/design/<issue>-<slug>/`.
 8. A feature that fits one item has no feature spec. Its design record lives in the feature's directory and states the feature class. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
 9. Fix records and other items that are not feature work keep `docs/design/<issue>-<slug>/` and plain ids `REQ-n`.
-10. A required pull request check enforces these rules: directory names are well formed and keys are unique, every keyed id uses a reserved key, each id is defined exactly once (a FREQ in its feature spec, a REQ in one design record of its feature), every requirement tag on a scenario names a defined id, and removing a feature directory fails the check.
+10. The decision records of a feature live in `docs/design/<KEY>-<slug>/decisions/` with ids `DEC-<KEY>-nnnn`, numbered across the whole feature, whichever item asked the question. Work with no feature key keeps its records in its own design directory, with its issue number in place of the key. The key `GOV` is kept for the records of the whole project and no feature takes it. See [the decision records](../decisions/README.md#rules).
+11. A required pull request check enforces these rules: directory names are well formed and keys are unique, every keyed id uses a reserved key, each id is defined exactly once (a FREQ in its feature spec, a REQ in one design record of its feature), every requirement tag on a scenario names a defined id, and removing a feature directory fails the check.
 
 ### Level 1: the feature spec
 
@@ -146,7 +147,7 @@ An approved feature spec, plan or delivery plan changes only through this path:
 
 1. Whoever finds a needed change raises it with the maintainers. Work that depends on it waits.
 2. The maintainers' answer becomes a [decision record](../decisions/README.md).
-3. The architect updates the feature spec, plan or delivery plan in a small pull request that cites the decision record.
+3. The architect updates the feature spec, plan or delivery plan in a small pull request that cites the decision record. The update raises the document's version by one and adds its row to the revision history, with the id of that record. See [conventions.md](conventions.md#versions-and-revision-history).
 4. Waiting work resumes after that pull request is merged.
 
 Re-planning normally happens at a milestone gate. Changes to the risk list follow the same path.

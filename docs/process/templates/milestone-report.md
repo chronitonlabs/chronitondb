@@ -30,7 +30,13 @@ limitations under the License.
 | Size | {the feature spec's size, Low Hanging Fruit, Normal, Challenging or Byzantine}: {its reason} |
 | Reach | {the feature spec's reach, One area or Cross-cutting}: {its reason} |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 1 | {RFC 3339 date} | First version | {the id of the decision record behind this version, or None} |
+
+Full history in git: [commits of this file]({the address `tools/chronitondb/doclint.py history --write` puts here})
 
 Location: `docs/design/<KEY>-<slug>/milestones/`. Process: [additive.md](../additive.md#milestone-gates).
 

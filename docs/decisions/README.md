@@ -17,7 +17,7 @@ limitations under the License.
 
 # Decision records
 
-This folder holds the decision records of ChronitonDB, in MADR format (Markdown Architectural Decision Records).
+ChronitonDB keeps its decisions as decision records, in MADR format (Markdown Architectural Decision Records). This folder holds the rules, the template and the records of the whole project. The records of one feature live with that feature. See rule 1.
 
 ## When a record is written
 
@@ -33,22 +33,28 @@ The role that asked the question writes the record, in the pull request that fol
 
 ## Rules
 
-1. Each record is one file named `NNNN-<slug>.md`, numbered in order from `0001`.
-2. Records are never edited after they are merged, except to change their status. A later decision that replaces an earlier one is a new record that names the one it supersedes. The earlier record's status becomes "Superseded by NNNN".
+1. Each record is one file named by its id: `DEC-<KEY>-nnnn-<slug>.md`. The id is `DEC`, a key and a number of four digits or more, counted from `0001` under that key. The slug is lower case words joined by single hyphens.
+   1. A decision of one feature lives with the feature, in `docs/design/<KEY>-<slug>/decisions/`, under the [feature's key](../process/additive.md#feature-keys-and-requirement-ids). For example `docs/design/VER-release-version/decisions/DEC-VER-0001-<slug>.md`. Every item of the feature writes its records there.
+   2. A decision of work that has no feature key, such as a fix, lives in that work's design directory under its issue number: `docs/design/<issue>-<slug>/decisions/DEC-<issue>-nnnn-<slug>.md`.
+   3. A decision of the whole project, such as a rule of the development process or a change of commit rights, lives in this folder under the key `GOV`, which no feature may take: `docs/decisions/DEC-GOV-nnnn-<slug>.md`.
+   4. A new record takes the next number of its key after the highest one merged on the line, in order with no gap. No two records share an id.
+   5. The records of this folder named by a number alone, `NNNN-<slug>.md`, were merged before records had ids. They stay as they were merged, under rule 2, and are cited by their number.
+2. Records are never edited after they are merged, except to change their status. A later decision that replaces an earlier one is a new record that names the one it supersedes. The earlier record's status becomes "Superseded by" and the id of the later one, for example "Superseded by DEC-VER-0007".
 3. A record states the decision cleanly with its reason. It does not quote the discussion that led to it, and it points to no private material.
 4. The decision outcome uses BCP 14 key words where it is normative.
 5. Each new file carries the ChronitonDB licence header. See [conventions.md](../process/conventions.md#licence-headers).
-6. Each new record keeps the template's Contents index, regenerated with `tools/chronitondb/doclint.py index --write <file>`. A record merged before the template had one stays as it was merged, under rule 2. See [conventions.md](../process/conventions.md#contents-index-of-process-documents).
+6. A record has no version and no revision history. It is never edited, so the record that supersedes it is its history. The documents that do change, such as a feature spec or a design record, carry a version and a revision history that names the record behind each version. See [conventions.md](../process/conventions.md#versions-and-revision-history).
+7. Each new record keeps the template's Contents index, regenerated with `tools/chronitondb/doclint.py index --write <file>`. A record merged before the template had one stays as it was merged, under rule 2. See [conventions.md](../process/conventions.md#contents-index-of-process-documents).
 
 ## Template
 
 ```markdown
-# NNNN. <Short title of the decision>
+# DEC-<KEY>-nnnn. <Short title of the decision>
 
 | Field | Value |
 |---|---|
 | Document type | Record (ISO/IEC/IEEE 15289), MADR |
-| Status | Proposed, Accepted, or Superseded by NNNN |
+| Status | Proposed, Accepted, or Superseded by DEC-<KEY>-nnnn |
 | Date | <RFC 3339 date> |
 | Deciders | The maintainers |
 | References | <issue, pull request, feature spec, earlier records> |
@@ -87,6 +93,8 @@ Chosen option: "<option>", because <reason>.
 ```
 
 ## Index
+
+The records of the whole project, and the records merged before records had ids. The records of a feature are listed in the Decisions section of its feature spec, or in the Decisions implemented section of its design record where it has no feature spec.
 
 1. [0001. The first maintainers](0001-initial-maintainers.md), 2026-11-01, Accepted.
 2. [0002. What nodetool version prints on a ChronitonDB node](0002-nodetool-version-output-on-a-chronitondb-node.md), 2026-11-10, Accepted.

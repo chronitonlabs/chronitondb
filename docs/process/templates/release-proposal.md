@@ -27,7 +27,13 @@ limitations under the License.
 | Approver | The maintainer who merges the pull request, once for the proposal and once for the promotion |
 | References | {line, the previous release, milestone reports, published security advisories by their CVE} |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 1 | {RFC 3339 date} | First version | {the id of the decision record behind this version, or None} |
+
+Full history in git: [commits of this file]({the address `tools/chronitondb/doclint.py history --write` puts here})
 
 Location: `docs/releases/<version>.md`. Process: [release.md](../release.md).
 

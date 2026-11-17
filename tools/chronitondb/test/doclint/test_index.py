@@ -419,7 +419,9 @@ class DocumentCheck(unittest.TestCase):
 
     def decisions_on_the_line(self):
         """The line's decision README, whose record template has a Contents
-        section, and its merged record 0001, which has none."""
+        section, and its merged record 0001, which has none and was merged
+        before records had ids. Returns the text of a new record of the
+        whole project, with no index yet."""
         os.makedirs(os.path.join(self.repo, "docs", "decisions"))
         for name in ("README.md", "0001-initial-maintainers.md"):
             with open(os.path.join(ROOT, "docs", "decisions", name), encoding="utf-8") as handle:
@@ -428,7 +430,7 @@ class DocumentCheck(unittest.TestCase):
         with open(os.path.join(ROOT, "docs", "decisions", "0001-initial-maintainers.md"), encoding="utf-8") as handle:
             old = handle.read()
         self.assertNotIn("## Contents", old)
-        return old.replace("# 0001. The first maintainers", "# 0002. A later decision")
+        return old.replace("# 0001. The first maintainers", "# DEC-GOV-0001. A later decision")
 
     def test_a_merged_record_without_an_index_passes(self):
         self.decisions_on_the_line()
@@ -437,39 +439,38 @@ class DocumentCheck(unittest.TestCase):
         self.assertIn("documents 1 checked 0 failed", out)
 
     def test_a_new_record_without_an_index_fails(self):
-        self.put("docs/decisions/0002-a-later-decision.md", self.decisions_on_the_line())
-        rc, _, err = self.document("docs/decisions/0002-a-later-decision.md")
+        self.put("docs/decisions/DEC-GOV-0001-a-later-decision.md", self.decisions_on_the_line())
+        rc, _, err = self.document("docs/decisions/DEC-GOV-0001-a-later-decision.md")
         self.assertEqual(rc, 1)
-        self.assertIn("docs/decisions/0002-a-later-decision.md:1: no '## Contents' section", err)
+        self.assertIn("docs/decisions/DEC-GOV-0001-a-later-decision.md:1: no '## Contents' section", err)
 
     def test_a_new_record_with_its_index_passes(self):
-        self.put("docs/decisions/0002-a-later-decision.md", self.decisions_on_the_line())
-        run("index", "--write", os.path.join(self.repo, "docs/decisions/0002-a-later-decision.md"))
-        rc, out, err = self.document("docs/decisions/0002-a-later-decision.md")
+        self.put("docs/decisions/DEC-GOV-0001-a-later-decision.md", self.decisions_on_the_line())
+        run("index", "--write", os.path.join(self.repo, "docs/decisions/DEC-GOV-0001-a-later-decision.md"))
+        rc, out, err = self.document("docs/decisions/DEC-GOV-0001-a-later-decision.md")
         self.assertEqual((rc, err), (0, ""))
         self.assertIn("documents 1 checked 0 failed", out)
 
-    def test_a_new_record_reusing_a_merged_number_fails(self):
-        self.put("docs/decisions/0001-another.md", self.decisions_on_the_line().replace("# 0002.", "# 0001."))
-        rc, _, err = self.document("docs/decisions/0001-another.md")
+    def test_a_new_record_named_by_a_number_alone_fails(self):
+        self.put("docs/decisions/0002-another.md", self.decisions_on_the_line())
+        rc, _, err = self.document("docs/decisions/0002-another.md")
         self.assertEqual(rc, 1)
-        self.assertIn("docs/decisions/0001-another.md:1: no '## Contents' section", err)
-        self.assertIn("a new decision record takes a number after the highest merged one, 0001, in order with no gap: 0002 here, and this one is 0001", err)
+        self.assertIn("docs/decisions/0002-another.md:1: a new decision record takes an id, not a number alone: a decision record is DEC-<KEY>-nnnn-<slug>.md", err)
 
     def test_a_new_record_leaving_a_gap_fails(self):
-        path = "docs/decisions/0003-gap.md"
-        self.put(path, self.decisions_on_the_line().replace("# 0002.", "# 0003."))
+        path = "docs/decisions/DEC-GOV-0002-gap.md"
+        self.put(path, self.decisions_on_the_line().replace("# DEC-GOV-0001.", "# DEC-GOV-0002."))
         run("index", "--write", os.path.join(self.repo, path))
         rc, _, err = self.document(path)
         self.assertEqual(rc, 1)
         self.assertNotIn("Contents", err)
-        self.assertIn("after the highest merged one, 0001, in order with no gap: 0002 here, and this one is 0003", err)
+        self.assertIn("in order with no gap: after none merged under the key GOV yet, DEC-GOV-0001 here, and this one is DEC-GOV-0002", err)
 
     def test_two_new_records_in_order_pass(self):
         text = self.decisions_on_the_line()
-        paths = ["docs/decisions/0002-a-later-decision.md", "docs/decisions/0003-another-decision.md"]
+        paths = ["docs/decisions/DEC-GOV-0001-a-later-decision.md", "docs/decisions/DEC-GOV-0002-another-decision.md"]
         self.put(paths[0], text)
-        self.put(paths[1], text.replace("# 0002.", "# 0003."))
+        self.put(paths[1], text.replace("# DEC-GOV-0001.", "# DEC-GOV-0002."))
         for path in paths:
             run("index", "--write", os.path.join(self.repo, path))
         rc, out, err = run("document", "--repo", self.repo, "--templates", "line", "--source", "worktree", *paths)

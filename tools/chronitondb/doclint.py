@@ -25,6 +25,7 @@ before they commit.
     doclint.py dependencies --repo DIR --base REF --line REF [--source SRC] FILE...
     doclint.py settings --repo DIR --base REF [--source SRC]
     doclint.py index [--write | --check] FILE...
+    doclint.py history --repo DIR --templates REF [--write | --check] PATH...
     doclint.py delta --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE]
 
 SRC is where the documents are read: "index" (the default, the staged
@@ -45,7 +46,9 @@ The type of each PATH comes from where it lives:
                                            its first heading ("# Design:",
                                            "# Fix:")
     docs/imports/*.md                      import record
-    docs/decisions/NNNN-<slug>.md          decision record
+    docs/design/<dir>/decisions/*.md       decision record
+    docs/decisions/*.md                    decision record (README.md is
+                                           not one)
     docs/delta/<name>.md                   delta entry (README.md is the
                                            register)
     docs/releases/<line>-plan.md           line plan
@@ -79,9 +82,30 @@ Every document is checked for:
      edited, docs/decisions/README.md rule 2, so one merged before its
      template had the section keeps none
 
-A new decision record also takes the next number after the highest
-record merged at REF, one number per new record and in order, so it
-neither reuses a merged number nor leaves a gap (rule 1 of the README).
+A decision record new at REF is also checked for rule 1 of the README:
+its name is its id and a slug, DEC-<KEY>-nnnn-<slug>.md, four digits or
+more, under docs/design/<KEY>-<slug>/decisions/ with the key of that
+directory (the issue number for a directory <issue>-<slug>), or under
+docs/decisions/ with the key GOV, its title opens with its id, no other
+record at SRC has that id, and its number is the next after the highest
+merged at REF under its key, one number per new record and in order, so
+it neither reuses a merged number nor leaves a gap. A record merged at
+REF is never edited and is held to none of this: the records NNNN-<slug>.md
+of docs/decisions/ were merged before the ids.
+
+A document whose template at REF has the revision history, a table
+Version, Date, Change, Decision record under the document control table,
+is checked for it when the document is new at REF, has the table at REF or
+at SRC, or is at another Version than at REF: one row for each version, in
+order with no gap, each with a whole number, a YYYY-MM-DD date, what
+changed and the id of a decision record or None, the last row the
+document's Version, every row merged at REF unchanged, and under the table
+the line "Full history in git: [commits of this file](ADDRESS)", ADDRESS
+being https://github.com/<owner>/<repository>/commits/<line>/<path>: the
+repository of the remote REF names (origin when REF names none), the line
+REF names, and the document's own path. A document merged before its
+template had the table keeps its old change history line until its next
+version.
 
 A feature spec is also checked for:
 
@@ -192,6 +216,15 @@ index entries is refused with its line, and the file is left unchanged.
 With --check it reports what is wrong with the file's index, the check of
 point 4 above, also for a template. Authors and their tools run it after
 any heading changes, before the commit.
+
+history prints the history link each PATH needs, read from the working
+tree. With --write it puts the link in place of the old one, or under the
+revision history table, and in a document that still has the line "Change
+history: the git history of this file." it puts the table in that line's
+place, with one row for the document's Version and today's date, whose
+change and decision record the author fills in. With --check it reports
+what is wrong with the revision history and its link, whatever REF holds
+of the document.
 
 settings is the setting name check of release.md, The configuration file.
 A setting name is a top level key of a yaml file, active ("name:") or
@@ -399,10 +432,12 @@ def doc_type(path, text):
             return None
         if len(parts) == 5 and parts[3] == "milestones":
             return "milestone-report"
+        if len(parts) == 5 and parts[3] == "decisions":
+            return "decision"
         return None
     if re.match(r"^docs/imports/[^/]+\.md$", path):
         return "import-record"
-    if re.match(r"^docs/decisions/[0-9]{4}-[^/]+\.md$", path):
+    if re.match(r"^docs/decisions/[^/]+\.md$", path) and path != "docs/decisions/README.md":
         return "decision"
     if re.match(r"^docs/delta/[^/]+\.md$", path) and path != "docs/delta/README.md":
         return "delta-entry"
@@ -455,6 +490,14 @@ def control_table(doc):
     return fields, rows[0][0]
 
 
+# The id of a decision record: DEC, the feature key, the reserved key GOV
+# for a decision of the whole project, or the issue number of a design
+# directory that has no key, then four digits or more.
+DECISION_ID = r"DEC-(?:[A-Z]{3,5}|[0-9]+)-[0-9]{4,}"
+DECISION_WORD = "DEC-<KEY>-nnnn"
+GOV_KEY = "GOV"
+
+
 def allowed_statuses(value):
     """The Status values a template allows: "Draft, Approved or Superseded",
     "Current or Dropped", "Proposed, Accepted, or Superseded by NNNN"."""
@@ -464,8 +507,12 @@ def allowed_statuses(value):
 
 def status_ok(value, allowed):
     for word in allowed:
-        if "NNNN" in word:
-            if re.match("^" + re.escape(word).replace("NNNN", "[0-9]{4}") + r"(\b|$)", value):
+        # A record is superseded by a record named by its id, or by its
+        # number when the record that replaces it is one merged before the
+        # ids (docs/decisions/README.md, rule 1).
+        if "NNNN" in word or DECISION_WORD in word:
+            stem = word.replace("NNNN", "").replace(DECISION_WORD, "")
+            if re.match("^" + re.escape(stem) + r"(?:" + DECISION_ID + r"|[0-9]{4})(?![0-9A-Za-z])", value):
                 return True
         elif value == word or (word == "Superseded" and value.startswith("Superseded")):
             return True
@@ -1770,31 +1817,67 @@ def run_index(args):
     return 1 if failed else 0
 
 
-RECORD = re.compile(r"^docs/decisions/([0-9]{4})-[^/]+\.md$")
+OLD_RECORD = re.compile(r"^docs/decisions/([0-9]{4})-[^/]+\.md$")
+SLUG = r"[a-z0-9]+(?:-[a-z0-9]+)*"
+GOV_RECORD = re.compile(r"^docs/decisions/(DEC-(GOV)-([0-9]{4,}))-" + SLUG + r"\.md$")
+FEATURE_RECORD = re.compile(r"^docs/design/((?:([A-Z]{3,5})|([0-9]+))-" + SLUG + r")/decisions/(DEC-([A-Z]{3,5}|[0-9]+)-([0-9]{4,}))-" + SLUG + r"\.md$")
+RECORD_FORM = ("a decision record is DEC-<KEY>-nnnn-<slug>.md, four digits or more and a slug of lower case words joined by single hyphens: "
+               "docs/design/<KEY>-<slug>/decisions/ for a decision of one feature, with the key of its directory (the issue number where the directory has no key), "
+               "or docs/decisions/DEC-GOV-nnnn-<slug>.md for a decision of the whole project (docs/decisions/README.md, rule 1)")
+
+
+def record_id(path):
+    """(id, key, number) of a decision record named in the form of rule 1,
+    None for any other path. The key is the feature key, GOV, or the issue
+    number of a design directory that has no key."""
+    match = GOV_RECORD.match(path)
+    if match:
+        return match.group(1), match.group(2), int(match.group(3))
+    match = FEATURE_RECORD.match(path)
+    if match and match.group(5) == (match.group(2) or match.group(3)) and match.group(5) != GOV_KEY:
+        return match.group(4), match.group(5), int(match.group(6))
+    return None
 
 
 def records_at(repo, where):
-    """The decision record paths of docs/decisions/ at where: "index",
-    "worktree" or a commit."""
+    """The decision record paths at where, "index", "worktree" or a
+    commit: every file of docs/decisions/ but its README, and every file
+    of a decisions/ directory of a design directory."""
+    places = ("docs/decisions/", "docs/design/")
     if where == "index":
-        listing = git(repo, "ls-files", "--", "docs/decisions/")
+        listing = git(repo, "ls-files", "--", *places)
     elif where == "worktree":
-        listing = git(repo, "ls-files", "--cached", "--others", "--exclude-standard", "--", "docs/decisions/")
+        listing = git(repo, "ls-files", "--cached", "--others", "--exclude-standard", "--", *places)
     else:
-        listing = git(repo, "ls-tree", "-r", "--name-only", where, "--", "docs/decisions/")
-    return [line for line in (listing or "").split("\n") if RECORD.match(line)]
+        listing = git(repo, "ls-tree", "-r", "--name-only", where, "--", *places)
+    return [line for line in (listing or "").split("\n") if doc_type(line, "") == "decision"]
 
 
 def record_rules(repo, templates, where, rules):
-    """The decision records merged at the rules ref, and the numbers the
-    new ones may take: the next numbers after the highest merged one, one
-    each, in order (docs/decisions/README.md, rule 1)."""
+    """The decision records merged at the rules ref, the highest number
+    merged under each key, and the numbers the new records of each key may
+    take: the next ones after the highest merged, one each, in order
+    (docs/decisions/README.md, rule 1)."""
     if "records" not in rules:
         merged = set(records_at(repo, templates))
-        numbers = [int(RECORD.match(path).group(1)) for path in merged]
-        last = max(numbers) if numbers else 0
-        new = [path for path in records_at(repo, where) if path not in merged]
-        rules["records"] = (merged, last, set(range(last + 1, last + 1 + len(new))))
+        last = {}
+        for path in merged:
+            found = record_id(path)
+            if found:
+                last[found[1]] = max(last.get(found[1], 0), found[2])
+        count = {}
+        here = records_at(repo, where)
+        for path in here:
+            found = record_id(path)
+            if found and path not in merged:
+                count[found[1]] = count.get(found[1], 0) + 1
+        allowed = {key: set(range(last.get(key, 0) + 1, last.get(key, 0) + 1 + n)) for key, n in count.items()}
+        ids = {}
+        for path in here:
+            found = record_id(path)
+            if found:
+                ids.setdefault(found[0], []).append(path)
+        rules["records"] = (merged, last, allowed, ids)
     return rules["records"]
 
 
@@ -1805,22 +1888,258 @@ def needs_index(kind, path, repo, templates, where, rules):
     2), so one merged before its template had the section keeps none."""
     if kind != "decision":
         return True
-    merged, _, _ = record_rules(repo, templates, where, rules)
-    return path not in merged
+    return path not in record_rules(repo, templates, where, rules)[0]
 
 
-def check_record_number(doc, path, repo, templates, where, rules):
-    """A new decision record takes the next number after the highest
-    record merged at the rules ref, so it neither reuses a merged number
-    nor leaves a gap (docs/decisions/README.md, rule 1)."""
-    merged, last, allowed = record_rules(repo, templates, where, rules)
-    match = RECORD.match(path)
-    if path in merged or not match:
+def check_record(doc, path, repo, templates, where, rules):
+    """A new decision record is named in the form of rule 1 and lives where
+    its key puts it, its title opens with its id, its id is no other
+    record's, and its number is the next after the highest merged under its
+    key, so it neither reuses a merged number nor leaves a gap. A record
+    merged at the rules ref is never edited (rule 2) and is not held to
+    this: the records numbered NNNN in docs/decisions/ were merged before
+    the ids."""
+    merged, last, allowed, ids = record_rules(repo, templates, where, rules)
+    if path in merged:
         return
-    number = int(match.group(1))
-    if number not in allowed:
-        span = "%04d" % (last + 1) if len(allowed) == 1 else "%04d to %04d" % (last + 1, last + len(allowed))
-        doc.error(0, "a new decision record takes a number after the highest merged one, %04d, in order with no gap: %s here, and this one is %04d (docs/decisions/README.md, rule 1)" % (last, span, number))
+    found = record_id(path)
+    if not found:
+        if OLD_RECORD.match(path):
+            doc.error(0, "a new decision record takes an id, not a number alone: " + RECORD_FORM)
+        else:
+            doc.error(0, RECORD_FORM)
+        return
+    name, key, number = found
+    title = doc.headings[0][1] if doc.headings and doc.headings[0][0] == 1 else ""
+    if not title.startswith(name + ". "):
+        doc.error(doc.headings[0][2] if doc.headings else 0, "the title of this record opens with its id: '# %s. <Short title of the decision>'" % name)
+    others = [other for other in ids.get(name, []) if other != path]
+    if others:
+        doc.error(0, "the id %s is also the id of %s. Each decision record has an id of its own (docs/decisions/README.md, rule 1)" % (name, ", ".join(sorted(others))))
+    numbers = allowed.get(key, set())
+    if number not in numbers:
+        first = last.get(key, 0) + 1
+        span = "%s-%s-%04d" % ("DEC", key, first) if len(numbers) <= 1 else "DEC-%s-%04d to DEC-%s-%04d" % (key, first, key, first + len(numbers) - 1)
+        before = "the highest merged one, DEC-%s-%04d" % (key, last[key]) if key in last else "none merged under the key %s yet" % key
+        doc.error(0, "a new decision record takes the next number of its key, in order with no gap: after %s, %s here, and this one is %s (docs/decisions/README.md, rule 1)" % (before, span, name))
+
+
+REVISION_HEAD = ["Version", "Date", "Change", "Decision record"]
+REVISION_INTRO = "Revision history, one row for each version:"
+OLD_HISTORY = "Change history: the git history of this file."
+HISTORY_LABEL = "Full history in git: "
+HISTORY_LINE = re.compile(r"^Full history in git: \[commits of this file\]\((\S+)\)$")
+RECORD_CELL = re.compile(r"^(?:None|(?:\[?(?:" + DECISION_ID + r"|[0-9]{4})\]?(?:\([^)\s]+\))?)(?:(?:, | and )\[?(?:" + DECISION_ID + r"|[0-9]{4})\]?(?:\([^)\s]+\))?)*)$")
+GITHUB_REMOTE = re.compile(r"github\.com[:/]([^/\s]+)/([^/\s]+?)(?:\.git)?/?\s*$")
+
+
+def preamble(doc):
+    """The line range between the title and the first section."""
+    first = [h for h in doc.headings if h[0] == 1]
+    start = first[0][2] + 1 if first else 0
+    stop = len(doc.lines)
+    for level, _, index in doc.headings:
+        if index >= start and level >= 2:
+            stop = index
+            break
+    return start, stop
+
+
+def revision_rows(doc):
+    """(header line, rows) of the revision history table of a document:
+    the table of its preamble whose header is Version, Date, Change,
+    Decision record. (None, []) when it has none."""
+    start, stop = preamble(doc)
+    for index in range(start, stop):
+        if index in doc.fenced or index in doc.commented:
+            continue
+        line = doc.visible[index].strip()
+        if line.startswith("|") and table_cells(line) == REVISION_HEAD:
+            return index, first_table(doc, index, stop)
+    return None, []
+
+
+def history_url(repo, ref, path):
+    """The address of the commits of path on its line on GitHub: the
+    repository is the one the rules ref is fetched from, so the link
+    follows a move or a rename of the repository, and the line is the
+    branch the rules ref names. None when the clone has no GitHub remote
+    to read it from."""
+    remote, _, line = ref.partition("/")
+    url = git(repo, "remote", "get-url", remote) if line else None
+    if url is None:
+        url = git(repo, "remote", "get-url", "origin")
+        line = ref
+    match = GITHUB_REMOTE.search(url or "")
+    if not match or not re.match(r"^[A-Za-z0-9._-]+$", line):
+        return None
+    return "https://github.com/%s/%s/commits/%s/%s" % (match.group(1), match.group(2), line, path)
+
+
+def history_line(doc):
+    """(line index, address) of the history link of the preamble."""
+    start, stop = preamble(doc)
+    for index in range(start, stop):
+        if index in doc.fenced or index in doc.commented:
+            continue
+        if doc.visible[index].startswith(HISTORY_LABEL):
+            match = HISTORY_LINE.match(doc.visible[index].rstrip())
+            return index, match.group(1) if match else ""
+    return None, None
+
+
+def held_to_revision(doc, path, repo, templates, template_text):
+    """True when the document carries its revision history: its template
+    on the line has the table, and the document is new, or already has the
+    table on the line, or is at another version than on the line. A
+    document merged before its template had the table keeps the old line
+    until its next version, which adds the table with that version's
+    row."""
+    if revision_rows(Markdown("template", template_text))[0] is None:
+        return False
+    merged = git(repo, "show", "%s:%s" % (templates, path))
+    if merged is None:
+        return True
+    old = Markdown(path, merged)
+    if revision_rows(old)[0] is not None or revision_rows(doc)[0] is not None:
+        return True
+    old_fields, _ = control_table(old)
+    fields, _ = control_table(doc)
+    return bool(old_fields and fields and "Version" in old_fields and "Version" in fields and old_fields["Version"][0] != fields["Version"][0])
+
+
+def check_revision_table(doc, path, repo, templates):
+    """The revision history table and the history link of a document."""
+    head, rows = revision_rows(doc)
+    if head is None:
+        doc.error(0, "no revision history table under the document control table: a table Version, Date, Change, Decision record with one row for each version, and under it the link to the commits of this file. doclint.py history --write puts both in")
+        return
+    fields, _ = control_table(doc)
+    if not rows:
+        doc.error(head, "the revision history has no row. Each version has one: its number, its date, what changed and the decision record behind it")
+    previous = None
+    for index, cells in rows:
+        cells = cells + [""] * (4 - len(cells))
+        version, date, change, record = cells[:4]
+        if not re.match(r"^[1-9][0-9]*$", version):
+            doc.error(index, "the Version of a revision history row is a whole number, 1 for the first version")
+        else:
+            if previous is not None and int(version) != previous + 1:
+                doc.error(index, "the revision history rows are in order with no gap: version %d follows version %d" % (previous + 1, previous))
+            previous = int(version)
+        if not DATE.match(date):
+            doc.error(index, "the Date of a revision history row is an RFC 3339 date, YYYY-MM-DD")
+        if not change or outer_braces(change):
+            doc.error(index, "the Change of a revision history row says what changed in that version")
+        if not RECORD_CELL.match(record):
+            doc.error(index, "the Decision record of a revision history row names the record behind the change by its id, such as DEC-VER-0003, several joined by commas, or says None")
+    if previous is not None and fields and "Version" in fields:
+        value, line = fields["Version"]
+        if re.match(r"^[1-9][0-9]*$", value) and int(value) != previous:
+            doc.error(line, "the Version row says %s and the last row of the revision history is version %d. A new version adds its row" % (value, previous))
+    # A version that is merged keeps its row as it was merged.
+    merged = git(repo, "show", "%s:%s" % (templates, path))
+    if merged is not None:
+        for index, cells in revision_rows(Markdown(path, merged))[1]:
+            if cells not in [found for _, found in rows]:
+                doc.error(head, "the revision history row of version %s on the line is changed or gone. A merged version keeps its row" % (cells[0] if cells else "?"))
+    line, address = history_line(doc)
+    wanted = history_url(repo, templates, path)
+    if line is None:
+        doc.error(head, "no link to the commits of this file under the revision history: '%s[commits of this file](%s)'. doclint.py history --write puts it in" % (HISTORY_LABEL, wanted or "https://github.com/<owner>/<repository>/commits/<line>/" + path))
+    elif wanted is not None and address != wanted:
+        doc.error(line, "the history link is not the commits of this file on its line: '%s[commits of this file](%s)'. doclint.py history --write puts it right" % (HISTORY_LABEL, wanted))
+    elif wanted is None and not re.match(r"^https://github\.com/[^/\s]+/[^/\s]+/commits/[^/\s]+/" + re.escape(path) + "$", address):
+        doc.error(line, "the history link is not the commits of this file on GitHub: https://github.com/<owner>/<repository>/commits/<line>/%s" % path)
+
+
+def check_revision(doc, path, repo, templates, template_text):
+    if held_to_revision(doc, path, repo, templates, template_text):
+        check_revision_table(doc, path, repo, templates)
+
+
+def with_history(doc, path, repo, templates, today):
+    """The lines of the document with its revision history as doclint
+    writes it: the old change history line becomes the table with the row
+    of the document's version, which the author fills in, and the history
+    link is the one of this file on its line. None when the document has
+    neither the old line nor the table to start from."""
+    lines = list(doc.lines)
+    start, stop = preamble(doc)
+    head, _ = revision_rows(doc)
+    wanted = history_url(repo, templates, path) or "https://github.com/<owner>/<repository>/commits/<line>/" + path
+    link = "%s[commits of this file](%s)" % (HISTORY_LABEL, wanted)
+    if head is None:
+        old = [index for index in range(start, stop) if lines[index].strip() == OLD_HISTORY]
+        if not old:
+            return None
+        fields, _ = control_table(doc)
+        version = fields["Version"][0] if fields and "Version" in fields and re.match(r"^[1-9][0-9]*$", fields["Version"][0]) else "1"
+        block = [REVISION_INTRO, "", "| " + " | ".join(REVISION_HEAD) + " |", "|---|---|---|---|",
+                 "| %s | %s | {what changed in this version} | {the id of the decision record behind it, or None} |" % (version, today), "", link]
+        return lines[:old[0]] + block + lines[old[0] + 1:]
+    line, _ = history_line(doc)
+    if line is not None:
+        lines[line] = link
+        return lines
+    end = head
+    while end + 1 < stop and lines[end + 1].strip().startswith("|"):
+        end += 1
+    return lines[:end + 1] + ["", link] + lines[end + 1:]
+
+
+def run_history(args):
+    repo, templates, mode, paths = None, None, None, []
+    index = 0
+    while index < len(args):
+        word = args[index]
+        if word in ("--repo", "--templates") and index + 1 < len(args):
+            if word == "--repo":
+                repo = args[index + 1]
+            else:
+                templates = args[index + 1]
+            index += 2
+            continue
+        if word in ("--write", "--check") and mode is None:
+            mode = word
+        elif word.startswith("--"):
+            sys.stderr.write(__doc__)
+            return 2
+        else:
+            paths.append(word)
+        index += 1
+    if not repo or not templates or not paths:
+        sys.stderr.write(__doc__)
+        return 2
+    failed = 0
+    for path in paths:
+        text = Source(repo, "worktree").read(path)
+        if text is None:
+            sys.stderr.write("%s:0: cannot be read\n" % path)
+            failed += 1
+            continue
+        doc = Markdown(path, text)
+        if mode == "--check":
+            check_revision_table(doc, path, repo, templates)
+            for error in doc.errors:
+                sys.stderr.write(error + "\n")
+            failed += 1 if doc.errors else 0
+        elif mode == "--write":
+            new = with_history(doc, path, repo, templates, time.strftime("%Y-%m-%d", time.gmtime()))
+            if new is None:
+                sys.stderr.write("%s:0: has neither a revision history table nor the line '%s' under its document control table, so there is nothing to write\n" % (path, OLD_HISTORY))
+                failed += 1
+            elif new != doc.lines:
+                with open(os.path.join(repo, path), "w", encoding="utf-8") as handle:
+                    handle.write("\n".join(new))
+                print("history %s written" % path)
+            else:
+                print("history %s current" % path)
+        else:
+            print("%s[commits of this file](%s)" % (HISTORY_LABEL, history_url(repo, templates, path) or "https://github.com/<owner>/<repository>/commits/<line>/" + path))
+    if mode == "--check":
+        print("history %d checked %d failed" % (len(paths), failed))
+    return 1 if failed else 0
 
 
 def decision_template(text):
@@ -1883,6 +2202,9 @@ def check_keys(repo, base, where):
         match = DIR_FORM.match(name)
         if not match:
             errors.append("docs/design/%s:0: a design directory is <KEY>-<slug> for a feature, KEY 3 to 5 capital letters, or <issue>-<slug>, the slug lower case words joined by single hyphens" % name)
+            continue
+        if match.group(1) == GOV_KEY:
+            errors.append("docs/design/%s:0: the key GOV is kept for the decision records of the whole project, docs/decisions/DEC-GOV-nnnn-<slug>.md. A feature takes another key" % name)
             continue
         if match.group(1):
             keys.setdefault(match.group(1), []).append(name)
@@ -2285,6 +2607,8 @@ def main(argv):
         return run_index(argv[1:])
     if argv and argv[0] == "delta":
         return run_delta(argv[1:])
+    if argv and argv[0] == "history":
+        return run_history(argv[1:])
     if argv and argv[0] == "settings":
         repo, base, where = None, None, "index"
         args = argv[1:]
@@ -2426,7 +2750,8 @@ def main(argv):
             if has_contents(Markdown(template_path, template_text)) and needs_index(kind, path, repo, templates, where, rules):
                 check_index(doc, path)
             if kind == "decision":
-                check_record_number(doc, path, repo, templates, where, rules)
+                check_record(doc, path, repo, templates, where, rules)
+            check_revision(doc, path, repo, templates, template_text)
             template_doc = Markdown(template_path, template_text)
             template_fields, _ = control_table(template_doc)
             if kind == "feature-spec" and template_fields and "Risk" in template_fields:

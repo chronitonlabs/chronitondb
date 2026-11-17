@@ -132,7 +132,7 @@ The repository makes the pull request title the subject of the squash or merge c
 
 ## Process documents: `doclint.py`
 
-Checks the process documents under `docs/` against their templates on the line, and the rules [docs/process/](../../docs/process/README.md) sets for them: the document control table, every numbered section in order, the Contents index, no template placeholder and no `[NEEDS CLARIFICATION` marker left, and per document type the feature spec, plan, milestone report, decision record and delta entry rules. It also checks the feature keys and requirement ids of [additive.md](../../docs/process/additive.md#feature-keys-and-requirement-ids) across the lines, the library declarations of [compliance.md](../../docs/process/compliance.md), and that `conf/cassandra_chronitondb.yaml` holds every setting of Apache's two yaml files ([release.md](../../docs/process/release.md#the-configuration-file)). `markdown.py` beside it is its Markdown reader. Python 3 only, no other dependency.
+Checks the process documents under `docs/` against their templates on the line, and the rules [docs/process/](../../docs/process/README.md) sets for them: the document control table, every numbered section in order, the Contents index, the revision history and its link to the file's commits, no template placeholder and no `[NEEDS CLARIFICATION` marker left, and per document type the feature spec, plan, milestone report, decision record and delta entry rules. It also checks the feature keys and requirement ids of [additive.md](../../docs/process/additive.md#feature-keys-and-requirement-ids) across the lines, the library declarations of [compliance.md](../../docs/process/compliance.md), and that `conf/cassandra_chronitondb.yaml` holds every setting of Apache's two yaml files ([release.md](../../docs/process/release.md#the-configuration-file)). `markdown.py` beside it is its Markdown reader. Python 3 only, no other dependency.
 
     tools/chronitondb/doclint.py document --repo . --templates origin/chronitondb-5.0 --source index docs/design/LUC-fulltext-search/feature-spec.md
     tools/chronitondb/doclint.py keys --repo . --base origin/chronitondb-5.0 --source index
@@ -169,6 +169,18 @@ When a document's template on the line has a `## Contents` section, the document
 A coverage file, `ac-coverage.md` in a design directory, is checked against the coverage file template.
 
 A research report, `docs/research/<issue>-<slug>.md`, is checked against the research report template, and its References row names the issue in its file name. `docs/research/README.md` is not a report.
+
+### The revision history
+
+    tools/chronitondb/doclint.py history --repo . --templates origin/<line> FILE              print the history link FILE needs
+    tools/chronitondb/doclint.py history --repo . --templates origin/<line> --write FILE...   put the link in, and start the revision history of a document that still has the old change history line
+    tools/chronitondb/doclint.py history --repo . --templates origin/<line> --check FILE...   report what is wrong with the revision history and its link
+
+`history` reads the working tree. FILE is a path from the repository root. The link is the commits of the file on its line, on the repository the line is fetched from, so it is written the same way after the repository moves or is renamed. `--write` on a document that still carries `Change history: the git history of this file.` puts the table in its place, with one row for the document's version and today's date, and leaves what changed and the decision record for the author to fill in. See [conventions.md](../../docs/process/conventions.md#versions-and-revision-history).
+
+### Decision records
+
+A decision record is checked from where it lives: `docs/design/<dir>/decisions/` for a feature or other work, `docs/decisions/` for the whole project. A record new to the line is named `DEC-<KEY>-nnnn-<slug>.md` with the key of its place, its title opens with its id, no other record has that id, and its number is the next of its key. A record merged on the line is never edited, so it is not held to rules made after it. See [the decision records](../../docs/decisions/README.md#rules).
 
 ### The class
 

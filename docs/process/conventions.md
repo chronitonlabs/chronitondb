@@ -109,7 +109,9 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Feature spec, plan and delivery plan of a feature | `docs/design/<KEY>-<slug>/` |
 | Milestone reports of a feature | `docs/design/<KEY>-<slug>/milestones/` |
 | Design record or fix record of one item, with its coverage file | `docs/design/<issue>-<slug>/`, or `docs/design/<KEY>-<slug>/` for a fork feature that fits one item |
-| Decision records | `docs/decisions/NNNN-<slug>.md` |
+| Decision records of one feature | `docs/design/<KEY>-<slug>/decisions/DEC-<KEY>-nnnn-<slug>.md` |
+| Decision records of work with no feature key | `docs/design/<issue>-<slug>/decisions/DEC-<issue>-nnnn-<slug>.md` |
+| Decision records of the whole project | `docs/decisions/DEC-GOV-nnnn-<slug>.md`. The records there named by a number alone, `NNNN-<slug>.md`, were merged before records had ids |
 | Research reports of spikes | `docs/research/<issue>-<slug>.md` |
 | Import records | `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project |
 | Release proposals and their verification results | `docs/releases/<version>.md` |
@@ -142,7 +144,18 @@ Each document is one file, so each carries an index of its headings near the top
 2. The Contents section is the first section after the title, below the document control table and the opening lines. It holds only a nested list: one link per heading below the title, in the order of the headings. A `##` heading is not indented. Every other heading is indented two spaces more than the nearest heading above it of a higher level, so a heading that skips a level is still one step below its parent.
 3. Each entry shows its heading's text and links the heading's anchor. The anchor follows GitHub's rules: the text GitHub shows for the heading in lower case, every character that is not a letter, a digit, `_`, `-` or a space removed, and each space a hyphen. A heading whose anchor is taken already gets `-1`, then `-2`. For example `## 2.1 Context and scope` is `#21-context-and-scope`.
 4. The index is never written by hand. After any heading is added, removed or renamed, and before the commit, the author regenerates it with `tools/chronitondb/doclint.py index --write <file>`. It refuses, and leaves the file unchanged, when the Contents section holds anything but the list. `tools/chronitondb/doclint.py index <file>` prints it, and `index --check <file>` reports what is wrong with it.
-5. The process document check refuses a document of a templated kind, a decision record only when it is new to the line, whose index is missing, not first, misses a heading, lists a heading out of order or at the wrong depth, or links an anchor that no heading of the file has. It also refuses a new decision record that does not take the next number after the highest one merged on the line. See [the tools README](../../tools/chronitondb/README.md#process-documents-doclintpy).
+5. The process document check refuses a document of a templated kind, a decision record only when it is new to the line, whose index is missing, not first, misses a heading, lists a heading out of order or at the wrong depth, or links an anchor that no heading of the file has. It also refuses a new decision record that is not named by its id in the place its key gives it, whose title does not open with that id, whose id another record has, or that does not take the next number of its key after the highest one merged on the line. See [the tools README](../../tools/chronitondb/README.md#process-documents-doclintpy).
+
+## Versions and revision history
+
+A document that can change after it is merged carries its version and says what each version changed.
+
+1. Every template in [templates/](templates/) with a `Version` row in its document control table has a revision history under that table: a table with one row for each version. The row gives the version, its RFC 3339 date, what changed, and the id of the decision record behind the change, or `None`. The first version's row says `First version`.
+2. A change to a merged document raises its `Version` by one and adds one row. A merged version keeps its row as it was merged.
+3. Under the table one line links the commits of the file on its line on GitHub: `Full history in git: [commits of this file](<address>)`. The address is never written by hand. `tools/chronitondb/doclint.py history --repo . --templates origin/<line> --write <file>` writes it from the file's path, the line and the repository the line is fetched from, so it stays right when the repository moves or is renamed.
+4. A document merged before its template had the table keeps the line `Change history: the git history of this file.` until its next version. That version adds the table with its own row, which `history --write` starts.
+5. A decision record has no version. It is never edited, and the record that supersedes it is its history. See [the decision records](../decisions/README.md#rules).
+6. The process document check refuses a document that is new to the line, or at another version than on the line, without its revision history. It refuses rows out of order or with a gap, a last row that is not the document's version, a row with no date, change or decision record, a changed row of a merged version, and a history link that is not the commits of the file on its line. `history --check <file>` reports the same.
 
 ## Claims about code
 

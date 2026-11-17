@@ -114,6 +114,9 @@ def spec(risk="Normal: a slow use case at worst, no floor applied",
               "Risk": risk, "Size": size, "Reach": reach, "Touches": touches}
     for field, value in values.items():
         lines.append("| %s | %s |" % (field, value))
+    lines += ["", "Revision history, one row for each version:", "", "| Version | Date | Change | Decision record |", "|---|---|---|---|",
+              "| 1 | 2026-11-17 | First version | None |", "",
+              "Full history in git: [commits of this file](https://github.com/example/product/commits/line/%s)" % SPEC]
     lines += ["", "## Contents", ""]
     for raw in template("feature-spec.md").split("\n"):
         match = re.match(r"^(#{2,3}) (.*)$", raw)

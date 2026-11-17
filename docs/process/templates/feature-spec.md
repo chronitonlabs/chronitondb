@@ -31,7 +31,13 @@ limitations under the License.
 | Reach | {One area or Cross-cutting}: {why, naming the packages touched} |
 | Touches | {public interface (its compatibility area, an on-disk file by its area: sstable components, or commitlog, hint log and cache files), stock behaviour, new input or privilege, new dependency, shared state (threads, pools or shared state), request path (a read, write or query path), new feature or switch, or none} |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 1 | {RFC 3339 date} | First version | {the id of the decision record behind this version, or None} |
+
+Full history in git: [commits of this file]({the address `tools/chronitondb/doclint.py history --write` puts here})
 
 Location: `docs/design/<KEY>-<slug>/feature-spec.md` on the line the feature targets, with the [feature key](../additive.md#feature-keys-and-requirement-ids) in the directory name. Process: [additive.md](../additive.md).
 
@@ -185,7 +191,7 @@ FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, risk o
 
 ## 10. Decisions
 
-{Required for every class. Links to the decision records in `docs/decisions/` that shape this feature, each with a one line reminder.}
+{Required for every class. Links to the decision records that shape this feature, each by its id with a one line reminder: the feature's own in `decisions/` beside this file, and any of the whole project in `docs/decisions/`.}
 
 ## 11. Milestones outline
 

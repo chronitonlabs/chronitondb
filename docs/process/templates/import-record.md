@@ -27,7 +27,13 @@ limitations under the License.
 | Approver | The maintainer who merges the import pull request |
 | References | Issue #{issue}. Apache release tag or commit hash, or the other project's commit link. Import pull request. |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 1 | {RFC 3339 date} | First version | {the id of the decision record behind this version, or None} |
+
+Full history in git: [commits of this file]({the address `tools/chronitondb/doclint.py history --write` puts here})
 
 Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project, added in the import pull request. Process: [upstream.md](../upstream.md).
 

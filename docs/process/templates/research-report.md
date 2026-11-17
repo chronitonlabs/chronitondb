@@ -60,9 +60,9 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 | Source | Project, branch and commit | What was read |
 |---|---|---|
-| Our line | `ChronitonDB chronitondb-5.0 at <hash>` | {symbols, files and lines} |
-| The Apache Cassandra release our line is based on | `Apache Cassandra cassandra-5.0 at <hash>` | {symbols, files and lines} |
-| Apache Cassandra upstream now | `Apache Cassandra cassandra-5.0 at <hash>` for the head of the same branch, the next major version's branch at its hash, `Apache Cassandra trunk at <hash>` | {symbols, files and lines} |
+| Our line | `ChronitonDB chronitondb-<line> at <hash>` | {symbols, files and lines} |
+| The Apache Cassandra release our line is based on | `Apache Cassandra cassandra-<x.y> at <hash>` | {symbols, files and lines} |
+| Apache Cassandra upstream now | `Apache Cassandra cassandra-<x.y> at <hash>` for the head of the same branch, the next major version's branch at its hash, `Apache Cassandra trunk at <hash>` | {symbols, files and lines} |
 
 ## 3. Prior art
 

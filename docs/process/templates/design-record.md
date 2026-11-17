@@ -95,13 +95,13 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../cl
 
 The five EARS shapes, one example each:
 
-REQ-1 (ubiquitous): The index MUST return the same rows for a query in the memtable, after flush and after compaction. Source: {...}.
+REQ-1 (ubiquitous): The compaction task MUST keep every live row of the sstables it reads. Source: {...}.
 
 REQ-2 (event driven): When the toggle is changed with nodetool, the node MUST log the old and the new value at INFO. Source: {...}.
 
 REQ-3 (state driven): While the feature switch is off, the node MUST refuse every statement that uses the feature's syntax. Source: {...}.
 
-REQ-4 (optional feature): Where the timeout option is set to partial, the coordinator MUST mark the result as partial. Source: {...}.
+REQ-4 (optional feature): Where the table option sets a rate, the node MUST keep streaming for that table at or below the rate. Source: {...}.
 
 REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marker, then the node MUST refuse to open it and log the file name. Source: {...}.
 
@@ -169,7 +169,7 @@ These rules apply to every source:
 
 ### Apache Cassandra guard
 
-{The stock runs that must not move, and the run with the switch off that must match stock.}
+{The stock runs that must not move, and for a change with a switch the run with the switch off that must match stock.}
 
 ### What was not measured
 
@@ -181,11 +181,11 @@ These rules apply to every source:
 
 ## 9. Compatibility
 
-{For a one-item change, the feature spec's Compatibility headings in small form: on-disk format changes with version markers, mixed-version behaviour, upgrade path and prerequisites, rollback path, runbook entries. Also: surfaces touched, the version bump per surface or the Apache test that passes unchanged, what the switch writes to shared state when off and when on, and the impact on the other line. Or "does not apply, because".}
+{For a one-item change, the feature spec's Compatibility headings in small form: on-disk format changes with version markers, mixed-version behaviour, upgrade path and prerequisites, rollback path, runbook entries. Also: surfaces touched, the version bump per surface or the Apache test that passes unchanged, what the change writes to shared state, for a change with a switch when off and when on, and the impact on the other line. Or "does not apply, because".}
 
 ## 10. Threat model and security
 
-{For a one-item change, every new entry point checked with STRIDE, each mitigation a REQ, or "no new entry point" with the reason. For any change: the input it parses, the bound on each input, the permissions it needs with a negative test per permission, the audit entries, the limits with warn and fail thresholds, and how errors map to client errors.}
+{For a one-item change, every new entry point checked with STRIDE, each mitigation a REQ, or "no new entry point" with the reason. For any change: the input it parses, the bound on each input, the permissions it needs with a negative test per permission, the audit entries, the limits and what happens as each is approached and reached, for example warn and fail thresholds, and how errors map to client errors.}
 
 ## 11. Dependencies
 
@@ -197,11 +197,11 @@ These rules apply to every source:
 
 ## 13. Documentation
 
-{The pages this change adds or edits. Every new yaml key, option, metric, virtual table, nodetool command and error string by exact name. Failure behaviour on timeout, coordinator failure, missing replica, limit hit and index not built. Known limitations.}
+{The pages this change adds or edits. Every new yaml key, option, metric, virtual table, nodetool command and error string by exact name. Failure behaviour for each way the change can fail, for example a timeout, a failed coordinator, a missing replica, a limit hit, a full disk or a node restart in the middle of the operation. Known limitations.}
 
 ## 14. Testing
 
-{The test levels required. RF 1 and RF 3 for anything multi node. Both sstable formats and both unit test configurations for anything touching compaction or formats. What the parity suite will check. See [testing.md](../testing.md).}
+{The test levels required. RF 1 and RF 3 for anything multi node. Both sstable formats and both unit test configurations for anything that reads a setting the test configurations set differently, for example anything touching compaction, an on-disk format or the memtable. What the parity suite will check. See [testing.md](../testing.md).}
 
 {For an item of a fork feature: the scenarios this pull request adds under `test/bdd/`, tagged `@wip` and with their requirement tags. See [testing.md](../testing.md#scenarios).}
 
@@ -227,11 +227,11 @@ Scenario tags: {the tag expression for this item's scenarios}
 
 ### Tracing test
 
-{The test that shows the change in query tracing, or "does not apply, because" with the reason.}
+{The test that shows the change in query tracing, for a change on a traced request. A change with other signals names their tests here too, for example the test of a new metric or log line of a compaction change. Or "does not apply, because" with the reason.}
 
 ### Formats and configurations
 
-{`yes` when the change touches compaction or an on-disk format, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
+{`yes` when the change reads a setting the test configurations set differently, for example when it touches compaction, an on-disk format or the memtable, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
 
 ## 15. Not covered and follow-ups
 

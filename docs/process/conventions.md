@@ -31,10 +31,10 @@ ChronitonDB uses Conventional Commits. This is a project rule on top of the orga
 ### Subject
 
 1. The subject has the form `type(scope): description`.
-2. The description is imperative and in plain words, for example `feat(fulltext): add the phrase operator`.
+2. The description is imperative and in plain words, for example `feat(fulltext): add the phrase operator` or `fix(compaction): count a skipped sstable once`.
 3. The subject is at most 72 characters. A trailing ` (chronitondb-<line>)` that names the line is not counted, nor GitHub's ` (#<number>)` on the commit on the line. An import subject carries the original subject unchanged, so it has no length limit, and it keeps its exact import form.
 4. The subject never lists files. A subject such as `Update <path>`, as GitHub writes for a suggestion, is refused. Apply suggestions locally with a real subject.
-5. The scope names the area of the change, for example `fulltext`, `analyzer`, `build` or `github`.
+5. The scope names the area of the change, for example `fulltext`, `compaction`, `build` or `github`.
 
 ### Types
 
@@ -186,7 +186,7 @@ The links between the documents are also written as one graph, for tools that re
 A claim about what code does names the code it was read in. This applies to the process pages and to every document written from a template.
 
 1. A claim about Apache Cassandra code says "Apache Cassandra", never "stock".
-2. Each claim names the project, the branch and the commit, in one of these forms: `Apache Cassandra cassandra-5.0 at <hash>`, `Apache Cassandra trunk at <hash>` or `ChronitonDB chronitondb-5.0 at <hash>`. Next to it stand the symbol and the file and line, for example `CompactionManager.submitBackground`, `src/java/org/apache/cassandra/db/compaction/CompactionManager.java:<line>`.
+2. Each claim names the project, the branch and the commit, in the form `<project> <branch> at <hash>`. For example `Apache Cassandra cassandra-5.0 at <hash>`, `Apache Cassandra trunk at <hash>` or `ChronitonDB chronitondb-6.0 at <hash>`. Next to it stand the symbol and the file and line, for example `CompactionManager.submitBackground`, `src/java/org/apache/cassandra/db/compaction/CompactionManager.java:<line>`.
 3. Analysis keeps three sources apart and says which one each claim holds for: our line, the Apache Cassandra release our line is based on, and Apache Cassandra upstream now, meaning the head of the same branch, the next major version's branch and trunk.
 4. "Stock behaviour" still names the rule that Apache Cassandra behaviour does not change for anyone not using a fork feature. See [quality-requirements.md](quality-requirements.md#stock-behaviour-unchanged).
 

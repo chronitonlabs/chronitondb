@@ -94,7 +94,7 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../cl
 
 {The test the designer wrote on the item's code branch: its class and method, and its failing result on each affected line before the fix. The developer fixes against it on the same branch, and the code pull request shows it passing.}
 
-{A fix to a fork feature MAY use scenarios as its reproducing test: new scenarios, or the feature's existing scenarios updated with only the two tags and new Examples rows. Each carries the tag of at least one requirement listed in section 5 and the tag `@fix-<issue>`, with the issue number of this record, for example `@fix-142`, and no `@wip`. Name each feature file and scenario. Each MUST fail before the fix and pass after it. A fix to stock Apache Cassandra code uses a plain JUnit test. See [testing.md](../testing.md#scenarios).}
+{A fix to a fork feature MAY use scenarios as its reproducing test: new scenarios, or the feature's existing scenarios updated with only the two tags and new Examples rows. Each carries the tag of at least one requirement listed in section 5 and the tag `@fix-<issue>`, with the issue number of this record, for example `@fix-142`, and no `@wip`. Name each feature file and scenario. Each MUST fail before the fix and pass after it. A fix to stock Apache Cassandra code uses a test in one of Apache Cassandra's own test harnesses, for example a JUnit unit test or an in-JVM distributed test, never a scenario. See [testing.md](../testing.md#scenarios).}
 
 ## 7. Compatibility impact
 
@@ -132,11 +132,11 @@ Scenario tags: {the requirement tags section 5 lists and this record's fix tag, 
 
 ### Tracing test
 
-{The test that shows the fix in query tracing, or "does not apply, because" with the reason.}
+{The test that shows the fix in query tracing, for a fix on a traced request. A fix with other signals names their tests here too, for example the test of a changed metric or log line of a compaction fix. Or "does not apply, because" with the reason.}
 
 ### Formats and configurations
 
-{`yes` when the fix touches compaction or an on-disk format, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
+{`yes` when the fix reads a setting the test configurations set differently, for example when it touches compaction, an on-disk format or the memtable, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
 
 ## Where problems could occur
 

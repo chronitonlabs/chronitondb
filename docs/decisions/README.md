@@ -23,7 +23,7 @@ ChronitonDB keeps its decisions as decision records, in MADR format (Markdown Ar
 
 A decision record is written for every answered question that changes or settles behaviour, scope or process. For example:
 
-1. A user visible behaviour: which rows a query returns, an error, a refusal, a default.
+1. A behaviour a user or operator sees: which rows a query returns, an error, a refusal, a default, the output of a nodetool command, the name of a metric.
 2. A change to an approved feature spec, plan or delivery plan.
 3. A point of scope: what a feature includes or leaves out.
 4. A rule of the development process.

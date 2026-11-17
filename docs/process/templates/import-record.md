@@ -89,11 +89,11 @@ Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-
 
 ### Tracing test
 
-{The test that shows the imported change in query tracing, or "does not apply, because" with the reason.}
+{The test that shows the imported change in query tracing, for a change on a traced request. A change with other signals names their tests here too, for example the test of a changed metric or log line of a compaction change. Or "does not apply, because" with the reason.}
 
 ### Formats and configurations
 
-{`yes` when the import touches compaction or an on-disk format, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
+{`yes` when the import reads a setting the test configurations set differently, for example when it touches compaction, an on-disk format or the memtable, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
 
 ## 6. Apache Cassandra behaviour confirmed
 

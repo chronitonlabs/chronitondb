@@ -48,7 +48,7 @@ Any automatic fallback, such as falling back to a scan, is off by default. It ha
 
 ### Stock behaviour unchanged
 
-Stock Apache Cassandra behaviour is unchanged for anyone not using a ChronitonDB feature, except the one exception in [release.md](release.md#what-a-release-may-contain), `nodetool version`. A behaviour-changing feature is always off by default, but for that exception, and changes stock behaviour only for operators who switch it on. With a feature off, the node behaves exactly as stock: the feature's syntax is refused with an error that names the switch, no new files are written, no new threads start and no new memory is used. Code defaults in stock classes stay as Apache has them. The parity suite proves it.
+Stock Apache Cassandra behaviour is unchanged for anyone not using a ChronitonDB feature, except the one exception in [release.md](release.md#what-a-release-may-contain), `nodetool version`. A behaviour-changing feature is always off by default, but for that exception, and changes stock behaviour only for operators who switch it on. With a feature off, the node behaves exactly as stock: every way to use the feature is refused with an error that names the switch, no new files are written, no new threads start and no new memory is used. For example a statement in the feature's syntax is refused, and so is a nodetool command of the feature. Code defaults in stock classes stay as Apache has them. The parity suite proves it.
 
 ### CQL does not depend on topology
 
@@ -65,6 +65,10 @@ Behaviour that depends on the data is set per index (or per table) as an option.
 ### nodetool changes the running value only
 
 A nodetool toggle changes the in-memory value on the node where it runs. The yaml file holds the value at startup. There is no separate persistence of nodetool changes. A restart returns to the yaml value.
+
+### A refusal names its control
+
+A refusal names what the user or operator can change to lift it, where there is such a thing. For example a statement refused because a feature is off names the feature switch. A statement refused because a limit is reached names the setting that holds the limit.
 
 ### Coordination between nodes is model checked
 
@@ -87,7 +91,7 @@ Copy this table into the feature spec or design record. Fill the last column for
 | Functional suitability | CQL validity and results independent of replication factor, data centres and replica count | |
 | Flexibility | Settings per index or per table over global ones, with global, include and exclude modes | |
 | Interaction capability | nodetool toggles change the in-memory value only, yaml holds the startup value | |
-| Interaction capability | Error messages name the setting or toggle that controls the behaviour | |
+| Interaction capability | A refusal names what the user or operator can change to lift it | |
 | Maintainability | Observability: metrics, traces and diagnostics as a gate item | |
 | Security | Threat model answered (see the Threat model section) | |
 | Safety | Any risk of data loss or corruption named, with its mitigation | |

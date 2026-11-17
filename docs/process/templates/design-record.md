@@ -111,11 +111,11 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 
 ## 3. Apache Cassandra behaviour preservation
 
-{One row per departure from stock, in this table. Write "No departures from stock." in place of the table when there are none. Code defaults in stock classes unchanged. In the switch column, link each departure to its switch's row in the feature spec's section 2.8. A fork feature that fits one item has no feature spec: state its class and the class of each switch above the table, in the form of [section 2.8 of the feature spec](feature-spec.md#28-feature-class-and-switches), and link to that. Tooling reads this table, so keep its columns. Cite each behaviour in the first column as [conventions.md](../conventions.md#claims-about-code) says: `Apache Cassandra <branch> at <hash>`, the symbol, and the file and line.}
+{One row per departure from stock, in this table. Write "No departures from stock." in place of the table when there are none. Code defaults in stock classes unchanged. In the switch column, link each departure to its switch's row in the feature spec's section 2.8. A departure with no switch, such as a fix to a defect in stock, says so in that column with the reason. The last column says how a user or operator sees the departure in effect, for example the text of an error or a warning, a log line, a setting or a metric. A fork feature that fits one item has no feature spec: state its class and the class of each switch above the table, in the form of [section 2.8 of the feature spec](feature-spec.md#28-feature-class-and-switches), and link to that. Tooling reads this table, so keep its columns. Cite each behaviour in the first column as [conventions.md](../conventions.md#claims-about-code) says: `Apache Cassandra <branch> at <hash>`, the symbol, and the file and line.}
 
-| Apache Cassandra behaviour today (file and line) | This change | Switch that controls it | Error text naming the switch |
+| Apache Cassandra behaviour today (file and line) | This change | Switch that controls it | How a user or operator sees it in effect |
 |---|---|---|---|
-| {Apache Cassandra behaviour, cited} | {change} | {switch} | {error text} |
+| {Apache Cassandra behaviour, cited} | {change} | {switch, or the reason there is none} | {an error, a warning, a log line, a setting or a metric, by its exact text or name} |
 
 ### Apache Cassandra hook points
 

@@ -113,8 +113,14 @@ A feature spec is also checked for:
   1. its directory is docs/design/<KEY>-<slug>/
   2. its Feature class and switches section states the feature class
   3. its Feature requirements are FREQ-<KEY>-nnn lines, each with one EARS
-     shape, one BCP 14 keyword, a source and no unmeasured word without a
-     number
+     shape, one BCP 14 keyword and a source. A word of size or amount
+     (large, small, many, few, reasonable, soon, high, low, scalable)
+     needs a number on the line. A word of speed (fast, faster, quick,
+     quickly, slow, efficient, efficiently) needs a number, or the
+     mechanism that makes it so, named after the word in three words or
+     more that follow "by", "because", "since" or "through" (the design
+     record template, Requirement quality checklist, item 2). Whether the
+     words name a mechanism is the reviewer's to judge
   4. its Quality requirements table has a row for every line of the
      quality checklist, each answered
   5. its Threat model has a STRIDE row or the statement "This feature adds
@@ -317,7 +323,12 @@ MARKER = "[NEEDS CLARIFICATION"
 KEY_DIR = re.compile(r"^docs/design/([A-Z]{3,5})-[a-z0-9]+(?:-[a-z0-9]+)*/")
 FREQ_LINE = re.compile(r"^\s*(?:(?:[-*+]|[0-9]+[.)])\s+)?[*_`]*(FREQ-([A-Z]{3,5})-[0-9]{3})(?![0-9])[*_`]*\s*(\([^)]*\))?\s*:?\s*(.*)$")
 KEYWORDS = re.compile(r"\b(MUST NOT|MUST|SHALL NOT|SHALL|SHOULD NOT|SHOULD|NOT RECOMMENDED|RECOMMENDED|MAY|REQUIRED|OPTIONAL)\b")
-UNMEASURED = re.compile(r"\b(fast|faster|quick|quickly|slow|large|small|many|few|efficient|efficiently|reasonable|soon|high|low|scalable)\b", re.I)
+# A word of size or amount needs a number. A word of speed needs a number
+# or the mechanism that makes it so, which the line names after the word
+# (the design record template, Requirement quality checklist, item 2).
+UNMEASURED = re.compile(r"\b(large|small|many|few|reasonable|soon|high|low|scalable)\b", re.I)
+SPEED = re.compile(r"\b(fast|faster|quick|quickly|slow|efficient|efficiently)\b", re.I)
+MECHANISM = re.compile(r"\b(?:by|because|since|through)\s+\S+(?:\s+\S+){2,}", re.I)
 EARS = ("The ", "When ", "While ", "Where ", "If ")
 DATE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 JIRA = re.compile(r"https://issues\.apache\.org/jira/browse/CASSANDRA-[0-9]+")
@@ -333,8 +344,9 @@ SIZES = ("Low Hanging Fruit", "Normal", "Challenging", "Byzantine")
 REACHES = ("One area", "Cross-cutting")
 CLASS_ROWS = (("Risk", RISKS), ("Size", SIZES), ("Reach", REACHES))
 # Shared state, request path and new feature or switch name what a Normal risk
-# code review adds a checklist for: threads, pools or shared state, any path whose
-# cost grows with data or traffic, and a new feature or switch. The last five
+# code review adds a checklist for: threads, pools, caches or other state
+# several requests share, any path whose cost grows with data or traffic, and
+# a new feature or switch. The last five
 # name what the code of a change does on the Critical floor, in Apache
 # Cassandra's files or in ChronitonDB's own (classification.md, The Critical
 # floor).
@@ -598,8 +610,9 @@ def text_lines(doc, span):
 
 
 def check_requirement(doc, index, rid, text, unit):
-    """One EARS shape, one BCP 14 keyword, a source, no unmeasured word
-    without a number."""
+    """One EARS shape, one BCP 14 keyword, a source, no word of size or
+    amount without a number, and no word of speed without a number or the
+    mechanism that makes it so."""
     # A code span is a word of the sentence: removed, a source that starts
     # with one reads as no source. It becomes "code", which no keyword,
     # shape or vague word check reads.
@@ -614,8 +627,12 @@ def check_requirement(doc, index, rid, text, unit):
         doc.error(index, "%s has %d BCP 14 keywords, %s has exactly one (split it)" % (rid, count, unit))
     if unit != "an acceptance criterion" and not re.search(r"Source: [^<{\s]", body):
         doc.error(index, "%s has no source" % rid)
-    if UNMEASURED.search(before_source) and not re.search(r"[0-9]", before_source):
-        doc.error(index, "%s uses an unmeasured word without a number" % rid)
+    if not re.search(r"[0-9]", before_source):
+        if UNMEASURED.search(before_source):
+            doc.error(index, "%s uses an unmeasured word without a number" % rid)
+        speed = SPEED.search(before_source)
+        if speed and not MECHANISM.search(before_source, speed.end()):
+            doc.error(index, "%s says '%s' without a number or the mechanism that makes it so, named after by, because, since or through" % (rid, speed.group(1)))
 
 
 def check_common(doc, kind, template_text, path, late=()):

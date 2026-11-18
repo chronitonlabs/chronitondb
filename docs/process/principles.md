@@ -186,7 +186,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **With a feature off, nothing of it shows.** With a feature off, the feature MUST change nothing that stock Apache Cassandra does. Three things hold, as they apply, and the tests of the feature's off state prove them. Stock behaviour is unchanged, always. Each way a user or an operator can invoke the feature is refused with an error that names the switch. A feature with no such way in does nothing while off: its background work does not run, and no file, metric or other state of the feature appears.
 
-1. **Applies to.** Every feature that has a switch. For example a new statement is refused with an error that names the switch, and a scheduled background task with its switch off starts no thread, registers no metric and writes no file. While off, a feature writes no new files, starts no new threads and holds no memory beyond its loaded classes and its settings.
+1. **Applies to.** Every feature that has a switch. For example a new statement is refused with an error that names the switch, and a scheduled background task with its switch off starts no thread, registers no metric and writes no file. While off, a feature writes no new files. A feature that is switched off starts no threads, does no work and sets aside no memory for itself.
 2. **Edge.** None.
 3. **See.** [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults), [testing.md](testing.md#scenarios).
 

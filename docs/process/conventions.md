@@ -238,7 +238,7 @@ A production limit MAY be exceeded only with a waiver recorded in the item's des
 ### Comments in ChronitonDB code
 
 1. Comments say why, in their own words.
-2. Every public type and method has Javadoc that says what it does.
+2. Every public type has Javadoc that says what it does, and so has every public method whose behaviour is not obvious from its name. A method that overrides an interface or superclass method inherits that Javadoc, and a plain accessor needs none.
 3. Comments carry no issue numbers (`#<n>`) and no Apache ticket ids (`CASSANDRA-<n>`). Those belong in commit messages and pull requests.
 4. Comments describe the code as it is, without history words such as "previously" or "no longer".
 5. No `TODO` comments. Open work goes in an issue.

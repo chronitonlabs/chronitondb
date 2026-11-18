@@ -128,7 +128,7 @@ The release version does not say which Apache content a release carries, so its 
 
 The release engineer takes the first three from the line's git history: the Apache release tags it contains, Apache's branch, and its import commits. See [upstream.md](upstream.md) and [conventions.md](conventions.md#change-logs-and-release-notes).
 
-The release notes and the release proposal also state which Apache Cassandra release, or releases, a cluster on the release can move back to, or that there is none yet. See [Moving back to Apache Cassandra](#moving-back-to-apache-cassandra).
+The release notes and the release proposal also state which Apache Cassandra release, or releases, a cluster on the release can move back to, or that there is none yet. See [Moving back to Apache Cassandra](#moving-back-to-apache-cassandra). On a line before Apache Cassandra's first release of its major version, the release notes say that the line has no entry point from Apache Cassandra yet, and no path from the previous line.
 
 ### The version a running node reports
 
@@ -171,7 +171,7 @@ This section says what the package and the node MUST do once built. None of it i
 2. A fresh install gets it as its `cassandra.yaml`, in `/etc/chronitondb`.
 3. Apache's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched, as the upstream reference.
 4. A node switched from Apache Cassandra keeps the operator's own file.
-5. Each line's upgrade runbook states the minimum setup an existing Apache Cassandra cluster MUST reach before it switches. The list is published with the line's first release. The minimum setup is the entry condition of [PRINCIPLE-003](principles.md#principle-003): the latest Apache Cassandra release of the line's major version, with all of that version's own options on, which are the values of Apache's `conf/cassandra_latest.yaml`. A cluster on an older version, or in a compatibility mode for one, reaches that setup on Apache Cassandra first. No older version and no compatibility mode for one is supported.
+5. Each line's upgrade runbook states the minimum setup an existing Apache Cassandra cluster MUST reach before it switches. The list is published with the line's first release. The minimum setup is the entry condition of [PRINCIPLE-003](principles.md#principle-003): the latest Apache Cassandra release of the line's major version, with all of that version's own options on, which are the values of Apache's `conf/cassandra_latest.yaml`. A cluster on an older version, or in a compatibility mode for one, reaches that setup on Apache Cassandra first. No older version and no compatibility mode for one is supported. Until Apache releases 6.0, the 6.0 line has no entry point from Apache Cassandra. The project owns no upgrade path from one major version to the next ahead of Apache Cassandra.
 6. A node MUST check the minimum setup at every start. It refuses to start when the setup is not met, and names each unmet setting and the runbook step that sets it.
 7. The package also ships its own logging configuration beside Apache's. It names the project's own package at DEBUG, which Apache's file does not. The pull request that adds the file names its path in [Where things live](conventions.md#where-things-live), so that the delta check reads it as a file of the project. The runbook has a step for a node that keeps the operator's file.
 

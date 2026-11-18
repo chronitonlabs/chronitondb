@@ -83,7 +83,7 @@ Scenarios are written in Gherkin and run with Cucumber, in the fork's own test m
 1. Pull request checks block only on counted values, such as allocations per operation, work counters, bytes written per compaction and index bytes per raw byte, and on benchmarks that fail to run. They never block on timing. The rule is [PRINCIPLE-053](principles.md#principle-053).
 2. Once dedicated benchmark hardware is in place, timing results are tracked over time, and a change point in the timings blocks the next release.
 3. Absolute timing numbers come only from pinned or dedicated hardware.
-4. Each design record names its benchmarks, their thresholds and the stock runs the change is compared against, or gives the reason the checklist line does not apply, as [quality-requirements.md](quality-requirements.md) allows. A measured slowdown of operations that do not use the feature is reported to the maintainers, who decide: [PRINCIPLE-052](principles.md#principle-052). See [templates/design-record.md](templates/design-record.md).
+4. Each design record names its benchmarks and the runs it is compared against: the code before the change and the stock build, with the feature off and on, as [PRINCIPLE-050](principles.md#principle-050) says, or gives the reason the checklist line does not apply, as [quality-requirements.md](quality-requirements.md) allows. No numeric target is asked for up front: the design argues its speed by its mechanism, and the benchmarks prove it by comparison. A measured slowdown of operations that do not use the feature is reported to the maintainers with its numbers, and they decide: [PRINCIPLE-052](principles.md#principle-052). See [templates/design-record.md](templates/design-record.md).
 
 ## When each test runs
 
@@ -129,6 +129,6 @@ A milestone is done when, in addition:
 
 1. Every feature requirement the milestone delivers has a passing validation test.
 2. The upgrade and rollback tests its exit criteria name pass.
-3. The benchmarks meet their thresholds. A measured slowdown of operations that do not use the feature is in the milestone report, and the maintainers decide it: [PRINCIPLE-052](principles.md#principle-052).
+3. The benchmarks the delivery plan names have run, and their results are in the milestone report, against the code before the change and against stock. A measured slowdown of operations that do not use the feature is in the milestone report with its numbers, and the maintainers decide it: [PRINCIPLE-052](principles.md#principle-052).
 4. No blocker or major finding is open.
 5. The milestone report records the results against the exit criteria in the delivery plan.

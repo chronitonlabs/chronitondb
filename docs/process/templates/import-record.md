@@ -97,7 +97,7 @@ Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-
 
 ## 6. Apache Cassandra behaviour confirmed
 
-{The parity suite result with every fork feature off.}
+{The parity suite result with every fork feature off, or until the parity suite exists the result of the stock suites with every fork feature off. See [upstream.md](../upstream.md#the-import-record).}
 
 ## 7. Security
 

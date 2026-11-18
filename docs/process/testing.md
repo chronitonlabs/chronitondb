@@ -82,7 +82,7 @@ Scenarios are written in Gherkin, in the fork's own test module `test/bdd/`, and
 
 ## Benchmarks
 
-1. Pull request checks block only on counted values, such as allocations per operation, work counters, bytes written per compaction and index bytes per raw byte, and on benchmarks that fail to run. They never block on timing. The rule is [PRINCIPLE-053](principles.md#principle-053).
+1. Pull request checks block only on counted values, such as allocations per operation, work counters, bytes written per compaction and bytes written per byte of input, and on benchmarks that fail to run. They never block on timing. The rule is [PRINCIPLE-053](principles.md#principle-053).
 2. Once dedicated benchmark hardware is in place, timing results are tracked over time, and a change point in the timings blocks the next release.
 3. Absolute timing numbers come only from pinned or dedicated hardware.
 4. Each design record names its benchmarks and the runs it is compared against: the code before the change and the stock build, with the feature off and on, as [PRINCIPLE-050](principles.md#principle-050) says, or gives the reason the checklist line does not apply, as [quality-requirements.md](quality-requirements.md) allows. No numeric target is asked for up front: the design argues its speed by its mechanism, and the benchmarks prove it by comparison. A measured slowdown of operations that do not use the feature is reported to the maintainers with its numbers, and they decide: [PRINCIPLE-052](principles.md#principle-052). See [templates/design-record.md](templates/design-record.md).

@@ -329,7 +329,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **Nothing is logged once per request or per element.** An event that happens per request or per element, such as a row, a partition, a file or a message, is not logged one by one. Its detail goes to metrics and tracing. Logs carry operator actions and periodic summaries with counts, limited in rate.
 
 1. **Applies to.** Every path of fork code that runs per request or per element. For example the refusals of a query limit, the rows a compaction task rejected and the files a stream skipped are each counted, with at most one summary line in a period for each schema object and reason.
-2. **Edge.** None.
+2. **Edge.** An unexpected server error MAY be logged at ERROR for each failing request. Such an error is a defect, not an expected failure such as a bad statement, a timeout, an unavailable or a refused permission. Each use is assessed in the design, which says why the error is unexpected, what bounds how often it can fire and what the log holds if it fires on every request, and the reviewer checks that assessment. The line carries no user data, see [PRINCIPLE-035](#principle-035).
 3. **See.** [quality-requirements.md](quality-requirements.md#observability).
 
 ### PRINCIPLE-037

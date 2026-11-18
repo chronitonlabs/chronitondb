@@ -182,7 +182,7 @@ These rules apply to every source:
 
 ## 8. Observability
 
-{Counted, timed, logged, traced, exposed, toggled, audited, released on drop, documented, tested. Every outcome has a counter. Every limit has limit, used and tripped. Every runtime change logs old and new at INFO. No log line the change adds carries user data or a secret, at any log level. See [quality-requirements.md](../quality-requirements.md#observability).}
+{Counted, timed, logged, traced, exposed, toggled, audited, released on drop, documented, tested. Every outcome has a counter. Every limit has limit, used and tripped. Every runtime change logs old and new at INFO. No log line the change adds carries user data or a secret, at any log level. Nothing is logged once per request. An ERROR line for each failing request is for an unexpected server error only, and is assessed here: why the error is unexpected, what bounds how often it can fire, and what the log holds if it fires on every request. See [quality-requirements.md](../quality-requirements.md#observability).}
 
 ## 9. Compatibility
 

@@ -229,7 +229,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **Only an operator control may differ from node to node.** A value may differ from node to node only for an operator control: a kill switch, a limit, a fallback switch or another lever set by configuration or by a runtime command. The design says what a client sees while nodes differ. For a control that refuses work that is a refusal with an error that names the control, never a wrong or partial result. Anything that defines what a statement means or which rows it returns is never per node: it lives in the schema.
 
-1. **Applies to.** Every setting a feature adds. For example a limit an operator lowers on one loaded node refuses work there, and the way an index analyses text is an option of the index, the same on every node.
+1. **Applies to.** Every setting a feature adds. For example a limit an operator lowers on one loaded node refuses work there, and a time to live that decides which rows a read returns is an option of the table, the same on every node.
 2. **Edge.** None.
 3. **See.** [quality-requirements.md](quality-requirements.md#a-runtime-command-changes-the-running-value-only).
 
@@ -285,7 +285,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-031
 
-**A response that is partial or cut short says so itself.** When a response must tell the client something about itself, such as that it is partial or that a limit cut it short, it says so in the response, in the idiom of its surface. For example a CQL result carries a boolean result column in the style of the `[applied]` column of a lightweight transaction, present on every result of that statement shape while the option that can produce the condition is set. A client warning MAY go with it. A custom payload that only some drivers read is not used.
+**A response that is partial or cut short says so itself.** When a response must tell the client something about itself, such as that it is partial or that a limit cut it short, it says so in the response, in the idiom of its surface. For example a CQL result carries a boolean result column in the style of the `[applied]` column of a lightweight transaction, present on every result of that statement shape while the option that can produce the condition is set. A client warning MAY go with it. The marking reaches every client the same way and never depends on what a driver chooses to read.
 
 1. **Applies to.** Every response of a fork feature that can be partial, cut short or otherwise marked. A response on another surface, such as the output of a tool, marks the condition in that surface's own idiom.
 2. **Edge.** None.
@@ -303,7 +303,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-033
 
-**Observability is a gate item, not an afterthought.** Every outcome has a counter. Every limit reports its limit, the amount used and the number of times it tripped. Each plan decision and each fallback has a trace line. A feature's observability is part of its design and is checked with it.
+**Observability is a gate item, not an afterthought.** Every outcome has a counter. Every limit reports its limit, the amount used and the number of times it tripped. Each decision a feature makes on a request path that changes the work done, and each fallback, has a trace line. A feature's observability is part of its design and is checked with it.
 
 1. **Applies to.** Every fork feature, in proportion to the runtime behaviour it adds. For example a background job shows what it started, completed and failed, and a limiter shows its limit, its use and its trips.
 2. **Edge.** A change that adds no runtime behaviour says so in one line, and a change with no traced request path gives the reason in its tracing test list. The maintainers accept the line by merging the record.
@@ -319,7 +319,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-035
 
-**No log line the project writes carries user data or a secret.** Code the project writes never puts user data or a secret in a log line, at any log level. User data means partition keys, clustering and column values, bind values, query literals, query text that carries them, and search terms. A log line names what it is about by schema object and by a value that identifies no user. Diagnosis that needs the data itself goes through a path with its own access control, as the design chooses.
+**No log line the project writes carries user data or a secret.** Code the project writes never puts user data or a secret in a log line, at any log level. User data means partition keys, clustering and column values, bind values, query literals, query text that carries them, and any other value or term a user supplied in a statement. A log line names what it is about by schema object and by a value that identifies no user. Diagnosis that needs the data itself goes through a path with its own access control, as the design chooses.
 
 1. **Applies to.** Every log line fork code writes. For example a line names the keyspace and table, a token, a count, a size or a duration. Tracing or a virtual table is a path with its own access control.
 2. **Edge.** None. Log lines that Apache Cassandra writes follow [PRINCIPLE-008](#principle-008).
@@ -377,7 +377,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-045
 
-**Nothing lets a role learn about data it cannot read.** Nothing the project adds lets a role learn about data it could not `SELECT`: not through results, counts, derived values such as a score, error text, or timing that an attacker can measure in practice.
+**Nothing lets a role learn about data it cannot read.** Nothing the project adds lets a role learn about data it could not `SELECT`: not through results, counts, derived values such as a rank or an estimate, error text, or timing that an attacker can measure in practice.
 
 1. **Applies to.** Every result, error and signal a feature gives a client.
 2. **Edge.** None.
@@ -395,7 +395,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **Every copy of user data has a lifetime.** A new copy of user data, or of anything derived from it, is listed in the design with its lifetime and what deletes it. No copy the project makes outlives its source, and the smaller copy is the default. Every new kind of file that stores values has a test that writes a value, deletes it, runs the purge the design names and searches the files for the value and its derived forms.
 
-1. **Applies to.** Every file, cache and structure a feature adds that holds user data. For example data kept per sstable is registered with the sstable, so that snapshots, streaming, cleanup and compaction see it. Derived data, such as stemmed, hashed or lower cased values, is treated as its source is.
+1. **Applies to.** Every file, cache and structure a feature adds that holds user data. For example data kept per sstable is registered with the sstable, so that snapshots, streaming, cleanup and compaction see it. Derived data, such as hashed, truncated or normalised values, is treated as its source is.
 2. **Edge.** None.
 3. **See.** [templates/design-record.md](templates/design-record.md#12-compliance-impact).
 
@@ -665,7 +665,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-079
 
-**Names are additions, and say what they mean.** A name of Apache Cassandra follows the rule for what it names. A name an application sees, such as a keyword, a column of a result or an error code, changes only behind a feature switch that is off by default: [PRINCIPLE-001](#principle-001). A name an operator sees, such as a metric, an MBean, a virtual table, a setting or a command, stays as stock where that is reasonable, and a difference is recorded: [PRINCIPLE-002](#principle-002). The project's signals and settings live under its own names, and stock metric types gain no new metrics. Those names never contain "cassandra" or "axon", and no key or value contains "stock". A setting that means what a comparable system's setting means SHOULD carry its name, and an option that defers to the node's global setting takes the value `inherit`.
+**Names are additions, and say what they mean.** A name of Apache Cassandra follows the rule for what it names. A name an application sees, such as a keyword, a column of a result or an error code, changes only behind a feature switch that is off by default: [PRINCIPLE-001](#principle-001). A name an operator sees, such as a metric, an MBean, a virtual table, a setting or a command, stays as stock where that is reasonable, and a difference is recorded: [PRINCIPLE-002](#principle-002). The project's signals and settings live under its own names, and stock metric types gain no new metrics. Those names never contain "cassandra" or "axon", and no key or value contains "stock". A setting that means what an existing setting means in the idiom the design follows SHOULD carry that setting's name, and an option that defers to the node's global setting takes the value `inherit`.
 
 1. **Applies to.** Every new user facing name: yaml keys, nodetool commands, MBeans, metric types, packages and options.
 2. **Edge.** A name the maintainers fixed in a decision record. A file that stands beside one of Apache Cassandra's files MAY carry that file's name, as the configuration file of [PRINCIPLE-026](#principle-026) does. A fix to a defect in stock that needs a new metric on a stock metric type is applied with its fix record, and the metric is recorded as a difference in what operators see, see [PRINCIPLE-004](#principle-004) and [PRINCIPLE-002](#principle-002).

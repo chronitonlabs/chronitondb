@@ -38,7 +38,7 @@ Observability is a gate item, not an afterthought.
 1. Every outcome has a counter: [PRINCIPLE-033](principles.md#principle-033).
 2. Every limit reports its limit, the amount used and the number of times it tripped: [PRINCIPLE-033](principles.md#principle-033).
 3. Every runtime change of a setting logs the old and the new value at INFO: [PRINCIPLE-034](principles.md#principle-034).
-4. Each plan decision and each fallback has a trace line: [PRINCIPLE-033](principles.md#principle-033).
+4. Each decision a feature makes on a request path that changes the work done, and each fallback, has a trace line: [PRINCIPLE-033](principles.md#principle-033).
 5. Code ChronitonDB writes never puts user data or a secret in a log line, at any log level: [PRINCIPLE-035](principles.md#principle-035). A log line that Apache Cassandra writes changes only as [PRINCIPLE-008](principles.md#principle-008) says.
 6. Every metric, MBean and virtual table row a feature creates is released when its object is dropped: [PRINCIPLE-037](principles.md#principle-037).
 

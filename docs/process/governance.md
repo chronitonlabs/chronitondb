@@ -55,3 +55,5 @@ Rights are removed for a breach of the [code of conduct](contributing.md#code-of
 ## Changes to this page
 
 Changes to the governance and the process are decided by the maintainers and follow the documentation only path in [maintenance.md](maintenance.md#documentation-only-changes). `.github/CODEOWNERS` assigns `docs/process/` and `docs/governance/` to the maintainers team, so a change there requests a maintainer's review. Only maintainers merge it.
+
+A change to a rule on a process page is read before it merges by one reviewer who did not write it, against four questions. Is it a principle, or is it written round one case? Does it name a mechanism where it should name what must be true? Does it contradict another rule? Where it says never or always, is that true? The reviewer's answers stand on the pull request.

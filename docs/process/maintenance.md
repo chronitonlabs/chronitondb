@@ -58,7 +58,7 @@ An additive feature small enough for one item takes this same path. It has a fea
 
 ### Documentation only changes
 
-A change to documentation only is perfective. It needs no design record at any risk level. The review and the maintainer's merge still apply: the reviewer checks the pull request against the documentation rules in [conventions.md](conventions.md), and a maintainer merges it. A change to a process page or template is still at least Normal risk, so it takes the checks of Normal risk. See [classification.md](classification.md#the-floor).
+A change to documentation only is perfective. It needs no design record at any risk level. The review and the maintainer's merge still apply: the reviewer checks the pull request against the documentation rules in [conventions.md](conventions.md), and a maintainer merges it. A change to a process page or template is still at least Normal risk, so it takes the checks of Normal risk. See [classification.md](classification.md#the-floor). A change to a rule on a process page is also read by one reviewer who did not write it, against the four questions of [governance.md](governance.md#changes-to-this-page).
 
 ## Dependency patch-version updates
 

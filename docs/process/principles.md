@@ -30,7 +30,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 5. Each principle says where it applies and gives its edge: what the exception is and who decides it. An exception that a principle does not name is a decision of the maintainers. The design record or fix record of the work that needs it states the exception, with the principle and the reason, and names the principle in the `Exceptions` row of its document control table. The maintainers decide the exception by merging the record. The [generated index](../index/documents.md) lists every marked record under the principle it departs from.
 6. Each principle links the decision record that set it, where one exists, and the page that gives the procedure.
 7. A document cites a principle by its id, as a link to its entry, for example `[PRINCIPLE-016](../process/principles.md#principle-016)` with the path from the citing document. A document cites nothing that a reader of the repository cannot open. See [PRINCIPLE-080](#principle-080).
-8. The maintainers approve a new principle, or a change to one, by merging the change to this page, with the decision record behind it where a question was answered.
+8. The maintainers approve a new principle, or a change to one, by merging the change to this page, with the decision record behind it where a question was answered. The change is first read against the four questions of [governance.md](governance.md#changes-to-this-page).
 
 ## Compatibility with Apache Cassandra
 

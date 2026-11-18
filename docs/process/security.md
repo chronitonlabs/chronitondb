@@ -30,7 +30,7 @@ A report that arrives in public is handled privately. Nobody repeats its details
 
 ## Private until disclosure
 
-1. All work on a vulnerability happens in private until disclosure: in the GitHub security advisory and its temporary private fork.
+1. All work on a vulnerability happens in private until disclosure: in the GitHub security advisory and its temporary private fork. The rule is [PRINCIPLE-048](principles.md#principle-048).
 2. Before disclosure, no public text names the vulnerability. Public text means issues, pull requests, review comments, commit messages, branch names, code comments, design and decision records, change logs, documentation and release notes.
 3. Before disclosure, no public text carries a CVE id, an advisory id, exploit detail or the reporter's name.
 4. A fix is described by its mechanics, for example "Bound the regex length before compile" or "Check the permission before the schema change". A security fix uses the commit type `fix` until the advisory is public. The `security` type is used only after that.

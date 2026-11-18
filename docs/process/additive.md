@@ -125,7 +125,7 @@ Each milestone in the plan has validation items next to its build items. A valid
 
 ## Documentation with each item
 
-An item is not done until the user documentation, operator documentation and runbook entries it affects are in the same pull request. The reviewer checks them. At each milestone gate the architect checks that the feature's documentation reads as one whole. Release notes are generated from commits at release.
+An item is not done until the user documentation, operator documentation and runbook entries it affects are in the same pull request. The reviewer checks them. At each milestone gate the architect checks that the feature's documentation reads as one whole. Release notes are generated from commits at release. The rule is [PRINCIPLE-077](principles.md#principle-077).
 
 ## Milestone gates
 

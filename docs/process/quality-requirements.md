@@ -21,72 +21,65 @@ Every feature spec and every one-item design record answers this checklist. A fe
 
 ## The project rules
 
-These rules apply to every fork feature. Each one is a line in the checklist.
+These rules apply to every fork feature. Each one is a line in the checklist. Each rule is stated in full in [principles.md](principles.md), with where it applies and its edge. This page keeps one sentence of each and the id of its principle, and a document cites the rule by that id.
 
 ### Performance first
 
-The design is the fastest correct design known when it is written. Each design record names the request paths the change touches, the expected cost with its mechanism, and the benchmarks that prove it. The benchmarks run in the gates described in [testing.md](testing.md#benchmarks).
+The design is the fastest correct design known when it is written. Each design record names the request paths the change touches, the expected cost with its mechanism, and the benchmarks that prove it. The benchmarks run in the gates described in [testing.md](testing.md#benchmarks). The rule is [PRINCIPLE-050](principles.md#principle-050). The stock path is guarded under [PRINCIPLE-052](principles.md#principle-052), and what gates a change is in [PRINCIPLE-053](principles.md#principle-053).
 
 ### Isolation levers
 
-Every fork feature has levers on the coordinator and on each replica that keep it from harming the rest of the node: its own thread pools, limits on work per request, load shedding, timeouts, memory budgets and a kill switch. Each lever has a yaml setting and a metric.
+Every fork feature has levers on the coordinator and on each replica that keep it from harming the rest of the node: its own thread pools, limits on work per request, load shedding, timeouts, memory budgets and a kill switch. Each lever has a yaml setting and a metric. The rule is [PRINCIPLE-051](principles.md#principle-051).
 
 ### Observability
 
 Observability is a gate item, not an afterthought.
 
-1. Every outcome has a counter.
-2. Every limit reports its limit, the amount used and the number of times it tripped.
-3. Every runtime change of a setting logs the old and the new value at INFO.
-4. Each plan decision and each fallback has a trace line.
-5. Code ChronitonDB writes never puts user data or a secret in a log line, at any log level. User data means partition keys, clustering and column values, bind values, query literals, query text that carries them, and search terms. A ChronitonDB log line names what it is about by schema object and by a value that identifies no user, for example the keyspace and table, a token, a count, a size or a duration. Diagnosis that needs the data itself goes through a path with its own access control, such as tracing or a virtual table, as the design chooses. Log lines that Apache Cassandra writes stay as they are: changing them is a behaviour-changing feature behind a switch, and is not done as part of other work.
-6. Every metric, MBean and virtual table row a feature creates is released when its object is dropped.
+1. Every outcome has a counter: [PRINCIPLE-033](principles.md#principle-033).
+2. Every limit reports its limit, the amount used and the number of times it tripped: [PRINCIPLE-033](principles.md#principle-033).
+3. Every runtime change of a setting logs the old and the new value at INFO: [PRINCIPLE-034](principles.md#principle-034).
+4. Each plan decision and each fallback has a trace line: [PRINCIPLE-033](principles.md#principle-033).
+5. Code ChronitonDB writes never puts user data or a secret in a log line, at any log level: [PRINCIPLE-035](principles.md#principle-035). A log line that Apache Cassandra writes changes only as [PRINCIPLE-008](principles.md#principle-008) says.
+6. Every metric, MBean and virtual table row a feature creates is released when its object is dropped: [PRINCIPLE-037](principles.md#principle-037).
+
+Four more principles bind what a feature logs and exposes. Nothing is logged once per request or per element: [PRINCIPLE-036](principles.md#principle-036). Every signal has a bound on its cost: [PRINCIPLE-038](principles.md#principle-038). A limit reaches the client and state reaches the operator: [PRINCIPLE-039](principles.md#principle-039). Any collector can read the signals: [PRINCIPLE-040](principles.md#principle-040).
 
 ### Automatic fallbacks are opt-in and counted
 
-Automatic behaviour the user did not ask for, and that changes results, cost or plan, is opt in. An operator can switch it at startup and on a running node, at the scope the design chose. Each use is counted, and logged without flooding. For example a query that falls back to a scan, or a repair that falls back from incremental to full. A fallback that changes none of the three, such as a node that speaks an older message version to an older peer, is not under this rule.
-
-Whether a schema object allows a fallback is an option on that object, off by default. The object is the index, table or other schema object the fallback serves, for example an index that may fall back to a scan. Each node also has an operator control that turns every fallback off on that node. The node control always wins: the option on the object never turns on what the node control has turned off.
+Automatic behaviour the user did not ask for, and that changes results, cost or plan, is opt in, and each use is counted: [PRINCIPLE-028](principles.md#principle-028). Whether a schema object allows a fallback is an option on that object, off by default, and the operator control of a node that turns every fallback off always wins: [PRINCIPLE-029](principles.md#principle-029).
 
 ### Compatibility with Apache Cassandra
 
-An application that moves onto ChronitonDB behaves as it did on Apache Cassandra, and a user can always move back. A change to what an application sees from a stock feature (results, errors, warnings, the bytes on the wire) is a feature. It sits behind a feature switch that is off by default. What operators see (metrics, nodetool output, logs, JMX) stays as stock where that is reasonable. A difference there is recorded in the [delta register](../delta/README.md) and the release notes, not refused. A fix to a defect in stock is not a feature and is not gated.
+An application that moves onto ChronitonDB behaves as it did on Apache Cassandra, and a user can always move back: [PRINCIPLE-001](principles.md#principle-001). The rules that follow from it are principles too:
 
-A log line that differs from stock is not a compatibility concern and is never a finding by itself. A log line that ChronitonDB code adds gets no delta entry. A change to a log line that Apache Cassandra writes, or its removal, is an edit to an Apache file and gets its delta entry as any such edit does.
-
-A change to stock code counts as a fix to a defect only when the maintainers approve it as one, by merging its fix record after the reviewer's finding on the evidence. See [maintenance.md](maintenance.md#corrective-fixing-a-fault). A change to stock behaviour that is not approved as a fix is a behaviour change, and sits behind a feature switch that is off by default.
-
-A statement that Apache Cassandra rejects only because it uses something Apache Cassandra does not have, such as new syntax, a new keyword, a new option or a new index type, MAY succeed on ChronitonDB as a purely additive feature. A statement that Apache Cassandra accepts as valid and refuses for a reason, such as a missing `ALLOW FILTERING`, a guardrail or a missing index, is stock behaviour. Making it succeed is a change to what an application sees, and sits behind a feature switch that is off by default.
-
-With a feature off, three things hold, as they apply, and the tests of the feature's off state prove them. Stock behaviour is unchanged, always. Each way a user or an operator can invoke the feature, such as a statement, an option or a command, is refused with an error that names the switch. A feature with no such way in does nothing while off: its background work does not run, and no file, metric or other state of the feature appears. While off, a feature writes no new files, starts no new threads and uses no new memory. Code defaults in stock classes stay as Apache has them. The parity suite proves it.
-
-ChronitonDB never changes a compatibility number that Apache Cassandra owns without a decision of the maintainers: the messaging version, the sstable and index format version letters, the cluster metadata serialization version, and the ids of CQL operators on the wire. A feature that needs new state between nodes or on disk carries it in a form Apache Cassandra already accepts, such as an existing extensible field, an optional component or text options. Where no such form exists the design stops and asks.
+1. What operators see stays as stock where that is reasonable, and a difference there is recorded in the [delta register](../delta/README.md) and the release notes, not refused: [PRINCIPLE-002](principles.md#principle-002).
+2. A user moves between Apache Cassandra and ChronitonDB on the same data files, by a runbook: [PRINCIPLE-003](principles.md#principle-003).
+3. A fix to a defect in stock is not a feature and is not gated, and a change to stock code is a fix only when the maintainers approve it as one: [PRINCIPLE-004](principles.md#principle-004). See [maintenance.md](maintenance.md#corrective-fixing-a-fault).
+4. A statement that Apache Cassandra rejects only because it uses something Apache Cassandra does not have MAY succeed as a purely additive feature. One that Apache Cassandra refuses for a reason is stock behaviour: [PRINCIPLE-005](principles.md#principle-005).
+5. ChronitonDB never changes a compatibility number that Apache Cassandra owns without a decision of the maintainers: [PRINCIPLE-006](principles.md#principle-006).
+6. Code defaults in stock classes stay as Apache has them: [PRINCIPLE-007](principles.md#principle-007).
+7. A log line that differs from stock is not a compatibility concern: [PRINCIPLE-008](principles.md#principle-008).
+8. With a feature off, the feature changes nothing that stock Apache Cassandra does, and the tests of its off state prove it: [PRINCIPLE-019](principles.md#principle-019). The parity suite proves it for the line: [PRINCIPLE-020](principles.md#principle-020).
 
 ### A feature adds no dependence on topology
 
-A fork feature adds no dependence on topology. Whether a statement that uses it is valid, and the rows it returns for the same data at a consistency level that can be met, are the same at any replication factor, number of data centres and number of replicas. Where Apache Cassandra itself depends on topology, such as availability at a consistency level, that stays as it is. So a feature behaves on a single node development cluster as it does on a production cluster with three replicas.
+A fork feature adds no dependence on topology: [PRINCIPLE-061](principles.md#principle-061). So a feature behaves on a single node development cluster as it does on a production cluster with three replicas.
 
 ### Data dependent settings belong to the schema object
 
-Behaviour that depends on the data is set on the schema object that owns the data, not by one global setting: an index option for an index, a table option for a table. A configured default applies when the object is created, altering the object changes the value, and a configured maximum bounds it. A lever that can apply to several such objects has three mutually exclusive modes:
-
-1. **Global:** it applies to all of them.
-2. **Include:** it applies only to the listed ones.
-3. **Exclude:** it applies to all but the listed ones.
+Behaviour that depends on the data is set on the schema object that owns the data, not by one global setting: [PRINCIPLE-021](principles.md#principle-021). A lever that can apply to several such objects has three mutually exclusive modes, global, include and exclude: [PRINCIPLE-022](principles.md#principle-022).
 
 ### A runtime command changes the running value only
 
-A runtime command, such as a nodetool toggle, changes the value in memory only, on the node where it runs. The configuration file holds the value at startup. There is no separate persistence of runtime changes. A restart returns to the configured value. An option on a schema object is not a runtime toggle: it changes through the schema, as the rule above says.
-
-A value may differ from node to node only for an operator control: a kill switch, a limit, a fallback switch or another lever set by configuration or by a runtime command. The design says what a client sees while nodes differ. For a control that refuses work that is a refusal with an error that names the control, never a wrong or partial result. Anything that defines what a statement means or which rows it returns is never per node: it lives in the schema.
+A runtime command, such as a nodetool toggle, changes the value in memory only, on the node where it runs, and the configuration file holds the value at startup: [PRINCIPLE-023](principles.md#principle-023). A value may differ from node to node only for an operator control: [PRINCIPLE-024](principles.md#principle-024).
 
 ### A refusal names its control
 
-A refusal names what the user or operator can change to lift it, where there is such a thing. For example a statement refused because a feature is off names the feature switch. A statement refused because a limit is reached names the setting that holds the limit.
+A refusal names what the user or operator can change to lift it, where there is such a thing: [PRINCIPLE-025](principles.md#principle-025).
 
 ### A TLA+ model where the maintainers ask for one
 
-A design whose correctness depends on ordering, concurrency or shared state, across nodes or within one node across a crash and restart, is a candidate for a TLA+ model. The designer does not write one on its own judgement: the design record says why a model is believed to be needed and asks the maintainers, and the model is written only when they say yes. A design with no such dependence says in one line why it needs none, and asks nothing. A model that is written is checked by the TLC model checker. The model files and the checker's result go in the item's design directory, and the design record names them in its Quality requirements section.
+A design whose correctness depends on ordering, concurrency or shared state, across nodes or within one node across a crash and restart, is a candidate for a TLA+ model. The designer does not write one on its own judgement: the design record says why a model is believed to be needed and asks the maintainers, and the model is written only when they say yes. A design with no such dependence says in one line why it needs none, and asks nothing. A model that is written is checked by the TLC model checker. The model files and the checker's result go in the item's design directory, and the design record names them in its Quality requirements section. The rule is [PRINCIPLE-068](principles.md#principle-068).
 
 ## The checklist
 

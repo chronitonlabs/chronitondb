@@ -42,6 +42,8 @@ Supported versions are listed in the README of the repository.
 
 ## What a release may contain
 
+The rules on what is on or off by default are [PRINCIPLE-017](principles.md#principle-017) and [PRINCIPLE-018](principles.md#principle-018).
+
 1. Any release MAY ship changes of every maintenance category but additive: fixes, security fixes, imports from Apache Cassandra, and preventive, adaptive and perfective changes.
 2. A release MAY ship a finished feature. Where the feature has a feature switch, the operator sets it as the feature's design says.
 3. Within a line, a feature's default MUST NOT change. Upgrading within a line never changes behaviour by itself.
@@ -158,7 +160,7 @@ ChronitonDB is a fork, so it has its own packaging and its own names, separate f
 
 ### The configuration file
 
-1. ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`. It started from Apache's `conf/cassandra_latest.yaml` and carries ChronitonDB's own settings and values.
+1. ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`. It started from Apache's `conf/cassandra_latest.yaml` and carries ChronitonDB's own settings and values. The rule is [PRINCIPLE-026](principles.md#principle-026).
 2. A fresh install gets it as its `cassandra.yaml`, in `/etc/chronitondb`.
 3. Apache's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched, as the upstream reference.
 4. A node switched from Apache Cassandra keeps the operator's own file.

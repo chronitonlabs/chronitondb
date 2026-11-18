@@ -130,7 +130,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Editor settings for ChronitonDB code | `.editorconfig` |
 | ChronitonDB's configuration file | `conf/cassandra_chronitondb.yaml` |
 
-1. Apache's own files stay as Apache has them: `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like. ChronitonDB's files sit beside them, as listed above. A change to an Apache file is made only where we need it, with its [delta entry](../delta/README.md). See [upstream.md](upstream.md#apache-files-change-only-where-needed). The `delta-register` check reads the table above: a file under none of its paths is a stock file.
+1. Apache's own files stay as Apache has them: `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like. ChronitonDB's files sit beside them, as listed above. A change to an Apache file is made only where we need it, with its [delta entry](../delta/README.md). See [upstream.md](upstream.md#apache-files-change-only-where-needed). The `delta-register` check reads the table above: a file under none of its paths is a stock file. The rule is [PRINCIPLE-009](principles.md#principle-009).
 2. All ChronitonDB documentation lives in `docs/`.
 3. User and operator documentation follows Diátaxis: tutorials, how-to guides, reference and explanation, one kind per page. Its folder layout will be defined with the documentation site.
 4. Each line keeps its own documentation on its own branch.
@@ -183,7 +183,7 @@ The links between the documents are also written as one graph, for tools that re
 
 ## Claims about code
 
-A claim about what code does names the code it was read in. This applies to the process pages and to every document written from a template.
+A claim about what code does names the code it was read in. This applies to the process pages and to every document written from a template. The rule is [PRINCIPLE-078](principles.md#principle-078).
 
 1. A claim about Apache Cassandra code says "Apache Cassandra", never "stock".
 2. Each claim names the project, the branch and the commit, in the form `<project> <branch> at <hash>`. For example `Apache Cassandra cassandra-5.0 at <hash>`, `Apache Cassandra trunk at <hash>` or `ChronitonDB chronitondb-6.0 at <hash>`. Next to it stand the symbol and the file and line, for example `CompactionManager.submitBackground`, `src/java/org/apache/cassandra/db/compaction/CompactionManager.java:<line>`.
@@ -192,12 +192,14 @@ A claim about what code does names the code it was read in. This applies to the 
 
 ## Code layout
 
+The rules of this section are stated in full in [principles.md](principles.md): [PRINCIPLE-010](principles.md#principle-010) for where fork logic lives and how a stock file is edited, [PRINCIPLE-007](principles.md#principle-007) for code defaults, [PRINCIPLE-013](principles.md#principle-013) and [PRINCIPLE-065](principles.md#principle-065) for tests, and [PRINCIPLE-042](principles.md#principle-042) for code loaded by name.
+
 1. Fork logic lives in classes under `org.chronitondb`, in packages named for what they are, for example `org.chronitondb.fulltext`.
 2. Fork logic MUST NOT be added as a new class under `org.apache.cassandra`. A fork class that needs package private access to a stock package is a design decision, named in the design record and approved with it.
 3. An edit to a stock source file is the smallest that does the job. It is a hook that calls fork code, a fix to a defect in stock, or a refactor that lets fork code share stock logic in place of a copy. A refactor is named in the design record and reviewed with it.
 4. Code defaults in stock classes, such as `Config.java`, stay exactly as Apache Cassandra has them.
-5. A test that existed before a change is not weakened. A pre-existing stock test file is not edited in feature work: a fork feature puts its tests in its own files. A stock test file changes only in a fix to stock the maintainers approved, unchanged in an import from Apache Cassandra, or by a decision record that approves the named change. A change to a pre-existing ChronitonDB test only adds, and is named in the design record. See [testing.md](testing.md#policy).
-6. A name that a client supplies never picks code to load unless it is on an allow list. ChronitonDB's own list is fixed in the code, proposed by the design with a reason for each entry, and approved by the maintainers in a decision record. A new entry is a new decision. An operator's extension of the list in a node's configuration, for code the operator has placed on the node, is not ruled out: it is designed and decided when a feature needs it.
+5. A test that existed before a change is not weakened, and a pre-existing stock test file is not edited in feature work: [PRINCIPLE-065](principles.md#principle-065) and [PRINCIPLE-013](principles.md#principle-013). See [testing.md](testing.md#policy).
+6. A name that a client supplies never picks code to load unless it is on an allow list, which the maintainers approve in a decision record: [PRINCIPLE-042](principles.md#principle-042).
 
 ## Code style
 
@@ -266,6 +268,8 @@ An import whose author has not signed the contributor agreement fails the agreem
 
 ## Names
 
+The rule behind these names is [PRINCIPLE-079](principles.md#principle-079).
+
 1. New user facing names (yaml keys, nodetool commands, MBeans, metric types, packages) never contain "cassandra" or "axon". No key or value contains "stock".
 2. Settings that apply across the fork are named for what they do.
 3. ChronitonDB MBeans use the JMX domain `org.chronitondb`.
@@ -276,4 +280,4 @@ An import whose author has not signed the contributor agreement fails the agreem
 
 ## Dependencies
 
-No new dependency, and no version change of an existing one, is used before it is declared and approved in a feature spec or design record. The one exception is a patch-version update of an approved library for a bug or security fix. See [compliance.md](compliance.md) and [maintenance.md](maintenance.md#dependency-patch-version-updates).
+No new dependency, and no version change of an existing one, is used before it is declared and approved in a feature spec or design record. The one exception is a patch-version update of an approved library for a bug or security fix. The rule is [PRINCIPLE-049](principles.md#principle-049). See [compliance.md](compliance.md) and [maintenance.md](maintenance.md#dependency-patch-version-updates).

@@ -17,7 +17,7 @@ limitations under the License.
 
 # Standards
 
-ChronitonDB uses published standards in place of house rules wherever one fits. This page lists each standard and what it governs here. Where a page in this folder and a standard differ, the page says why.
+ChronitonDB uses published standards in place of house rules wherever one fits. This page lists each standard and what it governs here. Where a page in this folder and a standard differ, the page says why. The rule is [PRINCIPLE-081](principles.md#principle-081).
 
 ## Process and roles
 

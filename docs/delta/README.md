@@ -17,7 +17,7 @@ limitations under the License.
 
 # The delta register
 
-This register lists every change ChronitonDB carries on top of Apache Cassandra on its lines: features, fixes to stock code, and build and packaging changes. It works the way Ubuntu tracks its changes against Debian. Anyone can read here what ChronitonDB changes, why, and whether the change has been offered to Apache Cassandra.
+This register lists every change ChronitonDB carries on top of Apache Cassandra on its lines: features, fixes to stock code, and build and packaging changes. It works the way Ubuntu tracks its changes against Debian. Anyone can read here what ChronitonDB changes, why, and whether the change has been offered to Apache Cassandra. The rule is [PRINCIPLE-011](../process/principles.md#principle-011).
 
 ## Entries
 
@@ -50,7 +50,7 @@ This register lists every change ChronitonDB carries on top of Apache Cassandra 
     5. Does not see a change to stock behaviour made only in ChronitonDB's own files. The reviewer looks for it.
 2. Every fix to stock code is offered to Apache Cassandra, with an Apache JIRA the maintainers file, or for a security fix through the Apache Cassandra security team until disclosure. Its entry records the offer in Bug and Forwarded. See [upstream.md](../process/upstream.md#offering-changes-upstream).
 3. Features are offered to Apache Cassandra only when the maintainers decide, case by case.
-4. A log line that differs from stock is not a compatibility concern and is never a finding by itself. A log line that ChronitonDB code adds gets no delta entry. A change to a log line that Apache Cassandra writes, or its removal, is an edit to an Apache file and gets its delta entry as any such edit does.
+4. A log line that differs from stock is not a compatibility concern and is never a finding by itself. A log line that ChronitonDB code adds gets no delta entry. A change to a log line that Apache Cassandra writes, or its removal, is an edit to an Apache file and gets its delta entry as any such edit does. The rule is [PRINCIPLE-008](../process/principles.md#principle-008).
 5. The integrator keeps the register current. Its upstream radar flags entries that Apache Cassandra has since fixed. Those entries are dropped at the next import, and its import record in `docs/imports/` lists them.
 
 See [upstream.md](../process/upstream.md) for how imports and upstreaming work.

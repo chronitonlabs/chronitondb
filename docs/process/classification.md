@@ -25,7 +25,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Risk
 
-The risk of a change is the worst Bug Category it could cause if it were wrong, recorded with a Severity, as Apache Cassandra's JIRA records a bug.
+The risk of a change is the worst Bug Category it could cause if it were wrong, recorded with a Severity, as Apache Cassandra's JIRA records a bug. The rule is [PRINCIPLE-069](principles.md#principle-069).
 
 | Bug Category | What it covers | Risk |
 |---|---|---|
@@ -49,7 +49,7 @@ The table gives each category the level it takes by the definitions below. The w
 
 ### The floor
 
-A change that touches a public interface or stock behaviour is at least Normal, whatever its worst Bug Category. The public interfaces are the areas of compatibility that Apache Cassandra's [Cassandra Enhancement Proposals](https://cwiki.apache.org/confluence/spaces/CASSANDRA/pages/95652201/Cassandra+Enhancement+Proposals+CEP) page lists under Compatibility Concerns, quoted as the page writes them:
+A change that touches a public interface or stock behaviour is at least Normal, whatever its worst Bug Category: [PRINCIPLE-070](principles.md#principle-070). The public interfaces are the areas of compatibility that Apache Cassandra's [Cassandra Enhancement Proposals](https://cwiki.apache.org/confluence/spaces/CASSANDRA/pages/95652201/Cassandra+Enhancement+Proposals+CEP) page lists under Compatibility Concerns, quoted as the page writes them:
 
 1. native protocol (and CQL)
 2. gossip and the messaging service
@@ -65,7 +65,7 @@ A change that touches a public interface or stock behaviour is at least Normal, 
 
 ChronitonDB adds one area the page does not name: virtual tables. The page's list ends with an ellipsis, so it is open, but ChronitonDB's list is closed: a new area is a change to this page.
 
-The Touches row names a public interface with its area in brackets, such as public interface (configuration) or public interface (gossip). Stock behaviour is anything stock Apache Cassandra already does that an application or an operator sees. For an application that is results, errors, warnings, the bytes on the wire and the performance of existing operations, the list that defines a behaviour-changing feature in [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults). For an operator it is metrics, nodetool output, JMX and the log lines Apache Cassandra itself writes. A change to what an operator sees does not by itself make a feature behaviour-changing: it stays as stock where that is reasonable, and a difference is recorded in the delta register and the release notes, as [quality-requirements.md](quality-requirements.md#compatibility-with-apache-cassandra) says. A metric is also a public interface, area 7 of the list above. A log line that differs from stock is not a compatibility concern and is never a finding by itself. A log line that ChronitonDB code adds touches neither a public interface nor stock behaviour, and gets no delta entry. A change to a log line that Apache Cassandra writes, or its removal, is an edit to an Apache file and gets its delta entry as any such edit does.
+The Touches row names a public interface with its area in brackets, such as public interface (configuration) or public interface (gossip). Stock behaviour is anything stock Apache Cassandra already does that an application or an operator sees. For an application that is results, errors, warnings, the bytes on the wire and the performance of existing operations, the list that defines a behaviour-changing feature in [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults). For an operator it is metrics, nodetool output, JMX and the log lines Apache Cassandra itself writes. A change to what an operator sees does not by itself make a feature behaviour-changing: it stays as stock where that is reasonable, and a difference is recorded in the delta register and the release notes, as [quality-requirements.md](quality-requirements.md#compatibility-with-apache-cassandra) says. A metric is also a public interface, area 7 of the list above. A log line that differs from stock is not a compatibility concern and is never a finding by itself. A log line that ChronitonDB code adds touches neither a public interface nor stock behaviour, and gets no delta entry. A change to a log line that Apache Cassandra writes, or its removal, is an edit to an Apache file and gets its delta entry as any such edit does. The rule on log lines is [PRINCIPLE-008](principles.md#principle-008).
 
 A change to a file that guards the process is never Low either: it is at least Normal. These files are the CI workflows and scripts (`.github/`, `.build/`, `.circleci/`, `.jenkins/`), the build file `build.xml`, the test configuration under `test/conf/`, the project's checkers under `tools/chronitondb/`, the process pages and templates under `docs/process/`, and the instructions for contributors' tools, `.claude/` and any `CLAUDE.md` or `AGENTS.md` at any depth.
 
@@ -82,11 +82,11 @@ Work that touches one of these areas is risk Critical, whatever else its class w
 
 The Critical floor is about what code does, not who wrote it or where it lives. A ChronitonDB class that reads or writes the node's data files, or takes part in flush, compaction, streaming or repair, or in any other area of this floor, is on the floor as a change to the Apache Cassandra code of that area is. The Touches row says so with the phrases on-disk files, flush, compaction, streaming and repair, and the reviewer checks the row against what the code does.
 
-The maintainers MAY say that a given change is not Critical, in answer to the class and scope question that Critical work asks before drafting. See [Stages and approvals](#stages-and-approvals).
+The maintainers MAY say that a given change is not Critical, in answer to the class and scope question that Critical work asks before drafting. See [Stages and approvals](#stages-and-approvals). The rule of this floor, with its edge for an import from Apache Cassandra, is [PRINCIPLE-071](principles.md#principle-071).
 
 ### Where problems could occur
 
-Every feature spec, fix record, design record that is not covered by its feature spec, and pull request body of Low risk work carries a section "Where problems could occur" with its test plan, after the section of the same name in Ubuntu's stable release update template. It says where the change could go wrong if a part of it is wrong, worst case first: what a user or operator would see, on which request path, and from which part of the change. It is never "None" or "Low", and never an argument that the change is safe. The test plan names, for each problem, the test that would catch it, or why no test can and how it is watched instead.
+Every feature spec, fix record, design record that is not covered by its feature spec, and pull request body of Low risk work carries a section "Where problems could occur" with its test plan, after the section of the same name in Ubuntu's stable release update template. It says where the change could go wrong if a part of it is wrong, worst case first: what a user or operator would see, on which request path, and from which part of the change. It is never "None" or "Low", and never an argument that the change is safe. The test plan names, for each problem, the test that would catch it, or why no test can and how it is watched instead. The rule is [PRINCIPLE-072](principles.md#principle-072).
 
 ### Release critical findings
 

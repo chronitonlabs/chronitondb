@@ -274,7 +274,7 @@ The rule behind these names is [PRINCIPLE-079](principles.md#principle-079).
 1. New user facing names (yaml keys, nodetool commands, MBeans, metric types, packages) never contain "cassandra" or "axon". No key or value contains "stock". A file that stands beside one of Apache Cassandra's files MAY carry that file's name, as the project's configuration file does.
 2. Settings that apply across the fork are named for what they do.
 3. ChronitonDB MBeans use the JMX domain `org.chronitondb`.
-4. Fork metrics use their own metric types. Stock metric types gain no new metrics.
+4. Fork metrics use their own metric types. Stock metric types gain no new metrics. An object of a kind Apache Cassandra already measures, such as a thread pool, appears under the stock type with the project's scope, see the edge of [PRINCIPLE-079](principles.md#principle-079).
 5. ChronitonDB release versions have the form `<line>-chronitondb<n>`, for example `5.0-chronitondb3`, with `n` from 1 on each line. They never carry an Apache patch number. Release candidate package versions add `~rc<k>`, for example `5.0-chronitondb3~rc1`. The git tag of a release is the version itself. The git tag of a release candidate adds `-rc<k>`, for example `5.0-chronitondb3-rc1`, since git does not allow `~` in a tag name. See [release.md](release.md#version-numbers).
 6. The package and its service are named `chronitondb`. A new install uses the configuration directory `/etc/chronitondb`, the data directory `/var/lib/chronitondb` and the system user `chronitondb`. See [release.md](release.md#packaging).
 7. Timestamps in our records, evidence, documentation and release notes use RFC 3339.

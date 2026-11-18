@@ -39,7 +39,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **An application behaves as it did on Apache Cassandra, and a user can move back.** An application that moves onto the project's database MUST behave as it did on Apache Cassandra, and a user MUST be able to move back to Apache Cassandra. A change to what an application sees from a stock feature is a feature, and it MUST sit behind a feature switch that is off by default. What an application sees is its results, its errors, its warnings and the bytes on the wire.
 
-1. **Applies to.** Every change on a line. For example a read that would return other rows for a stock statement, a new warning on a stock statement, or a changed frame of the native protocol.
+1. **Applies to.** Every change on a line. For example a read that would return other rows for a stock statement, a new warning on a stock statement, or a changed frame of the native protocol. A keyword the project adds is unreserved, so that a name an application already uses keeps working.
 2. **Edge.** A fix to a defect in stock is not a feature and is not gated, see [PRINCIPLE-004](#principle-004). Which Apache Cassandra release a cluster can move back to, and by which steps, is stated for each release: [PRINCIPLE-003](#principle-003).
 3. **See.** [DEC-GOV-0001](../decisions/DEC-GOV-0001-what-stays-as-apache-cassandra-has-it.md). [quality-requirements.md](quality-requirements.md#compatibility-with-apache-cassandra), [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
 
@@ -47,7 +47,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **What operators see stays as stock where that is reasonable.** What an operator sees is metrics, nodetool output, logs and JMX. It SHOULD stay as stock where that is reasonable. A difference there MUST be recorded in the delta register and in the release notes. It is recorded, not refused, and it does not by itself make a feature behaviour-changing.
 
-1. **Applies to.** Every change to a surface an operator reads. For example the release version that `nodetool version` prints, or a new column in the output of a stock command.
+1. **Applies to.** Every change to a surface an operator reads. For example the release version that `nodetool version` prints, or a new column in the output of a stock command. The rows of Apache Cassandra's virtual tables are what operators see, not what an application sees.
 2. **Edge.** Whether staying as stock is reasonable is judged case by case, by the maintainers when they merge the design. Log lines have their own rule, see [PRINCIPLE-008](#principle-008).
 3. **See.** [DEC-GOV-0001](../decisions/DEC-GOV-0001-what-stays-as-apache-cassandra-has-it.md), record [0002](../decisions/0002-nodetool-version-output-on-a-chronitondb-node.md). [The delta register](../delta/README.md), [release.md](release.md#what-nodetool-version-shows).
 
@@ -69,7 +69,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-005
 
-**New behaviour is reached through something stock does not have.** A statement that Apache Cassandra rejects only because it uses something Apache Cassandra does not have MAY succeed as a purely additive feature. A statement that Apache Cassandra accepts as valid and refuses for a reason is stock behaviour. Making it succeed is a change to what an application sees, under [PRINCIPLE-001](#principle-001).
+**New behaviour is reached through something stock does not have.** A statement that Apache Cassandra rejects only because it uses something Apache Cassandra does not have MAY succeed as a purely additive feature. A statement that Apache Cassandra accepts as valid and refuses for a reason is stock behaviour. Making it succeed is a change to what an application sees, under [PRINCIPLE-001](#principle-001). A statement that Apache Cassandra accepts and ignores is stock behaviour too, and giving it an effect is such a change.
 
 1. **Applies to.** Every statement, option and command a feature accepts. For example new syntax, a new keyword, a new option or a new index type is something stock does not have. A missing `ALLOW FILTERING`, a guardrail or a missing index is a reason stock refuses.
 2. **Edge.** None.
@@ -214,7 +214,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **A lever over several schema objects has three modes.** A lever that can apply to several schema objects has three mutually exclusive modes. Global: it applies to all of them. Include: it applies only to the listed ones. Exclude: it applies to all but the listed ones. There are no layered overrides by keyspace, table and index.
 
 1. **Applies to.** A lever that cannot live on the schema object itself, see [PRINCIPLE-021](#principle-021). For example a rate limit on a background task that applies to all tables, only to the listed tables, or to all but the listed tables.
-2. **Edge.** None.
+2. **Edge.** None. This differs from the audit log options of Apache Cassandra, where both lists may be set and exclude wins. The difference is deliberate: with one mode in force, an operator reads one list to know what the lever applies to.
 3. **See.** [quality-requirements.md](quality-requirements.md#data-dependent-settings-belong-to-the-schema-object).
 
 ### PRINCIPLE-023
@@ -264,7 +264,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **Automatic behaviour is opt in and counted.** Automatic behaviour the user did not ask for, and that changes results, cost or plan, is opt in. An operator can switch it at startup and on a running node, at the scope the design chose. Each use is counted, and logged without flooding.
 
 1. **Applies to.** Every fallback and every other behaviour a feature starts by itself. For example a query that falls back to a scan, or a repair that falls back from incremental to full.
-2. **Edge.** A fallback that changes none of the three, such as a node that speaks an older message version to an older peer, is not under this principle.
+2. **Edge.** A fallback that changes none of the three, such as a node that speaks an older message version to an older peer, is not under this principle. Choosing between plans that return the same rows, by an estimate, is not a fallback and is not under this principle. A switch to a path whose cost the operator cannot predict is. What Apache Cassandra does automatically to a request the feature produced, such as a hint, a batchlog replay, a dropped mutation, a speculative retry or a read repair, is stock behaviour and is not under this principle.
 3. **See.** [quality-requirements.md](quality-requirements.md#automatic-fallbacks-are-opt-in-and-counted).
 
 ### PRINCIPLE-029
@@ -280,7 +280,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **An answer is complete, or it is an error.** Missing data is as bad as wrong data. Every answer a fork feature gives MUST be complete at the requested consistency level, or an error. A confirmed correctness fault in fork code, or on a path a fork feature serves, is fixed, never only documented.
 
 1. **Applies to.** Every result a fork feature returns, to a client or to an operator. For example a read that cannot reach enough replicas errors, and a tool listing that could not read one node says so and never prints a short list as if it were complete.
-2. **Edge.** A partial answer is allowed only where it is deliberate, opt in and marked in the response, see [PRINCIPLE-031](#principle-031). A correctness gap in stock outside such a path follows [PRINCIPLE-014](#principle-014).
+2. **Edge.** A partial answer is allowed only where it is deliberate, opt in and marked in the response, see [PRINCIPLE-031](#principle-031). A correctness gap in stock outside such a path follows [PRINCIPLE-014](#principle-014). For a write, an error means the outcome is unknown, as in Apache Cassandra.
 3. **See.** [classification.md](classification.md#risk).
 
 ### PRINCIPLE-031
@@ -330,7 +330,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **Nothing is logged once per request or per element.** An event that happens per request or per element, such as a row, a partition, a file or a message, is not logged one by one. Its detail goes to metrics and tracing. Logs carry operator actions and periodic summaries with counts, limited in rate.
 
 1. **Applies to.** Every path of fork code that runs per request or per element. For example the refusals of a query limit, the rows a compaction task rejected and the files a stream skipped are each counted, with at most one summary line in a period for each schema object and reason.
-2. **Edge.** An unexpected server error MAY be logged at ERROR for each failing request. Such an error is a defect, not an expected failure such as a bad statement, a timeout, an unavailable or a refused permission. Each use is assessed in the design, which says why the error is unexpected, what bounds how often it can fire and what the log holds if it fires on every request, and the reviewer checks that assessment. The line carries no user data, see [PRINCIPLE-035](#principle-035).
+2. **Edge.** The start, the end and the failure of a background task are not events per element, as long as the rate of tasks is bounded by a setting or by the schema and not by the request rate. What happens to each row, partition or file inside the task is counted and summed up in the end line. An unexpected server error MAY be logged at ERROR for each failing request. Such an error is a defect, not an expected failure such as a bad statement, a timeout, an unavailable or a refused permission. Each use is assessed in the design, which says why the error is unexpected, what bounds how often it can fire and what the log holds if it fires on every request, and the reviewer checks that assessment. On a request path where Apache Cassandra's own request handling logs an exception that escapes, the use is the escape: the design makes every expected failure an exception type that Apache Cassandra returns to the client without logging. The line carries no user data, see [PRINCIPLE-035](#principle-035).
 3. **See.** [quality-requirements.md](quality-requirements.md#observability).
 
 ### PRINCIPLE-037
@@ -421,7 +421,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **Performance and availability come first on a request path.** On a request path, or a background path that competes with requests, performance and availability come first and win over simplicity. The design is the fastest correct design known when it is written, and the one that keeps the node available. Speed is argued by mechanism, the work the design does per request and why that is less, and proved by benchmarks that compare the change with the code before it and with stock, with the feature off and on. No numeric target is demanded up front, and no design waits for one. Complexity added for speed or availability stays in proportion to what the path needs, and the design says what each such addition buys.
 
-1. **Applies to.** Every design. For example compaction, streaming and repair are background paths that compete with requests. Each design record names the request paths the change touches, the expected cost with its mechanism, and the benchmarks that prove it.
+1. **Applies to.** Every design. For example compaction, streaming and repair are background paths that compete with requests. Each design record names the request paths the change touches, the expected cost with its mechanism, and the benchmarks that prove it. A benchmark of a path Apache Cassandra also has runs on the stock build too. A benchmark of code only the project has compares with the code before it and names the stock operation it stands beside.
 2. **Edge.** Off those paths the simplest sufficient design stands, see [PRINCIPLE-054](#principle-054). A design that touches no such path says so in one line.
 3. **See.** [quality-requirements.md](quality-requirements.md#performance-first), [testing.md](testing.md#benchmarks).
 
@@ -430,7 +430,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **A feature that adds work to a shared path cannot starve the rest of the node.** A fork feature that adds work to a shared path cannot starve the rest of the node. Its design names what bounds its threads, its memory and its work per operation, how it sheds load, how long it may run, and how an operator turns it off, on every node role that does the work. Each bound can be set by an operator at the scope the design chose and is visible in a metric. Working out what level of isolation a feature needs is part of its architecture: it is investigated and argued for each feature, and the design states the result with its reasons.
 
 1. **Applies to.** Every fork feature. For example a search feature needs isolation, such as pools, limits, shedding, timeouts and budgets of its own, and a nodetool command or an uptime view does not.
-2. **Edge.** A feature that adds no work to a shared path says so in one line.
+2. **Edge.** A feature that adds no work to a shared path says so in one line. Where the work runs inside a stage, a pool or a limiter of Apache Cassandra, the feature has no bound of its own there: the design names the stock bound it shares, says what it adds to each operation, and shows by benchmark what that does to stock work in the same pool.
 3. **See.** [quality-requirements.md](quality-requirements.md#isolation-levers), [templates/design-record.md](templates/design-record.md#isolation-levers).
 
 ### PRINCIPLE-052
@@ -665,10 +665,10 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-079
 
-**Names are additions, and say what they mean.** A name of Apache Cassandra follows the rule for what it names. A name an application sees, such as a keyword, a column of a result or an error code, changes only behind a feature switch that is off by default: [PRINCIPLE-001](#principle-001). A name an operator sees, such as a metric, an MBean, a virtual table, a setting or a command, stays as stock where that is reasonable, and a difference is recorded: [PRINCIPLE-002](#principle-002). The project's signals and settings live under its own names, and stock metric types gain no new metrics. Those names never contain "cassandra" or "axon", and no key or value contains "stock". A setting that means what an existing setting means in the idiom the design follows SHOULD carry that setting's name, and an option that defers to the node's global setting takes the value `inherit`.
+**Names are additions, and say what they mean.** A name of Apache Cassandra follows the rule for what it names. A name an application sees, such as a keyword, a column of a result or an error code, changes only behind a feature switch that is off by default: [PRINCIPLE-001](#principle-001). A name an operator sees, such as a metric, an MBean, a virtual table, a setting or a command, stays as stock where that is reasonable, and a difference is recorded: [PRINCIPLE-002](#principle-002). The project's signals and settings live under its own names, and stock metric types gain no new metrics. Those names never contain "cassandra" or "axon", and no key or value contains "stock". A setting that means what an existing setting means in the idiom the design follows SHOULD carry that setting's name, and an option that defers to the node's global setting takes the value `inherit`. Such an option is an operator control under [PRINCIPLE-024](#principle-024) and never decides what a statement returns. Apache Cassandra has no single word for this, so the value is the project's own.
 
 1. **Applies to.** Every new user facing name: yaml keys, nodetool commands, MBeans, metric types, packages and options.
-2. **Edge.** A name the maintainers fixed in a decision record. A file that stands beside one of Apache Cassandra's files MAY carry that file's name, as the configuration file of [PRINCIPLE-026](#principle-026) does. A fix to a defect in stock that needs a new metric on a stock metric type is applied with its fix record, and the metric is recorded as a difference in what operators see, see [PRINCIPLE-004](#principle-004) and [PRINCIPLE-002](#principle-002).
+2. **Edge.** A name the maintainers fixed in a decision record. A file that stands beside one of Apache Cassandra's files MAY carry that file's name, as the configuration file of [PRINCIPLE-026](#principle-026) does. An object of a kind Apache Cassandra already measures, such as a thread pool, appears under the stock metric type with the project's scope. On a line whose metric registry accepts only the types on its own list, the project's type is added to that list, a hook point with its delta entry. A fix to a defect in stock that needs a new metric on a stock metric type is applied with its fix record, and the metric is recorded as a difference in what operators see, see [PRINCIPLE-004](#principle-004) and [PRINCIPLE-002](#principle-002).
 3. **See.** [conventions.md](conventions.md#names).
 
 ### PRINCIPLE-080

@@ -176,7 +176,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-018
 
-**A default does not change within a line.** A feature's default does not change within a line. Upgrading within a line never changes behaviour by itself. Within a line, the values the shipped configuration file holds change only for a fix.
+**An upgrade within a line changes a running cluster only through a fix or an import.** An upgrade within a line changes what a running cluster does only through a fix, a security fix or an import from Apache Cassandra, each named in the release notes. A feature's default does not change within a line. A new feature that is purely additive arrives switched on, unless it does work without being asked or adds anything nodes share, in which case it arrives off on that line. Within a line, the values the shipped configuration file holds change only for a fix, a security fix or an import from Apache Cassandra.
 
 1. **Applies to.** Every release of a line.
 2. **Edge.** A purely additive feature is on by default on every line, also when it is finished after a line's first release. Such a feature ships off by default on that line when it does work without being asked, such as a background task, a cache it fills or a pool it starts, or when it adds anything nodes share, such as a schema object, a message between nodes or a file that is streamed. Its design says which it is. It is on by default from the next new line.

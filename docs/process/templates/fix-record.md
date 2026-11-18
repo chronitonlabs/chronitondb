@@ -44,6 +44,8 @@ Location: `docs/design/<issue>-<slug>/`, with the coverage file `ac-coverage.md`
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
+A rule of the project is cited by its id from [principles.md](../principles.md), as a link to its entry, for example `PRINCIPLE-001`. This document cites nothing that a reader of the repository cannot open.
+
 The Risk, Size and Reach rows are the item's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the change touches, from the phrases in the row, or says none. A public interface names its area in brackets, one of the compatibility areas in [classification.md](../classification.md#the-floor), such as public interface (configuration). A public interface or stock behaviour in Touches means the risk is Normal or Critical. On-disk files, flush, compaction, streaming and repair name what the code of the change does, in Apache Cassandra's files or in ChronitonDB's own, and any of them in Touches means the risk is Critical, unless the maintainers said for this change that it is not. See [classification.md](../classification.md#the-critical-floor).
 
 ## Contents

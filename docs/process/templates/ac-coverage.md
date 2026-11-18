@@ -27,8 +27,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Coverage
 
-{One row per requirement of the record that a scenario does not prove: a requirement proven by another test names that test, and one deliberately not tested gives the decision that excluded it. A requirement proven by a scenario carrying its tag needs no row. Each requirement has at most one row. Tooling reads this table, so keep its columns.}
+{One row per requirement of the record that a scenario does not prove: a requirement proven by another test names that test, and one deliberately not tested gives the decision that excluded it. A requirement proven by a scenario carrying its tag needs no row. Each requirement has at most one row. A requirement that needs tests at two levels keeps one id and lists both tests. A requirement that states two behaviours is split into two ids. Both tests go in the Test cell of the one row, separated by a comma. Tooling reads this table, so keep its columns.}
 
 | Id | Source | Requirement | Covering scenario | Test | Status |
 |---|---|---|---|---|---|
-| {REQ-n or REQ-<KEY>-nnn} | {issue, risk or plan criterion} | {the requirement as the record states it} | {the scenario in one line, or none} | {the fully qualified test class and method} | {Covered, or Excluded: the decision record or issue comment that excluded it, stated cleanly} |
+| {REQ-n or REQ-<KEY>-nnn} | {issue, risk or plan criterion} | {the requirement as the record states it} | {the scenario in one line, or none} | {the fully qualified test class and method, or both for a requirement tested at two levels} | {Covered, or Excluded: the decision record or issue comment that excluded it, stated cleanly} |

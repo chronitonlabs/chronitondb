@@ -23,7 +23,7 @@ The list is closed. A document names one area or more from it, joined by commas,
 
 ## The areas
 
-The list follows the top level of Apache Cassandra's own JIRA component list, read on 2026-11-17 from the CASSANDRA project, so that a change here and the Apache ticket behind it are named alike. `search` gathers Apache's index components with ChronitonDB's own search work. `project` has no Apache component: it is ChronitonDB's own. `dependencies` takes Apache's Dependencies and Jamm components, a library the server ships, apart from the build that pulls them in.
+The list follows the top level of Apache Cassandra's own JIRA component list, read on 2026-11-17 from the CASSANDRA project, so that a change here and the Apache ticket behind it are named alike. `search` gathers Apache's index components with any index feature of ChronitonDB's own. `project` has no Apache component: it is ChronitonDB's own. `dependencies` takes Apache's Dependencies and Jamm components, a library the server ships, apart from the build that pulls them in.
 
 | Area | What it covers | Apache Cassandra components |
 |---|---|---|
@@ -32,7 +32,7 @@ The list follows the top level of Apache Cassandra's own JIRA component list, re
 | `cluster` | Membership, gossip, schema agreement, cluster metadata and the messages between nodes | Cluster, Transactional Cluster Metadata, Messaging/Internode, Feature/Virtual Nodes, Legacy/Distributed Metadata |
 | `consistency` | Coordination of reads and writes, hints, repair, streaming, bootstrap and decommission, lightweight transactions and Accord | Consistency, Accord, Feature/Lightweight Transactions, Feature/Repair, Feature/Streaming, Feature/Transient Replication, Legacy/Coordination, Legacy/Streaming and Messaging |
 | `storage` | The local write and read paths: commit log, memtables, sstables, compaction, compression, caches, snapshots and change data capture | Local/Caching, Local/Commit Log, Local/Compaction, Local/Memtable, Local/SSTable, Local/Snapshots, Local/Other, Feature/Compression, Feature/Change Data Capture, Legacy/Core, Legacy/Local Write-Read Paths |
-| `search` | Secondary indexes, storage attached indexes, vector search and ChronitonDB's own search features | Feature/2i Index, Feature/SAI, Feature/SASI, Feature/Vector Search |
+| `search` | Secondary indexes, storage attached indexes, vector search and the index features ChronitonDB adds | Feature/2i Index, Feature/SAI, Feature/SASI, Feature/Vector Search |
 | `security` | Authentication, authorisation, encryption, key management, data masking and the audit log | Feature/Authentication, Feature/Authorization, Feature/Encryption, Feature/KMS Vault, Feature/Dynamic Data Masking, Tool/auditlogging |
 | `observability` | Metrics, JMX, logging, tracing and virtual tables | Observability, Virtual Tables, Feature/Virtual Tables, Legacy/Observability |
 | `configuration` | Settings and their defaults, startup and shutdown, startup checks, guardrails and rate limits | Local/Config, Local/Startup and Shutdown, Local/Scripts, Feature/Startup Checks, Feature/Guardrails, Feature/Rate Limiting |

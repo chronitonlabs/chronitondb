@@ -25,7 +25,7 @@ The integrator does this work: it watches Apache, prepares every import pull req
 
 Apache Cassandra's own files stay as Apache has them wherever ChronitonDB can put its own file beside them, so imports rarely conflict on them. This covers `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like. The rule is [PRINCIPLE-009](principles.md#principle-009).
 
-1. ChronitonDB's own files sit beside them: `.github/README.md`, `CHANGES-chronitondb.txt`, `NEWS-chronitondb.txt`, `docs/`, `packaging/`, `.github/CONTRIBUTING.md` and our own workflows. See [conventions.md](conventions.md#where-things-live).
+1. ChronitonDB's own files sit beside them, each in its place once it exists: `.github/README.md`, `CHANGES-chronitondb.txt`, `NEWS-chronitondb.txt`, `docs/`, `packaging/`, `.github/CONTRIBUTING.md` and our own workflows. See [conventions.md](conventions.md#where-things-live).
 2. A change to an Apache file is made only where we need it, and it gets its [delta entry](../delta/README.md).
 
 ## Imports keep their upstream identity
@@ -46,6 +46,8 @@ Until Apache releases `x.0.0` of a major version, the matching line follows the 
 1. Every week that Apache's `cassandra-x.y` branch has new commits, the integrator merges it into an import branch named `import/cassandra-x.y-<short hash>/chronitondb-x.y`, cut from the line, and opens an import pull request. That merge commit's subject is `import(apache-<x.y>-branch): merge Apache cassandra-<x.y> at <short hash>`.
 2. A maintainer merges the import pull request into the line with a merge commit, like a release import.
 3. From Apache's `x.0.0` release onwards, release tags are merged instead.
+
+Until then the line has no entry point from Apache Cassandra: a cluster moves onto a line only from the latest Apache Cassandra release of the line's major version, the entry condition of [PRINCIPLE-003](principles.md#principle-003), and the line's release notes say so. The project owns no path from one major version to the next ahead of Apache Cassandra.
 
 ## Single fixes taken early
 
@@ -79,14 +81,14 @@ Each import has a short import record at `docs/imports/<apache-version-or-range>
 2. Conflicts with ChronitonDB changes, and how each was resolved.
 3. Delta entries that Apache has now fixed, which are dropped in the same import.
 4. Tests run, in the five test lists of a design record's Testing section. The results go in the evidence of the import pull request.
-5. Confirmation that stock behaviour is unchanged with every fork feature off: the parity suite passes.
+5. Confirmation that stock behaviour is unchanged with every fork feature off: the parity suite passes, or until it exists the stock suites pass with every fork feature off.
 6. Configuration changes: every changed setting in Apache's two yaml files and every changed default in `Config.java`, each mapped to our own file. See [Configuration changes](#configuration-changes).
 
 Tests for this change MAY be none only with a written reason in the record. For example, the range changes only build files and documentation, or an Apache fix merged without a test and the suites at risk cover the changed code. A bare none is refused. The suites at risk and the stock suites still run, and the reviewer checks the reason.
 
 ## Configuration changes
 
-ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`. Apache's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched. See [release.md](release.md#the-configuration-file). Every import, a whole release, a weekly branch merge, a single fix or a commit from another project, is checked for configuration changes over the imported range:
+ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`, once it exists. Apache's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched. See [release.md](release.md#the-configuration-file). Every import, a whole release, a weekly branch merge, a single fix or a commit from another project, is checked for configuration changes over the imported range:
 
 1. Every setting in Apache's two yaml files that was added, removed, or changed in value or comment.
 2. Every default that changed, meaning the value a node runs with when its yaml file leaves the setting out: the defaults in `Config.java`, nested options named with dots such as `sstable.selected_format`, and the defaults a node computes at startup. A setting a cluster's yaml file leaves out takes its default, so a changed default changes running clusters too.

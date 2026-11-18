@@ -56,12 +56,14 @@ A feature becomes switchable at its final milestone gate. Before that, its switc
 
 Every release takes two maintainer approvals, and each one is the merge of a pull request, like every approval in this project: the release proposal, before the candidate is built, and the promotion, after the soak and verification. The reviewer reviews both pull requests first.
 
-1. **Proposal.** When a release is due, the release engineer opens its issue and a release proposal pull request that adds `docs/releases/<version>.md` from [the release proposal template](templates/release-proposal.md): the version, the exact commit on the line it is built from, what goes in, from the commits on the line, the milestone gates passed and the security fixes due.
+1. **Proposal.** When a release is due, the release engineer opens its issue and a release proposal pull request that adds `docs/releases/<version>.md` from [the release proposal template](templates/release-proposal.md): the version, the exact commit on the line it is built from, what goes in, from the commits on the line, with the way in and the way back, the defaults that changed, the milestone gates passed and the security fixes due.
 2. **First approval.** A maintainer merges the proposal pull request. Nothing is built, tagged or published before that merge.
 3. **Release candidate.** A maintainer starts the release workflow by hand when the candidate is wanted, giving the version. Building and testing a candidate is expensive, so a maintainer chooses the moment. The workflow refuses to run unless that version's proposal is merged. The candidate tag is signed at the commit the proposal names, so anything merged later stays out. The pipeline then builds, tests and publishes the release candidate: a GitHub pre-release, and packages in a separate proposed package repository for Debian and Red Hat.
 4. **Verification.** The release engineer verifies the candidate: signatures, installs, upgrade and rollback from the previous ChronitonDB release and from Apache Cassandra, the parity suite, and that the release outputs are present and signed: the SBOM in SPDX and CycloneDX, the OpenVEX statements, the release notes and the provenance.
 5. **Soak.** The candidate stays in the proposed channel for 7 days.
 6. **Second approval and promotion.** If the verification passed and no problem is reported during the soak, the release engineer opens a promotion pull request that fills the verification results section of `docs/releases/<version>.md`. A maintainer merges it, and the candidate is then promoted unchanged to the official release.
+
+The release workflow and the pipeline it starts are not built yet. Steps 3 and 4 say what they MUST do once built.
 
 ### Security releases
 
@@ -126,7 +128,7 @@ The release version does not say which Apache content a release carries, so its 
 
 The release engineer takes the first three from the line's git history: the Apache release tags it contains, Apache's branch, and its import commits. See [upstream.md](upstream.md) and [conventions.md](conventions.md#change-logs-and-release-notes).
 
-The release notes and the release proposal also state which Apache Cassandra release, or releases, a cluster on the release can move back to, or that there is none yet. See [Moving back to Apache Cassandra](#moving-back-to-apache-cassandra).
+The release notes and the release proposal also state which Apache Cassandra release, or releases, a cluster on the release can move back to, or that there is none yet. See [Moving back to Apache Cassandra](#moving-back-to-apache-cassandra). On a line before Apache Cassandra's first release of its major version, the release notes say that the line has no entry point from Apache Cassandra yet, and no path from the previous line.
 
 ### The version a running node reports
 
@@ -139,6 +141,7 @@ A running node reports a different string from its release version to other node
 5. The ChronitonDB form is a behaviour-changing feature with its own switch, off by default. With it off, a node reports the build file's version as stock does, for example `5.0.10`, and the features that need a feature level stay off. Its feature spec sets the switch's name and the driver tests that prove each setting.
 6. Apache compatibility mode, `apache_compatibility_mode`, comes first. A node in Apache compatibility mode reports the plain Apache version whatever the switch says. With compatibility mode off, the switch decides.
 7. The switch never changes `nodetool version`. Until the feature of [What nodetool version shows](#what-nodetool-version-shows) ships, `nodetool version` prints Apache's own string, and the node version MUST NOT appear there.
+8. This is what a node does once the node version is built. It is not built yet on either line. Until it is, a node reports the build file's version, as stock Apache Cassandra does.
 
 ### What nodetool version shows
 
@@ -154,6 +157,8 @@ A running node reports a different string from its release version to other node
 
 ChronitonDB is a fork, so it has its own packaging and its own names, separate from Apache's.
 
+This section says what the package and the node MUST do once built. None of it is built yet on either line: the packaging under `packaging/`, the configuration file `conf/cassandra_chronitondb.yaml`, the project's logging configuration and the start check of the minimum setup. Until they exist, a node runs with Apache Cassandra's own files.
+
 1. The Debian and Red Hat packaging lives in `packaging/debian/` and `packaging/redhat/`, with the tarball script in `packaging/`. The release pipeline builds from them. `packaging/` is a sensitive path: a change to it requests a review from the code owners. The pull request that creates it adds it to `.github/CODEOWNERS`.
 2. The package and its service are named `chronitondb`. Its versions follow [Version numbers](#version-numbers), for example `5.0-chronitondb1`.
 3. A new install uses the configuration directory `/etc/chronitondb`, the data directory `/var/lib/chronitondb` and the system user `chronitondb`.
@@ -162,15 +167,15 @@ ChronitonDB is a fork, so it has its own packaging and its own names, separate f
 
 ### The configuration file
 
-1. ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`. It started from Apache's `conf/cassandra_latest.yaml` and carries ChronitonDB's own settings and values. For the settings of the entry condition it ships the values of that file. The rule is [PRINCIPLE-026](principles.md#principle-026).
+1. ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`. It starts from Apache's `conf/cassandra_latest.yaml` and carries ChronitonDB's own settings and values. For the settings of the entry condition it ships the values of that file. The rule is [PRINCIPLE-026](principles.md#principle-026).
 2. A fresh install gets it as its `cassandra.yaml`, in `/etc/chronitondb`.
 3. Apache's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched, as the upstream reference.
 4. A node switched from Apache Cassandra keeps the operator's own file.
-5. Each line's upgrade runbook states the minimum setup an existing Apache Cassandra cluster MUST reach before it switches. The list is published with the line's first release. The minimum setup is the entry condition of [PRINCIPLE-003](principles.md#principle-003): the latest Apache Cassandra release of the line's major version, with all of that version's own options on, which are the values of Apache's `conf/cassandra_latest.yaml`. A cluster on an older version, or in a compatibility mode for one, reaches that setup on Apache Cassandra first. No older version and no compatibility mode for one is supported.
-6. A node checks the minimum setup at every start. It refuses to start when the setup is not met, and names each unmet setting and the runbook step that sets it.
-7. The package also ships its own logging configuration beside Apache's. It names the project's own package at DEBUG, which Apache's file does not. The runbook has a step for a node that keeps the operator's file.
+5. Each line's upgrade runbook states the minimum setup an existing Apache Cassandra cluster MUST reach before it switches. The list is published with the line's first release. The minimum setup is the entry condition of [PRINCIPLE-003](principles.md#principle-003): the latest Apache Cassandra release of the line's major version, with all of that version's own options on, which are the values of Apache's `conf/cassandra_latest.yaml`. A cluster on an older version, or in a compatibility mode for one, reaches that setup on Apache Cassandra first. No older version and no compatibility mode for one is supported. A line whose major version Apache Cassandra has not released yet, such as a 6.0 line before Apache Cassandra 6.0, has no entry point from Apache Cassandra, and its release notes say so. The project owns no path from one major version to the next ahead of Apache Cassandra.
+6. A node MUST check the minimum setup at every start. It refuses to start when the setup is not met, and names each unmet setting and the runbook step that sets it.
+7. The package also ships its own logging configuration beside Apache's. It names the project's own package at DEBUG, which Apache's file does not. The pull request that adds the file names its path in [Where things live](conventions.md#where-things-live), so that the delta check reads it as a file of the project. The runbook has a step for a node that keeps the operator's file.
 
-Our file holds every setting of Apache's two files, active or commented, or leaves one out on a line `# Left out: <setting>: <reason>`. A setting Apache removes is removed from our file too, or flagged on a line `# Apache removed: <setting>`. A pull request check will enforce both once it exists.
+Our file MUST hold every setting of Apache's two files, active or commented, or leave one out on a line `# Left out: <setting>: <reason>`. A setting Apache removes is removed from our file too, or flagged on a line `# Apache removed: <setting>`. `tools/chronitondb/doclint.py settings` checks both. No workflow runs it yet: it becomes a required check once the file exists.
 
 How Apache's configuration changes reach our file is in [upstream.md](upstream.md#configuration-changes). A configuration file that works on one release of a line starts every later release of that line: [PRINCIPLE-083](principles.md#principle-083).
 
@@ -197,7 +202,7 @@ The rule is [PRINCIPLE-003](principles.md#principle-003).
 
 ## Release outputs
 
-The release pipeline produces, for every release:
+Once it is built, the release pipeline produces, for every release:
 
 1. A git tag signed with the ChronitonDB release key.
 2. The binary tarball.

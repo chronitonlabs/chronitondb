@@ -25,7 +25,7 @@ These rules apply to every fork feature. Each one is a line in the checklist. Ea
 
 ### Performance first
 
-On a request path, or a background path that competes with requests, performance and availability come first, and the design is the fastest correct design known when it is written: [PRINCIPLE-050](principles.md#principle-050). Speed is argued by mechanism and proved by comparing benchmarks, and no numeric target is demanded up front. Off those paths the simplest sufficient design stands: [PRINCIPLE-054](principles.md#principle-054). The benchmarks run in the gates described in [testing.md](testing.md#benchmarks). The stock path is guarded under [PRINCIPLE-052](principles.md#principle-052), and what gates a change is in [PRINCIPLE-053](principles.md#principle-053).
+On a request path, or a background path that competes with requests, performance and availability come first, and the design is the fastest correct design known: [PRINCIPLE-050](principles.md#principle-050). Speed is argued by mechanism and proved by comparing benchmarks, and no numeric target is demanded up front. Off those paths the simplest sufficient design stands: [PRINCIPLE-054](principles.md#principle-054). The benchmarks run in the gates described in [testing.md](testing.md#benchmarks). The stock path is guarded under [PRINCIPLE-052](principles.md#principle-052), and what gates a change is in [PRINCIPLE-053](principles.md#principle-053).
 
 ### Isolation levers
 
@@ -59,7 +59,7 @@ An application that moves onto ChronitonDB behaves as it did on Apache Cassandra
 5. ChronitonDB never changes a compatibility number that Apache Cassandra owns without a decision of the maintainers: [PRINCIPLE-006](principles.md#principle-006).
 6. Code defaults in stock classes stay as Apache has them: [PRINCIPLE-007](principles.md#principle-007).
 7. A log line that differs from stock is not a compatibility concern: [PRINCIPLE-008](principles.md#principle-008).
-8. With a feature off, the feature changes nothing that stock Apache Cassandra does, and the tests of its off state prove it: [PRINCIPLE-019](principles.md#principle-019). The parity suite proves it for the line: [PRINCIPLE-020](principles.md#principle-020).
+8. With a feature off, the feature changes nothing that stock Apache Cassandra does, and the tests of its off state prove it: [PRINCIPLE-019](principles.md#principle-019). The parity suite proves it for the line once it exists: [PRINCIPLE-020](principles.md#principle-020).
 9. Schema state is written only for an object that uses the feature: [PRINCIPLE-089](principles.md#principle-089).
 
 Five more principles bind what a feature stores, reads back and sends between nodes: [PRINCIPLE-084](principles.md#principle-084), [PRINCIPLE-085](principles.md#principle-085), [PRINCIPLE-086](principles.md#principle-086), [PRINCIPLE-087](principles.md#principle-087) and [PRINCIPLE-088](principles.md#principle-088). They are answered under the checklist's lines on mixed-version clusters and on data loss or corruption.
@@ -92,17 +92,17 @@ Copy this table into the feature spec or design record. Fill the last column for
 |---|---|---|
 | Performance efficiency | On a request path, or a background path that competes with requests, the fastest correct design known, argued by its mechanism and proved by comparing benchmarks | |
 | Performance efficiency | Memory of a feature that adds work to a shared path bounded on every node role that does the work | |
-| Reliability | A feature that adds work to a shared path cannot starve the rest of the node: threads and work per operation bounded, load shed, run time limited and a way for an operator to turn it off, on every node role that does the work | |
-| Reliability | Automatic fallbacks opt in on the schema object, with a node control that turns them off, each use counted and logged without flooding | |
+| Reliability | A feature that adds work to a shared path cannot starve the rest of the node: threads and work per operation bounded, load shed, run time limited and a way for an operator to turn it off, each bound settable by an operator and visible in a metric, on every node role that does the work | |
+| Reliability | Automatic behaviour that changes results, cost or plan opt in, a fallback allowed by an option on the schema object and turned off by a node control that always wins, each use counted and logged without flooding | |
 | Reliability | A TLA+ model where the maintainers asked for one, or one line on why the design needs none | |
-| Compatibility | An application behaves as it did on Apache Cassandra, and a change to what it sees from a stock feature is behind a switch that is off by default | |
+| Compatibility | An application behaves as it did on Apache Cassandra, a change to what it sees from a stock feature is behind a switch that is off by default, and a user can move back to Apache Cassandra by the release's steps, with everything the feature writes to shared state removable by a named step | |
 | Compatibility | What operators see stays as stock where that is reasonable, and each difference is recorded in the delta register and the release notes | |
 | Compatibility | Stock behaviour unchanged with the feature off | |
 | Compatibility | Mixed-version cluster, upgrade and rollback (see the Compatibility section) | |
-| Functional suitability | CQL validity and results independent of replication factor, data centres and replica count | |
-| Flexibility | Data dependent settings on the schema object that owns the data, with a configured default and maximum, and global, include and exclude modes | |
+| Functional suitability | A feature adds no dependence on topology: statement validity and the rows returned for the same data at a consistency level that can be met are the same at any replication factor, data centre count and replica count, and where Apache Cassandra depends on topology the feature matches it | |
+| Flexibility | Data dependent settings on the schema object that owns the data, any configured default resolved and stored when the object is created, and a lever over several objects in one of the global, include and exclude modes | |
 | Interaction capability | A runtime command changes the in-memory value only, the node's configuration at startup holds the starting value | |
-| Interaction capability | A refusal names what the user or operator can change to lift it | |
+| Interaction capability | A refusal on a coordinator names what the user or operator can change to lift it, where there is such a thing | |
 | Maintainability | Observability: metrics, traces and diagnostics as a gate item | |
 | Security | Threat model answered (see the Threat model section) | |
 | Safety | Any risk of data loss or corruption named, with its mitigation | |

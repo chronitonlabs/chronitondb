@@ -13,17 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Editor settings for ChronitonDB code only: Google Java
-# Style, checked by tools/chronitondb/format-check.sh. Apache code keeps its
-# own conventions, so there is no section for any other path and no root
+# Editor settings for ChronitonDB code only. The project's own code
+# follows Apache Cassandra's code style, as docs/process/conventions.md says
+# under Code style. The indent is the one Apache Cassandra's IDE settings in
+# ide/ give for Java: four spaces, no tabs. Sources are UTF-8 with LF line
+# ends, as Apache Cassandra's build and tree have them. Apache Cassandra's
+# checkstyle sets no line length, so none is set here. Apache code keeps its
+# own settings, so there is no section for any other path and no root
 # marker.
 
 [src/java/org/chronitondb/**]
 charset = utf-8
 end_of_line = lf
 indent_style = space
-indent_size = 2
-max_line_length = 100
+indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true
 
@@ -31,7 +34,6 @@ trim_trailing_whitespace = true
 charset = utf-8
 end_of_line = lf
 indent_style = space
-indent_size = 2
-max_line_length = 100
+indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true

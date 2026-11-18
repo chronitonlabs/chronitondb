@@ -69,6 +69,21 @@ The Touches row names a public interface with its area in brackets, such as publ
 
 A change to a file that guards the process is never Low either: it is at least Normal. These files are the CI workflows and scripts (`.github/`, `.build/`, `.circleci/`, `.jenkins/`), the build file `build.xml`, the test configuration under `test/conf/`, the project's checkers under `tools/chronitondb/`, the process pages and templates under `docs/process/`, and the instructions for contributors' tools, `.claude/` and any `CLAUDE.md` or `AGENTS.md` at any depth.
 
+### The Critical floor
+
+Work that touches one of these areas is risk Critical, whatever else its class would be:
+
+1. Authentication, authorisation, encryption and audit logging.
+2. The decoding of bytes from the network.
+3. The node's data on disk: sstables and their components read from any source, the commit log and its replay, hints, saved caches and any other file the node reads back at startup.
+4. Repair.
+5. Streaming: the sending and receiving of data files between nodes, for repair, bootstrap, replacement, decommission and rebuild.
+6. Compaction.
+
+The Critical floor is about what code does, not who wrote it or where it lives. A ChronitonDB class that reads or writes the node's data files, or takes part in flush, compaction, streaming or repair, or in any other area of this floor, is on the floor as a change to the Apache Cassandra code of that area is. The Touches row says so with the phrases on-disk files, flush, compaction, streaming and repair, and the reviewer checks the row against what the code does.
+
+The maintainers MAY say that a given change is not Critical, in answer to the class and scope question that Critical work asks before drafting. See [Stages and approvals](#stages-and-approvals).
+
 ### Where problems could occur
 
 Every feature spec, fix record, design record that is not covered by its feature spec, and pull request body of Low risk work carries a section "Where problems could occur" with its test plan, after the section of the same name in Ubuntu's stable release update template. It says where the change could go wrong if a part of it is wrong, worst case first: what a user or operator would see, on which request path, and from which part of the change. It is never "None" or "Low", and never an argument that the change is safe. The test plan names, for each problem, the test that would catch it, or why no test can and how it is watched instead.

@@ -112,7 +112,7 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 
 ## 2. Decisions implemented
 
-{Each decision record by its id, with a one line reminder and its date. A statement that no newer record exists on the same subject as of the date of this record. Then each principle the Exceptions row names, with what this record does in its place and the reason.}
+{Each decision record by its id, with a one line reminder and its date. Then each principle the Exceptions row names, with what this record does in its place and the reason.}
 
 ## 3. Apache Cassandra behaviour preservation
 

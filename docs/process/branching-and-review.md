@@ -157,7 +157,6 @@ The record of a review lives on the pull request: the reviewer's comment with it
 2. The body follows the organisation's pull request template: what and why, how it was tested, other branches, and the checklist. A pull request from an automated agent opens with a short block for the maintainer, what it needs from them, a summary and what to check before merging, and puts the rest under Details.
 3. ChronitonDB adds to it: the impact, waived findings with their reasons, the upgrade and rollback story, the default of any new setting and why, which tests prove which claim, a per-line differences table when the change exists on both lines, and `Fixes #<issue>`. A change made on several lines writes `Fixes #<issue>` only on the newest line's pull request, which merges last, and `Part of #<issue>` on the others, so the issue closes when the last line has the change.
 4. The body describes the final change, never the order of the work. It is kept current at every push.
-5. After the line is merged into the work branch, one short comment gives the line commit merged in, what it touched and the tests run.
 
 ## Commit messages and trailers
 

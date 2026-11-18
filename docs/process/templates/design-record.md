@@ -31,6 +31,7 @@ limitations under the License.
 | Size | {Low Hanging Fruit, Normal, Challenging or Byzantine}: {why} |
 | Reach | {One area or Cross-cutting}: {why, naming the packages touched} |
 | Touches | {public interface (its compatibility area, an on-disk file by its area: sstable components, or commitlog, hint log and cache files), stock behaviour, new input or privilege, new dependency, shared state (threads, pools or shared state), request path (any path whose cost grows with data or traffic), new feature or switch, on-disk files, flush, compaction, streaming, repair, or none} |
+| Exceptions | {None, or the id of each principle this record departs from, joined by commas, for example PRINCIPLE-016} |
 
 Revision history, one row for each version:
 
@@ -47,6 +48,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 A rule of the project is cited by its id from [principles.md](../principles.md), as a link to its entry, for example `PRINCIPLE-001`. This document cites nothing that a reader of the repository cannot open.
 
 The Risk, Size and Reach rows are the item's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the change touches, from the phrases in the row, or says none. A public interface names its area in brackets, one of the compatibility areas in [classification.md](../classification.md#the-floor), such as public interface (configuration). A public interface or stock behaviour in Touches means the risk is Normal or Critical. On-disk files, flush, compaction, streaming and repair name what the code of the change does, in Apache Cassandra's files or in ChronitonDB's own, and any of them in Touches means the risk is Critical, unless the maintainers said for this change that it is not. See [classification.md](../classification.md#the-critical-floor).
+
+The Exceptions row marks a record that departs from a principle in a way the principle does not itself allow. It names each such principle by its id, joined by commas, or says None. Section 2 gives the reason for each. The maintainers decide the exception by merging this record, and the generated index lists every record that carries one. See [principles.md](../principles.md#how-to-read-and-cite-a-principle).
 
 ## Contents
 
@@ -109,7 +112,7 @@ REQ-5 (unwanted behaviour): If a node reads a file with an unknown version marke
 
 ## 2. Decisions implemented
 
-{Each decision record by its id, with a one line reminder and its date. A statement that no newer record exists on the same subject as of the date of this record.}
+{Each decision record by its id, with a one line reminder and its date. A statement that no newer record exists on the same subject as of the date of this record. Then each principle the Exceptions row names, with what this record does in its place and the reason.}
 
 ## 3. Apache Cassandra behaviour preservation
 

@@ -472,6 +472,94 @@ class Areas(Repo):
         self.assertIn("'backport' is not a source. The Source row names one of original, apache-cherry-pick, apache-merge, third-party", err)
 
 
+class Exceptions(Repo):
+    """The Exceptions row of a design record or fix record: None, or the
+    ids of the principles the record departs from, each one a principle of
+    the page on the line."""
+
+    ROW = "| Version | 1 |\n| Exceptions | %s |"
+
+    def setUp(self):
+        super().setUp()
+        with open(os.path.join(ROOT, "docs", "process", "principles.md"), encoding="utf-8") as handle:
+            self.put("docs/process/principles.md", handle.read())
+        self.put("docs/process/templates/line-plan.md", TEMPLATE.replace("| Version | {n} |", "| Version | {n} |\n| Exceptions | {None, or ids} |"))
+        self.line()
+
+    def plan(self, value):
+        self.put(PATH, (PLAN % ("1", history(("1", "2026-11-18", "First version", "None")))).replace("| Version | 1 |", self.ROW % value))
+        return self.document(PATH)
+
+    def test_the_principles_are_read_from_the_page(self):
+        known = doclint.principles_at(self.repo, "line")
+        self.assertIn("PRINCIPLE-001", known)
+        self.assertIn("PRINCIPLE-081", known)
+        self.assertEqual(len(known), len(set(known)))
+
+    def test_none_and_ids_of_the_page_pass(self):
+        self.assertEqual(self.plan("None")[::2], (0, ""))
+        self.assertEqual(self.plan("PRINCIPLE-016")[::2], (0, ""))
+        self.assertEqual(self.plan("PRINCIPLE-016, `PRINCIPLE-051`")[::2], (0, ""))
+        self.assertEqual(self.plan("[PRINCIPLE-016](../process/principles.md#principle-016), PRINCIPLE-051")[::2], (0, ""))
+
+    def test_an_id_the_page_does_not_state_fails(self):
+        for name in ("PRINCIPLE-999", "PRINCIPLE-038"):
+            rc, _, err = self.plan("PRINCIPLE-016, %s" % name)
+            self.assertEqual(rc, 1)
+            self.assertIn("%s is not a principle of docs/process/principles.md on line" % name, err)
+            self.assertNotIn("PRINCIPLE-016 is not", err)
+
+    def test_a_word_that_is_no_id_fails(self):
+        for word in ("none", "Yes", "16", "PRINCIPLE-16", "DEC-GOV-0001"):
+            rc, _, err = self.plan(word)
+            self.assertEqual(rc, 1, word)
+            self.assertIn("'%s' is not the id of a principle. The Exceptions row names each principle this record departs from by its id, such as PRINCIPLE-016, joined by commas, or says None" % word, err)
+        rc, _, err = self.plan("None, PRINCIPLE-016")
+        self.assertEqual(rc, 1)
+        self.assertIn("'None' is not the id of a principle", err)
+
+    def test_a_principle_named_twice_fails(self):
+        rc, _, err = self.plan("PRINCIPLE-016, PRINCIPLE-016")
+        self.assertEqual(rc, 1)
+        self.assertIn("the Exceptions row names a principle twice", err)
+
+    def test_an_empty_row_fails(self):
+        rc, _, err = self.plan("{None, or ids}")
+        self.assertEqual(rc, 1)
+        self.assertIn("the 'Exceptions' row of the document control table is not filled in", err)
+
+    def test_a_line_with_no_principles_page_cannot_check_an_id(self):
+        os.remove(os.path.join(self.repo, "docs/process/principles.md"))
+        self.line()
+        self.assertEqual(self.plan("None")[::2], (0, ""))
+        rc, _, err = self.plan("PRINCIPLE-016")
+        self.assertEqual(rc, 1)
+        self.assertIn("no principles at docs/process/principles.md on line, so the Exceptions row cannot be checked", err)
+
+    def test_a_document_merged_before_the_row_keeps_none_until_its_next_version(self):
+        self.put(PATH, PLAN % ("1", history(("1", "2026-11-01", "First version", "None"))))
+        self.line()
+        self.assertEqual(self.document(PATH)[::2], (0, ""))
+        self.put(PATH, PLAN % ("2", history(("1", "2026-11-01", "First version", "None"), ("2", "2026-11-18", "The dates moved", "None"))))
+        rc, _, err = self.document(PATH)
+        self.assertEqual(rc, 1)
+        self.assertIn("the document control table has no 'Exceptions' row", err)
+
+    def test_a_new_document_without_the_row_fails(self):
+        self.put(PATH, PLAN % ("1", history(("1", "2026-11-18", "First version", "None"))))
+        rc, _, err = self.document(PATH)
+        self.assertEqual(rc, 1)
+        self.assertIn("the document control table has no 'Exceptions' row", err)
+
+    def test_the_record_templates_carry_the_row(self):
+        for name in ("design-record.md", "fix-record.md"):
+            with open(os.path.join(ROOT, "docs", "process", "templates", name), encoding="utf-8") as handle:
+                fields, _ = doclint.control_table(Markdown(name, handle.read()))
+            with self.subTest(template=name):
+                self.assertIn("Exceptions", fields)
+                self.assertTrue(fields["Exceptions"][0].startswith("{None, or"))
+
+
 class Supersedes(Repo):
 
     OLD = "docs/design/VER-release-version/decisions/DEC-VER-0001-first.md"
@@ -644,6 +732,27 @@ class Indexes(Repo):
         self.assertEqual(rc, 1)
         self.assertIn("docs/index/documents.md:0: is not the index the documents give now", err)
         self.assertIn("docs/design/VER-release-version/INDEX.md:0:", err)
+
+    def test_a_record_with_an_exception_is_listed_under_each_principle(self):
+        self.tree()
+        self.indexes("--write")
+        self.assertNotIn("Exceptions to principles", self.read("docs/index/documents.md"))
+        self.put("docs/design/70-the-reader/design-record.md", self.DESIGN.replace("| Areas | tools |", "| Areas | tools |\n| Exceptions | PRINCIPLE-051, [PRINCIPLE-016](../../process/principles.md#principle-016) |"))
+        self.put("docs/design/71-the-writer/design-record.md", self.DESIGN.replace("#70 The reader", "#71 The writer").replace("REQ-VER-001", "REQ-VER-002").replace("| Areas | tools |", "| Areas | tools |\n| Exceptions | None |"))
+        self.put("docs/design/72-the-fault/fix-record.md", self.DESIGN.replace("# Design: #70 The reader", "# Fix: #72 The fault").replace("REQ-VER-001", "REQ-1").replace("| Areas | tools |", "| Areas | tools |\n| Exceptions | PRINCIPLE-016 |"))
+        rc, _, err = self.indexes()
+        self.assertEqual(rc, 1)
+        self.assertIn("docs/index/documents.md:0: is not the index the documents give now", err)
+        self.indexes("--write")
+        documents = self.read("docs/index/documents.md")
+        section = documents[documents.index("## Exceptions to principles"):]
+        self.assertIn("| Principle | Record | Kind | Status | Version |\n|---|---|---|---|---|\n"
+                      "| [PRINCIPLE-016](../process/principles.md#principle-016) | [#70 The reader](../design/70-the-reader/design-record.md) | Design record | Draft | 1 |\n"
+                      "| [PRINCIPLE-016](../process/principles.md#principle-016) | [#72 The fault](../design/72-the-fault/fix-record.md) | Fix record | Draft | 1 |\n"
+                      "| [PRINCIPLE-051](../process/principles.md#principle-051) | [#70 The reader](../design/70-the-reader/design-record.md) | Design record | Draft | 1 |\n", section)
+        self.assertNotIn("The writer", section)
+        self.assertLess(documents.index("## Fix record"), documents.index("## Exceptions to principles"))
+        self.assertEqual(self.indexes()[::2], (0, ""))
 
     def test_an_index_page_is_no_document(self):
         self.tree()

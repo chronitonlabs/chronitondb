@@ -184,12 +184,12 @@ A decision record is checked from where it lives: `docs/design/<dir>/decisions/`
 
 ### Areas, sources and the generated indexes
 
-A document's `Areas` row names areas of the list in [areas.md](../../docs/process/areas.md), read from the line, and an import record's `Source` row one of its sources. Supersede links between decision records are checked both ways.
+A document's `Areas` row names areas of the list in [areas.md](../../docs/process/areas.md), read from the line, and an import record's `Source` row one of its sources. Supersede links between decision records are checked both ways. The `Exceptions` row of a design record or fix record says `None` or names each principle the record departs from by its id, joined by commas, each one a principle of [principles.md](../../docs/process/principles.md) on the line. A record merged before the row keeps none until its next version.
 
     tools/chronitondb/doclint.py indexes --repo . --templates origin/<line>           report each generated index that is not what the documents give
     tools/chronitondb/doclint.py indexes --repo . --templates origin/<line> --write   write them: docs/index/documents.md, decisions.md and areas.md, and INDEX.md in each feature directory
 
-`indexes` reads the header of every document under `docs/`. See [conventions.md](../../docs/process/conventions.md#generated-indexes).
+`indexes` reads the header of every document under `docs/`. Once a record names a principle in its `Exceptions` row, `documents.md` ends with the section Exceptions to principles, which lists every such record under each principle. See [conventions.md](../../docs/process/conventions.md#generated-indexes).
 
 ### The document graph: `docgraph.py`
 

@@ -513,6 +513,7 @@ def filled(name, replacements):
     text = re.sub(r"^\| Size \|.*\|$", "| Size | Normal: one index type only |", text, flags=re.M)
     text = re.sub(r"^\| Reach \|.*\|$", "| Reach | One area: the index package only |", text, flags=re.M)
     text = re.sub(r"^\| Touches \|.*\|$", "| Touches | none |", text, flags=re.M)
+    text = re.sub(r"^\| Exceptions \|.*\|$", "| Exceptions | None |", text, flags=re.M)
     text = text.replace("| Status | Draft, Approved or Superseded |", "| Status | Draft |")
     return re.sub(r"\{[^{}]*\}", "a value written by the author for the test", text)
 

@@ -235,6 +235,13 @@ without a row its template gained later, Areas, Supersedes or Source, keeps
 none while it is at the Version it was merged at, a decision record for
 good.
 
+A document with an Exceptions row, a design record or a fix record, says
+None there or names each principle it departs from by its id,
+PRINCIPLE-nnn, joined by commas, each once and each a principle of
+docs/process/principles.md at REF. A link whose text is the id counts as
+the id. A document merged at REF without the row keeps none while it is at
+the Version it was merged at, as for the rows above.
+
 The supersede links of decision records hold both ways: each record a
 Supersedes row names says "Superseded by" that record in its Status, and a
 record whose Status says "Superseded by" another is named in that one's
@@ -243,6 +250,8 @@ Supersedes row, when it has the row.
 indexes checks the generated indexes of the tree at SRC, and with --write
 writes them into the working tree: docs/index/documents.md, every document
 under docs/ whose document control table has a Document type row, by kind,
+and once a record's Exceptions row names a principle a last section with
+every such record under each principle it names,
 docs/index/decisions.md, every decision record, docs/index/areas.md, the
 same under each area of the areas page at REF, and INDEX.md in each
 feature directory docs/design/<KEY>-<slug>/, its documents, the design
@@ -1958,7 +1967,7 @@ AREA_NAME = re.compile(r"^`([a-z][a-z0-9]*(?:-[a-z0-9]+)*)`$")
 # The rows a template gained after documents were merged from it. A
 # document merged without one keeps none until it is at another version
 # than on the line, a decision record, which has no version, for good.
-LATE_ROWS = ("Areas", "Supersedes", "Source")
+LATE_ROWS = ("Areas", "Supersedes", "Source", "Exceptions")
 
 
 def names_at(repo, ref, section, rules=None):
@@ -2040,6 +2049,62 @@ def check_source(doc, repo, templates, rules):
         doc.error(line, "no list of sources at %s on %s, so the Source row cannot be checked" % (AREAS_PAGE, templates))
     elif value.strip("`") not in known:
         doc.error(line, "'%s' is not a source. The Source row names one of %s (%s)" % (value, ", ".join(known), AREAS_PAGE))
+
+
+PRINCIPLES_PAGE = "docs/process/principles.md"
+PRINCIPLE_ID = re.compile(r"^PRINCIPLE-[0-9]{3}$")
+NO_EXCEPTION = "None"
+
+
+def principles_at(repo, ref, rules=None):
+    """The ids of the principles page at ref: each heading that is an id
+    PRINCIPLE-nnn. None when the page is not there or holds no principle."""
+    if rules is not None and "principles" in rules:
+        return rules["principles"]
+    found = None
+    text = git(repo, "show", "%s:%s" % (ref, PRINCIPLES_PAGE))
+    if text is not None:
+        found = [title for _, title, _ in Markdown(PRINCIPLES_PAGE, text).headings if PRINCIPLE_ID.match(title)] or None
+    if rules is not None:
+        rules["principles"] = found
+    return found
+
+
+def exceptions_of(value):
+    """The words an Exceptions row names, a link read as its text. None
+    names nothing."""
+    plain = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", value).strip()
+    if plain == NO_EXCEPTION:
+        return []
+    return [word.strip().strip("`") for word in plain.split(",") if word.strip()]
+
+
+def check_exceptions(doc, repo, templates, rules):
+    """The Exceptions row marks a record that departs from a principle
+    (docs/process/principles.md, How to read and cite a principle): it
+    says None, or names each principle the record departs from by its id,
+    joined by commas, each one a principle of the page on the line."""
+    fields, _ = control_table(doc)
+    if not fields or "Exceptions" not in fields:
+        return
+    value, line = fields["Exceptions"]
+    if not value or outer_braces(value):
+        return
+    named = exceptions_of(value)
+    if not named:
+        if value.strip() != NO_EXCEPTION:
+            doc.error(line, "the Exceptions row names each principle this record departs from by its id, such as PRINCIPLE-016, joined by commas, or says None")
+        return
+    known = principles_at(repo, templates, rules)
+    if known is None:
+        doc.error(line, "no principles at %s on %s, so the Exceptions row cannot be checked" % (PRINCIPLES_PAGE, templates))
+    for name in named:
+        if not PRINCIPLE_ID.match(name):
+            doc.error(line, "'%s' is not the id of a principle. The Exceptions row names each principle this record departs from by its id, such as PRINCIPLE-016, joined by commas, or says None" % name)
+        elif known is not None and name not in known:
+            doc.error(line, "%s is not a principle of %s on %s. The Exceptions row names a principle the page states" % (name, PRINCIPLES_PAGE, templates))
+    if len(set(named)) != len(named):
+        doc.error(line, "the Exceptions row names a principle twice")
 
 
 RECORD_REF = re.compile(r"(?<![0-9A-Za-z-])(" + DECISION_ID + r"|[0-9]{4})(?![0-9A-Za-z])")
@@ -2353,6 +2418,7 @@ KIND_NAMES = {"Design": "Design record", "Fix": "Fix record", "Import": "Import 
 KIND_ORDER = ("Feature spec", "Plan", "Delivery plan", "Milestone report", "Design record", "Fix record", "Import record",
               "Research report", "Line plan", "Release proposal", "Delta entry", "Review record")
 NO_AREA = "Documents with no Areas row"
+EXCEPTIONS_SECTION = "Exceptions to principles"
 JIRA_ID = re.compile(r"\bCASSANDRA-[0-9]+\b")
 UPSTREAM = re.compile(r"`([0-9a-f]{7,40}|cassandra-[0-9][0-9A-Za-z.-]*)`|\b(cassandra-[0-9]+\.[0-9]+(?:\.[0-9]+)?(?:-[a-z0-9]+)?)\b")
 
@@ -2393,7 +2459,8 @@ def indexed_documents(repo, where):
         value = lambda name: fields[name][0] if name in fields else ""
         entry = {"path": path, "heading": heading, "status": value("Status"), "version": value("Version"),
                  "areas": areas_of(value("Areas")) if "Areas" in fields else None, "references": value("References"),
-                 "title": value("Title") or heading}
+                 "title": value("Title") or heading,
+                 "exceptions": [name for name in exceptions_of(value("Exceptions")) if PRINCIPLE_ID.match(name)]}
         if doc_type(path, text) == "decision":
             entry["kind"] = "Decision record"
             entry["id"] = own_record_name(path) or ""
@@ -2467,6 +2534,16 @@ def index_pages(repo, where, rules_ref):
         else:
             body += table(["Document", "Status", "Version", "Areas"],
                           [[link(entry, here), cell(entry["status"]), cell(entry["version"]), areas_cell(entry)] for entry in rows])
+        body += [""]
+    # The records that carry an exception to a principle, by principle. The
+    # section is written once a record names one.
+    marked = sorted(((name, entry) for entry in others for name in sorted(set(entry["exceptions"]))), key=lambda pair: (pair[0], pair[1]["path"]))
+    if marked:
+        principles = os.path.relpath(PRINCIPLES_PAGE, os.path.dirname(here)).replace(os.sep, "/")
+        body += ["## %s" % EXCEPTIONS_SECTION, "",
+                 "Every record whose `Exceptions` row names a principle of [principles.md](%s), under each principle it departs from. The record gives the reason." % principles, ""]
+        body += table(["Principle", "Record", "Kind", "Status", "Version"],
+                      [["[%s](%s#%s)" % (name, principles, name.lower()), link(entry, here), entry["kind"], cell(entry["status"]), cell(entry["version"])] for name, entry in marked])
         body += [""]
     page(here, "Documents", body)
 
@@ -3186,6 +3263,7 @@ def main(argv):
             check_common(doc, kind, template_text, path, late_rows(doc, path, kind, repo, templates))
             check_areas(doc, repo, templates, rules)
             check_source(doc, repo, templates, rules)
+            check_exceptions(doc, repo, templates, rules)
             if has_contents(Markdown(template_path, template_text)) and needs_index(kind, path, repo, templates, where, rules):
                 check_index(doc, path)
             if kind == "decision":

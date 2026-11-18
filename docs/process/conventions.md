@@ -31,10 +31,10 @@ ChronitonDB uses Conventional Commits. This is a project rule on top of the orga
 ### Subject
 
 1. The subject has the form `type(scope): description`.
-2. The description is imperative and in plain words, for example `feat(nodetool): print the release version` or `fix(compaction): count a skipped sstable once`.
+2. The description is imperative and in plain words, for example `feat(nodetool): print the release version` or `feat(compaction): count a skipped sstable once`.
 3. The subject is at most 72 characters. A trailing ` (chronitondb-<line>)` that names the line is not counted, nor GitHub's ` (#<number>)` on the commit on the line. An import subject carries the original subject unchanged, so it has no length limit, and it keeps its exact import form.
 4. The subject never lists files. A subject such as `Update <path>`, as GitHub writes for a suggestion, is refused. Apply suggestions locally with a real subject.
-5. The scope names the area of the change, for example `compaction`, `startup`, `build` or `github`.
+5. The scope names the area of the change, for example `compaction`, `build` or `github`.
 
 ### Types
 
@@ -180,7 +180,7 @@ The links between the documents are also written as one graph, for tools that re
 3. A link is written only where a header or a table states it: a document's areas, the feature it belongs to, the records a decision record supersedes, the decision records the revision history of a document names, the feature spec a design record's References row links, and what an import was taken from. No link is read from prose.
 4. It is JSON-LD, in files named `.json` so that the licence audit, which passes over JSON, needs no change to Apache Cassandra's build files. It uses established terms: Dublin Core terms for titles, types, subjects, parts, replacements and references, schema.org for a document and its version, PROV for what an import derives from, SKOS for an area, and OSLC for a status and for a record that elaborates a spec. ChronitonDB's own terms are four, where no established one fits: `line`, the line a document is written for, `source`, how a change came in, `upstreamRevision`, a commit named where no address of it can be built from the header, and `Feature`, a feature directory.
 5. The context is the file `docs/index/context.json`, kept by hand beside the graph. Every address in the graph is relative to the graph file or is Apache's own, and the project's own terms are relative to the context file, so nothing in it names the repository or its owner.
-6. The same tree gives the same bytes: nodes in the order of their ids, keys sorted, no date of writing and no path of the machine. `tools/chronitondb/docgraph.py --repo . --templates origin/<line>` exits 1 when the committed file is not what the documents give.
+6. The same tree gives the same bytes: nodes in the order of their ids, keys sorted, no date of writing and no path of the machine. `tools/chronitondb/docgraph.py --repo . --templates origin/<line>` exits 1 when the committed file is not what the documents give. The process document check runs it on every pull request that changes a file under `docs/`.
 
 ## Claims about code
 
@@ -230,6 +230,8 @@ The rules of this section are stated in full in [principles.md](principles.md): 
 | Duplicated block | 50 tokens |
 
 Tests and benchmarks are measured with their own limits, and their findings are warnings only: cyclomatic complexity 5, method length 150, file length 1,000, cognitive complexity 15, duplication 50 tokens.
+
+A Java file under `org/chronitondb` is named with ASCII letters, digits and `_ $ . - + @ /` only. The shape check stops on any other name.
 
 A production limit MAY be exceeded only with a waiver recorded in the item's design record and approved with it, naming the method, the rule and the reason. A suppression comment in code is not a waiver.
 

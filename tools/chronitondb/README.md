@@ -37,7 +37,7 @@ Measured limits on production code, every finding blocks:
 | Cognitive complexity per method | 15 | PMD CognitiveComplexity |
 | Duplicated block | 50 tokens | PMD CPD |
 
-Tests and benchmarks (any path with a `test/` directory before `org/chronitondb`: `test/unit`, `test/distributed`, `test/microbench`, `test/burn`) are measured with their own limits, and their findings are warnings only, never a failure: cyclomatic complexity 5, method length 150, file length 1,000, cognitive complexity 15, duplication 50 tokens. Testing a database is complicated, long setup is not a finding.
+Tests and benchmarks are measured with their own limits, and their findings are warnings only: cyclomatic complexity 5, method length 150, file length 1,000, cognitive complexity 15, duplication 50 tokens. A test or a benchmark is any path with a `test/` directory before `org/chronitondb`: `test/unit`, `test/distributed`, `test/microbench`, `test/burn`. Testing a database is complicated, long setup is not a finding.
 
 The rules live in `checkstyle-shape.xml` (production), `checkstyle-shape-tests.xml` (tests) and `pmd-ruleset.xml` (cognitive complexity, plus the CPD setting and the PMD pin). Changing a limit is a one line change there.
 

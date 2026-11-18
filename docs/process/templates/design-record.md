@@ -66,7 +66,7 @@ The Exceptions row marks a record that departs from a principle in a way the pri
   - [Expected cost](#expected-cost)
   - [Isolation levers](#isolation-levers)
   - [Benchmarks that prove it](#benchmarks-that-prove-it)
-  - [Regression threshold and gate](#regression-threshold-and-gate)
+  - [Regression gate](#regression-gate)
   - [Apache Cassandra guard](#apache-cassandra-guard)
   - [What was not measured](#what-was-not-measured)
 - [8. Observability](#8-observability)
@@ -165,12 +165,12 @@ These rules apply to every source:
 
 ### Benchmarks that prove it
 
-| Claim | Benchmark | Command | Pairs | Threshold |
+| Claim | Benchmark | Command | Pairs | Compared against |
 |---|---|---|---|---|
 
-### Regression threshold and gate
+### Regression gate
 
-{Which benchmarks gate the pull request. Pull request gates block only on counted values and on benchmarks that fail to run, never on timing.}
+{Which benchmarks gate the pull request. A counted value gates at the limit the design argues from its mechanism. Pull request gates block only on counted values and on benchmarks that fail to run, never on timing.}
 
 ### Apache Cassandra guard
 

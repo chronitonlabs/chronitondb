@@ -82,16 +82,19 @@ These checks run on every pull request to a line. Each MUST pass before a mainta
 | Check | What it checks |
 |---|---|
 | `ant-check` | Apache Cassandra's own checks: licence headers (RAT), checkstyle and the rest of `ant check` |
-| `shape` | The shape limits on ChronitonDB Java code. See [conventions.md](conventions.md#shape-limits) |
-| `semgrep` | Banned APIs, unsafe process and deserialisation calls, non-ASCII identifiers and bidirectional control characters |
-| `spotbugs` | SpotBugs with FindSecBugs on the compiled ChronitonDB classes. Findings are reported. The check fails when its self-test fails |
-| `instruction-files` | No instruction files for automated coding tools anywhere in the tree, such as `AGENTS.md` |
+| `shape` | The shape limits on ChronitonDB Java code. See [conventions.md](conventions.md#shape-limits). The script and the rules come from the line, never from the pull request |
+| `semgrep` | Banned APIs, unsafe process and deserialisation calls, non-ASCII identifiers and bidirectional control characters. The script and the rules come from the line, never from the pull request. On an import, a finding in Apache Cassandra's own code is reported for the import's assessment and does not fail the check: [PRINCIPLE-074](principles.md#principle-074) |
+| `spotbugs` | SpotBugs with FindSecBugs on the compiled ChronitonDB classes. Findings are reported. The check fails when its self-test fails. The script and the rules come from the line, never from the pull request |
+| `shape-tests` | The self-test of the shape check, as the pull request changes it |
+| `semgrep-tests` | The self-test of the Semgrep check, as the pull request changes it |
+| `spotbugs-tests` | The self-test of the SpotBugs check, as the pull request changes it |
+| `instruction-files` | No instruction files for automated coding tools anywhere in the tree, such as `AGENTS.md`, in any case of letters |
 | `license/cla` | Every contributor to the pull request has signed the contributor agreement. See [contributing.md](contributing.md) |
 | `kind-label` | The pull request carries exactly one kind label. See [README.md](README.md) |
 | `class-label` | The pull request carries exactly one `risk:`, one `size:` and one `reach:` label. See [classification.md](classification.md) |
-| `pr-title` | The pull request title, the subject of its commit on the line, follows the Conventional Commits rules and the import forms of [conventions.md](conventions.md#commit-messages). The checker and the rules come from the line |
+| `pr-title` | The pull request title, the subject of its commit on the line, follows the Conventional Commits rules and the import forms of [conventions.md](conventions.md#commit-messages). The checker and the rules come from the line. A title of type `import` is taken only from an `import/` branch of this repository |
 | `subjectlint-tests` | The unit tests of the subject checker, as the pull request changes it |
-| `documents` | The process documents and feature keys the pull request changes: the template rules, the Contents index of each document (see [conventions.md](conventions.md#contents-index-of-process-documents)), its revision history (see [conventions.md](conventions.md#versions-and-revision-history)), the id and place of each new decision record, the areas and the source each document names (see [areas.md](areas.md)), the generated indexes (see [conventions.md](conventions.md#generated-indexes)), the clarification markers and the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids). The checker and the templates come from the line, never from the pull request |
+| `documents` | The process documents and feature keys the pull request changes: the template rules, the Contents index of each document (see [conventions.md](conventions.md#contents-index-of-process-documents)), its revision history (see [conventions.md](conventions.md#versions-and-revision-history)), the id and place of each new decision record, the areas and the source each document names (see [areas.md](areas.md)), the generated indexes and the document graph (see [conventions.md](conventions.md#generated-indexes) and [conventions.md](conventions.md#the-document-graph)), the clarification markers and the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids). The checker and the templates come from the line, never from the pull request |
 | `doclint-tests` | The unit tests of the process document checker, as the pull request changes it |
 | `delta-register` | A pull request that changes a stock file adds or updates its entry in the [delta register](../delta/README.md#keeping-it-current), and each entry it adds or changes is in its template's form with its index row. The checker and the rules come from the line, never from the pull request |
 | CodeQL | GitHub's code scanning default setup, configured in the repository's settings, not by a workflow in this tree. Blocks on high or critical security alerts and on errors |

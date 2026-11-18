@@ -175,7 +175,7 @@ This section says what the package and the node MUST do once built. None of it i
 6. A node MUST check the minimum setup at every start. It refuses to start when the setup is not met, and names each unmet setting and the runbook step that sets it.
 7. The package also ships its own logging configuration beside Apache's. It names the project's own package at DEBUG, which Apache's file does not. The pull request that adds the file names its path in [Where things live](conventions.md#where-things-live), so that the delta check reads it as a file of the project. The runbook has a step for a node that keeps the operator's file.
 
-Our file MUST hold every setting of Apache's two files, active or commented, or leave one out on a line `# Left out: <setting>: <reason>`. A setting Apache removes is removed from our file too, or flagged on a line `# Apache removed: <setting>`. `tools/chronitondb/doclint.py settings` checks both. No workflow runs it yet: it becomes a required check once the file exists.
+Our file MUST hold every setting of Apache's two files, active or commented, or leave one out on a line `# Left out: <setting>: <reason>`. A setting Apache removes is removed from our file too, or flagged on a line `# Apache removed: <setting>`. `tools/chronitondb/doclint.py settings` checks both. No workflow runs it yet. It becomes a check of every pull request once the file exists.
 
 How Apache's configuration changes reach our file is in [upstream.md](upstream.md#configuration-changes). A configuration file that works on one release of a line starts every later release of that line: [PRINCIPLE-083](principles.md#principle-083).
 

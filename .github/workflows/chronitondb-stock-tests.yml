@@ -33,7 +33,7 @@
 # import history check of chronitondb-import.yml. The checker's unit tests run in the
 # doclint-tests job of chronitondb-documents.yml. Every action is pinned to
 # a commit.
-name: ChronitonDB stock tests
+name: Stock test files
 
 on:
   pull_request:

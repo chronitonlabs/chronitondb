@@ -312,7 +312,7 @@ stock-tests is the check of docs/process/testing.md, Policy 4, on the
 change at SRC since its merge base with REF: a pre-existing test file of
 Apache Cassandra changes in four ways only (principles.md, PRINCIPLE-013).
 Such a file is one the line has at the merge base, in a directory named
-test, that is not ChronitonDB's own by the table Where things live, read
+test, that is not the project's own by the table Where things live, read
 as the delta check reads it. The permits are read at REF, the line, never
 from the change, so a pull request cannot write its own. A changed file
 passes by one of:
@@ -1750,7 +1750,7 @@ def check_stock_tests(repo, base, where, branch, body):
     conventions = git(repo, "show", "%s:%s" % (base, CONVENTIONS))
     paths = own_paths(conventions) if conventions else []
     if not paths:
-        return ["%s on %s has no Where things live table, so ChronitonDB's own files cannot be told from stock files" % (CONVENTIONS, base)], [], 0
+        return ["%s on %s has no Where things live table, so the project's own files cannot be told from stock files" % (CONVENTIONS, base)], [], 0
     head = "HEAD" if where in ("index", "worktree") else where
     merge_base = (git(repo, "merge-base", base, head) or "").strip()
     changed = file_changes(repo, merge_base, where) if merge_base else None

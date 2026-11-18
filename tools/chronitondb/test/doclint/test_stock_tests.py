@@ -120,7 +120,7 @@ class StockTests(unittest.TestCase):
         return run(*args)
 
     def change_the_test(self):
-        self.put(STOCK_TEST, "class VersionTest {\n  void testVersion() { check(); }\n}\n")
+        self.put(STOCK_TEST, "class VersionTest {\n  void testVersion() { check() }\n}\n")
         self.commit()
 
     def extend_the_listing(self):
@@ -164,8 +164,7 @@ class StockTests(unittest.TestCase):
         return doclint.is_stock_test(path, doclint.own_paths(read("docs/process/conventions.md")))
 
     def test_the_table_of_the_change_does_not_make_a_file_its_own(self):
-        text = read("docs/process/conventions.md").replace("| ChronitonDB tooling and code checks | `tools/chronitondb/` |",
-                                                            "| ChronitonDB tooling and code checks | `tools/chronitondb/`, `test/` |")
+        text = read("docs/process/conventions.md").replace("| `tools/chronitondb/` |", "| `tools/chronitondb/`, `test/` |")
         self.assertIn("`test/` |", text)
         self.put("docs/process/conventions.md", text)
         self.change_the_test()
@@ -356,7 +355,7 @@ class StockTests(unittest.TestCase):
     # The sources and the command.
 
     def test_the_index_and_the_worktree_are_checked(self):
-        self.put(STOCK_TEST, "class VersionTest {\n  void testVersion() { check(); }\n}\n")
+        self.put(STOCK_TEST, "class VersionTest {\n  void testVersion() { check() }\n}\n")
         self.assertEqual(self.check(source="index")[0], 0)
         self.refused(self.check(source="worktree"), "the pull request description names no issue")
         self.git("add", "-A")

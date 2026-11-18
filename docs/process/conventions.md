@@ -197,6 +197,7 @@ A claim about what code does names the code it was read in. This applies to the 
 3. An edit to a stock source file is the smallest that does the job. It is a hook that calls fork code, a fix to a defect in stock, or a refactor that lets fork code share stock logic in place of a copy. A refactor is named in the design record and reviewed with it.
 4. Code defaults in stock classes, such as `Config.java`, stay exactly as Apache Cassandra has them.
 5. A test that existed before a change is not weakened. A pre-existing stock test file is not edited in feature work: a fork feature puts its tests in its own files. A stock test file changes only in a fix to stock the maintainers approved, unchanged in an import from Apache Cassandra, or by a decision record that approves the named change. A change to a pre-existing ChronitonDB test only adds, and is named in the design record. See [testing.md](testing.md#policy).
+6. A name that a client supplies never picks code to load unless it is on an allow list. ChronitonDB's own list is fixed in the code, proposed by the design with a reason for each entry, and approved by the maintainers in a decision record. A new entry is a new decision. An operator's extension of the list in a node's configuration, for code the operator has placed on the node, is not ruled out: it is designed and decided when a feature needs it.
 
 ## Code style
 

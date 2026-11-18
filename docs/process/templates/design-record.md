@@ -185,7 +185,7 @@ These rules apply to every source:
 
 ## 10. Threat model and security
 
-{For a one-item change, every new entry point checked with STRIDE, each mitigation a REQ, or "no new entry point" with the reason. For any change: the input it parses, the bound on each input, the permissions it needs with a negative test per permission, the audit entries, the limits and what happens as each is approached and reached, for example warn and fail thresholds, and how errors map to client errors.}
+{For a one-item change, every new entry point checked with STRIDE, each mitigation a REQ, or "no new entry point" with the reason. For any change: the input it parses, the bound on each input, any code it loads by a name a client supplies with the allow list entry that permits it, the permissions it needs with a negative test per permission, the audit entries, the limits and what happens as each is approached and reached, for example warn and fail thresholds, and how errors map to client errors.}
 
 ## 11. Dependencies
 

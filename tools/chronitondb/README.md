@@ -17,7 +17,7 @@ limitations under the License.
 
 # ChronitonDB code checks
 
-Two checks for the Java files under `org/chronitondb` that a change adds or modifies, and one for the process documents, `doclint.py`. Apache code is never checked by either. Both run on the staged files before each commit, and in the CI workflow `.github/workflows/chronitondb-shape.yml` on every pull request into a `chronitondb-*` branch. The rules are in [conventions.md](../../docs/process/conventions.md#shape-limits).
+One check for the Java files under `org/chronitondb` that a change adds or modifies, the shape limits, and one for the process documents, `doclint.py`. Apache code is never measured by the shape check. It runs on the staged files before each commit, and in the CI workflow `.github/workflows/chronitondb-shape.yml` on every pull request into a `chronitondb-*` branch. The rules are in [conventions.md](../../docs/process/conventions.md#shape-limits).
 
 ## Shape limits: `shape-check.sh`
 
@@ -49,16 +49,9 @@ Output, one line per finding, then a summary:
 
 Exit 0 when nothing blocks, 1 on a production finding, 2 when the check could not run.
 
-## Google Java Style: `format-check.sh`
+## Code style
 
-ChronitonDB code follows Google Java Style, enforced with google-java-format. Production and test files alike, every unformatted file blocks, formatting has no legitimate exceptions.
-
-    tools/chronitondb/format-check.sh src/java/org/chronitondb/index/Foo.java   report
-    tools/chronitondb/format-check.sh --fix src/java/org/chronitondb/index/Foo.java   format in place
-
-The `.editorconfig` at the repository root carries the matching editor settings (2 space indent, 100 columns) for `src/java/org/chronitondb/**` and `test/**/org/chronitondb/**` only. Other paths are not affected.
-
-Apache's own checkstyle (`.build/checkstyle.xml`) runs over the whole tree. On the 5.0 line none of its rules touches layout or import order (banned APIs, unused and redundant imports, illegal types), so Google style needs no suppression there. The 6.0 line enforces `ImportOrder` with Cassandra's groups and static imports at the bottom, which Google style contradicts (one ASCII sorted block, static imports first), so the 6.0 port needs one `ImportOrder` suppression for `org/chronitondb` in `.build/checkstyle_suppressions.xml`, with a comment giving the reason.
+The files under `org/chronitondb` follow Apache Cassandra's code style on each line, see [conventions.md](../../docs/process/conventions.md#code-style). Apache's own checkstyle (`.build/checkstyle.xml`) runs over the whole tree in `ant check`, these files included. There is no formatter and no formatting check here.
 
 ## Running
 
@@ -66,19 +59,17 @@ Apache's own checkstyle (`.build/checkstyle.xml`) runs over the whole tree. On t
     tools/chronitondb/shape-check.sh                    the staged files (what runs before a commit)
     tools/chronitondb/shape-check.sh --base origin/chronitondb-5.0   the files changed since the merge base (what CI does)
     tools/chronitondb/shape-check.sh --self-test        the fixtures under test/
-    tools/chronitondb/format-check.sh ...               same options, plus --fix
 
-Paths that are not `org/chronitondb/**/*.java` are ignored. Checkstyle comes from the build's own test classpath, `build/test/lib/jars`, so run `ant resolver-retrieve-build` (or any build) once. PMD and google-java-format are downloaded into `build/chronitondb-shape` on first use and refused unless their sha256 matches the pin. Nothing is added to `lib/` or `build.xml`, nothing is shipped, `build/` is not committed. `SHAPE_PMD_HOME` and `SHAPE_GJF_JAR` point at copies already on disk, for offline use.
+Paths that are not `org/chronitondb/**/*.java` are ignored. Checkstyle comes from the build's own test classpath, `build/test/lib/jars`, so run `ant resolver-retrieve-build` (or any build) once. PMD is downloaded into `build/chronitondb-shape` on first use and refused unless its sha256 matches the pin. Nothing is added to `lib/` or `build.xml`, nothing is shipped, `build/` is not committed. `SHAPE_PMD_HOME` points at a copy already on disk, for offline use.
 
 Pins:
 
 - checkstyle 10.26.1, the version Apache's build declares in `.build/parent-pom-template.xml`.
 - PMD 7.29.0, `pmd-dist-7.29.0-bin.zip` from the PMD GitHub release, sha256 recorded in `pmd-ruleset.xml` after the release signature verified against the PMD release signing key.
-- google-java-format 1.37.0 all-deps jar from its GitHub release, sha256 recorded in `format-check.sh`, the same release on both lines. It needs a Java 21 JDK to run. On the 5.0 line, which builds on Java 17, set `SHAPE_GJF_JAVA_HOME` to a Java 21 JDK for `format-check.sh`.
 
 ## Tests
 
-`test/src` and `test/test` hold one fixture per limit that breaks it and a few that pass (a 15 case `switch` with cyclomatic complexity 2, a method at cognitive complexity 15 exactly, a 100 line test method). `test/expected.txt` lists the finding each fixture must produce. `test/format` holds one formatted and one unformatted class. `--self-test` stages them as `src/java` and `test/unit` files, runs the real tools and compares. The fixtures are skipped when given to the checks by their own path, so staging them never fails a commit. CI runs both self-tests before the checks.
+`test/src` and `test/test` hold one fixture per limit that breaks it and a few that pass (a 15 case `switch` with cyclomatic complexity 2, a method at cognitive complexity 15 exactly, a 100 line test method). `test/expected.txt` lists the finding each fixture must produce. `--self-test` stages them as `src/java` and `test/unit` files, runs the real tools and compares. The fixtures are skipped when given to the checks by their own path, so staging them never fails a commit. CI runs the self-test before the check.
 
 ## Waivers
 

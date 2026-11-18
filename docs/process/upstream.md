@@ -113,7 +113,7 @@ Every pull request that changes stock code or stock behaviour adds or updates it
 
 1. Every fix to stock code is offered to Apache Cassandra: with a new Apache JIRA, on the existing JIRA when Apache Cassandra already has one, or for a security fix through the Apache Cassandra security team until disclosure, as [Security coordination with Apache](#security-coordination-with-apache) says. A maintainer starts each offer. The integrator drafts the JIRA and the patch, and the maintainers file them. A change to stock code is a fix only once the maintainers have approved it as one, by merging its fix record after the reviewer's finding on the evidence. See [maintenance.md](maintenance.md#corrective-fixing-a-fault). The rules are [PRINCIPLE-012](principles.md#principle-012) and [PRINCIPLE-004](principles.md#principle-004).
 2. Features are offered upstream only when the maintainers decide, case by case.
-3. Code offered to Apache is reformatted to Apache Cassandra's style and follows Apache Cassandra's contribution process.
+3. Code offered to Apache follows Apache Cassandra's code style, as the project's own code already does, and Apache Cassandra's contribution process.
 4. Patches offered to Apache are prepared on [chronitonlabs/chronitondb-upstream](https://github.com/chronitonlabs/chronitondb-upstream), a fork of Apache Cassandra kept apart from the ChronitonDB lines, each on a branch from the Apache branch it targets.
 
 ## The upstream radar

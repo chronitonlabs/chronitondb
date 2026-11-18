@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Shared by shape-check.sh and format-check.sh, sourced, never run. The
+# Shared by the check scripts of this folder, sourced, never run. The
 # caller sets $tool (its own name) before sourcing. Defines:
 #   $here      tools/chronitondb
 #   $root      the repository

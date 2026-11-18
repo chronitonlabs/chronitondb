@@ -77,7 +77,7 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 **Trunk-based development.** Work merges into the lines in small, short lived branches. Unfinished features stay off behind their switch. See [branching-and-review.md](branching-and-review.md).
 
-**Google Java Style.** New ChronitonDB Java code follows it. Apache Cassandra code keeps Apache's style. See [conventions.md](conventions.md).
+**Apache Cassandra's code style.** ChronitonDB Java code follows it on each line, as Apache Cassandra's own code does. See [conventions.md](conventions.md#code-style).
 
 **Debian and Red Hat version ordering.** A ChronitonDB release version is the line followed by ChronitonDB's own release number on it, `<line>-chronitondb<n>`, for example `5.0-chronitondb3`, with `~rc<k>` in the package version of a release candidate and `-rc<k>` in its git tag. It is written so that the version comparison of the [Debian Policy Manual](https://www.debian.org/doc/debian-policy/ch-controlfields.html#version) and of rpm orders every release and release candidate correctly. It is not Semantic Versioning. See [release.md](release.md#version-numbers).
 

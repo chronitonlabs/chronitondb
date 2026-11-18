@@ -22,12 +22,18 @@ limitations under the License.
 | Title | Import order check suppressed for ChronitonDB code |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Current |
-| Version | 4 |
+| Version | 5 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
 | References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 5 | 2026-11-18 | The Why section says the suppression has no use any more and goes with its removal | None |
+
+Full history in git: [commits of this file](https://github.com/chronitonlabs/chronitondb/commits/chronitondb-sandbox/docs/delta/checkstyle-import-order-suppression.md)
 
 ## Contents
 
@@ -49,7 +55,7 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Bug-ChronitonDB | none |
 | Forwarded | Not needed. It applies to ChronitonDB code only. |
 | Added | 2026-10-30 |
-| Last-Update | 2026-11-15 |
+| Last-Update | 2026-11-18 |
 | Pull requests | `chronitondb-6.0`: [#36](https://github.com/chronitonlabs/chronitondb/pull/36) and [#66](https://github.com/chronitonlabs/chronitondb/pull/66), commits `bd0a4f3a85` and `9f9b4f94b4`. |
 
 ## What
@@ -58,7 +64,7 @@ Apache's checkstyle suppressions skip the `ImportOrder` check for files under `o
 
 ## Why
 
-ChronitonDB code follows Google Java Style, whose import order differs from Apache Cassandra's. The 6.0 line enforces Apache's import order. The 5.0 line has no import order rule, so it needs no suppression.
+The suppression was added when the project's own code followed another import order than Apache Cassandra's. The 6.0 line enforces Apache's import order. The 5.0 line has no import order rule, so it needed no suppression. The project's own code now follows Apache Cassandra's code style on each line, see [conventions.md](../process/conventions.md#code-style), so the suppression has no use. The change that removes it from the 6.0 line removes this entry too.
 
 ## Area
 

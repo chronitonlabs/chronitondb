@@ -87,7 +87,7 @@ Documents of a kind that has no `Areas` row, and documents merged before the row
 |---|---|---|---|
 | [#112 Warn at startup when the commit log shares a disk with the data directories](../design/CLD-commitlog-disk-check/design-record.md) | Design record | Draft | 1 |
 | [#67 Let operators see a node's ChronitonDB version from nodetool](../design/VER-release-version/design-record.md) | Design record | Draft | 1 |
-| [Import order check suppressed for ChronitonDB code](../delta/checkstyle-import-order-suppression.md) | Delta entry | Current | 4 |
+| [Import order check suppressed for ChronitonDB code](../delta/checkstyle-import-order-suppression.md) | Delta entry | Current | 5 |
 | [Apache workflow actions pinned to commits](../delta/github-actions-pinned.md) | Delta entry | Current | 3 |
 | [Apache GitHub checks run on pull requests to the lines](../delta/github-checks-on-pull-requests.md) | Delta entry | Current | 4 |
 | [Apache's pull request template removed](../delta/github-pull-request-template-removed.md) | Delta entry | Current | 1 |

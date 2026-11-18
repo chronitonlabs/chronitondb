@@ -206,9 +206,9 @@ The rules of this section are stated in full in [principles.md](principles.md): 
 
 ### ChronitonDB Java files
 
-1. Files under `org/chronitondb` follow Google Java Style. `tools/chronitondb/format-check.sh` checks it with google-java-format, in the `shape` check of every pull request. Formatting has no exceptions.
-2. The `.editorconfig` at the repository root carries the matching editor settings for those paths only.
-3. The 5.0 line uses Java 17. The 6.0 line uses Java 21. Code meant for both lines uses Java 17 features only.
+1. Files under `org/chronitondb` follow Apache Cassandra's code style on each line: the line's checkstyle rules, its brace and import conventions and its banned APIs. Apache Cassandra's checkstyle, in `ant check`, runs on these files as on its own. The project runs no formatter and no formatting check of its own.
+2. Static analysis stays: the [shape limits](#shape-limits) below, Semgrep and SpotBugs. See [branching-and-review.md](branching-and-review.md#required-checks).
+3. The 5.0 line uses Java 17. The 6.0 line uses Java 21. Code meant for both lines uses Java 17 features only. The Java version of each line is a prerequisite that the release's steps state, for moving onto the line and for moving back: [release.md](release.md#moving-back-to-apache-cassandra).
 4. Apache Cassandra's banned API rules apply to fork code too. `var` is not used.
 
 ### Shape limits
@@ -242,7 +242,7 @@ A production limit MAY be exceeded only with a waiver recorded in the item's des
 ### Comments in ChronitonDB code
 
 1. Comments say why, in their own words.
-2. Every public type has Javadoc that says what it does, and so has every public method whose behaviour is not obvious from its name. A method that overrides an interface or superclass method inherits that Javadoc, and a plain accessor needs none.
+2. Every public type has Javadoc that says what it does, and so has every public method whose behaviour is not obvious from its name. A method that overrides an interface or superclass method inherits that Javadoc, and a plain accessor needs none. Where the overridden stock method has no Javadoc and the override's behaviour is not obvious, the override carries its own.
 3. Comments carry no issue numbers (`#<n>`) and no Apache ticket ids (`CASSANDRA-<n>`). Those belong in commit messages and pull requests.
 4. Comments describe the code as it is, without history words such as "previously" or "no longer".
 5. No `TODO` comments. Open work goes in an issue.

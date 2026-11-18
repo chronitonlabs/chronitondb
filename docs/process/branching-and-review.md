@@ -82,7 +82,7 @@ These checks run on every pull request to a line. Each MUST pass before a mainta
 | Check | What it checks |
 |---|---|
 | `ant-check` | Apache Cassandra's own checks: licence headers (RAT), checkstyle and the rest of `ant check` |
-| `shape` | Google Java Style and the shape limits on ChronitonDB Java code. See [conventions.md](conventions.md) |
+| `shape` | The shape limits on ChronitonDB Java code. See [conventions.md](conventions.md#shape-limits) |
 | `semgrep` | Banned APIs, unsafe process and deserialisation calls, non-ASCII identifiers and bidirectional control characters |
 | `spotbugs` | SpotBugs with FindSecBugs on the compiled ChronitonDB classes. Findings are reported. The check fails when its self-test fails |
 | `instruction-files` | No instruction files for automated coding tools anywhere in the tree, such as `AGENTS.md` |

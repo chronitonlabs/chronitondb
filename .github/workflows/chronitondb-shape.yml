@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Shape limits and Google Java Style on the
+# Shape limits on the
 # org/chronitondb Java files a pull request adds or changes. Apache code is
 # never checked here, Apache's own workflows are untouched. Every action is
 # pinned to a commit.
@@ -36,33 +36,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Java 17 builds the 5.0 line. google-java-format needs Java 21 to run,
-      # so both are installed and 17, listed last, is the default.
-      - name: JDK 21 and 17
+      # Java 17 builds the 5.0 line.
+      - name: JDK 17
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
-          java-version: |
-            21
-            17
+          java-version: 17
 
       - name: Resolve the build classpath (checkstyle)
         run: ant resolver-retrieve-build
 
-      - name: Self-test the checks
-        env:
-          SHAPE_GJF_JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}
-        run: |
-          tools/chronitondb/shape-check.sh --self-test
-          tools/chronitondb/format-check.sh --self-test
+      - name: Self-test the check
+        run: tools/chronitondb/shape-check.sh --self-test
 
       - name: Shape limits on the changed org/chronitondb files
         env:
           BASE: ${{ github.base_ref }}
         run: tools/chronitondb/shape-check.sh --base "origin/$BASE"
-
-      - name: Google Java Style on the changed org/chronitondb files
-        env:
-          BASE: ${{ github.base_ref }}
-          SHAPE_GJF_JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}
-        run: tools/chronitondb/format-check.sh --base "origin/$BASE"

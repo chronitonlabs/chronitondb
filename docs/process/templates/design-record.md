@@ -177,7 +177,7 @@ These rules apply to every source:
 
 ## 8. Observability
 
-{Counted, timed, logged, traced, exposed, toggled, audited, released on drop, documented, tested. Every outcome has a counter. Every limit has limit, used and tripped. Every runtime change logs old and new at INFO. No line above TRACE carries a key, term, literal or secret.}
+{Counted, timed, logged, traced, exposed, toggled, audited, released on drop, documented, tested. Every outcome has a counter. Every limit has limit, used and tripped. Every runtime change logs old and new at INFO. No log line the change adds carries user data or a secret, at any log level. See [quality-requirements.md](../quality-requirements.md#observability).}
 
 ## 9. Compatibility
 

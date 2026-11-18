@@ -39,7 +39,7 @@ Observability is a gate item, not an afterthought.
 2. Every limit reports its limit, the amount used and the number of times it tripped.
 3. Every runtime change of a setting logs the old and the new value at INFO.
 4. Each plan decision and each fallback has a trace line.
-5. No log line above TRACE carries a key, a term, a literal or a secret.
+5. Code ChronitonDB writes never puts user data or a secret in a log line, at any log level. User data means partition keys, clustering and column values, bind values, query literals, query text that carries them, and search terms. A ChronitonDB log line names what it is about by schema object and by a value that identifies no user, for example the keyspace and table, a token, a count, a size or a duration. Diagnosis that needs the data itself goes through a path with its own access control, such as tracing or a virtual table, as the design chooses. Log lines that Apache Cassandra writes stay as they are: changing them is a behaviour-changing feature behind a switch, and is not done as part of other work.
 6. Every metric, MBean and virtual table row a feature creates is released when its object is dropped.
 
 ### Automatic fallbacks are opt-in and counted
@@ -51,6 +51,8 @@ Whether a schema object allows a fallback is an option on that object, off by de
 ### Compatibility with Apache Cassandra
 
 An application that moves onto ChronitonDB behaves as it did on Apache Cassandra, and a user can always move back. A change to what an application sees from a stock feature (results, errors, warnings, the bytes on the wire) is a feature. It sits behind a feature switch that is off by default. What operators see (metrics, nodetool output, logs, JMX) stays as stock where that is reasonable. A difference there is recorded in the [delta register](../delta/README.md) and the release notes, not refused. A fix to a defect in stock is not a feature and is not gated.
+
+A log line that differs from stock is not a compatibility concern and is never a finding by itself. A log line that ChronitonDB code adds gets no delta entry. A change to a log line that Apache Cassandra writes, or its removal, is an edit to an Apache file and gets its delta entry as any such edit does.
 
 A change to stock code counts as a fix to a defect only when the maintainers approve it as one, by merging its fix record after the reviewer's finding on the evidence. See [maintenance.md](maintenance.md#corrective-fixing-a-fault). A change to stock behaviour that is not approved as a fix is a behaviour change, and sits behind a feature switch that is off by default.
 

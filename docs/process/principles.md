@@ -96,7 +96,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **A log line is not a compatibility concern, and stock log lines change in two ways only.** A log line that differs from stock is not a compatibility concern and is never a finding by itself. A log line that fork code adds gets no delta entry. A log line that Apache Cassandra writes changes in two ways only: in an approved fix to a defect in stock, as part of the fix, with no switch, or by a feature whose purpose is to change what Apache Cassandra logs, behind a switch that is off by default. It never changes as a side effect of other work. Either change edits a stock file, and a pull request that changes a stock file adds or updates an entry in the delta register, whatever the reason for the edit: [PRINCIPLE-011](#principle-011). Nothing more is asked for the log lines themselves: no entry and no list for each line.
 
 1. **Applies to.** Every log line on a line. For example a startup line that names the fork's switches is an added line. A feature that removes sensitive data from stock log lines is the second way.
-2. **Edge.** None. What a fork log line may carry is [PRINCIPLE-035](#principle-035).
+2. **Edge.** A log line that Apache Cassandra changes arrives with its import. What a fork log line may carry is [PRINCIPLE-035](#principle-035).
 3. **See.** [classification.md](classification.md#the-floor), [the delta register](../delta/README.md#keeping-it-current).
 
 ## Changes to Apache Cassandra code and tests
@@ -443,7 +443,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-053
 
-**A change is gated on counted values, never on timing.** Pull request checks block only on counted values and on benchmarks that fail to run. They never block on timing. A performance claim rests on paired runs, and an absolute timing number comes only from pinned or dedicated hardware.
+**A change is gated on counted values, never on timing.** The performance checks of a pull request block only on counted values and on benchmarks that fail to run. They never block on timing. A performance claim rests on paired runs, and an absolute timing number comes only from pinned or dedicated hardware.
 
 1. **Applies to.** Every benchmark a design names. For example allocations per operation, work counters, bytes written per compaction and index bytes per raw byte are counted values.
 2. **Edge.** Once dedicated benchmark hardware is in place, a change point in the tracked timings blocks the next release. A slowdown of operations that do not use a feature blocks by no fixed threshold, in a pull request check or at a release: the maintainers decide it, see [PRINCIPLE-052](#principle-052).

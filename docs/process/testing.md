@@ -126,6 +126,6 @@ A milestone is done when, in addition:
 
 1. Every feature requirement the milestone delivers has a passing validation test.
 2. The upgrade and rollback tests its exit criteria name pass.
-3. The benchmarks meet their thresholds.
+3. The benchmarks meet their thresholds. A measured slowdown of operations that do not use the feature is in the milestone report, and the maintainers decide it: [PRINCIPLE-052](principles.md#principle-052).
 4. No blocker or major finding is open.
 5. The milestone report records the results against the exit criteria in the delivery plan.

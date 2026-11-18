@@ -105,7 +105,8 @@ The security engineer watches for vulnerabilities in what ChronitonDB ships. See
 5. Opens an item to remove a library that ChronitonDB does not use at all.
 6. Triages each private vulnerability report in private for the maintainers: reproduction, affected lines, a proposed CVSS severity, and whether Apache Cassandra is affected, in the release the line is based on and upstream now.
 7. Watches Apache Cassandra security announcements with the integrator.
-8. Never decides severity, the CVE, the disclosure date or publication.
+8. Reviews every code pull request of Critical risk work. See [classification.md](classification.md#stages-and-approvals).
+9. Never decides severity, the CVE, the disclosure date or publication.
 
 ## Release engineer
 

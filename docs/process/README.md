@@ -84,7 +84,7 @@ A role MAY be carried out by a person or by an automated agent. Approvals are al
 11. [release.md](release.md): release cadence, support lifetime, release candidates, freezes and version numbers.
 12. [security.md](security.md): how vulnerabilities are reported, fixed and disclosed.
 13. [compliance.md](compliance.md): open source licence compliance, notices, SBOM and VEX.
-14. [quality-requirements.md](quality-requirements.md): the quality checklist every feature spec and design record answers. Its rules are stated in full in principles.md.
+14. [quality-requirements.md](quality-requirements.md): the quality checklist a feature spec and a design record answer. Its rules are stated in full in principles.md.
 15. [principles.md](principles.md): the architectural and design rules the project holds to, each with the id a document cites it by.
 16. [classification.md](classification.md): the risk and size of a change, and what each class changes.
 17. [areas.md](areas.md): the areas a document and an issue name, and the sources a change comes from.

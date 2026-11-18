@@ -194,7 +194,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **Every merged item keeps the line releasable.** Every merged item keeps its line releasable. A feature built in more than one milestone always has a switch, see [PRINCIPLE-016](#principle-016). Until the feature passes its final milestone gate the switch refuses to turn on, whatever its default, and shipped code has no way round the refusal. With every fork feature off, a line behaves as stock, and the parity suite proves it.
 
-1. **Applies to.** Every line, and every feature that is built over several items. A feature with no switch that is built over several items merges no item that makes unfinished work reachable: where an item would, that is a risk that needs a switch, see [PRINCIPLE-016](#principle-016).
+1. **Applies to.** Every line, and every feature that is built over several items. A feature with no switch that is built over several items merges no item that makes unfinished work reachable: where an item would, that is a risk that needs a switch, see [PRINCIPLE-016](#principle-016). A feature with no switch counts as off when nothing uses it.
 2. **Edge.** The fixes to stock code and the differences in what operators see that the delta register lists.
 3. **See.** [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults), [additive.md](additive.md#milestone-gates), [testing.md](testing.md#policy).
 
@@ -445,7 +445,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **A change is gated on counted values, never on timing.** Pull request checks block only on counted values and on benchmarks that fail to run. They never block on timing. A performance claim rests on paired runs, and an absolute timing number comes only from pinned or dedicated hardware.
 
 1. **Applies to.** Every benchmark a design names. For example allocations per operation, work counters, bytes written per compaction and index bytes per raw byte are counted values.
-2. **Edge.** Once dedicated benchmark hardware is in place, a change point in the tracked timings blocks the next release.
+2. **Edge.** Once dedicated benchmark hardware is in place, a change point in the tracked timings blocks the next release. A slowdown of operations that do not use a feature blocks by no fixed threshold, in a pull request check or at a release: the maintainers decide it, see [PRINCIPLE-052](#principle-052).
 3. **See.** [testing.md](testing.md#benchmarks).
 
 ## Simplicity of design

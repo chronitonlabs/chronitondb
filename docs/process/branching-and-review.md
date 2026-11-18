@@ -120,7 +120,7 @@ A change to a sensitive path requests a review from the code owners in `.github/
 
 ## Reviews
 
-Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer first: our own, outside contributors', imports and dependency updates. A pull request that the project's automated agents did not write is reviewed only after a maintainer adds the label `triage:accepted`, the maintainers' own pull requests and outside contributors' alike. See [contributing.md](contributing.md#checks-and-review). The reviewer posts its review on the pull request. A maintainer reads it and then merges, or requests changes.
+Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer first: our own, outside contributors', imports and dependency updates. A pull request that the project's automated agents did not write is reviewed only after a maintainer adds the label `triage:accepted`, the maintainers' own pull requests and outside contributors' alike. See [contributing.md](contributing.md#checks-and-review). The reviewer posts one short comment for each round on the pull request, and the findings are kept in the review record, a file the pull request commits: see [The review record](#the-review-record). A maintainer reads both and then merges, or requests changes.
 
 | Work product | Review type | Reviewed by | Approver |
 |---|---|---|---|
@@ -137,7 +137,7 @@ Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer fir
 1. The pull request opens as a draft.
 2. The reviewer inspects it against the approved design record and the review checklists: correctness, concurrency, security, compatibility, tests, observability, performance, documentation, compliance and maintainability, and a set of known bug patterns adapted from Apache Cassandra's own targeted review.
 3. Each finding has a severity: blocker, major, minor or nit.
-4. The reviewer posts the review as a comment with a verdict. A review is clean when it has no blocker and no major finding. A clean review marks the pull request ready.
+4. The reviewer posts one short comment with the verdict and the count of findings at each severity, and gives the author the findings. A review is clean when it has no blocker and no major finding. A clean review marks the pull request ready.
 5. A maintainer then approves and merges, or requests changes with the rework listed.
 
 ### Two review standards, picked by file
@@ -147,12 +147,19 @@ Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer fir
 
 ### Review rounds
 
-1. The author answers each finding with its own commit that names the finding, so a reviewer can drop one without the rest, or with a reply that gives the reason no change is made.
+1. The author answers each finding with its own commit that names the finding, so a reviewer can drop one without the rest, or with a disposition in the review record that gives the reason no change is made.
 2. A work product gets at most three review rounds. After the third round, the open points go to a maintainer as a decision.
 
 ### The review record
 
-The record of a review lives on the pull request: the reviewer's comment with its findings and verdict, then the maintainer's decision through GitHub (approve, or request changes with the rework listed) and the merge.
+The record of a review is a file the pull request commits, `docs/reviews/<work>.md`, written from [templates/review-record.md](templates/review-record.md), after the review record of ISO/IEC 20246.
+
+1. The author of the pull request writes the record and keeps it current: when the pull request opens, after each review round and after the last one. It holds the rounds, each finding with its severity and what was done about it, the decisions the maintainers took, what a round did not read, and the exit decision.
+2. The reviewer posts one short comment per round on the pull request: the verdict, the count of findings at each severity and the commit it read. The comment lists no finding. The author answers in the record and by commits, never in a comment.
+3. The reviewer checks each row of the record against its own findings.
+4. Only the maintainers waive a finding. A waiver or a decision counts only with a maintainer's comment on the pull request that names the finding or the decision by its id.
+5. The maintainer's decision is made through GitHub: approve, or request changes with the rework listed, and the merge.
+6. The review record of a security fix stays in its private advisory with the fix record until disclosure: [PRINCIPLE-048](principles.md#principle-048).
 
 ## Pull requests
 

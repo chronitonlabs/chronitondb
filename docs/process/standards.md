@@ -49,7 +49,7 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 **ISO/IEC/IEEE 29119 (software testing).** Our test policy and strategy, test plans, test design, test logs and test completion reports use its names and required contents. See [testing.md](testing.md).
 
-**ISO/IEC 20246 (work product reviews).** Code pull requests get an inspection. Design records, fix records, feature specs, plans, delivery plans and milestone reports get a technical review. The review record lives on the pull request. See [branching-and-review.md](branching-and-review.md).
+**ISO/IEC 20246 (work product reviews).** Code pull requests get an inspection. Design records, fix records, feature specs, plans, delivery plans and milestone reports get a technical review. The review record is a file the pull request commits, `docs/reviews/<work>.md`, from [templates/review-record.md](templates/review-record.md), and the reviewer posts one short comment per round on the pull request. See [branching-and-review.md](branching-and-review.md#the-review-record).
 
 ## Security
 

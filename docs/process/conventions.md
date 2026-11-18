@@ -115,6 +115,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Generated indexes of the documents | `docs/index/documents.md`, `docs/index/decisions.md`, `docs/index/areas.md`, and `INDEX.md` in each feature directory `docs/design/<KEY>-<slug>/` |
 | Generated graph of the documents and its context | `docs/index/graph.json`, `docs/index/context.json` |
 | Research reports of spikes | `docs/research/<issue>-<slug>.md` |
+| Review record of a pull request | `docs/reviews/<work>.md`, named after the pull request's branch without its first part and without the line |
 | Import records | `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project |
 | Release proposals and their verification results | `docs/releases/<version>.md` |
 | Line plan: first release date, feature freeze and LTS designation | `docs/releases/<line>-plan.md` |
@@ -157,7 +158,7 @@ A document that can change after it is merged carries its version and says what 
 2. A change to a merged document raises its `Version` by one and adds one row. A merged version keeps its row as it was merged.
 3. Under the table one line links the commits of the file on its line on GitHub: `Full history in git: [commits of this file](<address>)`. The address is never written by hand. `tools/chronitondb/doclint.py history --repo . --templates origin/<line> --write <file>` writes it from the file's path, the line and the repository the line is fetched from, so it stays right when the repository moves or is renamed.
 4. A document merged before its template had the table keeps the line `Change history: the git history of this file.` until its next version. That version adds the table with its own row, which `history --write` starts.
-5. A decision record has no version. It is never edited, and the record that supersedes it is its history. See [the decision records](../decisions/README.md#rules).
+5. A decision record has no version. It is never edited, and the record that supersedes it is its history. See [the decision records](../decisions/README.md#rules). A review record has no version either: it changes with every review round, and its history is the commits of its file.
 6. The process document check refuses a document that is new to the line, or at another version than on the line, without its revision history. It refuses rows out of order or with a gap, a last row that is not the document's version, a row with no date, change or decision record, a changed row of a merged version, and a history link that is not the commits of the file on its line. `history --check <file>` reports the same.
 
 ## Generated indexes

@@ -24,7 +24,7 @@ The maintainers and eight roles carry the work. The roles follow the technical p
 The maintainers decide stakeholder needs and own every approval. For new work they answer the requirements analyst's questions and confirm its requirements brief.
 
 1. They decide scope and priority, and set the maintenance category of each change they ask for. An item opened by the integrator, the security engineer or the release engineer carries the category its source gives it: adaptive for a whole release import or branch merge, the fix's category for a cherry-pick, corrective for a dependency patch or a test failure.
-2. They approve each step by merging its pull request: the feature spec, the plan with its delivery plan, each milestone report, each design record or fix record, each code pull request and each import pull request. They merge pull requests after the reviewer's review is posted on them. Committers may also merge, within their area or line.
+2. They approve each step by merging its pull request: the feature spec, the plan with its delivery plan, each milestone report, each design record or fix record, each code pull request and each import pull request. They merge pull requests after the reviewer's verdict is posted on them. Committers may also merge, within their area or line.
 3. They answer questions that change or settle behaviour, scope or process. An answer becomes a decision record where [the decision records](../decisions/README.md#when-a-record-is-written) ask for one. They decide each idea: do it, do not do it, or a spike first. See [additive.md](additive.md#work-intake).
 4. They decide everything about a security vulnerability: whether it is valid, its severity, the CVE, the disclosure date and the advisory. See [security.md](security.md).
 5. They decide which features are offered to Apache Cassandra, case by case, and file the Apache JIRA and patch for each stock bug fix.
@@ -69,7 +69,7 @@ The developer owns the implementation of one approved item.
 
 1. Works test first: for a fix, against the reproducing test the designer wrote on the code branch, for a new feature, against the approved scenarios, removing `@wip` from each as it passes, and with tests for each requirement no scenario proves.
 2. Writes the code, the user and operator documentation, the runbook entries and the delta entry the item needs, in the same pull request.
-3. Opens the pull request as a draft and answers each review finding.
+3. Opens the pull request as a draft with its review record, and answers each review finding by a commit or in the record.
 4. Edits only the files the approved design record lists. A file outside the list needs the design record updated first.
 5. Opens the public GitHub issue of a documentation only change, which has no designer.
 
@@ -79,9 +79,9 @@ The reviewer owns verification of each pull request, as an ISO/IEC 20246 inspect
 
 1. Inspects the pull request against the approved design and the checklists in [branching-and-review.md](branching-and-review.md).
 2. Records each finding with a severity: blocker, major, minor or nit.
-3. Gives a verdict in a review comment. A clean verdict marks the pull request ready for a maintainer.
+3. Gives a verdict in one short comment for each round, with the count of findings at each severity, and gives the author the findings. A clean verdict marks the pull request ready for a maintainer.
 4. Checks that documentation, the delta entry and the decision records the change needs are present. In a library update it checks that the notice and licence text matches what the security engineer named.
-5. Reviews every pull request: our own, outside contributors', imports and dependency updates. A pull request that the project's automated agents did not write is reviewed only after a maintainer adds the label `triage:accepted`, the maintainers' own pull requests and outside contributors' alike. The review is posted on the pull request before a maintainer or committer merges it.
+5. Reviews every pull request: our own, outside contributors', imports and dependency updates. A pull request that the project's automated agents did not write is reviewed only after a maintainer adds the label `triage:accepted`, the maintainers' own pull requests and outside contributors' alike. The verdict is posted on the pull request before a maintainer or committer merges it.
 
 ## Integrator
 

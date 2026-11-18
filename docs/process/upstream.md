@@ -19,7 +19,7 @@ limitations under the License.
 
 ChronitonDB relates to Apache Cassandra as Ubuntu relates to Debian. Apache Cassandra is upstream. Each ChronitonDB line is a superset of the Apache Cassandra releases of its major version: it contains every Apache patch release we have imported, plus the changes in the [delta register](../delta/README.md).
 
-The integrator does this work: it watches Apache, prepares every import pull request, resolves conflicts, runs the tests and writes the import record. The reviewer reviews each import pull request and posts its review. A maintainer merges it. See [roles.md](roles.md#integrator).
+The integrator does this work: it watches Apache, prepares every import pull request, resolves conflicts, runs the tests and writes the import record. The reviewer reviews each import pull request and posts its verdict. A maintainer merges it. See [roles.md](roles.md#integrator).
 
 ## Apache files change only where needed
 

@@ -136,8 +136,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **A stock test file is not edited in feature work.** A pre-existing test file of Apache Cassandra changes only in a fix to stock that the maintainers approved, or unchanged in an import from Apache Cassandra. A fork feature puts its tests in its own files. A stock test MUST pass unchanged on any change the project makes: a behaviour change is behind a switch and the stock suites run with it off, so a stock test that breaks shows the change is wrong, unless the change is an approved fix.
 
-1. **Applies to.** Every test file that came from Apache Cassandra. A fix record that changes one names each existing test method it changes and says what each asserts after the fix.
-2. **Edge.** Where a stock test must be extended for another reason, such as a list a stock test keeps of every setting, the maintainers approve the change case by case, in a decision record that names the file, the issue allowed to change it and why the change is needed.
+1. **Applies to.** Every test file that came from Apache Cassandra. A fix record that plans one names each existing test method it changes and says what each asserts after the fix. New test methods need no entry. The maintainers approve that list when they merge the fix record. The reviewer checks that the code branch changed those methods and no other existing ones: a changed existing test method the fix record does not name is a blocker.
+2. **Edge.** Where a stock test must be extended for another reason, such as a list a stock test keeps of every setting, the maintainers approve the change case by case: an accepted decision record names the file and the issue allowed to change it, with a written explanation of why the change to the test is needed. An approval with no explanation does not count. What may change inside the file is what the record says in words: the reviewer holds the change against them, and the maintainers at the merge.
 3. **See.** [testing.md](testing.md#policy), [conventions.md](conventions.md#code-layout).
 
 ### PRINCIPLE-014

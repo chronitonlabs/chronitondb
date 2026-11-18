@@ -121,6 +121,8 @@ Scenario tags: {the requirement tags section 5 lists and this record's fix tag, 
 
 {The two scenario lines and their rules are those of the design record's Testing section. A fix with no scenarios leaves out both lines. A fix whose reproducing test is a scenario keeps them. Its tags line MUST require `@fix-<issue>` with the issue number of this record, joined with `and` to the requirement tags section 5 lists, never with `or`. So only the scenarios that carry both tags run before the fix and after it, as long as none carries `@wip` or `@stock`, which the run leaves out. After the fix the feature's other scenarios run too, and each MUST still pass.}
 
+{A fix that changes an existing test says so here. For a pre-existing test file of Apache Cassandra: each existing test method the fix changes, as class and method, and what each asserts after the fix. For a merged test of the project's own: each assertion, expected value or error text that changes, from what to what, and why the old expectation is no longer right. New test methods and new assertions need no entry, and a fix that changes no existing test leaves this paragraph out. The maintainers approve this list by merging the record, and the reviewer checks the code branch against it. See [PRINCIPLE-013](../principles.md#principle-013) and [PRINCIPLE-065](../principles.md#principle-065).}
+
 {Then the five lists of the design record's Testing section, with the same headings and format. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry. See [design-record.md](design-record.md#14-testing).}
 
 ### Tests for this change

@@ -47,7 +47,7 @@ Until Apache releases `x.0.0` of a major version, the matching line follows the 
 2. A maintainer merges the import pull request into the line with a merge commit, like a release import.
 3. From Apache's `x.0.0` release onwards, release tags are merged instead.
 
-Until then the line has no entry point from Apache Cassandra: a cluster moves onto a line only from the latest Apache Cassandra release of the line's major version, the entry condition of [PRINCIPLE-003](principles.md#principle-003), and the line's release notes say so. The project owns no upgrade path from one major version to the next ahead of Apache Cassandra.
+Until then the line has no entry point from Apache Cassandra: a cluster moves onto a line only from the latest Apache Cassandra release of the line's major version, the entry condition of [PRINCIPLE-003](principles.md#principle-003), and the line's release notes say so. The project owns no path from one major version to the next ahead of Apache Cassandra.
 
 ## Single fixes taken early
 

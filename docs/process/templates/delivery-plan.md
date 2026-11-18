@@ -57,7 +57,7 @@ Location: `docs/design/<KEY>-<slug>/delivery-plan.md`. Process: [additive.md](..
 - **Items:** {item numbers from the plan, build and validation}
 - **What it makes testable:** {one or two lines}
 - **Exit criteria:** {numbered, each checkable. Upgrade and rollback tests for any on-disk format change this milestone introduces}
-- **Release and line:** {the line, and the release it is planned to ship in. The feature becomes switchable at the final gate, with the default the feature spec sets for the line, or off when the final gate passes after the line's first release}
+- **Release and line:** {the line, and the release it is planned to ship in. The feature becomes switchable at the final gate, with the default the feature spec sets for the line. A purely additive feature whose final gate passes after the line's first release keeps that default, or is off on that line where the edge in [release.md](../release.md#what-a-release-may-contain) applies}
 
 ## 2. Order rationale
 

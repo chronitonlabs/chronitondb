@@ -43,10 +43,10 @@ Supported versions are listed in the README of the repository.
 ## What a release may contain
 
 1. Any release MAY ship changes of every maintenance category but additive: fixes, security fixes, imports from Apache Cassandra, and preventive, adaptive and perfective changes.
-2. A release MAY ship a finished feature behind its feature switch, which the operator sets as the feature's design says.
+2. A release MAY ship a finished feature. Where the feature has a feature switch, the operator sets it as the feature's design says.
 3. Within a line, a feature's default MUST NOT change. Upgrading within a line never changes behaviour by itself.
-4. A purely additive feature's default MAY be on from a line's first release. A behaviour-changing feature's default MUST be off on every line. `nodetool version` showing the release version and the git SHA is a difference in what operators see, not a change to what an application sees: it is on by default and is recorded in the delta register and the release notes, see [What nodetool version shows](#what-nodetool-version-shows). That feature ships before each line's first release, `5.0-chronitondb1` and `6.0-chronitondb1`: it blocks a line's first release until it is in. So it is in every release of a line from the first, and no release within a line changes the form of what `nodetool version` shows.
-5. A feature finished after its line's first release ships with its default off on that line.
+4. A purely additive feature is on by default: its switch, where it has one, ships on, and an operator turns off what they do not want. A behaviour-changing feature's default MUST be off on every line. `nodetool version` showing the release version and the git SHA is a difference in what operators see, not a change to what an application sees: it is on by default and is recorded in the delta register and the release notes, see [What nodetool version shows](#what-nodetool-version-shows). That feature ships before each line's first release, `5.0-chronitondb1` and `6.0-chronitondb1`: it blocks a line's first release until it is in. So it is in every release of a line from the first, and no release within a line changes the form of what `nodetool version` shows.
+5. A purely additive feature is on by default on every line, also when it is finished after a line's first release. One edge: a feature finished after its line's first release ships off by default on that line when it does work without being asked, such as a background task, a cache it fills or a pool it starts, or when it adds anything nodes share, such as a schema object, a message between nodes or a file that is streamed. Its design says which it is. It is on by default from the next new line.
 
 A feature becomes switchable at its final milestone gate. Before that, its switch refuses to turn on, whatever its default. See [additive.md](additive.md#milestone-gates) and [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
 
@@ -141,7 +141,7 @@ A running node reports a different string from its release version to other node
 `nodetool version` shows what is installed: the release version, for example `5.0-chronitondb3`, and the git SHA of the build. It shows no Apache release line.
 
 1. It is a difference in what operators see, where staying as stock is not reasonable: a ChronitonDB node is a different database and binary, and an operator needs to know which release is installed. The difference is recorded in the delta register and the release notes, as [quality-requirements.md](quality-requirements.md#compatibility-with-apache-cassandra) says. See also [What a release may contain](#what-a-release-may-contain).
-2. It has a switch, like every feature, and it is on by default.
+2. It has a switch, and it is on by default.
 3. It is required for a line's first release and blocks that release until it is in. The version and the git SHA it shows are read from the build, never written into the code, and its tests prove both on a built package.
 4. The feature is not built yet. Until it is, `nodetool version` prints Apache's output, and the release version of an installed node is the version of its `chronitondb` package.
 5. `bin/cassandra -v`, the startup log line `Cassandra version:` and the cqlsh banner stay as they are today. Any change to them is decided in their own feature spec.

@@ -1,0 +1,102 @@
+# Copyright 2026 AxonOps Limited
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The stock test check (docs/process/testing.md, Policy 4): a pre-existing
+# test file of Apache Cassandra changes in four ways only, those of
+# PRINCIPLE-013 in docs/process/principles.md. The checker reads the
+# permits on the base branch: the fix record that plans the file as test,
+# the Pinned listing line of a design record or fix record, and the Stock
+# test change line of an accepted decision record. It never reads them
+# from the pull request, so a pull request cannot write its own permit. The
+# checker and the table that tells the project's own files from stock
+# files also come from the base branch. The pull request's files are only
+# read as data. Before the checker is on the line it says so and passes. It
+# reruns when the description changes, since the description names the
+# issue whose records count, and it reads the description from the API
+# when it runs. An import from Apache Cassandra passes, and the checker
+# knows one by its branch name, import/cassandra-<...> or
+# import/CASSANDRA-<n>. The author of a pull request from a fork chooses
+# that name, so the name is passed to the checker only when the head
+# branch is in this repository. What an import brings is held by the
+# import history check of chronitondb-import.yml. The checker's unit tests run in the
+# doclint-tests job of chronitondb-documents.yml. Every action is pinned to
+# a commit.
+name: ChronitonDB stock tests
+
+on:
+  pull_request:
+    branches:
+      - 'chronitondb-*'
+    types: [opened, reopened, synchronize, edited]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  stock-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: The checker from the base branch
+        id: checker
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          dir="$RUNNER_TEMP/doclint"
+          mkdir -p "$dir"
+          for file in doclint.py markdown.py
+          do
+            if ! git show "origin/$BASE:tools/chronitondb/$file" > "$dir/$file" 2>/dev/null
+            then
+              echo "tools/chronitondb/$file is not on $BASE yet, so there is no checker to run. The check starts once it is merged."
+              echo "present=no" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          if ! grep -q '^    doclint.py stock-tests ' "$dir/doclint.py"
+          then
+            echo "The checker on $BASE has no stock-tests command yet. The check starts once it is merged."
+            echo "present=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "present=yes" >> "$GITHUB_OUTPUT"
+
+      - name: Stock test files
+        if: steps.checker.outputs.present == 'yes'
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # The branch name counts only for a branch of this repository. A
+          # fork's branch has any name its author likes.
+          BRANCH=""
+          if [ "$HEAD_REPO" = "$REPO" ]
+          then
+            BRANCH="$HEAD_REF"
+          fi
+          # The description as it is now, not as the event that started
+          # this run saw it.
+          gh api "repos/$REPO/pulls/$NUMBER" --jq '.body // ""' > "$RUNNER_TEMP/body.txt"
+          python3 "$RUNNER_TEMP/doclint/doclint.py" stock-tests --repo . --base "origin/$BASE" --source HEAD --branch "$BRANCH" --body "$RUNNER_TEMP/body.txt"

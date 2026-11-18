@@ -28,6 +28,7 @@ before they commit.
     doclint.py history --repo DIR --templates REF [--write | --check] PATH...
     doclint.py indexes --repo DIR --templates REF [--source SRC] [--write]
     doclint.py delta --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE]
+    doclint.py stock-tests --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE]
 
 SRC is where the documents are read: "index" (the default, the staged
 version), "worktree", or a commit. REF is where the rules are read, the line
@@ -306,6 +307,39 @@ commit SRC. No entry is renamed or deleted: its file name is its id, and a
 change no longer carried keeps its entry with Status Dropped. It prints
 "stock PATH" on stdout for each stock file, and the reason a change passes
 without an entry.
+
+stock-tests is the check of docs/process/testing.md, Policy 4, on the
+change at SRC since its merge base with REF: a pre-existing test file of
+Apache Cassandra changes in four ways only (principles.md, PRINCIPLE-013).
+Such a file is one the line has at the merge base, in a directory named
+test, that is not ChronitonDB's own by the table Where things live, read
+as the delta check reads it. The permits are read at REF, the line, never
+from the change, so a pull request cannot write its own. A changed file
+passes by one of:
+
+  1. NAME, the pull request's branch, is an import from Apache
+     Cassandra: import/cassandra-<...>, a release or Apache's branch, or
+     import/CASSANDRA-<n>, a single fix. Such an import brings Apache
+     Cassandra's own test files, and the import history check holds what
+     it brings. A commit of another project is no import from Apache
+     Cassandra and takes one of the other ways. NAME is taken as given,
+     as for delta
+  2. FILE, the pull request's description, names an issue on a line
+     "Fixes #<issue>" or "Part of #<issue>", and the fix record of that
+     issue at REF, a document under docs/design/ whose first heading
+     opens "# Fix: #<issue>", lists the file in its Planned file list
+     with the word test
+  3. the design record or fix record of a named issue at REF has a line
+     "Pinned listing: <path>" with the file's path, and the change only
+     adds lines to the file
+  4. a decision record at REF with the Status Accepted has a line "Stock
+     test change: <path> for #<issue>, because <reason>" with the file's
+     path, a named issue and a reason of three words or more
+
+A record whose Status opens with Superseded permits nothing. A stock test
+file that is deleted, renamed, binary, a symbolic link or changed in its
+type passes only in an import. It prints "stock-test PATH: <way>" on
+stdout for each file that passes, and "stock-tests N checked M failed".
 
 Findings go to stderr as "PATH:LINE: reason", exit 1 when there is one.
 A usage error exits 2.
@@ -1579,6 +1613,202 @@ def check_register(repo, base, where, branch, body):
             shown = ", ".join(stock[:10]) + (" and %d more" % (len(stock) - 10) if len(stock) > 10 else "")
             errors.append("the change touches %d stock file(s), %s, and adds or updates no entry in docs/delta/. Add its entry from docs/process/templates/delta-entry.md with its row in the Index of docs/delta/README.md, or update the entry of the change it extends, with a new Last-Update. Only when no entry applies, give the reason in the pull request description on a line 'No delta entry: <reason>'" % (len(stock), shown))
     return errors, stock, entries, note
+
+
+# The stock test check: the directory name that marks a test file, the
+# lines of a pull request description that name its issue, the heading of
+# a record of one issue, and the lines of the records that permit a change
+# to a stock test file.
+TEST_DIR = re.compile(r"(?:^|/)test/")
+ISSUE_LINE = re.compile(r"^(?:Fixes|Part of) #([0-9]+)\.?$")
+RECORD_OF = re.compile(r"^(Fix|Design): #([0-9]+)(?![0-9])")
+PLANNED = re.compile(r"^(\S+) (new|edit|test|stock)$")
+PINNED = re.compile(r"^Pinned listing: ([^\s{}`]+)$")
+TEST_CHANGE = re.compile(r"^Stock test change: ([^\s{}`]+) for #([0-9]+), because (\S.*)$")
+APACHE_IMPORT = re.compile(r"^import/(?:cassandra-[0-9]|CASSANDRA-[1-9])")
+SYMLINK = "120000"
+FOUR_WAYS = ("A pre-existing test file of Apache Cassandra changes in four ways only (docs/process/principles.md, PRINCIPLE-013): "
+             "in an import from Apache Cassandra, in a fix to stock whose merged fix record lists the file as 'test' in its Planned file list, "
+             "by lines added to a listing that the merged design record or fix record names on a line 'Pinned listing: <path>', "
+             "or with an accepted decision record that has the line 'Stock test change: <path> for #<issue>, because <reason>'. "
+             "The record merges first, in its own pull request, and this pull request names its issue on a line 'Fixes #<issue>' "
+             "or 'Part of #<issue>'. A fork feature puts its tests in its own files (docs/process/conventions.md, Where things live)")
+
+
+def is_stock_test(path, paths):
+    return bool(TEST_DIR.search(path)) and not is_own(path, paths)
+
+
+def diff_since(repo, merge_base, where, *options):
+    args = ["diff", "-z", "-M"] + list(options)
+    if where == "index":
+        args.append("--cached")
+    args.append(merge_base)
+    if where not in ("index", "worktree"):
+        args.append(where)
+    return git(repo, *args)
+
+
+def file_changes(repo, merge_base, where):
+    """Each file changed at SRC since the merge base, by its path there:
+    (status, path at the merge base, mode before, mode after, lines
+    added, lines removed), the two counts None for a binary file. None
+    when the change cannot be read."""
+    raw = diff_since(repo, merge_base, where, "--raw", "--abbrev=40")
+    counts = diff_since(repo, merge_base, where, "--numstat")
+    if raw is None or counts is None:
+        return None
+    lines = {}
+    words = counts.split("\0")
+    index = 0
+    while index < len(words) and words[index]:
+        added, removed, path = words[index].split("\t", 2)
+        if path:
+            index += 1
+        else:
+            path = words[index + 2]
+            index += 3
+        lines[path] = (None, None) if added == "-" else (int(added), int(removed))
+    found = {}
+    words = raw.split("\0")
+    index = 0
+    while index + 1 < len(words) and words[index]:
+        before, after, _, _, status = words[index].lstrip(":").split(" ")
+        if status[0] in "RC":
+            old, path = words[index + 1], words[index + 2]
+            index += 3
+        else:
+            old = path = words[index + 1]
+            index += 2
+        found[path] = (status[0], old, before, after) + lines.get(path, (None, None))
+    return found
+
+
+def issues_of(body):
+    """The issues a pull request description names on its lines "Fixes
+    #<issue>" and "Part of #<issue>"."""
+    found = []
+    for line in (body or "").splitlines():
+        match = ISSUE_LINE.match(line.strip())
+        if match and match.group(1) not in found:
+            found.append(match.group(1))
+    return found
+
+
+def plain_lines(doc):
+    return [doc.visible[index].strip() for index in range(len(doc.lines)) if index not in doc.fenced and index not in doc.commented]
+
+
+def test_permits(repo, base):
+    """What the records at REF permit, as three lists: (issue, path,
+    record) for each file a fix record plans as test, the same for each
+    Pinned listing line of a design record or fix record, and for each
+    Stock test change line of an accepted decision record, when its
+    reason has three words or more."""
+    planned, pinned, approved = [], [], []
+    listing = git(repo, "ls-tree", "-r", "--name-only", base, "--", "docs/design/", "docs/decisions/") or ""
+    for path in listing.split("\n"):
+        kind = doc_type(path, "") if path.endswith(".md") else None
+        if kind != "decision" and len(path.split("/")) != 4:
+            continue
+        text = git(repo, "show", "%s:%s" % (base, path))
+        if text is None:
+            continue
+        doc = Markdown(path, text)
+        fields, _ = control_table(doc)
+        status = fields["Status"][0] if fields and "Status" in fields else ""
+        if kind == "decision":
+            if status != "Accepted":
+                continue
+            for line in plain_lines(doc):
+                match = TEST_CHANGE.match(line)
+                if match and len(match.group(3).split()) >= REASON_WORDS:
+                    approved.append((match.group(2), match.group(1), path))
+            continue
+        heading = RECORD_OF.match(first_heading(text))
+        if not heading or status.startswith("Superseded"):
+            continue
+        issue = heading.group(2)
+        for line in plain_lines(doc):
+            match = PINNED.match(line)
+            if match:
+                pinned.append((issue, match.group(1), path))
+        span = plain_section_span(doc, "Planned file list")
+        if heading.group(1) == "Fix" and span is not None:
+            for index in range(span[0] + 1, span[1]):
+                if index in doc.fenced and index not in doc.fences:
+                    match = PLANNED.match(doc.lines[index].strip())
+                    if match and match.group(2) == "test":
+                        planned.append((issue, match.group(1), path))
+    return planned, pinned, approved
+
+
+def check_stock_tests(repo, base, where, branch, body):
+    """The stock test check. Returns the findings, for each stock test
+    file the change touches that passes the file and the way it passes,
+    and the number of stock test files the change touches."""
+    conventions = git(repo, "show", "%s:%s" % (base, CONVENTIONS))
+    paths = own_paths(conventions) if conventions else []
+    if not paths:
+        return ["%s on %s has no Where things live table, so ChronitonDB's own files cannot be told from stock files" % (CONVENTIONS, base)], [], 0
+    head = "HEAD" if where in ("index", "worktree") else where
+    merge_base = (git(repo, "merge-base", base, head) or "").strip()
+    changed = file_changes(repo, merge_base, where) if merge_base else None
+    if changed is None:
+        return ["no merge base of %s and %s, so the change cannot be read. Fetch the line first" % (base, where)], [], 0
+    touched = []
+    for path in sorted(changed):
+        status, old, before, after, added, removed = changed[path]
+        # A file the change adds is not a pre-existing one. A renamed file
+        # is, by the name the line has it under.
+        if status != "A" and is_stock_test(old, paths) and git(repo, "cat-file", "-e", "%s:%s" % (merge_base, old)) is not None:
+            touched.append((old, path, status, before, after, added, removed))
+    if not touched:
+        return [], [], 0
+    if branch and APACHE_IMPORT.match(branch):
+        way = "the branch %s is an import from Apache Cassandra, which brings its own test files. The import history check holds what it brings" % branch
+        return [], [(old, way) for old, _, _, _, _, _, _ in touched], len(touched)
+    issues = issues_of(body)
+    planned, pinned, approved = test_permits(repo, base)
+    errors, passed = [], []
+    for old, path, status, before, after, added, removed in touched:
+        refused = None
+        if status == "D":
+            refused = "is deleted"
+        elif status in "RC":
+            refused = "is renamed to %s" % path
+        elif status == "T" or SYMLINK in (before, after):
+            refused = "is or becomes a symbolic link or another type of file"
+        elif added is None:
+            refused = "is a binary file"
+        if refused:
+            errors.append("%s: the file %s. A pre-existing test file of Apache Cassandra is deleted, renamed, replaced by a link "
+                          "or changed as a binary file only by an import from Apache Cassandra" % (old, refused))
+            continue
+        record = next((record for issue, name, record in planned if name == old and issue in issues), None)
+        if record:
+            passed.append((old, "the fix record %s plans it as test" % record))
+            continue
+        record = next((record for issue, name, record in approved if name == old and issue in issues), None)
+        if record:
+            passed.append((old, "the decision record %s approves the change" % record))
+            continue
+        record = next((record for issue, name, record in pinned if name == old and issue in issues), None)
+        if record and not removed:
+            passed.append((old, "%s names it as a pinned listing and the change only adds lines" % record))
+        elif record:
+            errors.append("%s: %s names the file as a pinned listing, and the change removes or alters %d line(s) of it. "
+                          "A pinned listing only gains lines. A change to an existing line needs an accepted decision record with the line "
+                          "'Stock test change: %s for #<issue>, because <reason>'" % (old, record, removed, old))
+        elif not issues:
+            errors.append("%s: the file is a pre-existing test file of Apache Cassandra and the pull request description names no issue, "
+                          "so no record on %s can permit the change" % (old, base))
+        else:
+            errors.append("%s: the file is a pre-existing test file of Apache Cassandra and no record on %s of %s permits the change"
+                          % (old, base, " or ".join("#" + issue for issue in issues)))
+    if errors:
+        errors.append(FOUR_WAYS)
+    return errors, passed, len(touched)
 
 
 MILESTONE_STATUSES = ("delivered", "not delivered", "delivered in part, as planned")
@@ -3110,7 +3340,7 @@ def check_settings(repo, base, where):
     return errors, len(apache_now)
 
 
-def run_delta(args):
+def run_delta(args, stock_tests=False):
     repo, base, where, branch, body = None, None, "index", None, None
     index = 0
     while index < len(args):
@@ -3141,6 +3371,14 @@ def run_delta(args):
         except (OSError, UnicodeDecodeError):
             sys.stderr.write("the pull request description %s cannot be read\n" % body)
             return 2
+    if stock_tests:
+        errors, passed, checked = check_stock_tests(repo, base, where, branch, text)
+        for path, way in passed:
+            print("stock-test %s: %s" % (path, way))
+        for error in errors:
+            sys.stderr.write(error + "\n")
+        print("stock-tests %d checked %d failed" % (checked, checked - len(passed) if checked else len(errors)))
+        return 1 if errors else 0
     errors, stock, entries, note = check_register(repo, base, where, branch, text)
     for path in stock:
         print("stock %s" % path)
@@ -3157,6 +3395,8 @@ def main(argv):
         return run_index(argv[1:])
     if argv and argv[0] == "delta":
         return run_delta(argv[1:])
+    if argv and argv[0] == "stock-tests":
+        return run_delta(argv[1:], stock_tests=True)
     if argv and argv[0] == "history":
         return run_history(argv[1:])
     if argv and argv[0] == "indexes":

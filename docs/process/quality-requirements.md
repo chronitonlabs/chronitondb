@@ -50,7 +50,7 @@ Automatic behaviour the user did not ask for, and that changes results, cost or 
 
 ### Compatibility with Apache Cassandra
 
-An application that moves onto ChronitonDB behaves as it did on Apache Cassandra, and a user can always move back: [PRINCIPLE-001](principles.md#principle-001). The rules that follow from it are principles too:
+An application that moves onto ChronitonDB behaves as it did on Apache Cassandra, and a user can move back, by the steps each release states: [PRINCIPLE-001](principles.md#principle-001) and [PRINCIPLE-003](principles.md#principle-003). The rules that follow from it are principles too:
 
 1. What operators see stays as stock where that is reasonable, and a difference there is recorded in the [delta register](../delta/README.md) and the release notes, not refused: [PRINCIPLE-002](principles.md#principle-002).
 2. A user moves between Apache Cassandra and ChronitonDB on the same data files, by a runbook: [PRINCIPLE-003](principles.md#principle-003).

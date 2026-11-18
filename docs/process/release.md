@@ -126,6 +126,8 @@ The release version does not say which Apache content a release carries, so its 
 
 The release engineer takes the first three from the line's git history: the Apache release tags it contains, Apache's branch, and its import commits. See [upstream.md](upstream.md) and [conventions.md](conventions.md#change-logs-and-release-notes).
 
+The release notes and the release proposal also state which Apache Cassandra release, or releases, a cluster on the release can move back to, or that there is none yet. See [Moving back to Apache Cassandra](#moving-back-to-apache-cassandra).
+
 ### The version a running node reports
 
 A running node reports a different string from its release version to other nodes and to drivers, in gossip, `system.local`, `system.peers_v2` and the drivers. This is the node version: `<Apache version>+chronitondb.<feature level>`, for example `5.0.10+chronitondb.1`.
@@ -160,12 +162,13 @@ ChronitonDB is a fork, so it has its own packaging and its own names, separate f
 
 ### The configuration file
 
-1. ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`. It started from Apache's `conf/cassandra_latest.yaml` and carries ChronitonDB's own settings and values. The rule is [PRINCIPLE-026](principles.md#principle-026).
+1. ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`. It started from Apache's `conf/cassandra_latest.yaml` and carries ChronitonDB's own settings and values. For the settings of the entry condition it ships the values of that file. The rule is [PRINCIPLE-026](principles.md#principle-026).
 2. A fresh install gets it as its `cassandra.yaml`, in `/etc/chronitondb`.
 3. Apache's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched, as the upstream reference.
 4. A node switched from Apache Cassandra keeps the operator's own file.
-5. Each line's upgrade runbook states the minimum setup an existing Apache Cassandra cluster MUST reach before it switches. The list is published with the line's first release.
+5. Each line's upgrade runbook states the minimum setup an existing Apache Cassandra cluster MUST reach before it switches. The list is published with the line's first release. The minimum setup is the entry condition of [PRINCIPLE-003](principles.md#principle-003): the latest Apache Cassandra release of the line's major version, with all of that version's own options on, which are the values of Apache's `conf/cassandra_latest.yaml`. A cluster on an older version, or in a compatibility mode for one, reaches that setup on Apache Cassandra first. No older version and no compatibility mode for one is supported.
 6. A node checks the minimum setup at every start. It refuses to start when the setup is not met, and names each unmet setting and the runbook step that sets it.
+7. The package also ships its own logging configuration beside Apache's. It names the project's own package at DEBUG, which Apache's file does not. The runbook has a step for a node that keeps the operator's file.
 
 Our file holds every setting of Apache's two files, active or commented, or leaves one out on a line `# Left out: <setting>: <reason>`. A setting Apache removes is removed from our file too, or flagged on a line `# Apache removed: <setting>`. A pull request check will enforce both once it exists.
 
@@ -180,6 +183,17 @@ How Apache's configuration changes reach our file is in [upstream.md](upstream.m
 5. They report what else on the machine still refers to `cassandra`.
 
 A runbook covers the minimum setup to reach first, the order of nodes, the checks before and after each node, and the rollback to Apache's package.
+
+### Moving back to Apache Cassandra
+
+The rule is [PRINCIPLE-003](principles.md#principle-003).
+
+1. Each release states, in its release notes, which Apache Cassandra release, or releases, a cluster on it can move back to. It says so when there is none yet, for example while the line holds an on-disk version that no Apache Cassandra release has yet.
+2. Moving back follows the steps the release gives. It does not have to be a swap of binaries on untouched files.
+3. The steps say what is removed first. For example the project's own keys are removed from the configuration file, since Apache Cassandra refuses to start on a key it does not know.
+4. The target is an Apache Cassandra set up as the entry condition says.
+5. A step of Apache Cassandra's own that has no way back is named as a prerequisite.
+6. The Java version of the line is a prerequisite in both directions: Java 17 on the 5.0 line and Java 21 on the 6.0 line. See [conventions.md](conventions.md#code-style).
 
 ## Release outputs
 

@@ -45,7 +45,7 @@ The rules behind this policy are stated in full in [principles.md](principles.md
 | Golden corpora | Output that must stay identical across library versions and lines, compared with a fixed expected result | Where a feature needs them |
 | Parity suite | Stock behaviour is unchanged with every fork feature off | `test/parity/` and the normal build |
 
-A change runs its tests in every test configuration whose settings the changed code reads. For example a change that touches compaction or an on-disk format runs on both sstable formats and both unit test configurations. So does a change that reads the memtable implementation or the default index implementation. The rule is [PRINCIPLE-067](principles.md#principle-067).
+A change runs its tests in every test configuration whose settings the changed code reads. Apache Cassandra's build has six unit test configurations, `test`, `test-latest`, `test-oa`, `test-compression`, `test-cdc` and `test-system-keyspace-directory`, and two for in-JVM distributed tests. The project's own tests run on the options of the entry condition of [PRINCIPLE-003](principles.md#principle-003), which `test-latest` and the latest configuration of the in-JVM distributed tests set. A test that needs another setting, such as compression or change data capture, sets it on top of those options. For example a change that touches compaction or an on-disk format runs on both sstable formats, since a cluster that met the entry condition can still hold sstables in the older format. The rule is [PRINCIPLE-067](principles.md#principle-067).
 
 ## Scenarios
 
@@ -71,9 +71,11 @@ Scenarios are written in Gherkin and run with Cucumber, in the fork's own test m
 
 ## Upgrade and rollback tests
 
-1. ChronitonDB writes its own upgrade tests for its supported paths: from Apache Cassandra on the same major version to ChronitonDB, and from one ChronitonDB release to the next.
+1. ChronitonDB writes its own upgrade tests for its supported paths: from the latest Apache Cassandra release of the same major version, set up as the entry condition of [PRINCIPLE-003](principles.md#principle-003) says, to ChronitonDB and back, and from one ChronitonDB release to the next.
 2. A milestone that introduces an on-disk format change has upgrade and rollback tests among its exit criteria.
-3. Apache's own upgrade tests for paths ChronitonDB does not support are not run on the lines.
+3. Apache's own upgrade tests for paths ChronitonDB does not support, such as a path from an older major version, are not run on the lines.
+4. An upgrade test of the project names both versions explicitly. The older version is built under a jar name that tells an Apache Cassandra release from a release of the line. Apache Cassandra's runner names a jar by the Apache version alone, which a release of the line shares.
+5. Apache Cassandra's upgrade test runner refuses Java 17, the Java version of the 5.0 line. The change that lets it run there is a change to a stock file, with its delta entry.
 
 ## Benchmarks
 

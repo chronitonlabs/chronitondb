@@ -40,7 +40,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **An application behaves as it did on Apache Cassandra, and a user can move back.** An application that moves onto the project's database MUST behave as it did on Apache Cassandra, and a user MUST be able to move back to Apache Cassandra. A change to what an application sees from a stock feature is a feature, and it MUST sit behind a feature switch that is off by default. What an application sees is its results, its errors, its warnings and the bytes on the wire.
 
 1. **Applies to.** Every change on a line. For example a read that would return other rows for a stock statement, a new warning on a stock statement, or a changed frame of the native protocol.
-2. **Edge.** A fix to a defect in stock is not a feature and is not gated, see [PRINCIPLE-004](#principle-004).
+2. **Edge.** A fix to a defect in stock is not a feature and is not gated, see [PRINCIPLE-004](#principle-004). Which Apache Cassandra release a cluster can move back to, and by which steps, is stated for each release: [PRINCIPLE-003](#principle-003).
 3. **See.** [DEC-GOV-0001](../decisions/DEC-GOV-0001-what-stays-as-apache-cassandra-has-it.md). [quality-requirements.md](quality-requirements.md#compatibility-with-apache-cassandra), [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
 
 ### PRINCIPLE-002
@@ -53,11 +53,11 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-003
 
-**Moving between Apache Cassandra and the project is done on the same data files, by a runbook.** A user moves a cluster from Apache Cassandra onto a line, and back, on the same data files, by following a runbook that states its prerequisites. With every fork feature off, the state a node shares with others is as stock has it: schema tables, data files and their components, gossip and messages. Everything the project writes to that shared state can be removed by a step the runbook names. Moving MUST be possible. It is not promised to need no steps.
+**Moving between Apache Cassandra and the project is done on the same data files, by a runbook.** A user moves a cluster from Apache Cassandra onto a line, and back, on the same data files, by following a runbook that states its prerequisites. The entry condition for moving onto a line is a cluster on the latest Apache Cassandra release of the line's major version, with all of that version's own options on. Moving back needs documented steps. It does not have to be a swap of binaries on untouched files. Each release states which Apache Cassandra release, or releases, a cluster on it can move back to, and says when there is none yet. With every fork feature off, the state a node shares with others is as stock has it: schema tables, data files and their components, gossip and messages, and the logs a node replays at start, which are the commit log, hints, the batchlog and Paxos state. Everything the project writes to that shared state can be removed by a step the runbook names. A thing that makes an Apache Cassandra node refuse to start is acceptable when the release's steps say how to remove it. A state with no steps back is not acceptable: data that Apache Cassandra cannot read and that cannot be converted. Moving MUST be possible. It is not promised to need no steps.
 
-1. **Applies to.** Every change that writes to disk, to the schema or between nodes, and every line's upgrade runbook. For example a new sstable component, a new schema option, or a setting of the line's minimum setup, which a node checks at every start.
-2. **Edge.** The fixes and the differences the delta register lists. The supported paths are from Apache Cassandra of the same major version, and from one release of a line to the next.
-3. **See.** [release.md](release.md#the-configuration-file), [release.md](release.md#switching-a-node-from-apaches-package), [testing.md](testing.md#upgrade-and-rollback-tests), [templates/feature-spec.md](templates/feature-spec.md#7-compatibility).
+1. **Applies to.** Every change that writes to disk, to the schema or between nodes, and every line's upgrade runbook. For example a new sstable component, a new schema option, or a setting of the line's minimum setup, which a node checks at every start. The options of the entry condition are the values of Apache Cassandra's `conf/cassandra_latest.yaml`, such as no storage compatibility mode for an older major version, the newest sstable format and UUID sstable identifiers. The project ships those values, and moving back is to an Apache Cassandra configured the same way. The steps for moving back are for example these: they remove the project's keys from the configuration file, revoke a permission the project added, and leave no file in the data directories that Apache Cassandra cannot parse and no class name in the schema that it cannot load.
+2. **Edge.** The fixes and the differences the delta register lists. The supported paths are from Apache Cassandra of the same major version, and from one release of a line to the next. No older version of Apache Cassandra is supported, and no compatibility mode for one. A step of Apache Cassandra's own that has no way back is named in the release's steps as a prerequisite. So is the Java version of the line, in both directions.
+3. **See.** [release.md](release.md#the-configuration-file), [release.md](release.md#switching-a-node-from-apaches-package), [release.md](release.md#moving-back-to-apache-cassandra), [testing.md](testing.md#upgrade-and-rollback-tests), [templates/feature-spec.md](templates/feature-spec.md#7-compatibility).
 
 ### PRINCIPLE-004
 
@@ -105,7 +105,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **Apache Cassandra's files change only where needed.** Apache Cassandra's own files stay as Apache Cassandra has them wherever the project can put its own file beside them. A change to one is made only where it is needed, and it is the smallest that does the job.
 
-1. **Applies to.** Every file that came from Apache Cassandra, edited or not. For example the project keeps its own change log, configuration file, packaging and workflows beside Apache Cassandra's.
+1. **Applies to.** Every file that came from Apache Cassandra, edited or not. For example the project keeps its own change log, configuration file, logging configuration, packaging and workflows beside Apache Cassandra's.
 2. **Edge.** A change the work needs, with its delta entry. An import from Apache Cassandra changes these files as Apache Cassandra changed them.
 3. **See.** [upstream.md](upstream.md#apache-files-change-only-where-needed), [conventions.md](conventions.md#stock-files).
 
@@ -180,7 +180,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **An upgrade within a line changes a running cluster only through a fix or an import.** An upgrade within a line changes what a running cluster does only through a fix, a security fix or an import from Apache Cassandra, each named in the release notes. A feature's default does not change within a line. A new feature that is purely additive arrives switched on, unless it does work without being asked or adds anything nodes share, in which case it arrives off on that line. Within a line, the values the shipped configuration file holds change only for a fix, a security fix or an import from Apache Cassandra.
 
 1. **Applies to.** Every release of a line.
-2. **Edge.** A purely additive feature is on by default on every line, also when it is finished after a line's first release. Such a feature ships off by default on that line when it does work without being asked, such as a background task, a cache it fills or a pool it starts, or when it adds anything nodes share, such as a schema object, a message between nodes or a file that is streamed. Its design says which it is. It is on by default from the next new line.
+2. **Edge.** A purely additive feature is on by default on every line, also when it is finished after a line's first release. Such a feature ships off by default on that line when it does work without being asked, such as a background task, a cache it fills or a pool it starts, or when it adds anything nodes share, such as a schema object, a message between nodes or a file that is streamed. Its design says which it is. It is on by default from the next new line. An import that changes an on-disk version is named as such in the release notes, with the oldest release of the line a cluster can still roll back to.
 3. **See.** [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults), [release.md](release.md#what-a-release-may-contain), [upstream.md](upstream.md#configuration-changes).
 
 ### PRINCIPLE-019
@@ -243,7 +243,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-026
 
-**The project's settings live in its own configuration file.** The project ships its own configuration file, `conf/cassandra_chronitondb.yaml`, which carries its own settings and values. Apache Cassandra's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched. A node switched from Apache Cassandra keeps the operator's own file.
+**The project's settings live in its own configuration file.** The project ships its own configuration file, `conf/cassandra_chronitondb.yaml`, which carries its own settings and values. The values live in that file. The definition of a setting is a field reachable from the stock configuration class, where an import can conflict. Apache Cassandra's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched. A node switched from Apache Cassandra keeps the operator's own file.
 
 1. **Applies to.** Every setting the project adds or ships with another value.
 2. **Edge.** None.
@@ -566,7 +566,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **The kind of test proves the claim.** The kind of test is picked from the claim the design makes. A kind that cannot prove the claim does not count, however many of its tests pass. A change runs its tests in every test configuration whose settings the changed code reads.
 
 1. **Applies to.** Every test plan. For example a claim about several nodes needs a distributed test, a claim about an upgrade needs an upgrade test, and a change that touches compaction or an on-disk format runs on both sstable formats.
-2. **Edge.** None.
+2. **Edge.** The project's own tests run on the options of the entry condition only, since no other setup is supported: [PRINCIPLE-003](#principle-003).
 3. **See.** [testing.md](testing.md#test-levels).
 
 ### PRINCIPLE-068

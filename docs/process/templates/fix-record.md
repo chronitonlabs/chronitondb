@@ -143,7 +143,7 @@ Scenario tags: {the requirement tags section 5 lists and this record's fix tag, 
 
 ### Formats and configurations
 
-{`yes` when the fix reads a setting the test configurations set differently, for example when it touches compaction, an on-disk format or the memtable, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
+{`yes` when the fix reads a setting the test configurations set differently, for example when it touches compaction, an on-disk format or the memtable, so the tests also run with both sstable formats and in every test configuration [testing.md](../testing.md#test-levels) asks for. Otherwise `no`.}
 
 ## Where problems could occur
 

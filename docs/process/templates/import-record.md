@@ -93,7 +93,7 @@ Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-
 
 ### Formats and configurations
 
-{`yes` when the import reads a setting the test configurations set differently, for example when it touches compaction, an on-disk format or the memtable, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
+{`yes` when the import reads a setting the test configurations set differently, for example when it touches compaction, an on-disk format or the memtable, so the tests also run with both sstable formats and in every test configuration [testing.md](../testing.md#test-levels) asks for. Otherwise `no`.}
 
 ## 6. Apache Cassandra behaviour confirmed
 

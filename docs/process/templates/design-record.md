@@ -174,7 +174,7 @@ These rules apply to every source:
 
 ### Apache Cassandra guard
 
-{The stock runs that must not move, and for a change with a switch the run with the switch off that must match stock.}
+{The stock runs the change is compared against: with the feature off, and with it on but unused. A measured slowdown of operations that do not use the feature is reported here with its numbers and what causes it, for the maintainers to decide. See [PRINCIPLE-052](../principles.md#principle-052).}
 
 ### What was not measured
 

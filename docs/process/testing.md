@@ -41,7 +41,7 @@ The rules behind this policy are stated in full in [principles.md](principles.md
 | Scenarios | A fork feature's requirements hold as written, with its switch off and on | `test/bdd/` |
 | Python distributed tests | Behaviour of real node processes and tools, where in-JVM tests cannot reach | Apache Cassandra's Python dtest suite |
 | Upgrade and rollback tests | A node moves from Apache Cassandra to ChronitonDB and back, and from one ChronitonDB release to the next, with data and queries intact during and after the roll | Upgrade tests for the supported paths |
-| Benchmarks | Performance claims in a design record hold, and stock performance does not move | `test/microbench/` and the load tests the design names |
+| Benchmarks | Performance claims in a design record hold, and what a feature costs the operations that do not use it is measured against stock | `test/microbench/` and the load tests the design names |
 | Golden corpora | Output that must stay identical across library versions and lines, compared with a fixed expected result | Where a feature needs them |
 | Parity suite | Stock behaviour is unchanged with every fork feature off | `test/parity/` and the normal build |
 
@@ -80,7 +80,7 @@ Scenarios are written in Gherkin and run with Cucumber, in the fork's own test m
 1. Pull request checks block only on counted values, such as allocations per operation, work counters, bytes written per compaction and index bytes per raw byte, and on benchmarks that fail to run. They never block on timing. The rule is [PRINCIPLE-053](principles.md#principle-053).
 2. Once dedicated benchmark hardware is in place, timing results are tracked over time, and a change point in the timings blocks the next release.
 3. Absolute timing numbers come only from pinned or dedicated hardware.
-4. Each design record names its benchmarks, their thresholds and the stock runs that must not move, or gives the reason the checklist line does not apply, as [quality-requirements.md](quality-requirements.md) allows. See [templates/design-record.md](templates/design-record.md).
+4. Each design record names its benchmarks, their thresholds and the stock runs the change is compared against, or gives the reason the checklist line does not apply, as [quality-requirements.md](quality-requirements.md) allows. A measured slowdown of operations that do not use the feature is reported to the maintainers, who decide: [PRINCIPLE-052](principles.md#principle-052). See [templates/design-record.md](templates/design-record.md).
 
 ## When each test runs
 

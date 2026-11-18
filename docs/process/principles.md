@@ -168,7 +168,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-017
 
-**A purely additive feature is on by default, a behaviour-changing feature is off.** A purely additive feature is reachable only through something stock Apache Cassandra does not have. It is on by default: its switch, where it has one, ships on, and an operator turns off what they do not want. A behaviour-changing feature changes what an application sees from something stock Apache Cassandra already does: results, errors, warnings, the bytes on the wire or the performance of existing operations. Its default MUST be off on every line.
+**A purely additive feature is on by default, a behaviour-changing feature is off.** A purely additive feature is reachable only through something stock Apache Cassandra does not have. It is on by default: its switch, where it has one, ships on, and an operator turns off what they do not want. A behaviour-changing feature changes what an application sees from something stock Apache Cassandra already does: results, errors, warnings or the bytes on the wire. Its default MUST be off on every line.
 
 1. **Applies to.** Every fork feature and each of its switches. The feature spec states the class of each, with the reason, and a maintainer approves the class with the spec.
 2. **Edge.** A purely additive feature that is finished after its line's first release has the edge of [PRINCIPLE-018](#principle-018).
@@ -434,7 +434,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-052
 
-**The stock path is guarded.** With a fork feature off, the stock path it touches shows no change in what an application sees, and stock performance does not move. The design names the stock runs that must not move, and for a change with a switch the run with the switch off that must match stock.
+**The stock path is guarded.** With a fork feature off, the stock path it touches shows no change in what an application sees. A fork feature SHOULD NOT slow operations that do not use it. That is measured by benchmark against stock, with the feature off and with it on but unused, and the design names those runs. A measured slowdown does not block by a fixed threshold. It is reported to the maintainers with its numbers and what causes it, and they decide whether to accept it, have it fixed or put it behind a switch. A speed up needs no switch.
 
 1. **Applies to.** Every change that touches a path stock work runs on.
 2. **Edge.** None.

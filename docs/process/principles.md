@@ -64,7 +64,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **A fix to a defect in stock is applied, and only the maintainers say what is a fix.** A fix to a defect in stock is not a feature and MUST NOT be gated behind a switch. It is applied, with its fix record, its delta entry and a release note. A change to stock code counts as a fix only when the maintainers approve it as one, by merging its fix record after the reviewer's finding on the evidence. A change to stock behaviour that is not approved as a fix is a behaviour change under [PRINCIPLE-001](#principle-001).
 
 1. **Applies to.** Every change to Apache Cassandra's own code or behaviour. The evidence is a test that reproduces the fault and fails before the change, and either an Apache Cassandra ticket that treats the behaviour as a bug or the documented behaviour the fault breaks.
-2. **Edge.** None. A fix record that is not merged is not a fix, and code for it MUST NOT merge before it. The reviews of a security fix stay in its private advisory until disclosure.
+2. **Edge.** A fix is not gated and applies on each node as it is upgraded. Where a fix would cause errors or wrong results while a cluster is half upgraded, its fix record says so, and the maintainers decide how that fix rolls out. A fix record that is not merged is not a fix, and code for it MUST NOT merge before it. The reviews of a security fix stay in its private advisory until disclosure.
 3. **See.** [DEC-GOV-0001](../decisions/DEC-GOV-0001-what-stays-as-apache-cassandra-has-it.md). [maintenance.md](maintenance.md#corrective-fixing-a-fault).
 
 ### PRINCIPLE-005
@@ -161,18 +161,18 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-016
 
-**A feature has a switch when something needs it to be turned off.** A behaviour-changing feature always has a feature switch. So does a feature built in more than one milestone, whatever its class: being reachable before it is finished is a risk that needs it turned off. Any other purely additive feature has a switch only when something needs it to be turned off: a requirement, a decision of the maintainers, a rule of these pages, or a named risk such as load on a shared path. Otherwise its design says in one line why it needs none. How a switch is set is the design's choice.
+**A feature has a switch when something needs it to be turned off.** A behaviour-changing feature always has a feature switch. So does a feature built in more than one milestone, whatever its class: being reachable before it is finished is a risk that needs it turned off. So does a feature that sends, gossips, streams or commits anything a node without it cannot read: it is not used until every node has it. Any other purely additive feature has a switch only when something needs it to be turned off: a requirement, a decision of the maintainers, a rule of these pages, or a named risk such as load on a shared path. Otherwise its design says in one line why it needs none. How a switch is set is the design's choice.
 
 1. **Applies to.** Every fork feature. For example a switch is a node setting with a runtime command, or an option on the schema object that owns the data.
-2. **Edge.** Work with nothing to turn off, such as documentation, packaging or a build change, has no switch.
+2. **Edge.** Work with nothing to turn off, such as documentation, packaging or a build change, has no switch. A feature that is held back until every node has it uses one of two ways, and its design says which and why. The ordinary way is the operator's: the feature ships off, the operator upgrades every node, turns the feature on with a runtime command and then sets it in the configuration file so that a restart keeps it. The release's steps say that order. The other way is an automatic gate on what each node reports, used where the design shows that the operator's switch alone is not safe enough for that feature. Such a feature never falls back in silence to an older behaviour: [PRINCIPLE-028](#principle-028).
 3. **See.** [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
 
 ### PRINCIPLE-017
 
 **A purely additive feature is on by default, a behaviour-changing feature is off.** A purely additive feature is reachable only through something stock Apache Cassandra does not have. It is on by default: its switch, where it has one, ships on, and an operator turns off what they do not want. A behaviour-changing feature changes what an application sees from something stock Apache Cassandra already does: results, errors, warnings or the bytes on the wire. Its default MUST be off on every line.
 
-1. **Applies to.** Every fork feature and each of its switches. The feature spec states the class of each, with the reason, and a maintainer approves the class with the spec.
-2. **Edge.** A purely additive feature that is finished after its line's first release has the edge of [PRINCIPLE-018](#principle-018).
+1. **Applies to.** Every fork feature and each of its switches. The feature spec states the class of each, with the reason, and a maintainer approves the class with the spec. The default of a switch of the project is its default in the code. The shipped configuration file states the same value, and a test loads the shipped file and fails where the two differ. So a cluster switched from Apache Cassandra and a fresh cluster behave the same: an additive feature is on for a cluster the moment it switches, and the release notes say so. A stock setting the project ships with another value is in the file only, see [PRINCIPLE-007](#principle-007).
+2. **Edge.** A purely additive feature that is finished after its line's first release has the edge of [PRINCIPLE-018](#principle-018). A feature that is held back until every node has it has the edge of [PRINCIPLE-016](#principle-016).
 3. **See.** [DEC-GOV-0001](../decisions/DEC-GOV-0001-what-stays-as-apache-cassandra-has-it.md). [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults), [release.md](release.md#what-a-release-may-contain).
 
 ### PRINCIPLE-018
@@ -187,8 +187,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **With a feature off, nothing of it shows.** With a feature off, the feature MUST change nothing that stock Apache Cassandra does. Three things hold, as they apply, and the tests of the feature's off state prove them. Stock behaviour is unchanged, always. Each way a user or an operator can invoke the feature is refused with an error that names the switch. A feature with no such way in does nothing while off: its background work does not run, and no file, metric or other state of the feature appears.
 
-1. **Applies to.** Every feature that has a switch. For example a new statement is refused with an error that names the switch, and a scheduled background task with its switch off starts no thread, registers no metric and writes no file. While off, a feature writes no new files. A feature that is switched off starts no threads, does no work and sets aside no memory for itself.
-2. **Edge.** None.
+1. **Applies to.** Every feature that has a switch. For example a new statement is refused with an error that names the switch, and a scheduled background task with its switch off starts no thread, registers no metric and writes no file. While off, a feature writes no new files. A feature that is switched off starts no threads, does no work and sets aside no memory for itself. A class of the project that an option of Apache Cassandra can name is a way in too, see [PRINCIPLE-042](#principle-042).
+2. **Edge.** What Apache Cassandra builds once at startup exists while the feature is off and holds nothing: a virtual table, a metric group table or the directory of a table defined in code. For a feature whose objects live in the schema, off on a node means that the node accepts no statement that creates or alters such an object. An object that already exists keeps working on every node, and the design says how the feature is removed. Where a node setting is read is [PRINCIPLE-024](#principle-024).
 3. **See.** [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults), [testing.md](testing.md#scenarios).
 
 ### PRINCIPLE-020
@@ -203,9 +203,9 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-021
 
-**A setting that depends on the data belongs to the schema object that owns the data.** Behaviour that depends on the data is set on the schema object that owns the data, not by one global setting. A configured default applies when the object is created, altering the object changes the value, and a configured maximum bounds it.
+**A setting that depends on the data belongs to the schema object that owns the data.** Behaviour that depends on the data is set on the schema object that owns the data, not by one global setting. A configured default applies when the object is created: the node that receives the statement resolves it, and it is stored with the object. A change to the object changes the value. A configured maximum bounds what a node accepts, not what it already holds. Where a node setting is read is [PRINCIPLE-024](#principle-024).
 
-1. **Applies to.** Every limit or behaviour whose right value depends on the data. For example a size limit of an index is an index option, and a limit of a table level feature is a table option.
+1. **Applies to.** Every limit or behaviour whose right value depends on the data. For example a size limit of an index is an option of the index. Apache Cassandra has no statement that alters an index, so a design that puts a setting on an index says how the value is changed.
 2. **Edge.** A design that keeps such a setting global only states the reason, and the maintainers approve it with the design.
 3. **See.** [quality-requirements.md](quality-requirements.md#data-dependent-settings-belong-to-the-schema-object).
 
@@ -227,10 +227,10 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-024
 
-**Only an operator control may differ from node to node.** A value may differ from node to node only for an operator control: a kill switch, a limit, a fallback switch or another lever set by configuration or by a runtime command. The design says what a client sees while nodes differ. For a control that refuses work that is a refusal with an error that names the control, never a wrong or partial result. Anything that defines what a statement means or which rows it returns is never per node: it lives in the schema.
+**Only an operator control may differ from node to node.** A value may differ from node to node only for an operator control: a kill switch, a limit, a fallback switch or another lever set by configuration or by a runtime command. The design says what a client sees while nodes differ. For a control that refuses work that is a refusal, never a wrong or partial result, and the refusal names its control as [PRINCIPLE-025](#principle-025) says. Anything that defines what a statement means or which rows it returns is never per node: it lives in the schema. A node setting, whether a switch, a default or a maximum, is read only by the node that receives the statement from the client, never where a committed schema change is applied.
 
-1. **Applies to.** Every setting a feature adds. For example a limit an operator lowers on one loaded node refuses work there, and a time to live that decides which rows a read returns is an option of the table, the same on every node.
-2. **Edge.** None.
+1. **Applies to.** Every setting a feature adds. For example an operator lowers a limit on one loaded node. A statement that node coordinates is refused with a client error that names the limit. A request that node serves as a replica is refused there, and the client sees a request failure only where the request cannot meet its consistency level from the other replicas. A time to live that decides which rows a read returns is an option of the table, the same on every node.
+2. **Edge.** A behaviour-changing feature with no schema object can have its switch only as a node setting. Its design says what a client sees while nodes differ, and the release's steps say how the switch is set on every node.
 3. **See.** [quality-requirements.md](quality-requirements.md#a-runtime-command-changes-the-running-value-only).
 
 ### PRINCIPLE-025
@@ -238,7 +238,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **A refusal names its control.** A refusal names what the user or operator can change to lift it, where there is such a thing. A refusal with nothing to change says why the operation is refused.
 
 1. **Applies to.** Every refusal the project adds. For example a statement refused because a feature is off names the feature switch, a statement refused because a limit is reached names the setting that holds the limit, and a statement refused for want of a permission says which permission is missing.
-2. **Edge.** None.
+2. **Edge.** The error that names the control is promised on a coordinator. A refusal on a replica keeps the shape Apache Cassandra gives it: it reaches the client as a request failure with a reason code, and the control is named in a metric, a trace line and a rate limited log line on the replica.
 3. **See.** [quality-requirements.md](quality-requirements.md#a-refusal-names-its-control).
 
 ### PRINCIPLE-026

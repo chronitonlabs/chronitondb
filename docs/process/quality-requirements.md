@@ -84,9 +84,9 @@ A value may differ from node to node only for an operator control: a kill switch
 
 A refusal names what the user or operator can change to lift it, where there is such a thing. For example a statement refused because a feature is off names the feature switch. A statement refused because a limit is reached names the setting that holds the limit.
 
-### Coordination between nodes is model checked
+### A TLA+ model where the maintainers ask for one
 
-A design that adds or changes how nodes coordinate, such as a new message exchange, a state shared between nodes or an ordering rule, carries a TLA+ model of that protocol, checked by the TLC model checker. The model files and the checker's result go in the item's design directory, and the design record names them in its Quality requirements section.
+A design whose correctness depends on ordering, concurrency or shared state, across nodes or within one node across a crash and restart, is a candidate for a TLA+ model. The designer does not write one on its own judgement: the design record says why a model is believed to be needed and asks the maintainers, and the model is written only when they say yes. A design with no such dependence says in one line why it needs none, and asks nothing. A model that is written is checked by the TLC model checker. The model files and the checker's result go in the item's design directory, and the design record names them in its Quality requirements section.
 
 ## The checklist
 
@@ -98,7 +98,7 @@ Copy this table into the feature spec or design record. Fill the last column for
 | Performance efficiency | Memory budgets on coordinator and replica | |
 | Reliability | Isolation levers on coordinator and replica: thread pools, limits, load shedding, timeouts, kill switch | |
 | Reliability | Automatic fallbacks opt in on the schema object, with a node control that turns them off, each use counted and logged without flooding | |
-| Reliability | Coordination between nodes model checked, when the design changes it | |
+| Reliability | A TLA+ model where the maintainers asked for one, or one line on why the design needs none | |
 | Compatibility | An application behaves as it did on Apache Cassandra, and a change to what it sees from a stock feature is behind a switch that is off by default | |
 | Compatibility | What operators see stays as stock where that is reasonable, and each difference is recorded in the delta register and the release notes | |
 | Compatibility | Stock behaviour unchanged with the feature off | |

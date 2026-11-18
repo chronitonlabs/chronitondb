@@ -139,7 +139,7 @@ These rules apply to every source:
 
 {For a one-item change, the checklist table from [quality-requirements.md](../quality-requirements.md), each line answered with REQ ids or a reason it does not apply. For an item of a feature, cite the feature spec lines this item delivers.}
 
-{A design that changes how nodes coordinate names its checked model here: the model files in the item's design directory and the model checker's result. See [quality-requirements.md](../quality-requirements.md#coordination-between-nodes-is-model-checked).}
+{A design whose correctness depends on ordering, concurrency or shared state, across nodes or within one node across a crash and restart, says here why a TLA+ model is believed to be needed, and gives the maintainers' answer. A model they asked for is named here: the model files in the item's design directory and the model checker's result. A design with no such dependence says in one line why it needs none. See [quality-requirements.md](../quality-requirements.md#a-tla-model-where-the-maintainers-ask-for-one).}
 
 ## 7. Performance
 

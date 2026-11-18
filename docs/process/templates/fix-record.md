@@ -84,7 +84,7 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../cl
 
 {What changes, in plain words, and why this fix over the alternatives.}
 
-{A fix that changes how nodes coordinate names its checked model here: the model files in the item's design directory and the model checker's result. See [quality-requirements.md](../quality-requirements.md#coordination-between-nodes-is-model-checked).}
+{A fix whose correctness depends on ordering, concurrency or shared state, across nodes or within one node across a crash and restart, says here why a TLA+ model is believed to be needed, and gives the maintainers' answer. A model they asked for is named here: the model files in the item's design directory and the model checker's result. A fix with no such dependence says in one line why it needs none. See [quality-requirements.md](../quality-requirements.md#a-tla-model-where-the-maintainers-ask-for-one).}
 
 ## 5. Requirements
 

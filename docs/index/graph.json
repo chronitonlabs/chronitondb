@@ -90,7 +90,7 @@
    "status": "Current",
    "title": "Import order check suppressed for ChronitonDB code",
    "type": "Delta entry",
-   "version": "5"
+   "version": "4"
   },
   {
    "@id": "../delta/github-actions-pinned.md",

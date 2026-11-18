@@ -139,7 +139,7 @@ Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer fir
 
 ### Two review standards, picked by file
 
-1. **Stock Apache Cassandra files** get the strict Apache review: the smallest diff that does the job, a new helper only where it lets fork code share stock logic in place of a copy, and existing tests extended in place. A behaviour change that belongs to a feature sits behind the feature's switch. A fix to a defect in stock is applied and is not gated: it carries its fix record, its delta entry and a release note. It is a fix only once the maintainers have merged its fix record. See [maintenance.md](maintenance.md#corrective-fixing-a-fault). A stock file that imports ChronitonDB code is a hook point: it MUST be listed in the feature spec with its delta entry.
+1. **Stock Apache Cassandra files** get the strict Apache review: the smallest diff that does the job, and a new helper only where it lets fork code share stock logic in place of a copy. The tests of an approved fix to stock extend the existing stock test classes. A feature's tests go in its own files and leave the stock test files as they are, see [testing.md](testing.md#policy). A behaviour change that belongs to a feature sits behind the feature's switch. A fix to a defect in stock is applied and is not gated: it carries its fix record, its delta entry and a release note. It is a fix only once the maintainers have merged its fix record. See [maintenance.md](maintenance.md#corrective-fixing-a-fault). A stock file that imports ChronitonDB code is a hook point: it MUST be listed in the feature spec with its delta entry.
 2. **New ChronitonDB files** are reviewed against their approved design. Every other check still applies.
 
 ### Review rounds

@@ -76,6 +76,8 @@ Behaviour that depends on the data is set on the schema object that owns the dat
 
 A runtime command, such as a nodetool toggle, changes the value in memory only, on the node where it runs. The configuration file holds the value at startup. There is no separate persistence of runtime changes. A restart returns to the configured value. An option on a schema object is not a runtime toggle: it changes through the schema, as the rule above says.
 
+A value may differ from node to node only for an operator control: a kill switch, a limit, a fallback switch or another lever set by configuration or by a runtime command. The design says what a client sees while nodes differ. For a control that refuses work that is a refusal with an error that names the control, never a wrong or partial result. Anything that defines what a statement means or which rows it returns is never per node: it lives in the schema.
+
 ### A refusal names its control
 
 A refusal names what the user or operator can change to lift it, where there is such a thing. For example a statement refused because a feature is off names the feature switch. A statement refused because a limit is reached names the setting that holds the limit.

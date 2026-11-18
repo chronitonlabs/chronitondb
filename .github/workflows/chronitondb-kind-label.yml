@@ -17,9 +17,11 @@
 # maintenance category of the change (docs/process/README.md). A maintainer
 # sets the issue's kind at triage and the pull request carries the same. A
 # release proposal or promotion, which changes only docs/releases/, has no
-# category and passes with no kind label. It reruns when a label changes. A
-# required check on every line. It checks out nothing and runs no code from
-# the pull request, it only reads the pull request's labels and file names.
+# category and passes with no kind label. It reruns when a label changes and
+# reads the labels from the API when it runs, so quick label events cannot
+# leave an older answer. A required check on every line. It checks out
+# nothing and runs no code from the pull request, it only reads the pull
+# request's labels and file names.
 name: ChronitonDB kind label
 
 on:
@@ -30,6 +32,12 @@ on:
 
 permissions:
   pull-requests: read
+  issues: read
+
+# No concurrency group: GitHub keeps at most one waiting run per group and
+# cancels the older one, and a cancelled run leaves the required check
+# waiting. Every run reads the labels when it runs, so each answer is
+# current.
 
 jobs:
   kind-label:
@@ -37,7 +45,6 @@ jobs:
     steps:
       - name: Exactly one kind label
         env:
-          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.pull_request.number }}
@@ -48,6 +55,9 @@ jobs:
             echo "A release proposal or promotion has no category, no kind label needed."
             exit 0
           fi
+          # The labels as they are now, not as the event that started this
+          # run saw them.
+          LABELS="$(gh api "repos/$REPO/issues/$NUMBER/labels" --jq '[.[].name]')"
           kinds="$(printf '%s' "$LABELS" | jq -r '.[] | select(startswith("kind:"))')"
           count="$(printf '%s\n' "$kinds" | grep -c . || true)"
           if [ "$count" -ne 1 ]

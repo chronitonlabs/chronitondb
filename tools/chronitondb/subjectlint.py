@@ -20,7 +20,7 @@ squash or merge commit on the line, and the subjects of the commits a push
 brings to a line. The CI workflow chronitondb-subjects.yml runs it on every
 pull request and on every push to a line.
 
-    subjectlint.py title --repo DIR --rules REF [--commits RANGE] [--body FILE] TITLE
+    subjectlint.py title --repo DIR --rules REF [--commits RANGE] [--body FILE] [--branch NAME] TITLE
     subjectlint.py commits --repo DIR --rules REF RANGE
 
 REF is where the rules are read, the line itself, never the change being
@@ -54,6 +54,11 @@ A subject is checked for:
      where <owner>/<repo> is neither apache/cassandra, whose commits come
      as import(CASSANDRA-<n>), nor a repository of chronitonlabs. Rule 3
      is not applied to an import, whose subject is someone else's
+  6. with --branch, a title of type import only on a pull request whose
+     head branch NAME starts with "import/". The type lifts rules 2 and
+     3, so it is kept for imports. CI gives the name only for a branch of
+     this repository and an empty NAME for a branch of a fork, whose
+     author chooses its name
 
 commits checks the subject of each commit of RANGE on the first parent
 line, the squash and merge commits a line gets, not the commits an import
@@ -191,18 +196,24 @@ def check_footer(kind, scope, bang, description, messages, pr_body):
     return []
 
 
-def check_subject(subject, messages, types, limit, pr_body=None):
+def check_subject(subject, messages, types, limit, pr_body=None, branch=None):
     """The findings for one subject. messages is the text where the footer
     of a breaking change is read: the pull request's commit messages for
     a title, the commit message after the subject for a commit. pr_body is
-    the pull request description for a title, None for a commit."""
+    the pull request description for a title, None for a commit. branch is
+    the head branch of the pull request when the caller gives one, "" for
+    a branch that does not count, None when it is not checked."""
     match = FORM.match(subject)
     if not match:
-        return check_length(subject, limit) + ["the subject has the form 'type(scope): description', for example 'feat(fulltext): add the phrase operator'"]
+        return check_length(subject, limit) + ["the subject has the form 'type(scope): description', for example 'feat(compaction): count a skipped sstable once'"]
     kind, scope, bang, description = match.groups()
     if kind not in types:
         return check_length(subject, limit) + ["the type '%s' is not one of %s" % (kind, ", ".join(types))]
     if kind == "import":
+        if branch is not None and not branch.startswith("import/"):
+            return ["the type 'import' is only for an import, a pull request from an import/ branch of this repository. "
+                    "This pull request comes from %s. Use the type of the change it makes"
+                    % ("the branch '%s'" % branch if branch else "a branch of a fork or one with no name given")]
         if not scope:
             return ["an import takes one of the import forms: %s" % IMPORT_FORMS]
         errors = check_import(scope, description, bang)
@@ -214,7 +225,7 @@ def check_subject(subject, messages, types, limit, pr_body=None):
         errors.append("the subject names its scope, the area of the change, as in '%s(<scope>): %s'" % (kind, description))
         return errors
     if not SCOPE.match(scope):
-        errors.append("the scope '%s' is one word naming the area, for example fulltext, build or github" % scope)
+        errors.append("the scope '%s' is one word naming the area, for example compaction, build or github" % scope)
     listed = paths_in(LINE_SUFFIX.sub("", description))
     if listed:
         errors.append("the subject lists files (%s). Say what the change does, not which files it touches" % ", ".join(listed))
@@ -252,7 +263,7 @@ def main(argv):
     if not argv or argv[0] not in ("title", "commits"):
         sys.stderr.write(__doc__)
         return 2
-    found, rest = options(argv[1:], ("--repo", "--rules", "--body", "--commits"))
+    found, rest = options(argv[1:], ("--repo", "--rules", "--body", "--commits", "--branch"))
     if found is None or "--repo" not in found or "--rules" not in found or len(rest) != 1:
         sys.stderr.write(__doc__)
         return 2
@@ -275,7 +286,7 @@ def main(argv):
             if messages is None:
                 sys.stderr.write("the range %s cannot be read. Fetch it first\n" % found["--commits"])
                 return 2
-        errors = check_subject(rest[0], messages, types, limit, body)
+        errors = check_subject(rest[0], messages, types, limit, body, found.get("--branch"))
         for error in errors:
             sys.stderr.write("title: %s\n" % error)
         print("title %s" % ("failed" if errors else "passed"))

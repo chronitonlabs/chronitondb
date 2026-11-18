@@ -22,6 +22,10 @@
 #                                                    (default build/classes/main, run `ant jar` first)
 #   tools/chronitondb/spotbugs-check.sh --self-test  compile and analyse the fixture under tools/chronitondb/test/spotbugs
 #
+# --tree DIR before CLASSES analyses the classes of DIR, another checkout
+# of the repository, with this script and its pins. CI runs the script of
+# the line on a pull request's build this way.
+#
 # Apache classes are never analysed, they are only read to resolve types,
 # with the jars under build/lib/jars.
 #
@@ -120,7 +124,7 @@ analyse()
     return 0
   fi
   mkdir -p "$work" || die "cannot create $(display "$work")"
-  find "$root/build/lib/jars" -name '*.jar' -type f 2>/dev/null | sort > "$auxlist"
+  find "$tree/build/lib/jars" -name '*.jar' -type f 2>/dev/null | sort > "$auxlist"
   run_spotbugs "$classes" "$auxlist" "$out"
   sed 's/^/WARN /' "$out"
   n_found="$(grep -c . "$out")"
@@ -157,6 +161,12 @@ self_test()
   printf 'self-test: %s check(s) failed\n' "$failed"
   return 1
 }
+
+if [ "${1:-}" = "--tree" ]
+then
+  use_tree "${2:-}"
+  shift 2
+fi
 
 case "${1:-}" in
   --self-test)

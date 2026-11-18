@@ -37,7 +37,7 @@ Measured limits on production code, every finding blocks:
 | Cognitive complexity per method | 15 | PMD CognitiveComplexity |
 | Duplicated block | 50 tokens | PMD CPD |
 
-Tests and benchmarks (any path with a `test/` directory before `org/chronitondb`: `test/unit`, `test/distributed`, `test/microbench`, `test/burn`) are measured with looser limits and every finding is a warning, never a failure: cyclomatic complexity 5, method length 150, file length 1,000, cognitive complexity 15, duplication 50 tokens. Testing a database is complicated, long setup is not a finding.
+Tests and benchmarks (any path with a `test/` directory before `org/chronitondb`: `test/unit`, `test/distributed`, `test/microbench`, `test/burn`) are measured with their own limits, and their findings are warnings only, never a failure: cyclomatic complexity 5, method length 150, file length 1,000, cognitive complexity 15, duplication 50 tokens. Testing a database is complicated, long setup is not a finding.
 
 The rules live in `checkstyle-shape.xml` (production), `checkstyle-shape-tests.xml` (tests) and `pmd-ruleset.xml` (cognitive complexity, plus the CPD setting and the PMD pin). Changing a limit is a one line change there.
 
@@ -59,8 +59,11 @@ The files under `org/chronitondb` follow Apache Cassandra's code style on each l
     tools/chronitondb/shape-check.sh                    the staged files (what runs before a commit)
     tools/chronitondb/shape-check.sh --base origin/chronitondb-5.0   the files changed since the merge base (what CI does)
     tools/chronitondb/shape-check.sh --self-test        the fixtures under test/
+    tools/chronitondb/shape-check.sh --tree DIR --base origin/chronitondb-5.0   the same check on the files of DIR, another checkout
 
-Paths that are not `org/chronitondb/**/*.java` are ignored. Checkstyle comes from the build's own test classpath, `build/test/lib/jars`, so run `ant resolver-retrieve-build` (or any build) once. PMD is downloaded into `build/chronitondb-shape` on first use and refused unless its sha256 matches the pin. Nothing is added to `lib/` or `build.xml`, nothing is shipped, `build/` is not committed. `SHAPE_PMD_HOME` points at a copy already on disk, for offline use.
+`--tree DIR` goes first. It checks the files of DIR with the script, the limits and the tools of the tree the script is in. CI checks out the base branch beside the pull request and runs the script of the base branch on the pull request's files this way, so a pull request cannot loosen the limits it is measured by. The checkstyle classpath is resolved in the tree of the base branch too, with the JDK its `build.xml` names as `java.default`: 17 on the 5.0 line, 21 on the 6.0 line. The Semgrep and SpotBugs scripts take `--tree` the same way.
+
+Paths that are not `org/chronitondb/**/*.java` are ignored. The changed files are listed by their names as they are on disk, so a file whose name git would print in quotes is not passed over. A Java file under `org/chronitondb` whose path holds anything but ASCII letters, digits and `_ $ . - + @ /` stops the check, exit 2, since the tools could not take it from their file lists. So does a changed file with a control character in its name, and a base ref that does not exist. Checkstyle comes from the build's own test classpath, `build/test/lib/jars`, so run `ant resolver-retrieve-build` (or any build) once. PMD is downloaded into `build/chronitondb-shape` on first use and refused unless its sha256 matches the pin. Nothing is added to `lib/` or `build.xml`, nothing is shipped, `build/` is not committed. `SHAPE_PMD_HOME` points at a copy already on disk, for offline use.
 
 Pins:
 
@@ -69,15 +72,15 @@ Pins:
 
 ## Tests
 
-`test/src` and `test/test` hold one fixture per limit that breaks it and a few that pass (a 15 case `switch` with cyclomatic complexity 2, a method at cognitive complexity 15 exactly, a 100 line test method). `test/expected.txt` lists the finding each fixture must produce. `--self-test` stages them as `src/java` and `test/unit` files, runs the real tools and compares. The fixtures are skipped when given to the checks by their own path, so staging them never fails a commit. CI runs the self-test before the check.
+`test/src` and `test/test` hold one fixture per limit that breaks it and a few that pass (a 15 case `switch` with cyclomatic complexity 2, a method at cognitive complexity 15 exactly, a 100 line test method). `test/expected.txt` lists the finding each fixture must produce. `--self-test` stages them as `src/java` and `test/unit` files, runs the real tools and compares. The fixtures are skipped when given to the checks by their own path, so staging them never fails a commit. The self-test also checks the changed files of a small repository and ends with the staging tree checked through `--tree`. CI runs the self-test of the base branch's check before the check, and in a job of its own, `shape-tests`, the self-test of the check a pull request brings when it changes `tools/chronitondb`.
 
 ## Waivers
 
-A production limit can be exceeded only with a waiver recorded in the design record of the change and approved with it, naming the method, the rule and why the shape is right there. A suppression comment in the code is not a waiver and the rules files have no suppression filter. The maintainability review lens reads the check output next to the design record and treats a broken limit without a recorded waiver as a major finding.
+A production limit can be exceeded only with a waiver recorded in the design record of the change and approved with it, naming the method, the rule and why the shape is right there. A suppression comment in the code is not a waiver and the rules files have no suppression filter. The reviewer reads the check output next to the design record and treats a broken limit without a recorded waiver as a major finding.
 
 ## Security checks
 
-Two more checks. CI runs them on every pull request into a `chronitondb-*` branch, in `.github/workflows/chronitondb-semgrep.yml` and `chronitondb-spotbugs.yml`, each after its self-test. Both are required checks on every line, see [branching-and-review.md](../../docs/process/branching-and-review.md#required-checks).
+Two more checks. CI runs them on every pull request into a `chronitondb-*` branch, in `.github/workflows/chronitondb-semgrep.yml` and `chronitondb-spotbugs.yml`, each after its self-test. Both are required checks on every line, see [branching-and-review.md](../../docs/process/branching-and-review.md#required-checks). In both workflows the script, its rules and its pins come from the base branch and the pull request's files are read as data, as for the shape check. The jobs `semgrep-tests` and `spotbugs-tests` run the self-test of the copy a pull request brings when it changes `tools/chronitondb`.
 
 ### Semgrep: `semgrep-check.sh`
 
@@ -95,8 +98,11 @@ Semgrep CE from its container image, pinned by digest in the script, run with do
     tools/chronitondb/semgrep-check.sh                  the staged files
     tools/chronitondb/semgrep-check.sh --base origin/chronitondb-5.0   the files changed since the merge base, without the findings already there (what CI does)
     tools/chronitondb/semgrep-check.sh --self-test      the fixtures under test/semgrep
+    tools/chronitondb/semgrep-check.sh --tree DIR --imported --base origin/chronitondb-5.0   an import in DIR, another checkout
 
-Semgrep runs with `--disable-nosem`, so a `nosemgrep` comment hides nothing, and a checkstyle `permit` comment does not hide a banned API from Semgrep. Needs docker and jq. `--self-test` runs `semgrep --test` on `test/semgrep` (each `ruleid` line must be reported, each `ok` line must not) and then checks the path scoping, which `--test` ignores. The bidi fixture is written at test time, so no committed file carries a bidi control character.
+`--imported` says the change is an import. A finding in a file outside `org/chronitondb` is then in imported code: it is printed as `REPORT`, not `ERROR`, and does not fail the check. It goes into the import's assessment, and the maintainers decide it before the import merges, as [upstream.md](../../docs/process/upstream.md#whole-apache-releases) says. A finding in an `org/chronitondb` file still fails. CI passes `--imported` only for a pull request whose head branch is an `import/` branch of this repository. The author of a pull request from a fork chooses its branch name, so a fork's branch never counts: an import that starts on a fork is pushed to an `import/` branch of this repository by a maintainer.
+
+Semgrep runs with `--disable-nosem`, so a `nosemgrep` comment hides nothing, and a checkstyle `permit` comment does not hide a banned API from Semgrep. Needs docker and jq. `--self-test` runs `semgrep --test` on `test/semgrep` (each `ruleid` line must be reported, each `ok` line must not), then checks the path scoping, which `--test` ignores, then `--tree` and `--imported` on a staged tree, and last the changed files of a small repository, one of them with a name outside ASCII, which is scanned as any other. The bidi fixture is written at test time, so no committed file carries a bidi control character.
 
 ### SpotBugs: `spotbugs-check.sh`
 
@@ -105,14 +111,17 @@ SpotBugs 4.10.5 with the FindSecBugs 1.14.0 plugin on the compiled `org.chronito
     tools/chronitondb/spotbugs-check.sh                 the classes under build/classes/main (run ant jar first)
     tools/chronitondb/spotbugs-check.sh CLASSES         the classes under another directory
     tools/chronitondb/spotbugs-check.sh --self-test     compile test/spotbugs and expect COMMAND_INJECTION and OBJECT_DESERIALIZATION
+    tools/chronitondb/spotbugs-check.sh --tree DIR      the classes under build/classes/main of DIR, another checkout
+
+In CI the self-test of the base branch's script runs first, then the pull request's own build, since its classes are what is analysed. A build runs the build file the pull request brings, so this job reports and is never a gate on a finding.
 
 The jars come from Maven Central into `build/chronitondb-shape/spotbugs-4.10.5`, each refused unless its sha256 matches the pin in the script. The set is the `lib/` of the SpotBugs release, so `java -jar spotbugs.jar` finds them through its manifest.
 
 ## Commit subjects: `subjectlint.py`
 
-Checks commit subjects against [conventions.md](../../docs/process/conventions.md#commit-messages), Commit messages: the form `type(scope): description` with a type of the Types table and a scope, at most 72 characters not counting a trailing ` (chronitondb-<line>)` or GitHub's ` (#<number>)`, no file listed, `!` together with a `BREAKING CHANGE:` footer in a commit message, and for an import, which has no length limit, one of the forms `import(CASSANDRA-<n>)`, `import(apache-<version>)`, `import(apache-<x.y>-branch)` and `import(<owner>/<repo>@<12 character hash>)`. The type list and the length limit are read from conventions.md on the ref given with `--rules`, the line. Python 3 only, no other dependency.
+Checks commit subjects against [conventions.md](../../docs/process/conventions.md#commit-messages), Commit messages: the form `type(scope): description` with a type of the Types table and a scope, at most 72 characters not counting a trailing ` (chronitondb-<line>)` or GitHub's ` (#<number>)`, no file listed, `!` together with a `BREAKING CHANGE:` footer in a commit message, and for an import, which has no length limit, one of the forms `import(CASSANDRA-<n>)`, `import(apache-<version>)`, `import(apache-<x.y>-branch)` and `import(<owner>/<repo>@<12 character hash>)`. With `--branch NAME`, a title of type `import` is taken only when NAME starts with `import/`: the type lifts the length rule and the file rule, so it is kept for imports. CI gives the head branch's name only for a branch of this repository and an empty name for a branch of a fork. The type list and the length limit are read from conventions.md on the ref given with `--rules`, the line. Python 3 only, no other dependency.
 
-    tools/chronitondb/subjectlint.py title --repo . --rules origin/chronitondb-5.0 --commits origin/chronitondb-5.0..HEAD --body DESCRIPTION-FILE "feat(fulltext): add the phrase operator"
+    tools/chronitondb/subjectlint.py title --repo . --rules origin/chronitondb-5.0 --commits origin/chronitondb-5.0..HEAD --body DESCRIPTION-FILE --branch BRANCH "feat(compaction): count a skipped sstable once"
     tools/chronitondb/subjectlint.py commits --repo . --rules origin/chronitondb-5.0 origin/chronitondb-5.0~5..origin/chronitondb-5.0
 
 The repository makes the pull request title the subject of the squash or merge commit, so the CI workflow `.github/workflows/chronitondb-subjects.yml` runs `title` on every pull request into a line, with this file taken from the base branch. It reads the footer from the pull request's commit messages, which the squash commit carries, and refuses a footer that is only in the description. On each push to a line it runs `commits` on the new commits of the line's first parent history, the squash and merge commits, never the commits an import merge brings. GitHub's ` (#<number>)` at the end of those subjects is not counted. Exit 0 when nothing is found, 1 on a finding, 2 on a usage error.
@@ -123,17 +132,17 @@ The repository makes the pull request title the subject of the squash or merge c
 
 ## Process documents: `doclint.py`
 
-Checks the process documents under `docs/` against their templates on the line, and the rules [docs/process/](../../docs/process/README.md) sets for them: the document control table, every numbered section in order, the Contents index, the revision history and its link to the file's commits, no template placeholder and no `[NEEDS CLARIFICATION` marker left, and per document type the feature spec, plan, milestone report, decision record and delta entry rules. It also checks the feature keys and requirement ids of [additive.md](../../docs/process/additive.md#feature-keys-and-requirement-ids) across the lines, the library declarations of [compliance.md](../../docs/process/compliance.md), and that `conf/cassandra_chronitondb.yaml` holds every setting of Apache's two yaml files ([release.md](../../docs/process/release.md#the-configuration-file)). `markdown.py` beside it is its Markdown reader. Python 3 only, no other dependency.
+Checks the process documents under `docs/` against their templates on the line, and the rules [docs/process/](../../docs/process/README.md) sets for them: the document control table, every numbered section in order, the Contents index, the revision history and its link to the file's commits, no template placeholder and no `[NEEDS CLARIFICATION` marker left, and per document type the feature spec, plan, milestone report, decision record and delta entry rules. It also checks the feature keys and requirement ids of [additive.md](../../docs/process/additive.md#feature-keys-and-requirement-ids) across the lines. Two more commands check the library declarations of [compliance.md](../../docs/process/compliance.md) (`dependencies`) and that `conf/cassandra_chronitondb.yaml` holds every setting of Apache's two yaml files (`settings`, [release.md](../../docs/process/release.md#the-configuration-file)). No CI workflow runs these two yet. Both have unit tests, and `settings` has nothing to compare until the file exists. `markdown.py` beside it is its Markdown reader. Python 3 only, no other dependency.
 
-    tools/chronitondb/doclint.py document --repo . --templates origin/chronitondb-5.0 --source index docs/design/LUC-fulltext-search/feature-spec.md
+    tools/chronitondb/doclint.py document --repo . --templates origin/chronitondb-5.0 --source index docs/design/VER-release-version/feature-spec.md
     tools/chronitondb/doclint.py keys --repo . --base origin/chronitondb-5.0 --source index
-    tools/chronitondb/doclint.py index --write docs/design/LUC-fulltext-search/feature-spec.md
+    tools/chronitondb/doclint.py index --write docs/design/VER-release-version/feature-spec.md
 
-The rules are read from the ref given with `--templates` or `--base`, the line, never from the change being checked. The CI workflow `.github/workflows/chronitondb-documents.yml` runs `document` on the process documents a pull request changes, and `keys` when it changes `docs/design/` or `test/bdd/`, with this file taken from the base branch. It also checks that a delta entry's issue exists and that a new feature key is not in use by another open pull request. Run `doclint.py` without arguments for every subcommand and option.
+The rules are read from the ref given with `--templates` or `--base`, the line, never from the change being checked. The CI workflow `.github/workflows/chronitondb-documents.yml` runs `document` on the process documents a pull request changes, and `keys` when it changes `docs/design/` or `test/bdd/`, with this file taken from the base branch. It also checks that a delta entry's issue exists, that a new feature key is not in use by another open pull request, and that the generated indexes and the document graph are what the documents give. Run `doclint.py` without arguments for every subcommand and option.
 
 Findings, one per line, then a summary:
 
-    docs/design/LUC-fulltext-search/feature-spec.md:45: FREQ-LUC-002 has 2 BCP 14 keywords, a requirement has exactly one (split it)
+    docs/design/VER-release-version/feature-spec.md:45: FREQ-VER-002 has 2 BCP 14 keywords, a requirement has exactly one (split it)
     documents 1 checked 1 failed
 
 Exit 0 when nothing is found, 1 on a finding, 2 on a usage error.
@@ -145,7 +154,7 @@ Exit 0 when nothing is found, 1 on a finding, 2 on a usage error.
     tools/chronitondb/doclint.py delta --repo . --base origin/chronitondb-5.0 --source worktree
     tools/chronitondb/doclint.py delta --repo . --base origin/chronitondb-5.0 --source HEAD --branch BRANCH --body DESCRIPTION-FILE
 
-A file is ChronitonDB's own when it falls under a path of the table Where things live in [conventions.md](../../docs/process/conventions.md#where-things-live), read from the line. Every other file is a stock file. A change that adds, edits, deletes or renames a stock file adds or changes an entry under `docs/delta/`, unless its branch imports a whole Apache release or Apache's branch (`import/cassandra-<...>`), or its description has a line `No delta entry: <reason>`. Each entry it adds or changes passes the delta entry rules of `document`, with an Origin commit link, its index row with the same Area and Lines, and on an update a new Last-Update. No entry is renamed or deleted. It prints `stock PATH` for each stock file it finds.
+A file is ChronitonDB's own when it falls under a path of the table Where things live in [conventions.md](../../docs/process/conventions.md#where-things-live), read from the line. Every other file is a stock file. A change that adds, edits, deletes or renames a stock file adds or changes an entry under `docs/delta/`, unless its branch imports a whole Apache release or Apache's branch (`import/cassandra-<...>`), or its description has a line `No delta entry: <reason>`. The checker takes the branch name as given. CI gives it only when the head branch is in this repository, never for the branch of a fork, whose author chooses its name. An import that starts on a fork is pushed to an import branch of this repository by a maintainer, and its pull request is opened from there. Each entry it adds or changes passes the delta entry rules of `document`, with an Origin commit link, its index row with the same Area and Lines, and on an update a new Last-Update. No entry is renamed or deleted. It prints `stock PATH` for each stock file it finds.
 
 ### The Contents index
 
@@ -187,7 +196,7 @@ A document's `Areas` row names areas of the list in [areas.md](../../docs/proces
     tools/chronitondb/docgraph.py --repo . --templates origin/<line>           exit 1 when docs/index/graph.json is not what the documents give
     tools/chronitondb/docgraph.py --repo . --templates origin/<line> --write   write it
 
-Writes the links between the documents as JSON-LD, from the headers `doclint.py indexes` reads, with the context in `docs/index/context.json`. The same tree gives the same bytes. Python 3, no other dependency. See [conventions.md](../../docs/process/conventions.md#the-document-graph).
+Writes the links between the documents as JSON-LD, from the headers `doclint.py indexes` reads, with the context in `docs/index/context.json`. The same tree gives the same bytes. Python 3, no other dependency. The documents workflow runs the check, with this file taken from the base branch, on every pull request that changes a file under `docs/`, next to the check of the generated indexes. A unit test compares the committed graph with the one the documents of the tree give. See [conventions.md](../../docs/process/conventions.md#the-document-graph).
 
 ### The class
 
@@ -195,6 +204,6 @@ The class of a change, its risk, size and reach, is set out in [classification.m
 
 ### Tests
 
-`test/doclint/` holds the checker's unit tests, Python's `unittest`, no other dependency. They include a test that every template in `docs/process/templates/` carries a correct index. The CI workflow runs them in a job of its own, apart from the job that checks the documents with the line's checker.
+`test/doclint/` holds the checker's unit tests, Python's `unittest`, no other dependency. They include a test that every template in `docs/process/templates/` carries a correct index, and tests that run the steps of the workflows as the shell scripts they are, with the environment each workflow gives its step: the check that runs is the one of the base branch, and the name of an import branch counts for a branch of the repository and never for the branch of a fork. The CI workflow runs them in a job of its own, apart from the job that checks the documents with the line's checker.
 
     python3 -m unittest discover -s tools/chronitondb/test/doclint

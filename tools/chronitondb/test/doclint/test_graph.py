@@ -25,7 +25,10 @@ import contextlib
 import io
 import json
 import os
+import shutil
+import subprocess
 import sys
+import tempfile
 import unittest
 
 TOOLS = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
@@ -144,10 +147,27 @@ class Graph(Indexes):
             self.assertNotIn(term, context)
 
     def test_the_graph_on_this_line_is_current(self):
+        # The committed graph is, byte for byte, what the documents of this
+        # tree give. The documents are copied into a repository of their
+        # own, so the test reads the files as they are here, committed or
+        # not.
         with open(os.path.join(ROOT, "docs", "index", "graph.json"), encoding="utf-8") as handle:
-            data = json.load(handle)
+            committed = handle.read()
+        data = json.loads(committed)
         ids = {node["@id"] for node in data["@graph"]}
         self.assertEqual(len(ids), len(data["@graph"]))
+        repo = tempfile.mkdtemp()
+        try:
+            shutil.copytree(os.path.join(ROOT, "docs"), os.path.join(repo, "docs"))
+            subprocess.run(["git", "-C", repo, "init", "-q"], check=True)
+            subprocess.run(["git", "-C", repo, "add", "-A"], check=True)
+            subprocess.run(["git", "-C", repo, "-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false",
+                            "-c", "core.hooksPath=/dev/null", "commit", "-q", "-m", "documents"], check=True)
+            generated = docgraph.render(docgraph.graph(repo, "HEAD", "HEAD"))
+        finally:
+            shutil.rmtree(repo)
+        self.assertEqual(committed, generated, "docs/index/graph.json is not what the documents give. Regenerate it with "
+                         "tools/chronitondb/docgraph.py --repo . --templates origin/<line> --write and commit it with the change")
 
 
 if __name__ == "__main__":

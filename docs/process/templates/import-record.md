@@ -61,7 +61,7 @@ Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-
 
 ## 2. Assessment
 
-{The code checks and review checklists run on the imported diff. Findings, and the maintainers' decision on each.}
+{The code checks and review checklists run on the imported diff. Each correctness, security or performance finding of major severity or worse in the imported code, and each conflict with something ChronitonDB adds, with its evidence and the maintainers' decision: reported to Apache Cassandra, import held, fixed as a fix to stock, or accepted. Findings on shape limits and style in Apache Cassandra's own code are listed and go no further. See [upstream.md](../upstream.md#whole-apache-releases).}
 
 ## 3. Conflicts with ChronitonDB changes
 

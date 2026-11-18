@@ -140,8 +140,19 @@ class Title(Steps):
         os.makedirs(os.path.dirname(full), exist_ok=True)
         return full
 
-    def title(self, title, **where):
-        return self.step("chronitondb-subjects.yml", "Pull request title", more={"PR_TITLE": title, "PR_BODY": ""}, **where)
+    def title(self, title, body="", **where):
+        return self.step("chronitondb-subjects.yml", "Pull request title", more={"PR_TITLE": title, "PR_BODY": body}, **where)
+
+    def test_the_step_checks_the_attribution_of_the_commits_and_the_description(self):
+        git = ["git", "-C", self.workspace, "-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false",
+               "-c", "core.hooksPath=/dev/null"]
+        subprocess.run(git + ["commit", "-q", "--allow-empty", "-m", "keep the limit\n\nCo-authored-by: Example Model 4 <noreply@anthropic.com>"],
+                       check=True, capture_output=True)
+        rc, out, err = self.title("fix(startup): keep the disk check limit", body="What and why.\n\nhttps://claude.ai/code/session_01ABC\n")
+        self.assertEqual(rc, 1)
+        self.assertIn("names an AI tool or model as a co-author", err)
+        self.assertIn("description: the line 'https://claude.ai/code/session_01ABC' links a session of an AI tool", err)
+        self.assertIn("title failed", out)
 
     def test_an_import_title_passes_from_an_import_branch_of_the_repository(self):
         rc, out, err = self.title(self.TITLE, head_ref="import/CASSANDRA-1/chronitondb-5.0")

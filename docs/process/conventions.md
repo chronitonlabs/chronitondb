@@ -81,7 +81,7 @@ See [upstream.md](upstream.md).
 
 1. A person MAY note AI assistance with an `Assisted-by:` trailer naming the tool, as the organisation's guide describes.
 2. A commit written by an automated agent carries two trailers: `Assisted-by: <tool>:<model>` and `Requested-by: <GitHub username> <GitHub no-reply address>` of the maintainer who asked for the work. For work items from an approved plan, that is the maintainer who approved the plan. For an item opened from one of the project's scheduled checks, it is the maintainer who set up that check. The squash commit on the line keeps these trailers. The username has no `@`, so it is never a mention.
-3. An AI tool is never listed as an author or co-author.
+3. An AI tool is never listed as an author or co-author. A commit message and a pull request description carry no `Co-authored-by` line that names an AI tool or model, no link to a session of an AI tool and no line that says a tool generated the text. The `pr-title` check refuses them, and the `line-subjects` check reports them on a commit that reached a line.
 4. Adapted work by another person carries `Co-authored-by:` for each of its authors.
 
 ### Pull request titles

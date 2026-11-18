@@ -23,7 +23,11 @@
 # checked as it is now. A title of type import, which is held to neither
 # the length rule nor the file rule, is taken only from an import/ branch of
 # this repository. The author of a pull request from a fork chooses its
-# branch name, so a fork's branch never counts.
+# branch name, so a fork's branch never counts. The same step checks the
+# attribution rule of Trailers in the messages of the pull request's
+# commits and in its description: no AI tool or model as a co-author, no
+# link to a session of an AI tool and no line that says a tool generated
+# the text.
 # The checker and the rules come from the base branch, never from the pull
 # request. Before the checker is on the line it says so and passes. A
 # separate job runs the checker's unit tests from the pull request. On a

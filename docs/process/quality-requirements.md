@@ -60,6 +60,8 @@ A statement that Apache Cassandra rejects only because it uses something Apache 
 
 With a feature off, the node behaves exactly as stock: every way to use the feature is refused with an error that names the switch, no new files are written, no new threads start and no new memory is used. For example a statement in the feature's syntax is refused, and so is a nodetool command of the feature. Code defaults in stock classes stay as Apache has them. The parity suite proves it.
 
+ChronitonDB never changes a compatibility number that Apache Cassandra owns without a decision of the maintainers: the messaging version, the sstable and index format version letters, the cluster metadata serialization version, and the ids of CQL operators on the wire. A feature that needs new state between nodes or on disk carries it in a form Apache Cassandra already accepts, such as an existing extensible field, an optional component or text options. Where no such form exists the design stops and asks.
+
 ### CQL does not depend on topology
 
 Whether a CQL statement is valid, and the results it returns, never depend on the replication factor, the number of data centres or the number of replicas. A single node development cluster behaves like a production cluster with three replicas.

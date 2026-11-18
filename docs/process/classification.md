@@ -45,7 +45,7 @@ The table gives each category the level it takes by the definitions below. The w
 |---|---|---|
 | Critical | The change could cause corruption or loss, wrong results, an inconsistency, a cluster or process crash, a node or service unavailable, or a security breach, a denial of service included | `risk:critical` |
 | Normal | The change could cause a degradation or a response crash, or it changes a public interface or stock behaviour | `risk:normal` |
-| Low | The change is documentation, packaging, code clarity or tests only. Code clarity is this project's rule, not a JIRA category | `risk:low` |
+| Low | The worst the change could cause is a wrong document, a wrong package or a failing test, and nothing a running node does can change. This is usually documentation, packaging or tests only. A change to source that claims no behaviour change is Low only when its tests show the behaviour is the same | `risk:low` |
 
 ### The floor
 

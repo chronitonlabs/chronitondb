@@ -72,7 +72,7 @@ A security release is prepared in private, after the practice Debian and Ubuntu 
 1. Its proposal names the commit in the security advisory's private fork, not a commit on the public line. The proposal and its review stay private until disclosure.
 2. Its release candidate is built and verified in private.
 3. It skips the soak once it is verified.
-4. Its packages publish at the moment of disclosure, together with the advisory, on the date the maintainers set. The fix reaches the public line at the same time.
+4. Its packages publish at the moment of disclosure, together with the advisory, on the date the maintainers set. The fix and its fix record reach the public line at the same time.
 
 Every other release names one commit on the public line. See [security.md](security.md).
 
@@ -128,7 +128,7 @@ The release version does not say which Apache content a release carries, so its 
 
 The release engineer takes the first three from the line's git history: the Apache release tags it contains, Apache's branch, and its import commits. See [upstream.md](upstream.md) and [conventions.md](conventions.md#change-logs-and-release-notes).
 
-The release notes and the release proposal also state which Apache Cassandra release, or releases, a cluster on the release can move back to, or that there is none yet. See [Moving back to Apache Cassandra](#moving-back-to-apache-cassandra). On a line before Apache Cassandra's first release of its major version, the release notes say that the line has no entry point from Apache Cassandra yet, and no path from the previous line.
+The release notes and the release proposal also state which Apache Cassandra release, or releases, a cluster on the release can move back to, or that there is none yet and the cause. See [Moving back to Apache Cassandra](#moving-back-to-apache-cassandra). On a line before Apache Cassandra's first release of its major version, the release notes say that the line has no entry point from Apache Cassandra yet, and no path from the previous line.
 
 ### The version a running node reports
 
@@ -139,9 +139,8 @@ A running node reports a different string from its release version to other node
 3. It is never shown as the release version. Packages, tags, release notes and our documentation name a release by its release version only.
 4. The feature level is a number in the code, raised only when a release changes how nodes work together. A feature that is held back by an automatic gate turns on once every node reports its level, so it needs the ChronitonDB form on every node. The ordinary way to hold a feature back is the operator's switch: [PRINCIPLE-016](principles.md#principle-016).
 5. The ChronitonDB form is a behaviour-changing feature with its own switch, off by default. With it off, a node reports the build file's version as stock does, for example `5.0.10`, and the features that need a feature level stay off. Its feature spec sets the switch's name and the driver tests that prove each setting.
-6. Apache compatibility mode, `apache_compatibility_mode`, comes first. A node in Apache compatibility mode reports the plain Apache version whatever the switch says. With compatibility mode off, the switch decides.
-7. The switch never changes `nodetool version`. Until the feature of [What nodetool version shows](#what-nodetool-version-shows) ships, `nodetool version` prints Apache's own string, and the node version MUST NOT appear there.
-8. This is what a node does once the node version is built. It is not built yet on either line. Until it is, a node reports the build file's version, as stock Apache Cassandra does.
+6. The switch never changes `nodetool version`. Until the feature of [What nodetool version shows](#what-nodetool-version-shows) ships, `nodetool version` prints Apache's own string, and the node version MUST NOT appear there.
+7. This is what a node does once the node version is built. It is not built yet on either line. Until it is, a node reports the build file's version, as stock Apache Cassandra does.
 
 ### What nodetool version shows
 
@@ -193,7 +192,7 @@ A runbook covers the minimum setup to reach first, the order of nodes, the check
 
 The rule is [PRINCIPLE-003](principles.md#principle-003).
 
-1. Each release states, in its release notes, which Apache Cassandra release, or releases, a cluster on it can move back to. It says so when there is none yet, for example while the line holds an on-disk version that no Apache Cassandra release has yet.
+1. Each release states, in its release notes, which Apache Cassandra release, or releases, a cluster on it can move back to. It says so when there is none yet, and names the cause. There is none yet only while the line holds Apache Cassandra code that no Apache Cassandra release has yet, such as an on-disk version that came with an early import. Nothing the project adds is a reason for none.
 2. Moving back follows the steps the release gives. It does not have to be a swap of binaries on untouched files.
 3. The steps say what is removed first. For example the project's own keys are removed from the configuration file, since Apache Cassandra refuses to start on a key it does not know.
 4. The target is an Apache Cassandra set up as the entry condition says.

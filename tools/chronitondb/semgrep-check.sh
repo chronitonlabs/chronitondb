@@ -172,6 +172,15 @@ write_bidi_fixture()
     "echo \"$(printf '\342\200\217')\"" > "$1"
 }
 
+# git in the repository the self-test makes, with no signing, hooks or
+# identity of the caller.
+selftest_git()
+{
+  git -C "$repo" -c user.name=selftest -c user.email=selftest@example.org \
+    -c commit.gpgsign=false -c core.hooksPath=/dev/null "$@" \
+    || die "git $1 failed in $(display "$repo")"
+}
+
 # Runs every rule on its fixture with semgrep --test (each "ruleid" line
 # must be reported, each "ok" line must not), then checks the path scoping
 # that --test ignores: the banned API fixture staged as production, test and
@@ -181,7 +190,7 @@ write_bidi_fixture()
 # ones in Apache code are reported and only ours fail.
 self_test()
 {
-  local stage out rc failed=0 expected actual ours theirs
+  local stage out rc failed=0 expected actual ours theirs before repo odd
   stage="$semgrep_work/selftest"
   rm -rf "$stage"
   mkdir -p "$stage/fixtures" \
@@ -226,6 +235,7 @@ self_test()
     printf 'self-test: path scoping as expected, findings only in %s\n' "$expected"
   fi
 
+  before="$failed"
   ours="src/java/org/chronitondb/selftest/ProcessExec.java"
   theirs="src/java/org/apache/cassandra/selftest/ProcessExec.java"
   cp "$fixtures/semgrep/process-exec.java" "$stage/scope/$ours"
@@ -253,8 +263,43 @@ self_test()
     cat "$out"
     printf 'self-test: FAIL an import with findings only in Apache code exit %s, expected 0 with each finding as REPORT\n' "$rc"
     failed=$((failed + 1))
-  else
+  fi
+  if [ "$failed" -eq "$before" ]
+  then
     printf 'self-test: another tree and an import as expected\n'
+  fi
+
+  # The changed files of a repository, as CI asks for them. A file with a
+  # name git would print in quotes is scanned, not passed over, and a base
+  # that does not exist stops the check.
+  before="$failed"
+  repo="$stage/repo"
+  odd="src/java/org/chronitondb/selftest/$(printf 'Proc\303\251ss.java')"
+  mkdir -p "$repo/src/java/org/chronitondb/selftest" || die "cannot create $(display "$repo")"
+  selftest_git init -q
+  selftest_git commit -q --allow-empty -m "line"
+  cp "$fixtures/semgrep/process-exec.java" "$repo/$odd"
+  selftest_git add -A
+  selftest_git commit -q -m "change"
+  "$0" --tree "$repo" --base HEAD~1 > "$out" 2>&1
+  rc=$?
+  if [ "$rc" -ne 1 ] || ! grep -q -F "ERROR $odd:" "$out"
+  then
+    cat "$out"
+    printf 'self-test: FAIL a changed file with a name outside ASCII exit %s, expected 1 with its findings, not passed over\n' "$rc"
+    failed=$((failed + 1))
+  fi
+  "$0" --tree "$repo" --base no-such-ref > "$out" 2>&1
+  rc=$?
+  if [ "$rc" -ne 2 ]
+  then
+    cat "$out"
+    printf 'self-test: FAIL a base that does not exist exit %s, expected 2\n' "$rc"
+    failed=$((failed + 1))
+  fi
+  if [ "$failed" -eq "$before" ]
+  then
+    printf 'self-test: the changed files of a repository as expected\n'
   fi
 
   if [ "$failed" -eq 0 ]
@@ -290,7 +335,8 @@ case "${1:-}" in
   --base)
     [ -n "${2:-}" ] || die "--base needs a ref"
     base="$(git -C "$tree" merge-base "$2" HEAD)" || die "no merge base between $2 and HEAD"
-    git -C "$tree" diff --name-only --diff-filter=ACMR "$base" HEAD | scan "$base"
+    changed_names --diff-filter=ACMR "$base" HEAD
+    scan "$base" < "$changed"
     ;;
   --help|-h)
     usage "Semgrep check"
@@ -299,7 +345,8 @@ case "${1:-}" in
     die "unknown option $1"
     ;;
   "")
-    git -C "$tree" diff --cached --name-only --diff-filter=ACMR | scan ""
+    changed_names --cached --diff-filter=ACMR
+    scan "" < "$changed"
     ;;
   *)
     for path in "$@"

@@ -63,7 +63,7 @@ The files under `org/chronitondb` follow Apache Cassandra's code style on each l
 
 `--tree DIR` goes first. It checks the files of DIR with the script, the limits and the tools of the tree the script is in. CI checks out the base branch beside the pull request and runs the script of the base branch on the pull request's files this way, so a pull request cannot loosen the limits it is measured by. The checkstyle classpath is resolved in the tree of the base branch too, with the JDK its `build.xml` names as `java.default`: 17 on the 5.0 line, 21 on the 6.0 line. The Semgrep and SpotBugs scripts take `--tree` the same way.
 
-Paths that are not `org/chronitondb/**/*.java` are ignored. Checkstyle comes from the build's own test classpath, `build/test/lib/jars`, so run `ant resolver-retrieve-build` (or any build) once. PMD is downloaded into `build/chronitondb-shape` on first use and refused unless its sha256 matches the pin. Nothing is added to `lib/` or `build.xml`, nothing is shipped, `build/` is not committed. `SHAPE_PMD_HOME` points at a copy already on disk, for offline use.
+Paths that are not `org/chronitondb/**/*.java` are ignored. The changed files are listed by their names as they are on disk, so a file whose name git would print in quotes is not passed over. A Java file under `org/chronitondb` whose path holds anything but ASCII letters, digits and `_ $ . - + @ /` stops the check, exit 2, since the tools could not take it from their file lists. So does a changed file with a control character in its name, and a base ref that does not exist. Checkstyle comes from the build's own test classpath, `build/test/lib/jars`, so run `ant resolver-retrieve-build` (or any build) once. PMD is downloaded into `build/chronitondb-shape` on first use and refused unless its sha256 matches the pin. Nothing is added to `lib/` or `build.xml`, nothing is shipped, `build/` is not committed. `SHAPE_PMD_HOME` points at a copy already on disk, for offline use.
 
 Pins:
 
@@ -72,7 +72,7 @@ Pins:
 
 ## Tests
 
-`test/src` and `test/test` hold one fixture per limit that breaks it and a few that pass (a 15 case `switch` with cyclomatic complexity 2, a method at cognitive complexity 15 exactly, a 100 line test method). `test/expected.txt` lists the finding each fixture must produce. `--self-test` stages them as `src/java` and `test/unit` files, runs the real tools and compares. The fixtures are skipped when given to the checks by their own path, so staging them never fails a commit. The self-test ends with the staging tree checked through `--tree`. CI runs the self-test of the base branch's check before the check, and in a job of its own, `shape-tests`, the self-test of the check a pull request brings when it changes `tools/chronitondb`.
+`test/src` and `test/test` hold one fixture per limit that breaks it and a few that pass (a 15 case `switch` with cyclomatic complexity 2, a method at cognitive complexity 15 exactly, a 100 line test method). `test/expected.txt` lists the finding each fixture must produce. `--self-test` stages them as `src/java` and `test/unit` files, runs the real tools and compares. The fixtures are skipped when given to the checks by their own path, so staging them never fails a commit. The self-test also checks the changed files of a small repository and ends with the staging tree checked through `--tree`. CI runs the self-test of the base branch's check before the check, and in a job of its own, `shape-tests`, the self-test of the check a pull request brings when it changes `tools/chronitondb`.
 
 ## Waivers
 
@@ -102,7 +102,7 @@ Semgrep CE from its container image, pinned by digest in the script, run with do
 
 `--imported` says the change is an import. A finding in a file outside `org/chronitondb` is then in imported code: it is printed as `REPORT`, not `ERROR`, and does not fail the check. It goes into the import's assessment, and the maintainers decide it before the import merges, as [upstream.md](../../docs/process/upstream.md#whole-apache-releases) says. A finding in an `org/chronitondb` file still fails. CI passes `--imported` only for a pull request whose head branch is an `import/` branch of this repository. The author of a pull request from a fork chooses its branch name, so a fork's branch never counts: an import that starts on a fork is pushed to an `import/` branch of this repository by a maintainer.
 
-Semgrep runs with `--disable-nosem`, so a `nosemgrep` comment hides nothing, and a checkstyle `permit` comment does not hide a banned API from Semgrep. Needs docker and jq. `--self-test` runs `semgrep --test` on `test/semgrep` (each `ruleid` line must be reported, each `ok` line must not), then checks the path scoping, which `--test` ignores, and last `--tree` and `--imported` on a staged tree. The bidi fixture is written at test time, so no committed file carries a bidi control character.
+Semgrep runs with `--disable-nosem`, so a `nosemgrep` comment hides nothing, and a checkstyle `permit` comment does not hide a banned API from Semgrep. Needs docker and jq. `--self-test` runs `semgrep --test` on `test/semgrep` (each `ruleid` line must be reported, each `ok` line must not), then checks the path scoping, which `--test` ignores, then `--tree` and `--imported` on a staged tree, and last the changed files of a small repository, one of them with a name outside ASCII, which is scanned as any other. The bidi fixture is written at test time, so no committed file carries a bidi control character.
 
 ### SpotBugs: `spotbugs-check.sh`
 
@@ -204,6 +204,6 @@ The class of a change, its risk, size and reach, is set out in [classification.m
 
 ### Tests
 
-`test/doclint/` holds the checker's unit tests, Python's `unittest`, no other dependency. They include a test that every template in `docs/process/templates/` carries a correct index, and one that runs the step of the delta workflow as the shell script it is, for a branch of the repository and for the branch of a fork. The CI workflow runs them in a job of its own, apart from the job that checks the documents with the line's checker.
+`test/doclint/` holds the checker's unit tests, Python's `unittest`, no other dependency. They include a test that every template in `docs/process/templates/` carries a correct index, and tests that run the steps of the workflows as the shell scripts they are, with the environment each workflow gives its step: the check that runs is the one of the base branch, and the name of an import branch counts for a branch of the repository and never for the branch of a fork. The CI workflow runs them in a job of its own, apart from the job that checks the documents with the line's checker.
 
     python3 -m unittest discover -s tools/chronitondb/test/doclint

@@ -23,6 +23,7 @@
 #              the scratch files stay those of $root
 #   $fixtures  tools/chronitondb/test, skipped by every check, used by --self-test
 #   $work      build/chronitondb-shape, downloads and scratch, never committed
+#   $changed   the list changed_names writes, one path per line
 #   $java_bin  java from JAVA_HOME when set, else from PATH
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
@@ -30,6 +31,7 @@ root="$(cd "$here/../.." && pwd -P)"
 fixtures="$here/test"
 work="$root/build/chronitondb-shape"
 tree="$root"
+changed="$work/changed-files.txt"
 java_bin="${JAVA_HOME:+$JAVA_HOME/bin/}java"
 
 die()
@@ -106,7 +108,7 @@ select_files()
   while IFS= read -r path
   do
     [ -n "$path" ] || continue
-    printf '%s\n' "$path" | grep -q -E '(^|/)org/chronitondb/.*\.java$' || continue
+    printf '%s\n' "$path" | LC_ALL=C grep -q -E '(^|/)org/chronitondb/.*\.java$' || continue
     abs="$(absolute "$path")"
     case "$abs" in
       "$fixtures"/*|"$tree/tools/chronitondb/test"/*)
@@ -119,19 +121,26 @@ select_files()
   done | awk '!seen[$0]++'
 }
 
-# The files to check for the given mode, one absolute path per line.
-#   files_for files FILE...   the given files
-#   files_for staged          the files staged in git
-#   files_for base REF        the files changed since the merge base with REF
-files_for()
+# changed_names ARGS...: writes to $changed the paths that
+# `git diff --name-only ARGS` gives in the checked tree, one per line, as
+# they are on disk. Left to itself git prints a name with a byte outside
+# ASCII in quotes, and a quoted name is no path, so every check would pass
+# over that file. A name with a control character cannot be listed one per
+# line, so the check stops there. It also stops when git cannot make the
+# diff, as with a ref that does not exist. Call it outside a pipeline, so
+# that its exit ends the script.
+changed_names()
 {
-  local mode="$1"
-  shift
-  case "$mode" in
-    files) printf '%s\n' "$@" ;;
-    staged) git -C "$tree" diff --cached --name-only --diff-filter=ACMR ;;
-    base) git -C "$tree" diff --name-only --diff-filter=ACMR --merge-base "$1" HEAD ;;
-  esac | select_files
+  local raw="$work/changed-files.bin"
+  mkdir -p "$work" || die "cannot create $(display "$work")"
+  git -C "$tree" -c core.quotePath=false diff --name-only -z "$@" > "$raw" \
+    || die "git cannot list the changed files of $tree (git diff --name-only $*)"
+  if [ "$(LC_ALL=C tr -d -c '\n' < "$raw" | wc -c)" -ne 0 ] \
+    || LC_ALL=C tr '\0' '\n' < "$raw" | LC_ALL=C grep -q '[[:cntrl:]]'
+  then
+    die "a changed file has a control character in its name, so the changed files cannot be listed. Rename it"
+  fi
+  LC_ALL=C tr '\0' '\n' < "$raw" > "$changed"
 }
 
 sha256_of()

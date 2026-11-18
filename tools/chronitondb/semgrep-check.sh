@@ -23,6 +23,19 @@
 #                                                    without the findings already on the merge base
 #   tools/chronitondb/semgrep-check.sh --self-test   run the rules on the fixtures under tools/chronitondb/test/semgrep
 #
+# Two options go before any of these:
+#
+#   --tree DIR   scan the files of DIR, another checkout of the repository,
+#                with the rules of this one. CI runs the rules of the line
+#                on a pull request's files this way, so a pull request
+#                cannot bring its own rules
+#   --imported   the change is an import. A finding in a file outside
+#                org/chronitondb is in imported code: it is printed as
+#                REPORT for the import's assessment and does not fail the
+#                check, since the maintainers decide each such finding
+#                before the import merges (docs/process/upstream.md). A
+#                finding in an org/chronitondb file still fails
+#
 # Each rule file says which paths it covers: the banned APIs on
 # src/java/org/chronitondb, non-ASCII identifiers on any org/chronitondb
 # path, process starts and ObjectInputStream on every Java file, bidi
@@ -36,8 +49,8 @@
 #
 # Output: one line per finding
 #   ERROR path:line:col rule: message
-# then one summary line. Exit 0 without findings, 1 on a finding, 2 when the
-# check itself could not run.
+# then one summary line. Exit 0 without findings that fail the check, 1 on
+# such a finding, 2 when the check itself could not run.
 set -u
 
 tool=semgrep-check
@@ -50,6 +63,10 @@ tool=semgrep-check
 semgrep_image="semgrep/semgrep:1.182.1@sha256:451b3d875c00dac7ed5db5293e584a07de11449a409c10b3c2d2652f429630b6"
 rules="$here/semgrep"
 semgrep_work="$work/semgrep"
+imported=no
+# A finding of an import that does not fail the check: one in a file
+# outside org/chronitondb.
+in_imported_code='$imported == "yes" and (.path | test("(^|/)org/chronitondb/") | not)'
 
 # run_semgrep MOUNT WORKDIR ARGS...: semgrep in the pinned image, with MOUNT
 # (a host directory) at /src and the rules read only at /rules.
@@ -76,19 +93,19 @@ select_targets()
     case "$path" in
       tools/chronitondb/test/*) continue ;;
     esac
-    [ -f "$root/$path" ] || continue
+    [ -f "$tree/$path" ] || continue
     printf '%s\n' "$path"
   done | awk '!seen[$0]++'
 }
 
-# relative PATH: the path relative to the repository, or nothing when it is
-# outside it.
+# relative PATH: the path relative to the checked tree, or nothing when it
+# is outside it.
 relative()
 {
   local abs
   abs="$(absolute "$1")"
   case "$abs" in
-    "$root"/*) printf '%s' "${abs#"$root"/}" ;;
+    "$tree"/*) printf '%s' "${abs#"$tree"/}" ;;
   esac
 }
 
@@ -96,7 +113,7 @@ relative()
 # relative. BASELINE is a commit whose findings are not reported, or empty.
 scan()
 {
-  local baseline="$1" list="$semgrep_work/targets.txt" out="$semgrep_work/results.json" n_files n_found rc path
+  local baseline="$1" list="$semgrep_work/targets.txt" out="$semgrep_work/results.json" n_files n_found n_report rc path
   local targets=()
   mkdir -p "$semgrep_work" || die "cannot create $(display "$semgrep_work")"
   command -v jq >/dev/null 2>&1 || die "jq is needed to format the Semgrep output"
@@ -113,10 +130,10 @@ scan()
   done < "$list"
   if [ -n "$baseline" ]
   then
-    run_semgrep "$root" /src scan --metrics=off --disable-nosem --error --quiet --json \
+    run_semgrep "$tree" /src scan --metrics=off --disable-nosem --error --quiet --json \
       --config /rules --baseline-commit "$baseline" "${targets[@]}" > "$out"
   else
-    run_semgrep "$root" /src scan --metrics=off --disable-nosem --error --quiet --json \
+    run_semgrep "$tree" /src scan --metrics=off --disable-nosem --error --quiet --json \
       --config /rules "${targets[@]}" > "$out"
   fi
   rc=$?
@@ -127,9 +144,16 @@ scan()
   jq -r '.errors[]? | "semgrep: \(.type | if type == "array" then .[0] else (. // "error") end): \(.message // "" | gsub("\n"; " "))"' "$out" >&2
   # The line itself is not printed: a bidi control character in it would
   # reorder the terminal display of the report that is meant to expose it.
-  jq -r '.results[] | "ERROR \(.path):\(.start.line):\(.start.col) \(.check_id | split(".") | last): \(.extra.message | gsub("\n"; " "))"' "$out"
-  n_found="$(jq '.results | length' "$out")"
-  printf '%s: %s finding(s), %s file(s) scanned\n' "$tool" "$n_found" "$n_files"
+  jq -r --arg imported "$imported" '.results[] | "\(if '"$in_imported_code"' then "REPORT" else "ERROR" end) \(.path):\(.start.line):\(.start.col) \(.check_id | split(".") | last): \(.extra.message | gsub("\n"; " "))"' "$out"
+  n_report="$(jq --arg imported "$imported" '[.results[] | select('"$in_imported_code"')] | length' "$out")"
+  n_found="$(jq --arg imported "$imported" '[.results[] | select('"$in_imported_code"' | not)] | length' "$out")"
+  if [ "$imported" = yes ]
+  then
+    printf '%s: %s finding(s) that fail the check, %s finding(s) in imported code for the assessment of the import, %s file(s) scanned\n' \
+      "$tool" "$n_found" "$n_report" "$n_files"
+  else
+    printf '%s: %s finding(s), %s file(s) scanned\n' "$tool" "$n_found" "$n_files"
+  fi
   [ "$n_found" -eq 0 ]
 }
 
@@ -151,10 +175,13 @@ write_bidi_fixture()
 # Runs every rule on its fixture with semgrep --test (each "ruleid" line
 # must be reported, each "ok" line must not), then checks the path scoping
 # that --test ignores: the banned API fixture staged as production, test and
-# Apache code, the non-ASCII fixture as test and Apache code.
+# Apache code, the non-ASCII fixture as test and Apache code. Last, the
+# process start fixture staged as Apache code and as org/chronitondb code in
+# another tree: as a change of ours every finding fails, as an import the
+# ones in Apache code are reported and only ours fail.
 self_test()
 {
-  local stage out rc failed=0 expected actual
+  local stage out rc failed=0 expected actual ours theirs
   stage="$semgrep_work/selftest"
   rm -rf "$stage"
   mkdir -p "$stage/fixtures" \
@@ -199,6 +226,37 @@ self_test()
     printf 'self-test: path scoping as expected, findings only in %s\n' "$expected"
   fi
 
+  ours="src/java/org/chronitondb/selftest/ProcessExec.java"
+  theirs="src/java/org/apache/cassandra/selftest/ProcessExec.java"
+  cp "$fixtures/semgrep/process-exec.java" "$stage/scope/$ours"
+  cp "$fixtures/semgrep/process-exec.java" "$stage/scope/$theirs"
+  "$0" --tree "$stage/scope" "$ours" "$theirs" > "$out" 2>&1
+  rc=$?
+  if [ "$rc" -ne 1 ] || ! grep -q "^ERROR $ours:" "$out" || ! grep -q "^ERROR $theirs:" "$out" || grep -q '^REPORT ' "$out"
+  then
+    cat "$out"
+    printf 'self-test: FAIL another tree exit %s, expected 1 with the findings in both files as ERROR\n' "$rc"
+    failed=$((failed + 1))
+  fi
+  "$0" --tree "$stage/scope" --imported "$ours" "$theirs" > "$out" 2>&1
+  rc=$?
+  if [ "$rc" -ne 1 ] || ! grep -q "^ERROR $ours:" "$out" || ! grep -q "^REPORT $theirs:" "$out" || grep -q "^ERROR $theirs:" "$out"
+  then
+    cat "$out"
+    printf 'self-test: FAIL an import exit %s, expected 1 with ERROR in the org/chronitondb file and REPORT in the Apache file\n' "$rc"
+    failed=$((failed + 1))
+  fi
+  "$0" --tree "$stage/scope" --imported "$theirs" > "$out" 2>&1
+  rc=$?
+  if [ "$rc" -ne 0 ] || ! grep -q "^REPORT $theirs:" "$out" || grep -q '^ERROR ' "$out"
+  then
+    cat "$out"
+    printf 'self-test: FAIL an import with findings only in Apache code exit %s, expected 0 with each finding as REPORT\n' "$rc"
+    failed=$((failed + 1))
+  else
+    printf 'self-test: another tree and an import as expected\n'
+  fi
+
   if [ "$failed" -eq 0 ]
   then
     printf 'self-test: PASS\n'
@@ -208,14 +266,31 @@ self_test()
   return 1
 }
 
+while :
+do
+  case "${1:-}" in
+    --tree)
+      use_tree "${2:-}"
+      shift 2
+      ;;
+    --imported)
+      imported=yes
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
 case "${1:-}" in
   --self-test)
     self_test
     ;;
   --base)
     [ -n "${2:-}" ] || die "--base needs a ref"
-    base="$(git -C "$root" merge-base "$2" HEAD)" || die "no merge base between $2 and HEAD"
-    git -C "$root" diff --name-only --diff-filter=ACMR "$base" HEAD | scan "$base"
+    base="$(git -C "$tree" merge-base "$2" HEAD)" || die "no merge base between $2 and HEAD"
+    git -C "$tree" diff --name-only --diff-filter=ACMR "$base" HEAD | scan "$base"
     ;;
   --help|-h)
     usage "Semgrep check"
@@ -224,13 +299,13 @@ case "${1:-}" in
     die "unknown option $1"
     ;;
   "")
-    git -C "$root" diff --cached --name-only --diff-filter=ACMR | scan ""
+    git -C "$tree" diff --cached --name-only --diff-filter=ACMR | scan ""
     ;;
   *)
     for path in "$@"
     do
       rel="$(relative "$path")"
-      [ -n "$rel" ] || die "$path is outside the repository"
+      [ -n "$rel" ] || die "$path is outside the checked tree"
       printf '%s\n' "$rel"
     done | scan ""
     ;;

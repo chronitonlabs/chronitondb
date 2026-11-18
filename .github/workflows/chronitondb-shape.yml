@@ -13,10 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Shape limits on the
-# org/chronitondb Java files a pull request adds or changes. Apache code is
-# never checked here, Apache's own workflows are untouched. Every action is
-# pinned to a commit.
+# Shape limits on the org/chronitondb Java files a pull request adds or
+# changes. Apache code is never checked here, Apache's own workflows are
+# untouched. The check script, the limits and the build that gives it
+# checkstyle come from the base branch, in a tree of their own, never from
+# the pull request, so a pull request cannot loosen the limits it is
+# measured by. The pull request's files are only read as data. The JDK is
+# the one the build file of the base branch names as its default, so each
+# line is checked with its own: 17 on the 5.0 line, 21 on the 6.0 line.
+# Before the check is on the line it says so and passes. A separate job runs
+# the self-test of the check the pull request brings, when it changes
+# tools/chronitondb, which judges that copy and never the pull request's
+# code. Every action is pinned to a commit.
 name: ChronitonDB shape
 
 on:
@@ -35,21 +43,89 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      # Java 17 builds the 5.0 line.
-      - name: JDK 17
+      - name: The check from the base branch
+        id: line
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          line="$RUNNER_TEMP/line"
+          git worktree add --detach "$line" "origin/$BASE" > /dev/null
+          if [ ! -f "$line/tools/chronitondb/shape-check.sh" ] || ! grep -q -- '--tree DIR' "$line/tools/chronitondb/shape-check.sh"
+          then
+            echo "The shape check on $BASE cannot read the files of another tree yet, so there is no check to run. The check starts once it is merged."
+            echo "present=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          java="$(sed -n -E 's/^[[:space:]]*<property name="java\.default" value="([0-9]+)"[[:space:]]*\/>.*$/\1/p' "$line/build.xml" | head -n 1)"
+          if [ -z "$java" ]
+          then
+            echo "::error::build.xml on $BASE names no java.default, so the JDK of the line cannot be read."
+            exit 1
+          fi
+          echo "java=$java" >> "$GITHUB_OUTPUT"
+          echo "present=yes" >> "$GITHUB_OUTPUT"
+
+      - name: The JDK of the line
+        if: steps.line.outputs.present == 'yes'
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
-          java-version: 17
+          java-version: ${{ steps.line.outputs.java }}
 
-      - name: Resolve the build classpath (checkstyle)
+      - name: Resolve the build classpath of the line (checkstyle)
+        if: steps.line.outputs.present == 'yes'
+        working-directory: ${{ runner.temp }}/line
         run: ant resolver-retrieve-build
 
-      - name: Self-test the check
-        run: tools/chronitondb/shape-check.sh --self-test
+      - name: Self-test the check of the line
+        if: steps.line.outputs.present == 'yes'
+        run: |
+          "$RUNNER_TEMP/line/tools/chronitondb/shape-check.sh" --self-test
 
       - name: Shape limits on the changed org/chronitondb files
+        if: steps.line.outputs.present == 'yes'
         env:
           BASE: ${{ github.base_ref }}
-        run: tools/chronitondb/shape-check.sh --base "origin/$BASE"
+        run: |
+          "$RUNNER_TEMP/line/tools/chronitondb/shape-check.sh" --tree "$GITHUB_WORKSPACE" --base "origin/$BASE"
+
+  shape-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Does the pull request change the check
+        id: own
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          if [ -z "$(git diff --name-only "origin/$BASE...HEAD" -- tools/chronitondb)" ]
+          then
+            echo "The pull request changes nothing under tools/chronitondb, so it brings no check to test."
+            echo "changed=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          java="$(sed -n -E 's/^[[:space:]]*<property name="java\.default" value="([0-9]+)"[[:space:]]*\/>.*$/\1/p' build.xml | head -n 1)"
+          echo "java=$java" >> "$GITHUB_OUTPUT"
+          echo "changed=yes" >> "$GITHUB_OUTPUT"
+
+      - name: The JDK of the line
+        if: steps.own.outputs.changed == 'yes'
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: ${{ steps.own.outputs.java }}
+
+      - name: Resolve the build classpath (checkstyle)
+        if: steps.own.outputs.changed == 'yes'
+        run: ant resolver-retrieve-build
+
+      - name: Self-test the check the pull request brings
+        if: steps.own.outputs.changed == 'yes'
+        run: tools/chronitondb/shape-check.sh --self-test

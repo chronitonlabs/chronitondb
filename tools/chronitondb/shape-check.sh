@@ -24,6 +24,11 @@
 #   tools/chronitondb/shape-check.sh --base REF  check the files changed since the merge base with REF
 #   tools/chronitondb/shape-check.sh --self-test run the fixtures under tools/chronitondb/test
 #
+# --tree DIR before any of these checks the files of DIR, another checkout
+# of the repository, with the limits and tools of this one. CI runs the
+# check of the line on a pull request's files this way, so a pull request
+# cannot loosen the limits it is measured by.
+#
 # Only paths matching org/chronitondb/**/*.java are kept, the rest are
 # ignored without a word. A file under a test/ directory (test/unit,
 # test/distributed, test/microbench, test/burn) gets the test limits and
@@ -186,7 +191,7 @@ run_pmd()
 # tokens|lines|file|line|the other occurrences
 cpd_records()
 {
-  awk -v root="$root/" '
+  awk -v root="$tree/" '
     function flush(   i, j, f, others, sep)
     {
       for (i = 1; i <= n; i++)
@@ -236,7 +241,7 @@ run_cpd()
   corpus="$work/cpd-corpus.txt"
   {
     cat "$list"
-    for dir in "$root/src" "$root/test"
+    for dir in "$tree/src" "$tree/test"
     do
       [ -d "$dir" ] && find "$dir" -path '*/org/chronitondb/*' -name '*.java' -type f
     done
@@ -365,6 +370,19 @@ self_test()
     failed=$((failed + 1))
   fi
 
+  # The staging tree checked as another tree, with --tree, its files given
+  # by their paths inside it: the same findings, shown by those paths.
+  (cd "$stage" && find src test -name '*.java' -type f | sort) | run_on_list --tree "$stage" > "$out" 2>&1
+  rc=$?
+  grep -v ' none$' "$expected" > "$work/selftest-expected-tree.txt"
+  sed -n -E "s#^(ERROR|WARN) ((src|test)/[^:]+):[0-9]+(:[0-9]+)? ([A-Za-z]+) .*#\2 \1 \5#p" "$out" | sort -u > "$actual"
+  if [ "$rc" -ne 1 ] || ! diff -u "$work/selftest-expected-tree.txt" "$actual"
+  then
+    cat "$out"
+    printf 'self-test: FAIL the staging tree given with --tree exit %s, expected 1 with the findings of %s shown by their paths in that tree\n' "$rc" "$(display "$fixtures/expected.txt")"
+    failed=$((failed + 1))
+  fi
+
   if [ "$failed" -eq 0 ]
   then
     printf 'self-test: PASS\n'
@@ -373,6 +391,12 @@ self_test()
   printf 'self-test: %s check(s) failed\n' "$failed"
   return 1
 }
+
+if [ "${1:-}" = "--tree" ]
+then
+  use_tree "${2:-}"
+  shift 2
+fi
 
 case "${1:-}" in
   --self-test)

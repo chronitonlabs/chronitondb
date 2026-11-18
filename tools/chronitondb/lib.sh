@@ -17,7 +17,10 @@
 # Shared by the check scripts of this folder, sourced, never run. The
 # caller sets $tool (its own name) before sourcing. Defines:
 #   $here      tools/chronitondb
-#   $root      the repository
+#   $root      the repository this script is in
+#   $tree      the tree whose files are checked: $root, or the directory
+#              given with --tree. The scripts, the rules, the tools and
+#              the scratch files stay those of $root
 #   $fixtures  tools/chronitondb/test, skipped by every check, used by --self-test
 #   $work      build/chronitondb-shape, downloads and scratch, never committed
 #   $java_bin  java from JAVA_HOME when set, else from PATH
@@ -26,6 +29,7 @@ here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 root="$(cd "$here/../.." && pwd -P)"
 fixtures="$here/test"
 work="$root/build/chronitondb-shape"
+tree="$root"
 java_bin="${JAVA_HOME:+$JAVA_HOME/bin/}java"
 
 die()
@@ -51,10 +55,23 @@ run_on_list()
   "$0" "$@" ${files[@]+"${files[@]}"}
 }
 
-# Path for output: relative to the repository when inside it.
+# use_tree DIR: checks the files of DIR, another checkout of the
+# repository, with the scripts and rules of this one. CI runs the checks of
+# the line on the files of a pull request this way, so a pull request
+# cannot bring its own rules.
+use_tree()
+{
+  [ -n "${1:-}" ] || die "--tree needs a directory"
+  [ -d "$1" ] || die "--tree $1 is not a directory"
+  tree="$(cd "$1" && pwd -P)"
+}
+
+# Path for output: relative to the checked tree when inside it, else to the
+# repository when inside it.
 display()
 {
   case "$1" in
+    "$tree"/*) printf '%s' "$1" | awk -v r="$tree/" '{ print substr($0, length(r) + 1) }' ;;
     "$root"/*) printf '%s' "$1" | awk -v r="$root/" '{ print substr($0, length(r) + 1) }' ;;
     *) printf '%s' "$1" ;;
   esac
@@ -64,7 +81,7 @@ absolute()
 {
   case "$1" in
     /*) printf '%s' "$1" ;;
-    *) printf '%s/%s' "$root" "$1" ;;
+    *) printf '%s/%s' "$tree" "$1" ;;
   esac
 }
 
@@ -81,8 +98,8 @@ classify()
 }
 
 # Reads paths from stdin. Keeps the org/chronitondb Java files that exist,
-# drops the fixtures under tools/chronitondb/test, removes duplicates. One
-# absolute path per line.
+# drops the fixtures under tools/chronitondb/test of this repository and of
+# the checked tree, removes duplicates. One absolute path per line.
 select_files()
 {
   local path abs
@@ -92,7 +109,7 @@ select_files()
     printf '%s\n' "$path" | grep -q -E '(^|/)org/chronitondb/.*\.java$' || continue
     abs="$(absolute "$path")"
     case "$abs" in
-      "$fixtures"/*)
+      "$fixtures"/*|"$tree/tools/chronitondb/test"/*)
         note "skipping fixture $(display "$abs"), fixtures are checked by --self-test"
         continue
         ;;
@@ -112,8 +129,8 @@ files_for()
   shift
   case "$mode" in
     files) printf '%s\n' "$@" ;;
-    staged) git -C "$root" diff --cached --name-only --diff-filter=ACMR ;;
-    base) git -C "$root" diff --name-only --diff-filter=ACMR --merge-base "$1" HEAD ;;
+    staged) git -C "$tree" diff --cached --name-only --diff-filter=ACMR ;;
+    base) git -C "$tree" diff --name-only --diff-filter=ACMR --merge-base "$1" HEAD ;;
   esac | select_files
 }
 

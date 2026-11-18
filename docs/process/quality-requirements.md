@@ -62,9 +62,9 @@ With a feature off, three things hold, as they apply, and the tests of the featu
 
 ChronitonDB never changes a compatibility number that Apache Cassandra owns without a decision of the maintainers: the messaging version, the sstable and index format version letters, the cluster metadata serialization version, and the ids of CQL operators on the wire. A feature that needs new state between nodes or on disk carries it in a form Apache Cassandra already accepts, such as an existing extensible field, an optional component or text options. Where no such form exists the design stops and asks.
 
-### CQL does not depend on topology
+### A feature adds no dependence on topology
 
-Whether a CQL statement is valid, and the results it returns, never depend on the replication factor, the number of data centres or the number of replicas. A single node development cluster behaves like a production cluster with three replicas.
+A fork feature adds no dependence on topology. Whether a statement that uses it is valid, and the rows it returns for the same data at a consistency level that can be met, are the same at any replication factor, number of data centres and number of replicas. Where Apache Cassandra itself depends on topology, such as availability at a consistency level, that stays as it is. So a feature behaves on a single node development cluster as it does on a production cluster with three replicas.
 
 ### Data dependent settings belong to the schema object
 

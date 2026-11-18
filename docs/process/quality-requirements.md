@@ -71,7 +71,7 @@ Behaviour that depends on the data is set on the schema object that owns the dat
 
 ### A runtime command changes the running value only
 
-A runtime command, such as a nodetool toggle, changes the value in memory only, on the node where it runs, and the configuration file holds the value at startup: [PRINCIPLE-023](principles.md#principle-023). A value may differ from node to node only for an operator control: [PRINCIPLE-024](principles.md#principle-024).
+A runtime command, such as a nodetool toggle, changes the value in memory only, on the node it is sent to, and the node's configuration at startup holds the starting value: [PRINCIPLE-023](principles.md#principle-023). A value may differ from node to node only for an operator control: [PRINCIPLE-024](principles.md#principle-024).
 
 ### A refusal names its control
 
@@ -98,7 +98,7 @@ Copy this table into the feature spec or design record. Fill the last column for
 | Compatibility | Mixed-version cluster, upgrade and rollback (see the Compatibility section) | |
 | Functional suitability | CQL validity and results independent of replication factor, data centres and replica count | |
 | Flexibility | Data dependent settings on the schema object that owns the data, with a configured default and maximum, and global, include and exclude modes | |
-| Interaction capability | A runtime command changes the in-memory value only, the configuration file holds the startup value | |
+| Interaction capability | A runtime command changes the in-memory value only, the node's configuration at startup holds the starting value | |
 | Interaction capability | A refusal names what the user or operator can change to lift it | |
 | Maintainability | Observability: metrics, traces and diagnostics as a gate item | |
 | Security | Threat model answered (see the Threat model section) | |

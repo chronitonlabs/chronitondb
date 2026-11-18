@@ -92,7 +92,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 
 1. `CHANGES-chronitondb.txt` is generated at release from the `feat`, `fix`, `perf`, `security` and `import` commits and the import merge commits. It is never edited by hand. Each line has the form ` * <Imperative description> (#<issue>)`. Security fixes have their own section.
 2. `NEWS-chronitondb.txt` carries upgrade notes per release and anything user facing or upgrade relevant: for example the cleanup statements to run before a downgrade. It is written in the pull request that makes the change.
-3. Apache's `CHANGES.txt` and `NEWS.txt` are never edited. They change only through imports.
+3. Apache's `CHANGES.txt` and `NEWS.txt` are never edited by hand. They change only through imports, a single fix taken early included: [upstream.md](upstream.md#single-fixes-taken-early).
 4. Release notes are built from our commits and `NEWS-chronitondb.txt`. The commit subject is the text a user reads. They also name the newest Apache Cassandra release the line fully contains and every change cherry-picked on top of it, taken from the import merge commits. See [release.md](release.md#what-a-release-contains).
 
 ## Where things live
@@ -100,7 +100,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Kind | Path |
 |---|---|
 | ChronitonDB Java code | `src/java/org/chronitondb/<area>/` |
-| ChronitonDB tests | `test/unit/org/chronitondb/`, `test/distributed/org/chronitondb/`, in the same packages as the code they test |
+| ChronitonDB tests | `test/unit/org/chronitondb/`, in the same packages as the code they test, and `test/distributed/org/chronitondb/`, as item 8 below says |
 | ChronitonDB tooling and code checks | `tools/chronitondb/` |
 | Scenarios of fork features and their shared step library | `test/bdd/` |
 | Parity suite tooling | `test/parity/` |
@@ -137,6 +137,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 5. Documentation changes ship in the same pull request as the code they describe.
 6. Requirements and prerequisites in reference pages, how-to guides, runbooks, the process pages and templates, and design and decision records use BCP 14 key words. Tutorials and explanations use plain prose.
 7. Product documentation, meaning reference pages, operator guides, runbooks and design and decision records, never addresses the reader as "you". Pages that address people taking part may: [contributing.md](contributing.md), `.github/CONTRIBUTING.md`, the reporting part of [security.md](security.md) and the How we work section of `.github/README.md`.
+8. Apache Cassandra's build selects tests by path and by name. Distributed tests of the project sit under `test/distributed/org/chronitondb/<area>/test/` and upgrade tests under `test/distributed/org/chronitondb/<area>/upgrade/`. No other path of the project contains the word upgrade. Every test class name ends in `Test`: a class named otherwise is never run. `test/bdd/` and `test/parity/` need a hook in `build.xml`, with its delta entry.
 
 ## Contents index of process documents
 

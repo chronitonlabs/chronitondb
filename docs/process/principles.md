@@ -77,9 +77,9 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-006
 
-**The compatibility numbers Apache Cassandra owns are not changed.** The project never changes a compatibility number that Apache Cassandra owns: the messaging version, the sstable and index format version letters, the cluster metadata serialization version, and the ids of CQL operators on the wire. A feature that needs new state between nodes or on disk carries it in a form Apache Cassandra already accepts. Where no such form exists the design stops and asks the maintainers.
+**The compatibility numbers Apache Cassandra owns are not changed.** The project never changes a version number, a format letter, a numbered id or a stored name by which Apache Cassandra recognises a file, a message or a grant. Among them are the messaging version, the sstable and index format version letters, the commit log, hint and saved cache versions, the cluster metadata serialization version on a line that has one, the ids of verbs, message parameters, gossip states, request failure codes and CQL operators, the native protocol's versions and codes, and the names of sstable components and of permissions. A feature that needs new state between nodes or on disk carries it in a form Apache Cassandra already accepts. An id the project adds to a set Apache Cassandra numbers is carried under a string key, or taken from the range Apache Cassandra keeps for others where there is one. It is never the next free number, and it is never reused. Where no such form exists the design stops and asks the maintainers.
 
-1. **Applies to.** Every feature with state on disk or between nodes. For example a new field between nodes travels in an existing extensible field, new data beside an sstable is an optional component, and what an index keeps in cluster metadata is text options.
+1. **Applies to.** Every feature with state on disk or between nodes. For example a new field on a request between nodes travels in the custom parameter map, which an Apache Cassandra node skips. State that must go with a write is carried in the write's own data, such as a column or a cell, or is derived on the replica from the schema: the commit log, hints and the batchlog keep the mutation and no message parameter. New data beside an sstable is an optional component, and what an index keeps in cluster metadata is text options. A form Apache Cassandra accepts is one that an Apache Cassandra node reads past or ignores.
 2. **Edge.** A decision of the maintainers, in a decision record. A changed number that arrives unchanged in an import from Apache Cassandra is Apache Cassandra's own.
 3. **See.** [quality-requirements.md](quality-requirements.md#compatibility-with-apache-cassandra).
 
@@ -219,7 +219,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-023
 
-**A runtime command changes the running value only.** A runtime command, such as a nodetool toggle, changes the value in memory only, on the node where it runs. The configuration file holds the value at startup. There is no separate persistence of runtime changes, and a restart returns to the configured value.
+**A runtime command changes the running value only.** A runtime command, such as a nodetool toggle, changes the value in memory only, on the node it is sent to. The node's configuration at startup holds the starting value: the file, an override the operator gave at startup, or the default in the code. There is no separate persistence of runtime changes, and a restart returns to the configured value.
 
 1. **Applies to.** Every operator control that can change on a running node.
 2. **Edge.** An option on a schema object is not a runtime toggle: it changes through the schema.
@@ -455,7 +455,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **The simplest sufficient design.** A design is the one with the least to understand, build, test, operate and recover that meets the requirements, the decisions of the maintainers and the rules of these pages. The burden of proof is on each addition, never on the simpler design. The search starts from no change, then an existing Apache Cassandra mechanism, then an existing mechanism of the project, then something new.
 
-1. **Applies to.** Every feature spec, design record and fix record. For example a condition an index cannot answer is met by stock filtering of the rows the index returns before a new operator on the replica, and a value an operator needs is a column in an existing virtual table before a new command.
+1. **Applies to.** Every feature spec, design record and fix record. For example a condition an index cannot answer is met by stock filtering of the rows the index returns, under Apache Cassandra's own `ALLOW FILTERING` rule, before a new operator on the replica. Stock filtering cannot evaluate a custom index expression. A value an operator needs is a column in an existing virtual table before a new command.
 2. **Edge.** The principle is a strong default and no ban: complexity that a requirement, a decision, a rule or a named risk needs is kept. On a request path, or a background path that competes with requests, performance and availability come first: speed is argued by mechanism and proved by comparing benchmarks, no numeric target is demanded up front, and complexity stays in proportion, see [PRINCIPLE-050](#principle-050). Off those paths the simplest sufficient design stands. See [PRINCIPLE-056](#principle-056) for what simple never means.
 3. **See.** [PRINCIPLE-055](#principle-055).
 
@@ -515,13 +515,13 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **A feature adds no dependence on topology.** A fork feature adds no dependence on topology. Whether a statement that uses it is valid, and the rows it returns for the same data at a consistency level that can be met, are the same at any replication factor, number of data centres and number of replicas. So a feature behaves on a single node development cluster as it does on a production cluster with three replicas.
 
-1. **Applies to.** Every fork feature. One that runs across nodes is tested at replication factor 1 and at replication factor 3 on the same data, and across two data centres when its behaviour involves a data centre aware consistency level or replication strategy.
-2. **Edge.** Where Apache Cassandra itself depends on topology, such as availability at a consistency level, that stays as it is.
+1. **Applies to.** Every fork feature. One that runs across nodes is tested at replication factor 1 and at replication factor 3 on the same data, and across two data centres when its behaviour involves a data centre aware consistency level or replication strategy. A warning that differs between the two runs for one of the stock reasons the edge names is not a fault.
+2. **Edge.** Where Apache Cassandra itself depends on topology, that stays as it is and the feature matches it exactly. Apache Cassandra couples more than availability to topology: whether a filtering query needs reconciliation, the guardrail and the warning that follow from it, the plan, and which replica's warnings reach the client.
 3. **See.** [quality-requirements.md](quality-requirements.md#a-feature-adds-no-dependence-on-topology), [testing.md](testing.md#policy).
 
 ### PRINCIPLE-062
 
-**A change to a shared surface states and proves its upgrade, its rollback and its mixed-version behaviour.** A feature states its on-disk format changes with their version markers, its behaviour in a mixed-version cluster during a rolling upgrade, its upgrade path with prerequisites, its rollback path and its runbook entries. A milestone that introduces an on-disk format change has upgrade and rollback tests among its exit criteria. A newer line reads everything an older line writes.
+**A change to a shared surface states and proves its upgrade, its rollback and its mixed-version behaviour.** A feature states its on-disk format changes with their version markers, its behaviour in a mixed-version cluster during a rolling upgrade, its upgrade path with prerequisites, its rollback path and its runbook entries. A milestone that introduces an on-disk format change has upgrade and rollback tests among its exit criteria. A newer line reads every data file an older line writes, and exchanges messages with it. A file that only speeds a restart, such as a saved cache, may be discarded instead, and the design says so. Streams and repair between two lines follow Apache Cassandra: they run only between nodes on the same messaging version, and the runbook says so.
 
 1. **Applies to.** Every change to a surface nodes or versions share: a file on disk, the schema, a message between nodes, a setting. For example a new component beside an sstable, or a new gossip state.
 2. **Edge.** A feature with no format, schema or protocol change says so, and still states its mixed-version and rollback behaviour where its class requires the section.

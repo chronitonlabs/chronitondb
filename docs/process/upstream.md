@@ -37,7 +37,7 @@ Every import pull request, a whole release or a single cherry-pick from Apache C
 1. Every Apache Cassandra patch release of a line's major version is imported into that line in whole, as one import item. A release is never skipped. Its import is held while a finding on it is open, as rule 3 says. The rule is [PRINCIPLE-073](principles.md#principle-073).
 2. The integrator merges the Apache release tag into an import branch named after the Apache release tag, `import/cassandra-<x.y.z>/<line>`, cut from the line. That merge commit's subject is `import(apache-<version>): merge Apache Cassandra <version>`. A maintainer then merges the import pull request into the line with a merge commit. Who may bypass the signature rule for that merge is in [History rule 6](branching-and-review.md#history-rules). Every Apache commit keeps its identity, so git itself shows which Apache releases a line contains.
 3. Each import is assessed on its merits before its pull request opens: the code checks and the reviewer's checklists run on the imported diff. The integrator resolves conflicts with the ChronitonDB delta. A correctness, security or performance finding of major severity or worse in the imported Apache Cassandra code goes to the maintainers before the import's pull request merges, with the evidence for it. So does any finding that an imported change conflicts with something ChronitonDB adds. The import does not merge until the maintainers decide for each finding: report it to Apache Cassandra, hold the import, fix it as a fix to stock as [maintenance.md](maintenance.md#corrective-fixing-a-fault) says, or accept it. A security finding is handled in private, as [security.md](security.md) says. Findings on shape limits and style in Apache Cassandra's own code are listed in the import's assessment and go no further. An import is never changed for style alone. The rule is [PRINCIPLE-074](principles.md#principle-074). An import is not on the Critical floor merely because Apache Cassandra's own commits touch an area of the floor: [PRINCIPLE-071](principles.md#principle-071).
-4. Apache's own `CHANGES.txt` and `NEWS.txt` arrive with the import and are never edited.
+4. Apache's own `CHANGES.txt` and `NEWS.txt` arrive with the import and are never edited by hand. A single fix taken early is the one case that touches them, see [Single fixes taken early](#single-fixes-taken-early).
 
 ## Before Apache's first release of a major version
 
@@ -55,6 +55,7 @@ A single Apache fix MAY be cherry-picked into a line ahead of the Apache release
 2. The import carries the regression test of the original fix.
 3. The branch is named `import/CASSANDRA-<n>/<line>`.
 4. A maintainer merges the import pull request with a merge commit, so the cherry-picked commit reaches the line unchanged. That merge commit's subject is `import(CASSANDRA-<n>): <original Apache subject>` and its body, taken from the import pull request's description, names the Apache commit hash. See [conventions.md](conventions.md#commit-messages).
+5. A cherry-pick taken early resolves `CHANGES.txt` and `NEWS.txt` by taking the Apache line as written, under the section Apache Cassandra put it in. The release import that contains the fix restores both files to Apache Cassandra's.
 
 ## Commits from other projects
 

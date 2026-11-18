@@ -37,7 +37,7 @@ The rules behind this policy are stated in full in [principles.md](principles.md
 | Level | What it proves | Where |
 |---|---|---|
 | Unit tests | One class or component behaves as its requirements say | `test/unit/` |
-| In-JVM distributed tests | Behaviour across several nodes in one JVM: replication, consistency, upgrade paths in process | `test/distributed/` |
+| In-JVM distributed tests | Behaviour across several nodes in one JVM: replication, consistency, upgrade paths in process | `test/distributed/`, in the directories [conventions.md](conventions.md#where-things-live) names |
 | Scenarios | A fork feature's requirements hold as written, with its switch, where it has one, off and on | `test/bdd/` |
 | Python distributed tests | Behaviour of real node processes and tools, where in-JVM tests cannot reach | Apache Cassandra's Python dtest suite |
 | Upgrade and rollback tests | A node moves from Apache Cassandra to ChronitonDB and back, and from one ChronitonDB release to the next, with data and queries intact during and after the roll | Upgrade tests for the supported paths |

@@ -44,7 +44,9 @@ Observability is a gate item, not an afterthought.
 
 ### Automatic fallbacks are opt-in and counted
 
-Any automatic fallback, such as falling back to a scan, is off by default. It has a yaml setting, a nodetool toggle, a metric that counts each use and a rate-limited log line.
+Automatic behaviour the user did not ask for, and that changes results, cost or plan, is opt in. An operator can switch it at startup and on a running node, at the scope the design chose. Each use is counted, and logged without flooding. For example a query that falls back to a scan, or a repair that falls back from incremental to full. A fallback that changes none of the three, such as a node that speaks an older message version to an older peer, is not under this rule.
+
+Whether a schema object allows a fallback is an option on that object, off by default. The object is the index, table or other schema object the fallback serves, for example an index that may fall back to a scan. Each node also has an operator control that turns every fallback off on that node. The node control always wins: the option on the object never turns on what the node control has turned off.
 
 ### Compatibility with Apache Cassandra
 
@@ -89,7 +91,7 @@ Copy this table into the feature spec or design record. Fill the last column for
 | Performance efficiency | Fastest correct design, with benchmarks in the design and in the gates | |
 | Performance efficiency | Memory budgets on coordinator and replica | |
 | Reliability | Isolation levers on coordinator and replica: thread pools, limits, load shedding, timeouts, kill switch | |
-| Reliability | Automatic fallbacks opt-in, with yaml setting, nodetool toggle, metric and rate-limited log line | |
+| Reliability | Automatic fallbacks opt in on the schema object, with a node control that turns them off, each use counted and logged without flooding | |
 | Reliability | Coordination between nodes model checked, when the design changes it | |
 | Compatibility | An application behaves as it did on Apache Cassandra, and a change to what it sees from a stock feature is behind a switch that is off by default | |
 | Compatibility | What operators see stays as stock where that is reasonable, and each difference is recorded in the delta register and the release notes | |

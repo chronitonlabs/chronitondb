@@ -87,7 +87,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **Code defaults in stock classes stay as Apache Cassandra has them.** A default of a stock field, such as one in `Config.java`, stays exactly as Apache Cassandra has it. So a cluster that keeps its own configuration file behaves as it did.
 
 1. **Applies to.** Every edit to a stock class. A field the project adds has no stock default: where it is a feature switch its default follows [PRINCIPLE-017](#principle-017).
-2. **Edge.** None stated.
+2. **Edge.** A fix to a defect in stock that must change such a default is applied with its fix record, its delta entry and a release note, see [PRINCIPLE-004](#principle-004). A default that Apache Cassandra changes arrives with its import.
 3. **See.** [conventions.md](conventions.md#code-layout), [upstream.md](upstream.md#configuration-changes).
 
 ### PRINCIPLE-008
@@ -194,7 +194,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **Every merged item keeps the line releasable.** Every merged item keeps its line releasable. A feature built in more than one milestone always has a switch, see [PRINCIPLE-016](#principle-016). Until the feature passes its final milestone gate the switch refuses to turn on, whatever its default, and shipped code has no way round the refusal. With every fork feature off, a line behaves as stock, and the parity suite proves it.
 
-1. **Applies to.** Every line, and every feature that is built over several items.
+1. **Applies to.** Every line, and every feature that is built over several items. A feature with no switch that is built over several items merges no item that makes unfinished work reachable: where an item would, that is a risk that needs a switch, see [PRINCIPLE-016](#principle-016).
 2. **Edge.** The fixes to stock code and the differences in what operators see that the delta register lists.
 3. **See.** [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults), [additive.md](additive.md#milestone-gates), [testing.md](testing.md#policy).
 
@@ -541,7 +541,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **A fix starts with a test that reproduces the fault.** A fix starts with a test that reproduces the fault. It MUST fail before the fix and pass after it. The test and the fix merge together, so the line never carries a failing test.
 
 1. **Applies to.** Every corrective and emergency change. A fix to stock code keeps its reproducing test in one of Apache Cassandra's own test harnesses, so the test can be offered to Apache Cassandra with the fix.
-2. **Edge.** A dependency patch-version update has no reproducing test: the tests that cover every use of the library MUST pass.
+2. **Edge.** A dependency patch-version update has no reproducing test: the tests that cover every use of the library MUST pass. A fault that no test can reproduce is an exception to this principle: its fix record says why no test can and how the fix is checked instead, names this principle in its `Exceptions` row, and the maintainers decide it by merging the record.
 3. **See.** [testing.md](testing.md#policy), [maintenance.md](maintenance.md#corrective-fixing-a-fault).
 
 ### PRINCIPLE-065
@@ -667,7 +667,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **Names are additions, and say what they mean.** A name of Apache Cassandra follows the rule for what it names. A name an application sees, such as a keyword, a column of a result or an error code, changes only behind a feature switch that is off by default: [PRINCIPLE-001](#principle-001). A name an operator sees, such as a metric, an MBean, a virtual table, a setting or a command, stays as stock where that is reasonable, and a difference is recorded: [PRINCIPLE-002](#principle-002). The project's signals and settings live under its own names, and stock metric types gain no new metrics. Those names never contain "cassandra" or "axon", and no key or value contains "stock". A setting that means what a comparable system's setting means SHOULD carry its name, and an option that defers to the node's global setting takes the value `inherit`.
 
 1. **Applies to.** Every new user facing name: yaml keys, nodetool commands, MBeans, metric types, packages and options.
-2. **Edge.** A name the maintainers fixed in a decision record. A file that stands beside one of Apache Cassandra's files MAY carry that file's name, as the configuration file of [PRINCIPLE-026](#principle-026) does.
+2. **Edge.** A name the maintainers fixed in a decision record. A file that stands beside one of Apache Cassandra's files MAY carry that file's name, as the configuration file of [PRINCIPLE-026](#principle-026) does. A fix to a defect in stock that needs a new metric on a stock metric type is applied with its fix record, and the metric is recorded as a difference in what operators see, see [PRINCIPLE-004](#principle-004) and [PRINCIPLE-002](#principle-002).
 3. **See.** [conventions.md](conventions.md#names).
 
 ### PRINCIPLE-080

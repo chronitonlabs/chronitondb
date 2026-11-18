@@ -27,7 +27,7 @@ ChronitonDB uses trunk-based development. Each line is a trunk. Work reaches a l
 | `chronitondb-6.0` | Apache Cassandra 6.0 | The ChronitonDB 6.0 line |
 
 1. There is one line per Apache Cassandra major version. A new line is added when the maintainers decide to follow a new Apache major version.
-2. The lines are protected. A change reaches a line only by pull request. Every required check MUST pass. Every commit MUST be signed. Only maintainers and committers merge, each within their rights. See [governance.md](governance.md). Nobody force pushes. A line is never deleted.
+2. The lines are protected. A change reaches a line only by pull request. Every required check MUST pass. Every commit the project makes MUST be signed, see [History rules](#history-rules). Only maintainers and committers merge, each within their rights. See [governance.md](governance.md). Nobody force pushes. A line is never deleted.
 3. There are no feature branches and no milestone branches. Every item merges into its line once reviewed.
 
 ## Feature switches and defaults
@@ -42,7 +42,7 @@ The rules of this section are stated in full in [principles.md](principles.md), 
 6. The feature spec states the class of the feature and of each switch, with the reason, the default on each line and, for a behaviour-changing feature, the stock operations it changes. A maintainer approves the class with the spec. A feature that fits one item states the same in its design record.
 7. With a feature off, the feature MUST change nothing that stock Apache Cassandra does, and the tests of the feature's off state prove it: [PRINCIPLE-019](principles.md#principle-019).
 8. "Stock behaviour unchanged with the feature off" is a required property of every line, apart from the fixes to stock code and the differences in what operators see that the [delta register](../delta/README.md) lists. The parity suite proves it. See [testing.md](testing.md). The rule is [PRINCIPLE-020](principles.md#principle-020).
-9. Every merged item keeps the line releasable. The switch of a feature built in more than one milestone hides its unfinished work. See [PRINCIPLE-020](principles.md#principle-020).
+9. Every merged item keeps the line releasable. The switch of a feature built in more than one milestone hides its unfinished work. A feature with no switch merges no item that makes unfinished work reachable. See [PRINCIPLE-020](principles.md#principle-020).
 
 ## Work branches
 
@@ -64,7 +64,7 @@ The rules of this section are stated in full in [principles.md](principles.md), 
 3. Our own pull requests are squash merged. The line gets one signed commit whose subject is the pull request title, in Conventional Commits form. Merge commits on a work branch therefore never reach the line, and each line stays linear apart from imports.
 4. Import pull requests, a whole Apache release or a single cherry-pick, are merged with a merge commit, so the imported commits keep their original author, message and cherry-pick line. These are the only merge commits on a line. See [upstream.md](upstream.md).
 5. Rebase merging is not used. GitHub offers both squash and merge commits on every pull request, so the maintainer who merges picks the method by the kind of pull request.
-6. Every commit is signed, on work branches and on lines. GitHub refuses unsigned commits on the lines and unsigned tags. On work branches and forks signing is every contributor's own rule.
+6. Every commit the project makes is signed, on work branches and on lines: its own commits, the squash commit of a pull request, the commit of a cherry-pick and the merge commit of an import. The commits of Apache Cassandra's own history that the import of a release or a branch merges stay as Apache Cassandra made them, signed or not, and are never rewritten to add a signature: [PRINCIPLE-075](principles.md#principle-075). On the lines GitHub refuses an unsigned commit of ours. On work branches and forks signing is every contributor's own rule.
 
 ## Tags
 

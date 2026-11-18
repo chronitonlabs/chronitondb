@@ -31,7 +31,7 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 ## Requirements and architecture
 
-**ISO/IEC/IEEE 29148 (requirements engineering).** Stakeholder requirements come first. The requirements analyst elicits them from the maintainers in short rounds of questions and writes them in a requirements brief that a maintainer confirms. Requirements are then written at three levels: feature requirements in the feature spec, acceptance criteria in the plan, and item requirements in the design record. Each requirement is checked against seven qualities: necessary, unambiguous, singular, verifiable, feasible, consistent and traceable. See [roles.md](roles.md#requirements-analyst) and [templates/design-record.md](templates/design-record.md).
+**ISO/IEC/IEEE 29148 (requirements engineering).** Stakeholder requirements come first. The requirements analyst elicits them from the maintainers in rounds of up to three questions and writes them in a requirements brief that a maintainer confirms. Requirements are then written at three levels: feature requirements in the feature spec, acceptance criteria in the plan, and item requirements in the design record. Each requirement is checked against seven qualities: necessary, unambiguous, singular, verifiable, feasible, consistent and traceable. See [roles.md](roles.md#requirements-analyst) and [templates/design-record.md](templates/design-record.md).
 
 **EARS (Easy Approach to Requirements Syntax).** Every requirement uses one of five shapes: ubiquitous, event driven (When), state driven (While), optional feature (Where) and unwanted behaviour (If, then). A requirement that fits none of them is rewritten until it fits one.
 

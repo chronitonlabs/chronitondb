@@ -84,13 +84,14 @@ A role MAY be carried out by a person or by an automated agent. Approvals are al
 11. [release.md](release.md): release cadence, support lifetime, release candidates, freezes and version numbers.
 12. [security.md](security.md): how vulnerabilities are reported, fixed and disclosed.
 13. [compliance.md](compliance.md): open source licence compliance, notices, SBOM and VEX.
-14. [quality-requirements.md](quality-requirements.md): the quality checklist every feature spec and design record answers.
-15. [classification.md](classification.md): the risk and size of a change, and what each class changes.
-16. [areas.md](areas.md): the areas a document and an issue name, and the sources a change comes from.
-17. [templates/](templates/): the document templates.
-18. [The delta register](../delta/README.md): every change ChronitonDB carries on top of Apache Cassandra.
-19. [Decision records](../decisions/README.md): answered questions that settle behaviour, scope or process.
-20. [The generated indexes](../index/documents.md): every document by kind, [every decision record](../index/decisions.md), and [every document by area](../index/areas.md).
+14. [quality-requirements.md](quality-requirements.md): the quality checklist every feature spec and design record answers. Its rules are stated in full in principles.md.
+15. [principles.md](principles.md): the architectural and design rules the project holds to, each with the id a document cites it by.
+16. [classification.md](classification.md): the risk and size of a change, and what each class changes.
+17. [areas.md](areas.md): the areas a document and an issue name, and the sources a change comes from.
+18. [templates/](templates/): the document templates.
+19. [The delta register](../delta/README.md): every change ChronitonDB carries on top of Apache Cassandra.
+20. [Decision records](../decisions/README.md): answered questions that settle behaviour, scope or process.
+21. [The generated indexes](../index/documents.md): every document by kind, [every decision record](../index/decisions.md), and [every document by area](../index/areas.md).
 
 The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. ChronitonDB does not edit it. ChronitonDB's own guide is in [.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md) and in [contributing.md](contributing.md).
 
@@ -126,3 +127,4 @@ The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. 
 23. **Idea**: an issue labelled `idea`, work the maintainers have not yet decided to do.
 24. **Spike**: an issue labelled `spike`, a question of how to do something or whether it can be done, answered by a research report.
 25. **Research report**: the architect's report on a spike, in `docs/research/<issue>-<slug>.md`.
+26. **Principle**: one architectural or design rule of the project, stated once in [principles.md](principles.md) with an id `PRINCIPLE-nnn` that is never reused or renumbered. A document cites a rule by that id.

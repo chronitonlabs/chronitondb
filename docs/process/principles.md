@@ -418,10 +418,10 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-050
 
-**Performance first.** The design is the fastest correct design known when it is written. Each design record names the request paths the change touches, the expected cost with its mechanism, and the benchmarks that prove it.
+**Performance and availability come first on a request path.** On a request path, or a background path that competes with requests, performance and availability come first and win over simplicity. The design is the fastest correct design known when it is written, and the one that keeps the node available. Speed is argued by mechanism, the work the design does per request and why that is less, and proved by benchmarks that compare the change with the code before it and with stock, with the feature off and on. No numeric target is demanded up front, and no design waits for one. Complexity added for speed or availability stays in proportion to what the path needs, and the design says what each such addition buys.
 
-1. **Applies to.** Every fork feature.
-2. **Edge.** A design states the reason the rule does not apply to it, and the maintainers approve the reason with the design.
+1. **Applies to.** Every design. For example compaction, streaming and repair are background paths that compete with requests. Each design record names the request paths the change touches, the expected cost with its mechanism, and the benchmarks that prove it.
+2. **Edge.** Off those paths the simplest sufficient design stands, see [PRINCIPLE-054](#principle-054). A design that touches no such path says so in one line.
 3. **See.** [quality-requirements.md](quality-requirements.md#performance-first), [testing.md](testing.md#benchmarks).
 
 ### PRINCIPLE-051
@@ -455,7 +455,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **The simplest sufficient design.** A design is the one with the least to understand, build, test, operate and recover that meets the requirements, the decisions of the maintainers and the rules of these pages. The burden of proof is on each addition, never on the simpler design. The search starts from no change, then an existing Apache Cassandra mechanism, then an existing mechanism of the project, then something new.
 
 1. **Applies to.** Every feature spec, design record and fix record. For example a condition an index cannot answer is met by stock filtering of the rows the index returns before a new operator on the replica, and a value an operator needs is a column in an existing virtual table before a new command.
-2. **Edge.** The principle is a strong default and no ban: complexity that a requirement, a decision, a rule or a named risk needs is kept. See [PRINCIPLE-056](#principle-056) for what simple never means.
+2. **Edge.** The principle is a strong default and no ban: complexity that a requirement, a decision, a rule or a named risk needs is kept. On a request path, or a background path that competes with requests, performance and availability come first: speed is argued by mechanism and proved by comparing benchmarks, no numeric target is demanded up front, and complexity stays in proportion, see [PRINCIPLE-050](#principle-050). Off those paths the simplest sufficient design stands. See [PRINCIPLE-056](#principle-056) for what simple never means.
 3. **See.** [PRINCIPLE-055](#principle-055).
 
 ### PRINCIPLE-055
@@ -463,7 +463,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **An addition names what needs it.** An addition is anything that adds a state, a code path, a setting, a dependency, a stored or sent format, or a step for an operator. For each one the document names what needs it, a requirement, a decision of the maintainers, a rule of these pages or a named risk, and why the simpler design does not meet it. An addition with no such line is left out, or left to a later record with the condition that would bring it back.
 
 1. **Applies to.** Every addition in a design, and every review finding that asks for one. Simplifying code that already works is itself a change with a cost and a risk, and needs the same line.
-2. **Edge.** Where the need rests on something not measured or not known, the document says so, marks the addition provisional and names the check that would settle it. No figure is invented to justify it.
+2. **Edge.** Where the need rests on something not measured or not known, the document says so, marks the addition provisional and names the check that would settle it. No figure is invented to justify it. An addition for speed or availability on a path [PRINCIPLE-050](#principle-050) covers is justified by its mechanism and a comparing benchmark, and is not provisional for want of a numeric target.
 3. **See.** [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults) applies the same test to a feature switch.
 
 ### PRINCIPLE-056

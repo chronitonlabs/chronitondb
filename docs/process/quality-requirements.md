@@ -25,7 +25,7 @@ These rules apply to every fork feature. Each one is a line in the checklist. Ea
 
 ### Performance first
 
-The design is the fastest correct design known when it is written. Each design record names the request paths the change touches, the expected cost with its mechanism, and the benchmarks that prove it. The benchmarks run in the gates described in [testing.md](testing.md#benchmarks). The rule is [PRINCIPLE-050](principles.md#principle-050). The stock path is guarded under [PRINCIPLE-052](principles.md#principle-052), and what gates a change is in [PRINCIPLE-053](principles.md#principle-053).
+On a request path, or a background path that competes with requests, performance and availability come first, and the design is the fastest correct design known when it is written: [PRINCIPLE-050](principles.md#principle-050). Speed is argued by mechanism and proved by comparing benchmarks, and no numeric target is demanded up front. Off those paths the simplest sufficient design stands: [PRINCIPLE-054](principles.md#principle-054). The benchmarks run in the gates described in [testing.md](testing.md#benchmarks). The stock path is guarded under [PRINCIPLE-052](principles.md#principle-052), and what gates a change is in [PRINCIPLE-053](principles.md#principle-053).
 
 ### Isolation levers
 
@@ -87,7 +87,7 @@ Copy this table into the feature spec or design record. Fill the last column for
 
 | ISO/IEC 25010 characteristic | Line | Requirements, or the reason it does not apply |
 |---|---|---|
-| Performance efficiency | Fastest correct design, with benchmarks in the design and in the gates | |
+| Performance efficiency | On a request path, or a background path that competes with requests, the fastest correct design known, argued by its mechanism and proved by comparing benchmarks | |
 | Performance efficiency | Memory of a feature that adds work to a shared path bounded on every node role that does the work | |
 | Reliability | A feature that adds work to a shared path cannot starve the rest of the node: threads and work per operation bounded, load shed, run time limited and a way for an operator to turn it off, on every node role that does the work | |
 | Reliability | Automatic fallbacks opt in on the schema object, with a node control that turns them off, each use counted and logged without flooding | |

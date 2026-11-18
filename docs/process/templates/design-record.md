@@ -216,6 +216,10 @@ Scenario tags: {the tag expression for this item's scenarios}
 
 {Tooling reads these two lines, so keep their names and write each on one line. The runner is `ant` or a script under `tools/chronitondb/`, and it runs as plain words, never through a shell. Without the tags line, the item's scenarios are those tagged with the requirement ids this record defines. An item with no scenarios leaves out both lines.}
 
+{For each stock test file or stock test data file that pins a complete listing this item extends, such as the stored help text of a command, the options a DESCRIBE prints, a golden file or a class list: one line in this form, and under it in words the lines the change adds. The file also stands in the Planned file list as `test`. The change only adds lines to the file. No existing line is removed or altered. Tooling reads the line, so keep its name and write the path alone on it. An item that extends no such listing leaves the line out. See [PRINCIPLE-013](../principles.md#principle-013).}
+
+Pinned listing: {the file's path from the repository root}
+
 {Then these five lists. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry.}
 
 ### Tests for this change
@@ -263,7 +267,7 @@ The four words:
 1. `new`: a file the line does not have yet.
 2. `edit`: an existing ChronitonDB file.
 3. `stock`: an existing Apache Cassandra file that is not a test.
-4. `test`: any test file, new or existing. A pre-existing stock test file is not listed in feature work. It is listed only for a fix to stock the maintainers approved, where the change adds lines to a complete listing the file pins, which this record names with the lines added, or where a decision record names the file and the issue and explains in writing why the change to the test is needed. See [PRINCIPLE-013](../principles.md#principle-013).
+4. `test`: any test file, new or existing. A pre-existing stock test file is listed only in three cases: a fix to stock the maintainers approved, a complete listing the file pins that this record names in a Pinned listing line with the lines added, or a decision record that names the file and the issue and explains in writing why the change to the test is needed. See [PRINCIPLE-013](../principles.md#principle-013).
 
 ```
 src/java/org/apache/cassandra/example/Example.java stock

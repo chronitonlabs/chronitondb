@@ -29,3 +29,4 @@ Every decision record of the project and of its features, by key and number. The
 | [0004](../decisions/0004-commit-log-disk-check-off-by-default.md) | The commit log disk check is off by default |  | Accepted | 2026-11-15 |  |  |
 | [0005](../decisions/0005-commit-log-disk-check-switched-under-startup-checks.md) | The commit log disk check is switched under startup_checks |  | Accepted | 2026-11-15 |  |  |
 | [0006](../decisions/0006-commit-log-disk-check-compares-file-systems.md) | The commit log disk check compares file systems |  | Accepted | 2026-11-15 |  |  |
+| [DEC-GOV-0001](../decisions/DEC-GOV-0001-what-stays-as-apache-cassandra-has-it.md) | What stays as Apache Cassandra has it, and what may differ |  | Accepted | 2026-11-18 | `project` | None |

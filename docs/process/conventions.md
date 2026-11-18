@@ -188,7 +188,7 @@ A claim about what code does names the code it was read in. This applies to the 
 1. A claim about Apache Cassandra code says "Apache Cassandra", never "stock".
 2. Each claim names the project, the branch and the commit, in the form `<project> <branch> at <hash>`. For example `Apache Cassandra cassandra-5.0 at <hash>`, `Apache Cassandra trunk at <hash>` or `ChronitonDB chronitondb-6.0 at <hash>`. Next to it stand the symbol and the file and line, for example `CompactionManager.submitBackground`, `src/java/org/apache/cassandra/db/compaction/CompactionManager.java:<line>`.
 3. Analysis keeps three sources apart and says which one each claim holds for: our line, the Apache Cassandra release our line is based on, and Apache Cassandra upstream now, meaning the head of the same branch, the next major version's branch and trunk.
-4. "Stock behaviour" still names the rule that Apache Cassandra behaviour does not change for anyone not using a fork feature. See [quality-requirements.md](quality-requirements.md#stock-behaviour-unchanged).
+4. "Stock behaviour" still names what the compatibility rule protects: what an application and an operator see from Apache Cassandra. See [quality-requirements.md](quality-requirements.md#compatibility-with-apache-cassandra).
 
 ## Code layout
 

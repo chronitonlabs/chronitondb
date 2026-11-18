@@ -68,6 +68,20 @@
    "type": "Decision record"
   },
   {
+   "@id": "../decisions/DEC-GOV-0001-what-stays-as-apache-cassandra-has-it.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#project"
+   ],
+   "date": "2026-11-18",
+   "identifier": "DEC-GOV-0001",
+   "status": "Accepted",
+   "title": "What stays as Apache Cassandra has it, and what may differ",
+   "type": "Decision record"
+  },
+  {
    "@id": "../delta/checkstyle-import-order-suppression.md",
    "@type": [
     "schema:DigitalDocument"
@@ -187,6 +201,14 @@
    "title": "#67 Let operators see a node's ChronitonDB version from nodetool",
    "type": "Design record",
    "version": "1"
+  },
+  {
+   "@id": "../process/areas.md#project",
+   "@type": [
+    "skos:Concept"
+   ],
+   "inScheme": "../process/areas.md",
+   "prefLabel": "project"
   },
   {
    "@id": "../reviews/112-warn-at-startup-when-the-commit-log-design.md",

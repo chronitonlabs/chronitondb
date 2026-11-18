@@ -102,7 +102,7 @@ The Risk, Size and Reach rows are the item's class, as [classification.md](../cl
 
 ## 8. Upstream
 
-{For a fault Apache Cassandra also has: the Apache JIRA and the delta entry that records it in its Bug and Forwarded fields. Otherwise "ChronitonDB code only".}
+{For a fault Apache Cassandra also has: the Apache JIRA and the delta entry that records it in its Bug and Forwarded fields. A fix to stock Apache Cassandra code also gives here the evidence that the fault is a defect, beside the reproducing test of section 6: the Apache Cassandra ticket that treats the behaviour as a bug, or the documented behaviour the fault breaks, each cited. The reviewer's finding on that evidence is in this record's pull request, and the maintainers' merge of it approves the fix. See [maintenance.md](../maintenance.md#corrective-fixing-a-fault). Otherwise "ChronitonDB code only".}
 
 ## 9. Order of pull requests
 

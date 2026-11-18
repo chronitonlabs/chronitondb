@@ -46,9 +46,15 @@ Observability is a gate item, not an afterthought.
 
 Any automatic fallback, such as falling back to a scan, is off by default. It has a yaml setting, a nodetool toggle, a metric that counts each use and a rate-limited log line.
 
-### Stock behaviour unchanged
+### Compatibility with Apache Cassandra
 
-Stock Apache Cassandra behaviour is unchanged for anyone not using a ChronitonDB feature, except the one exception in [release.md](release.md#what-a-release-may-contain), `nodetool version`. A behaviour-changing feature is always off by default, but for that exception, and changes stock behaviour only for operators who switch it on. With a feature off, the node behaves exactly as stock: every way to use the feature is refused with an error that names the switch, no new files are written, no new threads start and no new memory is used. For example a statement in the feature's syntax is refused, and so is a nodetool command of the feature. Code defaults in stock classes stay as Apache has them. The parity suite proves it.
+An application that moves onto ChronitonDB behaves as it did on Apache Cassandra, and a user can always move back. A change to what an application sees from a stock feature (results, errors, warnings, the bytes on the wire) is a feature. It sits behind a feature switch that is off by default. What operators see (metrics, nodetool output, logs, JMX) stays as stock where that is reasonable. A difference there is recorded in the [delta register](../delta/README.md) and the release notes, not refused. A fix to a defect in stock is not a feature and is not gated.
+
+A change to stock code counts as a fix to a defect only when the maintainers approve it as one, by merging its fix record after the reviewer's finding on the evidence. See [maintenance.md](maintenance.md#corrective-fixing-a-fault). A change to stock behaviour that is not approved as a fix is a behaviour change, and sits behind a feature switch that is off by default.
+
+A statement that Apache Cassandra rejects only because it uses something Apache Cassandra does not have, such as new syntax, a new keyword, a new option or a new index type, MAY succeed on ChronitonDB as a purely additive feature. A statement that Apache Cassandra accepts as valid and refuses for a reason, such as a missing `ALLOW FILTERING`, a guardrail or a missing index, is stock behaviour. Making it succeed is a change to what an application sees, and sits behind a feature switch that is off by default.
+
+With a feature off, the node behaves exactly as stock: every way to use the feature is refused with an error that names the switch, no new files are written, no new threads start and no new memory is used. For example a statement in the feature's syntax is refused, and so is a nodetool command of the feature. Code defaults in stock classes stay as Apache has them. The parity suite proves it.
 
 ### CQL does not depend on topology
 
@@ -85,7 +91,8 @@ Copy this table into the feature spec or design record. Fill the last column for
 | Reliability | Isolation levers on coordinator and replica: thread pools, limits, load shedding, timeouts, kill switch | |
 | Reliability | Automatic fallbacks opt-in, with yaml setting, nodetool toggle, metric and rate-limited log line | |
 | Reliability | Coordination between nodes model checked, when the design changes it | |
-| Compatibility | Stock Apache Cassandra behaviour unchanged | |
+| Compatibility | An application behaves as it did on Apache Cassandra, and a change to what it sees from a stock feature is behind a switch that is off by default | |
+| Compatibility | What operators see stays as stock where that is reasonable, and each difference is recorded in the delta register and the release notes | |
 | Compatibility | Stock behaviour unchanged with the feature off | |
 | Compatibility | Mixed-version cluster, upgrade and rollback (see the Compatibility section) | |
 | Functional suitability | CQL validity and results independent of replication factor, data centres and replica count | |

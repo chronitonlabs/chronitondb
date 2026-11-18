@@ -18,7 +18,7 @@ ChronitonDB is an open source database built on [Apache Cassandra](https://cassa
 
 - **Apache License 2.0, always.** ChronitonDB is released under the Apache License 2.0 and will stay under it. There will be no license change and no proprietary edition with features held back.
 - **Apache Cassandra comes first.** We aim to offer our fixes and features to the Apache Cassandra project and work to get them accepted there. Work we bring in from Apache Cassandra keeps its original authors.
-- **A way back to Apache Cassandra.** We aim to keep a supported path from ChronitonDB back to Apache Cassandra, and we document any feature that makes going back harder.
+- **A way back to Apache Cassandra.** An application that moves onto ChronitonDB behaves as it did on Apache Cassandra, and a user can always move back. We document any feature that makes going back harder.
 
 ## Branches
 

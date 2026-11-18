@@ -75,7 +75,9 @@ None.
 
 ## `project`
 
-None.
+| Document | Kind | Status | Version |
+|---|---|---|---|
+| [DEC-GOV-0001. What stays as Apache Cassandra has it, and what may differ](../decisions/DEC-GOV-0001-what-stays-as-apache-cassandra-has-it.md) | Decision record | Accepted |  |
 
 ## Documents with no Areas row
 

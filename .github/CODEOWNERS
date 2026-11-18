@@ -14,9 +14,9 @@
 # limitations under the License.
 
 # The sensitive paths (branching-and-review.md). A change to any of them
-# requests a review from the team. /.github/ covers this file too. Query
-# parsing and analyzers are not on the list. Until the line rulesets require
-# code owner review, this file only requests the review.
+# requests a review from the team. /.github/ covers this file too. Until
+# the line rulesets require code owner review, this file only requests the
+# review.
 /src/java/org/apache/cassandra/auth/                  @chronitonlabs/sensitive-reviewers
 /src/java/org/apache/cassandra/transport/             @chronitonlabs/sensitive-reviewers
 /src/java/org/apache/cassandra/net/                   @chronitonlabs/sensitive-reviewers

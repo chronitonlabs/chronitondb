@@ -54,7 +54,7 @@ ChronitonDB uses Conventional Commits. This is a project rule on top of the orga
 
 ### Breaking changes
 
-A breaking change takes `!` after the type or scope, for example `feat(fulltext)!: rename the analyzer option`. It also takes a footer `BREAKING CHANGE: <what breaks and what to do>` in a commit message of the pull request. The squash commit on the line carries the messages of the pull request's commits, never its description, so a footer only in the description is refused. One without the other is refused.
+A breaking change takes `!` after the type or scope, for example `feat(compaction)!: rename a strategy option`. It also takes a footer `BREAKING CHANGE: <what breaks and what to do>` in a commit message of the pull request. The squash commit on the line carries the messages of the pull request's commits, never its description, so a footer only in the description is refused. One without the other is refused.
 
 ### Body
 
@@ -194,7 +194,7 @@ A claim about what code does names the code it was read in. This applies to the 
 
 The rules of this section are stated in full in [principles.md](principles.md): [PRINCIPLE-010](principles.md#principle-010) for where fork logic lives and how a stock file is edited, [PRINCIPLE-007](principles.md#principle-007) for code defaults, [PRINCIPLE-013](principles.md#principle-013) and [PRINCIPLE-065](principles.md#principle-065) for tests, and [PRINCIPLE-042](principles.md#principle-042) for code loaded by name.
 
-1. Fork logic lives in classes under `org.chronitondb`, in packages named for what they are, for example `org.chronitondb.fulltext`.
+1. Fork logic lives in classes under `org.chronitondb`, in packages named for what they are, for example `org.chronitondb.startup` or `org.chronitondb.metrics`.
 2. Fork logic MUST NOT be added as a new class under `org.apache.cassandra`. A fork class that needs package private access to a stock package is a design decision, named in the design record and approved with it.
 3. An edit to a stock source file is the smallest that does the job. It is a hook that calls fork code, a fix to a defect in stock, or a refactor that lets fork code share stock logic in place of a copy. A refactor is named in the design record and reviewed with it.
 4. Code defaults in stock classes, such as `Config.java`, stay exactly as Apache Cassandra has them.

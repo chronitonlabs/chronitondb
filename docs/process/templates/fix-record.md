@@ -117,7 +117,7 @@ The Exceptions row marks a record that departs from a principle in a way the pri
 
 Scenario runner: {the command that runs the scenarios, with {tags} once}
 
-Scenario tags: {the requirement tags section 5 lists and this record's fix tag, joined with `and`, for example `@REQ-LUC-012 and @fix-142`, or `(@REQ-LUC-012 or @REQ-LUC-013) and @fix-142`}
+Scenario tags: {the requirement tags section 5 lists and this record's fix tag, joined with `and`, for example `@REQ-CLD-004 and @fix-142`, or `(@REQ-CLD-004 or @REQ-CLD-005) and @fix-142`}
 
 {The two scenario lines and their rules are those of the design record's Testing section. A fix with no scenarios leaves out both lines. A fix whose reproducing test is a scenario keeps them. Its tags line MUST require `@fix-<issue>` with the issue number of this record, joined with `and` to the requirement tags section 5 lists, never with `or`. So only the scenarios that carry both tags run before the fix and after it, as long as none carries `@wip` or `@stock`, which the run leaves out. After the fix the feature's other scenarios run too, and each MUST still pass.}
 

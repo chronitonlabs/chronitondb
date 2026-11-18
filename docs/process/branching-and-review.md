@@ -48,11 +48,11 @@ The rules of this section are stated in full in [principles.md](principles.md), 
 
 1. Work branches are short lived. One branch carries one item for one line.
 2. A work branch is named for the person or agent, the item's GitHub issue number, a short slug and the target line:
-   - People: `<github-username>/<issue>-<slug>/<line>`, for example `octocat/42-phrase-query/chronitondb-5.0`.
+   - People: `<github-username>/<issue>-<slug>/<line>`, for example `octocat/42-disk-check/chronitondb-5.0`.
    - Automated agents: `agent/<issue>-<slug>/<line>`.
-   - A design or fix record that is approved before the code starts has its own pull request, from a branch with `-design` added to the slug, for example `agent/42-phrase-query-design/chronitondb-5.0`.
+   - A design or fix record that is approved before the code starts has its own pull request, from a branch with `-design` added to the slug, for example `agent/42-disk-check-design/chronitondb-5.0`.
    - The pull requests of a large feature come from branches named for the feature's issue, with `-spec` added to the slug for the feature spec, `-plan` for the plan and delivery plan, and `-change-<k>` for a change control update. A release promotion's branch adds `-promotion` to the slug of its proposal's branch.
-   - An automated agent also saves its unfinished work to a side branch of its work branch, with `checkpoint/` before the line, for example `agent/42-phrase-query/checkpoint/chronitondb-5.0`, so a run that is cut off can resume. A checkpoint branch never has a pull request and is never merged. It is deleted a day after the item's pull requests are merged or closed.
+   - An automated agent also saves its unfinished work to a side branch of its work branch, with `checkpoint/` before the line, for example `agent/42-disk-check/checkpoint/chronitondb-5.0`, so a run that is cut off can resume. A checkpoint branch never has a pull request and is never merged. It is deleted a day after the item's pull requests are merged or closed.
 3. Import branches have four forms: `import/cassandra-<x.y.z>/<line>` for a whole Apache release, named after its Apache release tag, `import/cassandra-<x.y>-<short hash>/<line>` for the weekly Apache branch merge, `import/CASSANDRA-<n>/<line>` for a single cherry-picked fix, and `import/<owner>-<repo>-<12 character hash>/<line>` for a single commit taken unchanged from another project. See [upstream.md](upstream.md).
 4. People outside the project work on a fork of the repository and open a pull request from it. See [contributing.md](contributing.md). Today only maintainers create branches outside `agent/` in this repository. The integrator's `import/` branches wait until the project's automation is allowed to create them.
 5. An item affected on several lines carries all of them. It gets one pull request per affected line, oldest line first, and is done when all of them are merged.
@@ -114,8 +114,6 @@ A change to a sensitive path requests a review from the code owners in `.github/
 2. The build and its inputs: `build.xml`, `.build/`, `lib/`.
 3. Configuration and packaging: `conf/`, `bin/`, `packaging/`, `debian/`, `redhat/`. `packaging/` does not exist yet. The pull request that creates it adds it to `.github/CODEOWNERS`.
 4. The project's own tooling and automation: `tools/chronitondb/`, `.github/`, `CODEOWNERS`.
-
-Query parsing and analyzers are not sensitive paths.
 
 ## Reviews
 

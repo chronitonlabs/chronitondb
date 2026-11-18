@@ -54,14 +54,14 @@ Each large feature has its own public GitHub issue, opened by the architect. Its
 
 ## Feature keys and requirement ids
 
-Every fork feature has a feature key: 3 to 5 capital letters, for example `LUC`. The key names the feature's directory and its requirement ids.
+Every fork feature has a feature key: 3 to 5 capital letters, for example `CLD` or `VER`. The key names the feature's directory and its requirement ids.
 
-1. The feature's directory is `docs/design/<KEY>-<slug>/`, for example `docs/design/LUC-fulltext-search/`.
+1. The feature's directory is `docs/design/<KEY>-<slug>/`, for example `docs/design/CLD-commitlog-disk-check/`.
 2. The merge of the pull request that creates the directory reserves the key. For a feature that needs several items, that is the feature spec pull request. For a feature that fits one item, the designer proposes a free key in the design record pull request: a key that no feature directory and no open pull request uses. The key is reserved when a maintainer merges that pull request.
 3. A key is never reused. A withdrawn feature keeps its directory.
 4. Later work that extends a feature that already has a key keeps that key. It continues the feature's `REQ-<KEY>-nnn` numbering, and its records go in the feature's folders as rules 7 and 8 place them. It never opens a second key for the same feature.
 5. A new key SHOULD read well. It MAY use up to 5 letters where 3 read poorly, for example `STCHK` rather than `SCV`.
-6. Feature requirements in the feature spec have ids `FREQ-<KEY>-nnn`. Requirements in the feature's design records have ids `REQ-<KEY>-nnn`, numbered across the whole feature. `nnn` is three digits, for example `FREQ-LUC-001` and `REQ-LUC-014`.
+6. Feature requirements in the feature spec have ids `FREQ-<KEY>-nnn`. Requirements in the feature's design records have ids `REQ-<KEY>-nnn`, numbered across the whole feature. `nnn` is three digits, for example `FREQ-CLD-001` and `REQ-CLD-014`.
 7. The item design records of a feature that needs several items stay in `docs/design/<issue>-<slug>/`.
 8. A feature that fits one item has no feature spec. Its design record lives in the feature's directory and states the feature class. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
 9. Fix records and other items that are not feature work keep `docs/design/<issue>-<slug>/` and plain ids `REQ-n`.

@@ -73,7 +73,7 @@ Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-
 
 ## 5. Tests run
 
-{The tests this import runs, in the five lists of the design record's Testing section, with the same headings and format. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry, except Tests for this change, which takes a written reason. The results go in the evidence of the import pull request, not in this record. See [design-record.md](design-record.md#14-testing).}
+{The tests this import runs, in the five lists of the design record's Testing section, with the same headings and format. Keep the headings exact, since a check may read the lists. One fully qualified test class per line. Write `none` under a heading that has no entry, except Tests for this change, which takes a written reason. The results go in the evidence of the import pull request, not in this record. See [design-record.md](design-record.md#14-testing).}
 
 ### Tests for this change
 
@@ -85,7 +85,7 @@ Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-
 
 ### Apache Cassandra suites run unchanged
 
-{Apache Cassandra's own suites, which run with every fork feature off and pass without modification.}
+{Apache Cassandra's own suites, which run as [testing.md](../testing.md#full-test-suites) says, with fork features off and with them on, and pass without modification.}
 
 ### Tracing test
 

@@ -81,7 +81,7 @@ The Risk, Size and Reach rows repeat the feature spec's class, the level words t
 
 ### Behaviour nobody asked for
 
-{Behaviour of the merged code that no feature requirement asks for, found by the same check. Write "None found." when the check found none. Otherwise list each finding: what the code does and where.}
+{Behaviour of the merged code that no feature requirement, decision record or principle asks for, found by the same check. Write "None found." when the check found none. Otherwise list each finding: what the code does and where.}
 
 ## 5. Deviations
 

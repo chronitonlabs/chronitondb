@@ -408,7 +408,7 @@ class SpecClass(Repo):
         rc, err = self.spec_errors(touches="Shared state; request path")
         self.assertNotIn("the 'Touches' row", err)
 
-    def test_touches_names_what_a_code_review_adds_a_lens_for(self):
+    def test_touches_names_what_a_code_review_adds_a_checklist_for(self):
         rc, err = self.spec_errors(touches="shared state, request path and new feature or switch")
         self.assertNotIn("the 'Touches' row", err)
 
@@ -468,6 +468,20 @@ class SpecClass(Repo):
                      "operational routines", "virtual tables"):
             rc, err = self.spec_errors(touches="public interface (%s)" % area)
             self.assertNotIn("the 'Touches' row", err, area)
+
+    def test_an_area_is_named_by_its_full_name_with_its_own_brackets_commas_and_and(self):
+        # The message of the check lists the areas by their full names, so
+        # each full name is taken as written. One holds brackets of its
+        # own, several hold a comma or "and", and none of that splits the
+        # row.
+        for area, _ in doclint.FLOOR_AREAS:
+            rc, err = self.spec_errors(touches="public interface (%s), shared state and request path" % area)
+            self.assertNotIn("the 'Touches' row", err, area)
+        rc, err = self.spec_errors(risk="Low: documentation only change",
+                                   touches="public interface (pluggable components (SPIs) such as authorisation and triggers)")
+        self.assertIn("the risk is Low, and Touches names public interface", err)
+        rc, err = self.spec_errors(touches="public interface (pluggable components (SPIs) such as authorisation and triggers) and the planner")
+        self.assertIn("the 'Touches' row names 'the planner', which is none of", err)
 
     def test_a_compatibility_area_alone_counts_as_a_public_interface(self):
         rc, err = self.spec_errors(touches="gossip, shared state", na=("Compatibility",),

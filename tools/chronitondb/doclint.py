@@ -208,7 +208,8 @@ coordinate added or moved to another version passes when a line of the
 Dependencies section of a merged feature spec or design record on the line
 (--line) names the library and the version, or when it is a patch-version
 bump of the same library (same major and minor), which the pull request
-states with its reason. It prints "patch NAME OLD NEW FILE" for each.
+states with its reason. It prints "patch NAME OLD NEW FILE" for each. No CI
+workflow runs it yet.
 
 index prints the Contents section each FILE needs, read from the working
 tree, whatever its type. With --write it puts that section in the file in
@@ -267,7 +268,8 @@ reason on a line "# Left out: <name>: <reason>". A setting Apache's two
 files had at the merge base REF and have no more is gone from ours, or
 flagged on a line "# Apache removed: <name>". Ours removed while the line
 had it fails. With no file of ours on the line yet the check has nothing to
-compare and says so.
+compare and says so. No CI workflow runs it yet: it becomes a check of
+every pull request once the file exists.
 
 delta is the delta register check of docs/delta/README.md, Keeping it
 current, on the change at SRC since its merge base with REF. A file is
@@ -279,9 +281,12 @@ came from Apache Cassandra. A change that adds, edits, deletes or renames a
 stock file adds or changes at least one entry docs/delta/<name>.md. It
 passes without one when NAME, the pull request's branch, is an import of a
 whole Apache release or of Apache's branch, import/cassandra-<...>, which
-brings Apache Cassandra's own code, or when FILE, the pull request's
-description, has a line "No delta entry: <reason>" with a reason of three
-words or more, which the reviewer judges. Every entry the change adds or
+brings Apache Cassandra's own code. NAME is taken as given, so the caller
+gives it only for a branch whose name it can trust: CI gives it for a
+branch of the repository itself and never for the branch of a fork, whose
+author chooses its name. It also passes without one when FILE, the pull
+request's description, has a line "No delta entry: <reason>" with a reason
+of three words or more, which the reviewer judges. Every entry the change adds or
 changes passes the document rules of a delta entry above, against the
 template at REF, and a changed entry has a Last-Update later than at REF,
 or the same date when that is the date of the change, the date of the
@@ -328,7 +333,7 @@ SIZES = ("Low Hanging Fruit", "Normal", "Challenging", "Byzantine")
 REACHES = ("One area", "Cross-cutting")
 CLASS_ROWS = (("Risk", RISKS), ("Size", SIZES), ("Reach", REACHES))
 # Shared state, request path and new feature or switch name what a Normal risk
-# code review adds a lens for: threads, pools or shared state, any path whose
+# code review adds a checklist for: threads, pools or shared state, any path whose
 # cost grows with data or traffic, and a new feature or switch. The last five
 # name what the code of a change does on the Critical floor, in Apache
 # Cassandra's files or in ChronitonDB's own (classification.md, The Critical
@@ -359,7 +364,10 @@ FLOOR_AREAS = (
 )
 # The words of an on-disk format, which the CEP list names by its files.
 ON_DISK = re.compile(r"on.?disk|\bformats?\b|\bfiles?\b", re.I)
-PUBLIC_INTERFACE = re.compile(r"public\s+interface\b(\s*\(([^)]*)\))?", re.I)
+# Text in brackets, which may itself hold one pair of brackets, as the area
+# "pluggable components (SPIs) such as authorisation and triggers" does.
+BRACKETS = r"\(((?:[^()]|\([^()]*\))*)\)"
+PUBLIC_INTERFACE = re.compile(r"public\s+interface\b(\s*" + BRACKETS + r")?", re.I)
 # The strictest value of each family, which a missing or unreadable row counts as.
 STRICTEST = {"Risk": "Critical", "Size": "Byzantine", "Reach": "Cross-cutting"}
 NOT_APPLICABLE = re.compile(r"^Not applicable:\s*(\S.*)$")
@@ -386,7 +394,8 @@ EMPTY_RISK = re.compile(r"^\W*(none|low|n/?a|nothing|no risk|low risk|minimal|ne
 # is not held to it.
 DISMISSIVE_RISK = re.compile(r"^\W*((low|no|minimal|negligible)\s+risk\b|(none|low|nothing)\s*([.,;:!]|$))", re.I)
 # The Touches phrases are split at a comma, a semicolon or "and", and read
-# in any case.
+# in any case. An area in brackets is cut out first, so its own commas and
+# "and" split nothing.
 TOUCHES_SPLIT = re.compile(r"\s*[,;]\s*(?:and\s+)?|\s+and\s+")
 WPCO_WORDS = 5
 
@@ -799,7 +808,7 @@ def class_of(doc, fields, kind, rows):
                     if ON_DISK.search(match.group(2)):
                         hint = ". An on-disk file is named by its area: sstable components, or commitlog, hint log and cache files"
                     doc.error(line, "the 'Touches' row names public interface (%s), which names none of the compatibility areas: %s%s (classification.md, The floor)" % (match.group(2).strip(), areas, hint))
-            text = re.sub(r"\([^)]*\)", "", value).strip().rstrip(".")
+            text = re.sub(BRACKETS, "", value).strip().rstrip(".")
             words = [w.strip().lower() for w in TOUCHES_SPLIT.split(text) if w.strip()]
             if words == ["none"]:
                 pass

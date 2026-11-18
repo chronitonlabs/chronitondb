@@ -63,7 +63,8 @@ def decision(*lines, status="Accepted"):
                       "## Decision outcome", ""] + list(lines) + [""])
 
 
-APPROVAL = "Stock test change: %s for #142, because the test compares the first line of the output" % STOCK_TEST
+APPROVAL = ("Approved stock test change: %s for #142, because the test compares the first line of the output with the release version"
+            % STOCK_TEST)
 
 
 class StockTests(unittest.TestCase):
@@ -302,15 +303,36 @@ class StockTests(unittest.TestCase):
                      decision(APPROVAL, status="Superseded by DEC-GOV-0003"),
                      decision(APPROVAL.replace("#142", "#143")),
                      decision(APPROVAL.replace(STOCK_TEST, OTHER_TEST)),
-                     decision("Stock test change: %s for #142, because it must" % STOCK_TEST),
-                     decision("Stock test change: %s for #142" % STOCK_TEST),
+                     decision("Approved stock test change: %s for #142, because it must" % STOCK_TEST),
+                     decision("Approved stock test change: %s for #142" % STOCK_TEST),
+                     # Seven different words, then eight words of which few differ.
+                     decision("Approved stock test change: %s for #142, because the test compares the first line printed" % STOCK_TEST),
+                     decision("Approved stock test change: %s for #142, because the test the test the test the test" % STOCK_TEST),
+                     # A placeholder of a template left in the explanation.
+                     decision(APPROVAL + " <explanation>"),
+                     decision(APPROVAL + " {why the change to the test is needed}"),
+                     # Any other opening of the line.
+                     decision(APPROVAL.replace("Approved stock", "Stock")),
+                     decision(APPROVAL.replace("Approved stock", "approved stock")),
+                     decision("The maintainers say: " + APPROVAL),
                      decision("```", APPROVAL, "```"),
                      decision("<!--", APPROVAL, "-->"),
                      decision("The test `%s` changes for #142." % STOCK_TEST)):
             self.on_the_line(DECISION, text)
             self.refused(self.check("Fixes #142\n"), "no record on line of #142 permits the change")
-        self.on_the_line(DECISION, decision(APPROVAL))
-        self.assertEqual(self.check("Fixes #142\n")[0], 0)
+        for text in (decision(APPROVAL), decision("  " + APPROVAL + "  "),
+                     decision(APPROVAL.replace("the release version", "what Version<T> prints"))):
+            self.on_the_line(DECISION, text)
+            self.assertEqual(self.check("Fixes #142\n")[0], 0, text)
+
+    def test_an_explanation_is_eight_different_words_with_no_placeholder(self):
+        import doclint
+        self.assertTrue(doclint.is_explained("the test compares the first line of the output with the release version"))
+        self.assertTrue(doclint.is_explained("one two three four five six seven eight"))
+        self.assertFalse(doclint.is_explained("one two three four five six seven"))
+        self.assertFalse(doclint.is_explained("One one two three four five six seven"))
+        self.assertFalse(doclint.is_explained("one two three four five six seven eight <explanation>"))
+        self.assertFalse(doclint.is_explained("one two three four five six seven eight {reason}"))
 
     def test_a_decision_record_the_change_brings_is_no_permit(self):
         self.put(DECISION, decision(APPROVAL))

@@ -332,9 +332,11 @@ passes by one of:
   3. the design record or fix record of a named issue at REF has a line
      "Pinned listing: <path>" with the file's path, and the change only
      adds lines to the file
-  4. a decision record at REF with the Status Accepted has a line "Stock
-     test change: <path> for #<issue>, because <reason>" with the file's
-     path, a named issue and a reason of three words or more
+  4. a decision record at REF with the Status Accepted has a line
+     "Approved stock test change: <path> for #<issue>, because
+     <explanation>" with the file's path, a named issue and a written
+     explanation: eight different words or more, with no placeholder of a
+     template left in it
 
 A record whose Status opens with Superseded permits nothing. A stock test
 file that is deleted, renamed, binary, a symbolic link or changed in its
@@ -1624,15 +1626,25 @@ ISSUE_LINE = re.compile(r"^(?:Fixes|Part of) #([0-9]+)\.?$")
 RECORD_OF = re.compile(r"^(Fix|Design): #([0-9]+)(?![0-9])")
 PLANNED = re.compile(r"^(\S+) (new|edit|test|stock)$")
 PINNED = re.compile(r"^Pinned listing: ([^\s{}`]+)$")
-TEST_CHANGE = re.compile(r"^Stock test change: ([^\s{}`]+) for #([0-9]+), because (\S.*)$")
+TEST_CHANGE = re.compile(r"^Approved stock test change: ([^\s{}`]+) for #([0-9]+), because (\S.*)$")
+EXPLANATION_WORDS = 8
+PLACEHOLDER = re.compile(r"<[a-z][a-z ,.'-]*>|\{[^{}]*\}")
 APACHE_IMPORT = re.compile(r"^import/(?:cassandra-[0-9]|CASSANDRA-[1-9])")
 SYMLINK = "120000"
 FOUR_WAYS = ("A pre-existing test file of Apache Cassandra changes in four ways only (docs/process/principles.md, PRINCIPLE-013): "
              "in an import from Apache Cassandra, in a fix to stock whose merged fix record lists the file as 'test' in its Planned file list, "
              "by lines added to a listing that the merged design record or fix record names on a line 'Pinned listing: <path>', "
-             "or with an accepted decision record that has the line 'Stock test change: <path> for #<issue>, because <reason>'. "
+             "or with an accepted decision record that has the line 'Approved stock test change: <path> for #<issue>, because <explanation>', the explanation in eight different words or more. "
              "The record merges first, in its own pull request, and this pull request names its issue on a line 'Fixes #<issue>' "
              "or 'Part of #<issue>'. A fork feature puts its tests in its own files (docs/process/conventions.md, Where things live)")
+
+
+def is_explained(text):
+    """Whether the explanation of an approval is written: eight different
+    words or more, and no placeholder of a template left in it, a text in
+    braces or lower case words in angle brackets."""
+    words = set(word.lower() for word in re.findall(r"[A-Za-z0-9']+", text))
+    return len(words) >= EXPLANATION_WORDS and not PLACEHOLDER.search(text)
 
 
 def is_stock_test(path, paths):
@@ -1703,8 +1715,8 @@ def test_permits(repo, base):
     """What the records at REF permit, as three lists: (issue, path,
     record) for each file a fix record plans as test, the same for each
     Pinned listing line of a design record or fix record, and for each
-    Stock test change line of an accepted decision record, when its
-    reason has three words or more."""
+    Approved stock test change line of an accepted decision record, when
+    its explanation is written."""
     planned, pinned, approved = [], [], []
     listing = git(repo, "ls-tree", "-r", "--name-only", base, "--", "docs/design/", "docs/decisions/") or ""
     for path in listing.split("\n"):
@@ -1722,7 +1734,7 @@ def test_permits(repo, base):
                 continue
             for line in plain_lines(doc):
                 match = TEST_CHANGE.match(line)
-                if match and len(match.group(3).split()) >= REASON_WORDS:
+                if match and is_explained(match.group(3)):
                     approved.append((match.group(2), match.group(1), path))
             continue
         heading = RECORD_OF.match(first_heading(text))
@@ -1799,7 +1811,7 @@ def check_stock_tests(repo, base, where, branch, body):
         elif record:
             errors.append("%s: %s names the file as a pinned listing, and the change removes or alters %d line(s) of it. "
                           "A pinned listing only gains lines. A change to an existing line needs an accepted decision record with the line "
-                          "'Stock test change: %s for #<issue>, because <reason>'" % (old, record, removed, old))
+                          "'Approved stock test change: %s for #<issue>, because <explanation>'" % (old, record, removed, old))
         elif not issues:
             errors.append("%s: the file is a pre-existing test file of Apache Cassandra and the pull request description names no issue, "
                           "so no record on %s can permit the change" % (old, base))

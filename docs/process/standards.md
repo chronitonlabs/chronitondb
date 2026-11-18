@@ -41,7 +41,7 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 **ISO/IEC 25010 (product quality model).** The quality requirements of every feature spec and design record are organised by its quality characteristics. Our standing project rules sit under those characteristics as a checklist. See [quality-requirements.md](quality-requirements.md).
 
-**MADR (Markdown Architectural Decision Records).** Every answered question that changes or settles behaviour, scope or process gets a decision record in MADR format. See [../decisions/README.md](../decisions/README.md).
+**MADR (Markdown Architectural Decision Records).** Decision records are written in MADR format. When one is written is in [the decision records](../decisions/README.md#when-a-record-is-written).
 
 **STRIDE (threat modelling).** Every new entry point in a feature (syntax, settings, commands, files, network) is checked against spoofing, tampering, repudiation, information disclosure, denial of service and elevation of privilege. Each mitigation becomes a feature requirement.
 

@@ -31,10 +31,10 @@ ChronitonDB uses Conventional Commits. This is a project rule on top of the orga
 ### Subject
 
 1. The subject has the form `type(scope): description`.
-2. The description is imperative and in plain words, for example `feat(fulltext): add the phrase operator` or `fix(compaction): count a skipped sstable once`.
+2. The description is imperative and in plain words, for example `feat(nodetool): print the release version` or `fix(compaction): count a skipped sstable once`.
 3. The subject is at most 72 characters. A trailing ` (chronitondb-<line>)` that names the line is not counted, nor GitHub's ` (#<number>)` on the commit on the line. An import subject carries the original subject unchanged, so it has no length limit, and it keeps its exact import form.
 4. The subject never lists files. A subject such as `Update <path>`, as GitHub writes for a suggestion, is refused. Apply suggestions locally with a real subject.
-5. The scope names the area of the change, for example `fulltext`, `compaction`, `build` or `github`.
+5. The scope names the area of the change, for example `compaction`, `startup`, `build` or `github`.
 
 ### Types
 
@@ -168,7 +168,7 @@ The documents are found through four indexes that the document checker writes fr
 2. [docs/index/decisions.md](../index/decisions.md) lists every decision record of the project and of its features, by key and number, with its status, date, areas and the records it supersedes.
 3. [docs/index/areas.md](../index/areas.md) lists the same documents and records under each of the [areas](areas.md) their `Areas` row names. A document of a kind with no `Areas` row, or merged before the row, is listed last.
 4. `INDEX.md` in each feature directory lists the documents of that feature, the design records of its items and its decision records.
-5. After a document is added, or its title, status, version, areas, exceptions or supersede row changes, the author regenerates the indexes with `tools/chronitondb/doclint.py indexes --repo . --templates origin/<line> --write` and commits them with the change. Two pull requests that both add a document change the same pages: the one merged second runs the command again after it takes in the line.
+5. After a document is added, or its title, status, version, areas, exceptions or supersede row changes, the author regenerates the indexes with `tools/chronitondb/doclint.py indexes --repo . --templates origin/<line> --write`, and the graph with `tools/chronitondb/docgraph.py --repo . --templates origin/<line> --write`, and commits them with the change. Two pull requests that both add a document change the same pages: the one merged second runs the command again after it takes in the line.
 6. The process document check refuses a pull request whose indexes are not what the documents give: `tools/chronitondb/doclint.py indexes --repo . --templates origin/<line>` reports each stale page.
 
 ## The document graph
@@ -199,7 +199,7 @@ The rules of this section are stated in full in [principles.md](principles.md): 
 2. Fork logic MUST NOT be added as a new class under `org.apache.cassandra`. A fork class that needs package private access to a stock package is a design decision, named in the design record and approved with it.
 3. An edit to a stock source file is the smallest that does the job. It is a hook that calls fork code, a fix to a defect in stock, or a refactor that lets fork code share stock logic in place of a copy. A refactor is named in the design record and reviewed with it.
 4. Code defaults in stock classes, such as `Config.java`, stay exactly as Apache Cassandra has them.
-5. A test that existed before a change is not weakened, and a pre-existing stock test file changes in three ways only: [PRINCIPLE-065](principles.md#principle-065) and [PRINCIPLE-013](principles.md#principle-013). See [testing.md](testing.md#policy).
+5. A test that existed before a change is not weakened, and a pre-existing stock test file changes only in the ways its principle names: [PRINCIPLE-065](principles.md#principle-065) and [PRINCIPLE-013](principles.md#principle-013). See [testing.md](testing.md#policy).
 6. In the project's own lookups, a name that a client supplies never picks code to load unless it is on an allow list, which the maintainers approve in a decision record. An option of Apache Cassandra that takes a class name keeps its behaviour: [PRINCIPLE-042](principles.md#principle-042).
 
 ## Code style
@@ -209,7 +209,7 @@ The rules of this section are stated in full in [principles.md](principles.md): 
 1. Files under `org/chronitondb` follow Apache Cassandra's code style on each line: the line's checkstyle rules, its brace and import conventions and its banned APIs. Apache Cassandra's checkstyle, in `ant check`, runs on these files as on its own. The project runs no formatter and no formatting check of its own.
 2. Static analysis stays: the [shape limits](#shape-limits) below, Semgrep and SpotBugs. See [branching-and-review.md](branching-and-review.md#required-checks).
 3. The 5.0 line uses Java 17. The 6.0 line uses Java 21. Code meant for both lines uses Java 17 features only. The Java version of each line is a prerequisite that the release's steps state, for moving onto the line and for moving back: [release.md](release.md#moving-back-to-apache-cassandra).
-4. Apache Cassandra's banned API rules apply to fork code too. `var` is not used.
+4. Apache Cassandra's banned API rules apply to fork code too.
 
 ### Shape limits
 
@@ -229,7 +229,7 @@ The rules of this section are stated in full in [principles.md](principles.md): 
 | Cognitive complexity per method | 15 |
 | Duplicated block | 50 tokens |
 
-Tests and benchmarks are measured with looser limits (cyclomatic complexity 5, method length 150, file length 1,000, cognitive complexity 15, duplication 50 tokens). Their findings are warnings only.
+Tests and benchmarks are measured with their own limits, and their findings are warnings only: cyclomatic complexity 5, method length 150, file length 1,000, cognitive complexity 15, duplication 50 tokens.
 
 A production limit MAY be exceeded only with a waiver recorded in the item's design record and approved with it, naming the method, the rule and the reason. A suppression comment in code is not a waiver.
 

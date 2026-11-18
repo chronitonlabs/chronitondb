@@ -21,7 +21,7 @@ ChronitonDB keeps its decisions as decision records, in MADR format (Markdown Ar
 
 ## When a record is written
 
-A decision record is written for every answered question that changes or settles behaviour, scope or process. For example:
+A decision record is written for every answered question that changes or settles behaviour, scope or process. A choice that follows the convention Apache Cassandra already has needs no record: [PRINCIPLE-057](../process/principles.md#principle-057). An exception to a principle is stated in the design record or fix record of the work that needs it and marked in its `Exceptions` row, with no decision record of its own. For example:
 
 1. A behaviour a user or operator sees: which rows a query returns, an error, a refusal, a default, the output of a nodetool command, the name of a metric.
 2. A change to an approved feature spec, plan or delivery plan.

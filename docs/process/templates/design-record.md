@@ -206,7 +206,7 @@ These rules apply to every source:
 
 ## 14. Testing
 
-{The test levels required. RF 1 and RF 3 on the same data for anything that runs across nodes, and two data centres where a data centre aware consistency level or replication strategy is involved. Both sstable formats and both unit test configurations for anything that reads a setting the test configurations set differently, for example anything touching compaction, an on-disk format or the memtable. What the parity suite will check. See [testing.md](../testing.md).}
+{The test levels required. RF 1 and RF 3 on the same data for anything that runs across nodes, and two data centres where a data centre aware consistency level or replication strategy is involved. Both sstable formats and both unit test configurations for anything that reads a setting the test configurations set differently, for example anything touching compaction, an on-disk format or the memtable. What the parity suite will check. A changed assertion, expected value or error text of a merged test of the project's own is named here: which one, from what to what, and why the old expectation is no longer right, see [PRINCIPLE-065](../principles.md#principle-065). See [testing.md](../testing.md).}
 
 {For an item of a fork feature: the scenarios this pull request adds under `test/bdd/`, tagged `@wip` and with their requirement tags. See [testing.md](../testing.md#scenarios).}
 

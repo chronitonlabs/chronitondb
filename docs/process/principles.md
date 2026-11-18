@@ -546,7 +546,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-065
 
-**A test that existed before a change is not weakened.** A test that existed before a change MUST NOT be weakened. An assertion, an expected value or an error text of a merged test of the project's own changes only when the record that plans the change says which one changes, from what to what, and why the old expectation is no longer right. A changed assertion the record does not name blocks the change. New tests and new assertions are free.
+**A test that existed before a change is not weakened.** A test that existed before a change MUST NOT be weakened. An assertion, an expected value or an error text of a merged test of the project's own changes only when the record that plans the change says which one changes, from what to what, and why the old expectation is no longer right. The reviewer checks each against the record. A changed assertion the record does not name is a blocker. New tests and new assertions are free.
 
 1. **Applies to.** The project's own tests, once merged. Apache Cassandra's test files follow [PRINCIPLE-013](#principle-013).
 2. **Edge.** None.

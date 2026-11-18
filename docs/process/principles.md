@@ -39,7 +39,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **An application behaves as it did on Apache Cassandra, and a user can move back.** An application that moves onto the project's database MUST behave as it did on Apache Cassandra, and a user MUST be able to move back to Apache Cassandra. A change to what an application sees from a stock feature is a feature, and it MUST sit behind a feature switch that is off by default. What an application sees is its results, its errors, its warnings and the bytes on the wire.
 
 1. **Applies to.** Every change on a line. For example a read that would return other rows for a stock statement, a new warning on a stock statement, or a changed frame of the native protocol.
-2. **Edge.** A fix to a defect in stock is not a feature and is not gated, see [PRINCIPLE-004](#principle-004). Any other exception is granted by the maintainers one at a time, each in a decision record with its reason.
+2. **Edge.** A fix to a defect in stock is not a feature and is not gated, see [PRINCIPLE-004](#principle-004).
 3. **See.** [DEC-GOV-0001](../decisions/DEC-GOV-0001-what-stays-as-apache-cassandra-has-it.md). [quality-requirements.md](quality-requirements.md#compatibility-with-apache-cassandra), [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
 
 ### PRINCIPLE-002
@@ -186,7 +186,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **With a feature off, nothing of it shows.** With a feature off, the feature MUST change nothing that stock Apache Cassandra does. Three things hold, as they apply, and the tests of the feature's off state prove them. Stock behaviour is unchanged, always. Each way a user or an operator can invoke the feature is refused with an error that names the switch. A feature with no such way in does nothing while off: its background work does not run, and no file, metric or other state of the feature appears.
 
-1. **Applies to.** Every feature that has a switch. For example a new statement is refused with an error that names the switch, and a scheduled background task with its switch off starts no thread, registers no metric and writes no file. While off, a feature writes no new files, starts no new threads and uses no new memory.
+1. **Applies to.** Every feature that has a switch. For example a new statement is refused with an error that names the switch, and a scheduled background task with its switch off starts no thread, registers no metric and writes no file. While off, a feature writes no new files, starts no new threads and holds no memory beyond its loaded classes and its settings.
 2. **Edge.** None.
 3. **See.** [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults), [testing.md](testing.md#scenarios).
 
@@ -667,7 +667,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **Names are additions, and say what they mean.** No metric, MBean, virtual table, column, setting or command of Apache Cassandra is renamed, and stock metric types gain no new metrics. The project's signals and settings live under its own names, which never contain "cassandra" or "axon", and no key or value contains "stock". A setting that means what a comparable system's setting means SHOULD carry its name, and an option that defers to the node's global setting takes the value `inherit`.
 
 1. **Applies to.** Every new user facing name: yaml keys, nodetool commands, MBeans, metric types, packages and options.
-2. **Edge.** A name the maintainers fixed in a decision record.
+2. **Edge.** A name the maintainers fixed in a decision record. A file that stands beside one of Apache Cassandra's files MAY carry that file's name, as the configuration file of [PRINCIPLE-026](#principle-026) does.
 3. **See.** [conventions.md](conventions.md#names).
 
 ### PRINCIPLE-080

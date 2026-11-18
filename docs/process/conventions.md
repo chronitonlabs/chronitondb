@@ -270,7 +270,7 @@ An import whose author has not signed the contributor agreement fails the agreem
 
 The rule behind these names is [PRINCIPLE-079](principles.md#principle-079).
 
-1. New user facing names (yaml keys, nodetool commands, MBeans, metric types, packages) never contain "cassandra" or "axon". No key or value contains "stock".
+1. New user facing names (yaml keys, nodetool commands, MBeans, metric types, packages) never contain "cassandra" or "axon". No key or value contains "stock". A file that stands beside one of Apache Cassandra's files MAY carry that file's name, as the project's configuration file does.
 2. Settings that apply across the fork are named for what they do.
 3. ChronitonDB MBeans use the JMX domain `org.chronitondb`.
 4. Fork metrics use their own metric types. Stock metric types gain no new metrics.

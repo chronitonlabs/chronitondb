@@ -38,7 +38,7 @@ The rules behind this policy are stated in full in [principles.md](principles.md
 |---|---|---|
 | Unit tests | One class or component behaves as its requirements say | `test/unit/` |
 | In-JVM distributed tests | Behaviour across several nodes in one JVM: replication, consistency, upgrade paths in process | `test/distributed/` |
-| Scenarios | A fork feature's requirements hold as written, with its switch off and on | `test/bdd/` |
+| Scenarios | A fork feature's requirements hold as written, with its switch, where it has one, off and on | `test/bdd/` |
 | Python distributed tests | Behaviour of real node processes and tools, where in-JVM tests cannot reach | Apache Cassandra's Python dtest suite |
 | Upgrade and rollback tests | A node moves from Apache Cassandra to ChronitonDB and back, and from one ChronitonDB release to the next, with data and queries intact during and after the roll | Upgrade tests for the supported paths |
 | Benchmarks | Performance claims in a design record hold, and what a feature costs the operations that do not use it is measured against stock | `test/microbench/` and the load tests the design names |
@@ -53,7 +53,7 @@ Scenarios are written in Gherkin and run with Cucumber, in the fork's own test m
 
 1. Every scenario uses the shared library of CQL and cluster steps. A feature that needs a new step adds it to the library with tests of its own. There is no glue code per feature.
 2. Every scenario carries a tag with the id of each requirement it proves, the id itself with `@` in front, for example `@REQ-LUC-012` or `@REQ-CLD-004`. These tags map requirements to their scenarios.
-3. Every scenario carries exactly one of `@switch-off` and `@switch-on`, for the state of the feature switch it runs with.
+3. Every scenario of a feature that has a switch carries exactly one of `@switch-off` and `@switch-on`, for the state of the feature switch it runs with.
 4. `@switch-off` scenarios prove the parts of the switch off rule that apply, [PRINCIPLE-019](principles.md#principle-019): stock operations behave exactly as Apache Cassandra, each way a user or an operator can invoke the feature is refused with an error that names the switch, and a feature with no such way in does nothing while off. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
 5. `@stock` marks a scenario that asserts Apache Cassandra's own behaviour. A `@stock` scenario MUST pass before the change and after it. Every other new or changed scenario MUST fail before the change and pass after it.
 6. The designer writes the scenarios of a feature item in the design record's pull request, tagged `@wip`, so they are approved with the requirements before the code starts.

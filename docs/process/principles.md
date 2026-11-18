@@ -92,7 +92,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-008
 
-**A log line is not a compatibility concern, and stock log lines change in two ways only.** A log line that differs from stock is not a compatibility concern and is never a finding by itself. A log line that fork code adds gets no delta entry. A log line that Apache Cassandra writes changes in two ways only: in an approved fix to a defect in stock, as part of the fix, with its delta entry and no switch, or by a feature whose purpose is to change what Apache Cassandra logs, behind a switch that is off by default. It never changes as a side effect of other work.
+**A log line is not a compatibility concern, and stock log lines change in two ways only.** A log line that differs from stock is not a compatibility concern and is never a finding by itself. A log line that fork code adds gets no delta entry. A log line that Apache Cassandra writes changes in two ways only: in an approved fix to a defect in stock, as part of the fix, with its delta entry and no switch, or by a feature whose purpose is to change what Apache Cassandra logs, behind a switch that is off by default. It never changes as a side effect of other work. Of the two, only the fix records the changed line in a delta entry. Such a feature names the lines it changes in its own design record.
 
 1. **Applies to.** Every log line on a line. For example a startup line that names the fork's switches is an added line. A feature that removes sensitive data from stock log lines is the second way.
 2. **Edge.** None. What a fork log line may carry is [PRINCIPLE-035](#principle-035).

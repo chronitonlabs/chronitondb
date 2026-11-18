@@ -393,10 +393,10 @@ class SpecClass(Repo):
         self.assertEqual(rc, 1)
         self.assertIn("section Glossary says Not applicable, and the class requires it (Byzantine size)", err)
 
-    def test_touches_names_only_the_seven_phrases_or_none(self):
+    def test_touches_names_only_its_phrases_or_none(self):
         rc, err = self.spec_errors(touches="the planner")
         self.assertEqual(rc, 1)
-        self.assertIn("the 'Touches' row names 'the planner', which is none of: public interface, stock behaviour, new input or privilege, new dependency, shared state, request path, new feature or switch, or none (classification.md)", err)
+        self.assertIn("the 'Touches' row names 'the planner', which is none of: public interface, stock behaviour, new input or privilege, new dependency, shared state, request path, new feature or switch, on-disk files, flush, compaction, streaming, repair, or none (classification.md)", err)
 
     def test_touches_reads_any_case_and_a_semicolon(self):
         # The phrases are read in any case, split at a comma, a semicolon or
@@ -411,6 +411,37 @@ class SpecClass(Repo):
     def test_touches_names_what_a_code_review_adds_a_lens_for(self):
         rc, err = self.spec_errors(touches="shared state, request path and new feature or switch")
         self.assertNotIn("the 'Touches' row", err)
+
+    def test_touches_names_what_the_code_does_on_the_critical_floor(self):
+        # The five phrases say what the code of the change does, in Apache
+        # Cassandra's files or in ChronitonDB's own.
+        critical = "Critical: a lost write at worst, Correctness"
+        rc, err = self.spec_errors(risk=critical, touches="on-disk files, flush, compaction, streaming and repair")
+        self.assertNotIn("the 'Touches' row", err)
+        for phrase in ("on-disk files", "flush", "compaction", "streaming", "repair"):
+            rc, err = self.spec_errors(risk=critical, touches=phrase)
+            self.assertNotIn("the 'Touches' row", err, phrase)
+        rc, err = self.spec_errors(risk=critical, touches="On-disk files; Compaction, request path")
+        self.assertNotIn("the 'Touches' row", err)
+        # A near miss is refused, and the message lists the five.
+        rc, err = self.spec_errors(risk=critical, touches="on disk, compactions")
+        self.assertEqual(rc, 1)
+        self.assertIn("the 'Touches' row names 'on disk', which is none of:", err)
+        self.assertIn("the 'Touches' row names 'compactions', which is none of:", err)
+        self.assertIn("new feature or switch, on-disk files, flush, compaction, streaming, repair, or none (classification.md)", err)
+        # An on-disk file is still a public interface by its area, and the
+        # new phrase stands beside it.
+        rc, err = self.spec_errors(risk=critical, touches="public interface (sstable components), on-disk files")
+        self.assertNotIn("the 'Touches' row", err)
+
+    def test_every_template_row_lists_the_touches_phrases(self):
+        # The three templates name the phrases the checker takes, so an
+        # author who copies the row can write each of them.
+        for name in ("feature-spec.md", "design-record.md", "fix-record.md"):
+            row = re.search(r"^\| Touches \|(.*)\|$", template(name), flags=re.M).group(1).lower()
+            for phrase in doclint.TOUCHES:
+                self.assertIn(phrase, row, (name, phrase))
+            self.assertIn("request path (any path whose cost grows with data or traffic)", row, name)
 
     def test_the_floor_keeps_a_public_interface_off_low_risk(self):
         rc, err = self.spec_errors(risk="Low: documentation only change", touches="public interface (yaml)",

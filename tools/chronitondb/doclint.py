@@ -129,7 +129,8 @@ A feature spec is also checked for:
      its family, a colon and a reason of three words or more, Touches the
      phrases of TOUCHES (public interface, stock behaviour, new input or
      privilege, new dependency, shared state, request path, new feature or
-     switch) in any case, split at a comma, a semicolon or "and", or none,
+     switch, on-disk files, flush, compaction, streaming, repair) in any
+     case, split at a comma, a semicolon or "and", or none,
      a public interface naming its area in brackets, one of FLOOR_AREAS
      (a phrase that names an area alone counts as a public interface and
      is refused), and a Low risk never touching a public
@@ -317,10 +318,15 @@ RISKS = ("Critical", "Normal", "Low")
 SIZES = ("Low Hanging Fruit", "Normal", "Challenging", "Byzantine")
 REACHES = ("One area", "Cross-cutting")
 CLASS_ROWS = (("Risk", RISKS), ("Size", SIZES), ("Reach", REACHES))
-# The last three name what a Normal risk code review adds a lens for: threads,
-# pools or shared state, a read, write or query path, and a new feature or switch.
+# Shared state, request path and new feature or switch name what a Normal risk
+# code review adds a lens for: threads, pools or shared state, any path whose
+# cost grows with data or traffic, and a new feature or switch. The last five
+# name what the code of a change does on the Critical floor, in Apache
+# Cassandra's files or in ChronitonDB's own (classification.md, The Critical
+# floor).
 TOUCHES = ("public interface", "stock behaviour", "new input or privilege", "new dependency",
-           "shared state", "request path", "new feature or switch")
+           "shared state", "request path", "new feature or switch",
+           "on-disk files", "flush", "compaction", "streaming", "repair")
 FLOOR = ("public interface", "stock behaviour")
 # The floor's public interfaces: the areas of compatibility the Cassandra
 # Enhancement Proposals page lists under Compatibility Concerns, plus

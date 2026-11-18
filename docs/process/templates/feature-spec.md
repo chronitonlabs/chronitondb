@@ -30,7 +30,7 @@ limitations under the License.
 | Risk | {Critical, Normal or Low}: {the worst Bug Category the feature could cause if wrong, and the floor if one applied} |
 | Size | {Low Hanging Fruit, Normal, Challenging or Byzantine}: {why} |
 | Reach | {One area or Cross-cutting}: {why, naming the packages touched} |
-| Touches | {public interface (its compatibility area, an on-disk file by its area: sstable components, or commitlog, hint log and cache files), stock behaviour, new input or privilege, new dependency, shared state (threads, pools or shared state), request path (a read, write or query path), new feature or switch, or none} |
+| Touches | {public interface (its compatibility area, an on-disk file by its area: sstable components, or commitlog, hint log and cache files), stock behaviour, new input or privilege, new dependency, shared state (threads, pools or shared state), request path (any path whose cost grows with data or traffic), new feature or switch, on-disk files, flush, compaction, streaming, repair, or none} |
 
 Revision history, one row for each version:
 
@@ -44,7 +44,7 @@ Location: `docs/design/<KEY>-<slug>/feature-spec.md` on the line the feature tar
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
-The Risk, Size and Reach rows are the feature's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the feature touches, from the phrases in the row, in any case and separated by commas, or says none. A public interface names its area in brackets, one of the compatibility areas in [classification.md](../classification.md#the-floor), such as public interface (configuration). A public interface or stock behaviour in Touches means the risk is Normal or Critical. The class decides which sections are required, as each section says. A required section holds its content. Any other section holds its content or the one line `Not applicable: <reason>`. A section that says Not applicable covers its subsections, which are then left out.
+The Risk, Size and Reach rows are the feature's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the feature touches, from the phrases in the row, in any case and separated by commas, or says none. A public interface names its area in brackets, one of the compatibility areas in [classification.md](../classification.md#the-floor), such as public interface (configuration). A public interface or stock behaviour in Touches means the risk is Normal or Critical. On-disk files, flush, compaction, streaming and repair name what the code of the change does, in Apache Cassandra's files or in ChronitonDB's own, and any of them in Touches means the risk is Critical, unless the maintainers said for this change that it is not. See [classification.md](../classification.md#the-critical-floor). The class decides which sections are required, as each section says. A required section holds its content. Any other section holds its content or the one line `Not applicable: <reason>`. A section that says Not applicable covers its subsections, which are then left out.
 
 ## Contents
 

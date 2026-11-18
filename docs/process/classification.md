@@ -127,7 +127,7 @@ One template serves every class, [templates/feature-spec.md](templates/feature-s
 
 Compatibility in full means its parts: the statement that the feature changes no format, schema or protocol may stand in for the on-disk format changes only, and the mixed-version cluster, upgrade, rollback and runbook parts are still written. Non-goals are part of Purpose and scope and never say Not applicable.
 
-The control table of the spec carries the class: rows Risk, Size and Reach, each with the level and its reason, and a row Touches naming what the change touches: a public interface with its area from the floor's list, stock behaviour, new input or privilege, a new dependency, shared state (threads, pools or shared state), a request path (a read, write or query path), a new feature or switch, or none. The plan and the milestone reports repeat the spec's class. A design record and a fix record carry the class of their item.
+The control table of the spec carries the class: rows Risk, Size and Reach, each with the level and its reason, and a row Touches naming what the change touches: a public interface with its area from the floor's list, stock behaviour, new input or privilege, a new dependency, shared state (threads, pools or shared state), a request path (any path whose cost grows with data or traffic), a new feature or switch, what the code does on [the Critical floor](#the-critical-floor) (on-disk files, flush, compaction, streaming, repair), or none. The plan and the milestone reports repeat the spec's class. A design record and a fix record carry the class of their item.
 
 ### Checks and review
 

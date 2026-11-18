@@ -160,7 +160,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-016
 
-**A feature has a switch when something needs it to be turned off.** A behaviour-changing feature always has a feature switch. A purely additive feature has a switch only when something needs it to be turned off: a requirement, a decision of the maintainers, a rule of these pages, or a named risk such as load on a shared path. Otherwise its design says in one line why it needs none. How a switch is set is the design's choice.
+**A feature has a switch when something needs it to be turned off.** A behaviour-changing feature always has a feature switch. So does a feature built in more than one milestone, whatever its class: being reachable before it is finished is a risk that needs it turned off. Any other purely additive feature has a switch only when something needs it to be turned off: a requirement, a decision of the maintainers, a rule of these pages, or a named risk such as load on a shared path. Otherwise its design says in one line why it needs none. How a switch is set is the design's choice.
 
 1. **Applies to.** Every fork feature. For example a switch is a node setting with a runtime command, or an option on the schema object that owns the data.
 2. **Edge.** Work with nothing to turn off, such as documentation, packaging or a build change, has no switch.
@@ -192,7 +192,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-020
 
-**Every merged item keeps the line releasable.** Every merged item keeps its line releasable. Before a feature's final milestone gate its switch refuses to turn on, whatever its default, and shipped code has no way round the refusal. With every fork feature off, a line behaves as stock, and the parity suite proves it.
+**Every merged item keeps the line releasable.** Every merged item keeps its line releasable. A feature built in more than one milestone always has a switch, see [PRINCIPLE-016](#principle-016). Until the feature passes its final milestone gate the switch refuses to turn on, whatever its default, and shipped code has no way round the refusal. With every fork feature off, a line behaves as stock, and the parity suite proves it.
 
 1. **Applies to.** Every line, and every feature that is built over several items.
 2. **Edge.** The fixes to stock code and the differences in what operators see that the delta register lists.

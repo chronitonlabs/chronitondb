@@ -172,7 +172,7 @@ ChronitonDB is a fork, so it has its own packaging and its own names, separate f
 
 Our file holds every setting of Apache's two files, active or commented, or leaves one out on a line `# Left out: <setting>: <reason>`. A setting Apache removes is removed from our file too, or flagged on a line `# Apache removed: <setting>`. A pull request check will enforce both once it exists.
 
-How Apache's configuration changes reach our file is in [upstream.md](upstream.md#configuration-changes).
+How Apache's configuration changes reach our file is in [upstream.md](upstream.md#configuration-changes). A configuration file that works on one release of a line starts every later release of that line: [PRINCIPLE-083](principles.md#principle-083).
 
 ### Switching a node from Apache's package
 

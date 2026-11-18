@@ -60,6 +60,9 @@ An application that moves onto ChronitonDB behaves as it did on Apache Cassandra
 6. Code defaults in stock classes stay as Apache has them: [PRINCIPLE-007](principles.md#principle-007).
 7. A log line that differs from stock is not a compatibility concern: [PRINCIPLE-008](principles.md#principle-008).
 8. With a feature off, the feature changes nothing that stock Apache Cassandra does, and the tests of its off state prove it: [PRINCIPLE-019](principles.md#principle-019). The parity suite proves it for the line: [PRINCIPLE-020](principles.md#principle-020).
+9. Schema state is written only for an object that uses the feature: [PRINCIPLE-089](principles.md#principle-089).
+
+Five more principles bind what a feature stores, reads back and sends between nodes: [PRINCIPLE-084](principles.md#principle-084), [PRINCIPLE-085](principles.md#principle-085), [PRINCIPLE-086](principles.md#principle-086), [PRINCIPLE-087](principles.md#principle-087) and [PRINCIPLE-088](principles.md#principle-088). They are answered under the checklist's lines on mixed-version clusters and on data loss or corruption.
 
 ### A feature adds no dependence on topology
 

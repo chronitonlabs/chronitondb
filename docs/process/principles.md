@@ -56,7 +56,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **Moving between Apache Cassandra and the project is done on the same data files, by a runbook.** A user moves a cluster from Apache Cassandra onto a line, and back, on the same data files, by following a runbook that states its prerequisites. The entry condition for moving onto a line is a cluster on the latest Apache Cassandra release of the line's major version, with all of that version's own options on. Moving back needs documented steps. It does not have to be a swap of binaries on untouched files. Each release states which Apache Cassandra release, or releases, a cluster on it can move back to, and says when there is none yet. With every fork feature off, the state a node shares with others is as stock has it: schema tables, data files and their components, gossip and messages, and the logs a node replays at start, which are the commit log, hints, the batchlog and Paxos state. Everything the project writes to that shared state can be removed by a step the runbook names. A thing that makes an Apache Cassandra node refuse to start is acceptable when the release's steps say how to remove it. A state with no steps back is not acceptable: data that Apache Cassandra cannot read and that cannot be converted. Moving MUST be possible. It is not promised to need no steps.
 
 1. **Applies to.** Every change that writes to disk, to the schema or between nodes, and every line's upgrade runbook. For example a new sstable component, a new schema option, or a setting of the line's minimum setup, which a node checks at every start. The options of the entry condition are the values of Apache Cassandra's `conf/cassandra_latest.yaml`, such as no storage compatibility mode for an older major version, the newest sstable format and UUID sstable identifiers. The project ships those values, and moving back is to an Apache Cassandra configured the same way. For example the steps for moving back remove the project's keys from the configuration file, revoke a permission the project added, and leave no file in the data directories that Apache Cassandra cannot parse and no class name in the schema that it cannot load.
-2. **Edge.** The fixes and the differences the delta register lists. The supported paths are from Apache Cassandra of the same major version, and from one release of a line to the next. No older version of Apache Cassandra is supported, and no compatibility mode for one. A step of Apache Cassandra's own that has no way back is named in the release's steps as a prerequisite. So is the Java version of the line, in both directions.
+2. **Edge.** The fixes and the differences the delta register lists. The supported paths are from Apache Cassandra of the same major version, and from one release of a line to the next. No older version of Apache Cassandra is supported, and no compatibility mode for one. A step of Apache Cassandra's own that has no way back is named in the release's steps as a prerequisite. So is the Java version of the line, in both directions. With a feature on, an object that does not use it keeps the schema state it has on Apache Cassandra: [PRINCIPLE-089](#principle-089).
 3. **See.** [release.md](release.md#the-configuration-file), [release.md](release.md#switching-a-node-from-apaches-package), [release.md](release.md#moving-back-to-apache-cassandra), [testing.md](testing.md#upgrade-and-rollback-tests), [templates/feature-spec.md](templates/feature-spec.md#7-compatibility).
 
 ### PRINCIPLE-004
@@ -98,6 +98,14 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 1. **Applies to.** Every log line on a line. For example a startup line that names the fork's switches is an added line. A feature that removes sensitive data from stock log lines is the second way.
 2. **Edge.** A log line that Apache Cassandra changes arrives with its import. A stock line that lists settings, pools or tables shows what the project adds to those, and that is not a change to the line. What a fork log line may carry is [PRINCIPLE-035](#principle-035).
 3. **See.** [classification.md](classification.md#the-floor), [the delta register](../delta/README.md#keeping-it-current).
+
+### PRINCIPLE-089
+
+**Schema state is written only for an object that uses the feature.** Schema state the project adds is written only for a schema object that uses the feature it belongs to, never for every object. An object that does not use the feature has exactly the schema state it has on Apache Cassandra, with the feature on as with it off. When an object stops using the feature, what the feature wrote for it is removed.
+
+1. **Applies to.** Everything a feature keeps in the schema, as it is stored and as nodes exchange it. For example an option the project adds to tables is written for a table whose statement set it and for no other table, and a new kind of index adds state for the indexes of that kind only. An object uses a feature when a statement asked for the feature on it. An absent value means that the object does not use the feature, and it means that on every node.
+2. **Edge.** For an object that uses the feature, a configured default is resolved and stored with the object as [PRINCIPLE-021](#principle-021) says. Whether such an object keeps working with the feature off is [PRINCIPLE-019](#principle-019). Anything the project adds to the definition of a keyspace that Apache Cassandra defines in code is schema state on every node. So only a feature that is held back until every node has it adds such a thing: [PRINCIPLE-016](#principle-016).
+3. **See.** [PRINCIPLE-003](#principle-003), [templates/feature-spec.md](templates/feature-spec.md#7-compatibility).
 
 ## Changes to Apache Cassandra code and tests
 
@@ -179,7 +187,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **An upgrade within a line changes a running cluster only through a fix or an import.** An upgrade within a line changes what a running cluster does only through a fix, a security fix or an import from Apache Cassandra, each named in the release notes. A feature's default does not change within a line. A new feature that is purely additive arrives switched on, unless it does work without being asked or adds anything nodes share, in which case it arrives off on that line. Within a line, the values the shipped configuration file holds change only for a fix, a security fix or an import from Apache Cassandra.
 
-1. **Applies to.** Every release of a line.
+1. **Applies to.** Every release of a line. What a shipped name and a configuration file keep across those releases is [PRINCIPLE-082](#principle-082) and [PRINCIPLE-083](#principle-083).
 2. **Edge.** A purely additive feature is on by default on every line, also when it is finished after a line's first release. Such a feature ships off by default on that line when it does work without being asked, such as a background task, a cache it fills or a pool it starts, or when it adds anything nodes share, such as a schema object, a message between nodes or a file that is streamed. Its design says which it is. It is on by default from the next new line. An import that changes an on-disk version is named as such in the release notes, with the oldest release of the line a cluster can still roll back to.
 3. **See.** [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults), [release.md](release.md#what-a-release-may-contain), [upstream.md](upstream.md#configuration-changes).
 
@@ -380,7 +388,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **Nothing lets a role learn about data it cannot read.** Nothing the project adds lets a role learn about data it could not `SELECT`, or could `SELECT` only masked: not through results, counts, derived values such as a rank or an estimate, error text, or timing that an attacker can measure in practice.
 
 1. **Applies to.** Every result, error and signal a feature gives a client.
-2. **Edge.** This principle is about what a statement returns to a role. A surface for operators, such as a virtual table, a metric or JMX, follows the permission scheme Apache Cassandra already has for that kind of surface. The project adds no scheme of its own there and filters nothing by the reader's `SELECT` permission. Counts, sizes and states per schema object on such a surface are operational data. User data appears there only as the edge of [PRINCIPLE-039](#principle-039) allows.
+2. **Edge.** This principle is about what a statement returns to a role. A surface for operators, such as a virtual table, a metric or JMX, follows the permission scheme Apache Cassandra already has for that kind of surface. The project adds no scheme of its own there and filters nothing by the reader's `SELECT` permission. Counts, sizes and states per schema object on such a surface are operational data. User data appears there only as the edge of [PRINCIPLE-039](#principle-039) allows. Where a statement checks access is [PRINCIPLE-090](#principle-090).
 3. **See.** [templates/design-record.md](templates/design-record.md#10-threat-model-and-security).
 
 ### PRINCIPLE-046
@@ -414,6 +422,14 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 1. **Applies to.** Every library and other third party component the build pulls in.
 2. **Edge.** A patch-version update of an approved library, under the same licence, for a bug or security fix needs no design record. It still goes through the security engineer.
 3. **See.** [compliance.md](compliance.md#declaring-dependencies), [maintenance.md](maintenance.md#dependency-patch-version-updates).
+
+### PRINCIPLE-090
+
+**Access is checked in the statement's authorise step.** Whatever access a statement of the project needs is checked in the statement's authorise step. That is the step in which Apache Cassandra's own statements check access, against Apache Cassandra's permissions and resources. The same holds for anything the project adds to an existing statement. Before that step has passed, the statement reads no stored data and does no work that depends on stored data, and no error says anything about stored data.
+
+1. **Applies to.** Every statement a feature adds, and every clause, option or function it adds to an existing statement. For example a new schema statement checks there the permission on the object it changes. A new clause of a read is covered by the check the read already makes on its table, and any further permission the clause needs is checked in the same step.
+2. **Edge.** This principle says where the check sits. What a role may learn is [PRINCIPLE-045](#principle-045), and this principle asks for no permission beyond that. A surface for operators that is not a statement, such as a command or JMX, follows the permission scheme Apache Cassandra has for it, as the edge of [PRINCIPLE-045](#principle-045) says. A check that Apache Cassandra itself makes at another point, for a statement of the same kind, stays where Apache Cassandra has it. Apache Cassandra prepares a statement before it authorises it, so an error raised while a statement is prepared can reach a role with no permission. At that point the project's code reads no stored data and says no more about the schema than Apache Cassandra's own statements say there.
+3. **See.** [PRINCIPLE-041](#principle-041), [templates/design-record.md](templates/design-record.md#10-threat-model-and-security).
 
 ## Performance
 
@@ -523,9 +539,59 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **A change to a shared surface states and proves its upgrade, its rollback and its mixed-version behaviour.** A feature states its on-disk format changes with their version markers, its behaviour in a mixed-version cluster during a rolling upgrade, its upgrade path with prerequisites, its rollback path and its runbook entries. A milestone that introduces an on-disk format change has upgrade and rollback tests among its exit criteria. A newer line reads every data file an older line writes, and exchanges messages with it. A file that only speeds a restart, such as a saved cache, may be discarded instead, and the design says so. Streams and repair between two lines follow Apache Cassandra: they run only between nodes on the same messaging version, and the runbook says so.
 
-1. **Applies to.** Every change to a surface nodes or versions share: a file on disk, the schema, a message between nodes, a setting. For example a new component beside an sstable, or a new gossip state.
+1. **Applies to.** Every change to a surface nodes or versions share: a file on disk, the schema, a message between nodes, a setting. For example a new component beside an sstable, or a new gossip state. What a configuration file keeps across the releases of a line, what a stored form records and what a reader does with a value it does not recognise are [PRINCIPLE-083](#principle-083), [PRINCIPLE-084](#principle-084) and [PRINCIPLE-085](#principle-085).
 2. **Edge.** A feature with no format, schema or protocol change says so, and still states its mixed-version and rollback behaviour where its class requires the section.
 3. **See.** [additive.md](additive.md#level-1-the-feature-spec), [testing.md](testing.md#upgrade-and-rollback-tests), [templates/feature-spec.md](templates/feature-spec.md#7-compatibility).
+
+### PRINCIPLE-083
+
+**A configuration file that works on one release of a line starts every later release of that line.** A configuration file that a node starts with on one release of a line starts every later release of the same line, unchanged, and each setting in it keeps its meaning. No release within a line needs a key that the release before it did not have: a new setting has a default in the code. No release within a line stops reading a key or a value that an earlier release of the line accepted.
+
+1. **Applies to.** Every setting the project adds or changes, in every file a node reads at start, and every release of a line. For example a setting added within a line takes its default when the file leaves it out, a renamed setting still loads under its old key as [PRINCIPLE-082](#principle-082) says, and a setting that no longer does anything still loads and says so.
+2. **Edge.** A fix, a security fix or an import from Apache Cassandra MAY have to refuse a key or a value that an earlier release accepted, or add to what a node checks at start. The release notes then name the key and say what the operator sets, as [PRINCIPLE-018](#principle-018) asks. For a fix of the project's own the maintainers decide it by merging the fix record. The rule runs forward only. A file that holds a key a later release added does not start an earlier release, so the rollback path of [PRINCIPLE-062](#principle-062) says which keys are removed first. Moving to the next line follows that line's upgrade runbook. Moving back to Apache Cassandra follows the release's steps, which remove the project's keys: [PRINCIPLE-003](#principle-003).
+3. **See.** [release.md](release.md#the-configuration-file), [upstream.md](upstream.md#configuration-changes).
+
+### PRINCIPLE-084
+
+**A stored form records the version that wrote it.** Every form the project defines and stores records the version that wrote it, from the first release that writes the form. A reader decides how to read from that record, never from the version of the code that is reading. The version is the project's own. It stands beside the versions Apache Cassandra owns, which stay as they are: [PRINCIPLE-006](#principle-006).
+
+1. **Applies to.** Every form the project defines that outlives the process that wrote it. For example a file beside an sstable, a file in which a background task keeps its progress, bytes the project serialises into a column of a table, and a payload that is kept for later delivery. A form with one version so far records it too: a form that starts without the record cannot gain it later without a guess.
+2. **Edge.** A value whose form Apache Cassandra defines and types, such as a named option of a schema object or a column of a declared type, needs no version of its own: its meaning does not change under the same name, see [PRINCIPLE-058](#principle-058). A form that is sent and never stored says in its design how the receiver knows which version wrote it. What a reader does with a version it does not recognise is [PRINCIPLE-085](#principle-085).
+3. **See.** [PRINCIPLE-062](#principle-062), [templates/feature-spec.md](templates/feature-spec.md#7-compatibility).
+
+### PRINCIPLE-085
+
+**A reader says what it does with a value it does not recognise.** Code of the project that reads a stored or sent value has a stated answer for a value it does not recognise, such as a version, a code, a name or a field that another release wrote. The reader either passes over the value in a way that leaves the rest of what it reads correct, or refuses the work with an error that names what it met. It never reads such a value as one it knows, and it never guesses.
+
+1. **Applies to.** Every form the project defines or adds to, on disk, in the schema or between nodes, and each reader of it. For example a file whose recorded version is newer than the reader knows, a status code in a message from a newer node, and an option value in the schema that the release of the reading node does not have. The design names each such value and the reader's answer.
+2. **Edge.** This is about a value that another release, or a node with other features on, wrote in good order. It is not a check on a hostile sender: a peer is trusted as [PRINCIPLE-043](#principle-043) says, and input from a client is bounded there. Passing over a value is allowed only where the form lets the reader find the end of the value, or where a named neutral value loses nothing the reader needs. A file that only speeds a restart may be discarded instead, as [PRINCIPLE-062](#principle-062) allows. Where the answer is that the node does not start, the design says so, and the upgrade or rollback path names the step that avoids it. A refusal follows [PRINCIPLE-025](#principle-025).
+3. **See.** [PRINCIPLE-084](#principle-084). [PRINCIPLE-016](#principle-016) holds a feature back until every node has it.
+
+## Data on disk and writes between nodes
+
+### PRINCIPLE-086
+
+**A file read back after a crash is complete or absent, never half written.** A file the project writes and a node reads back later is, after a crash at any moment of the write, either complete or absent to its reader. A reader never takes a half written file for a complete one. The design says what the node does when the file is absent: rebuild it, start the work again or refuse.
+
+1. **Applies to.** Every file the project's code writes and reads back, in a data directory or elsewhere. For example a file beside an sstable, a file in which a background task keeps its progress, and a saved copy of state held in memory. One way to meet it is to write under a temporary name and rename the finished file. Another is a marker written last, without which the reader treats the file as absent. A file beside an sstable can be written inside the transaction Apache Cassandra uses for the sstable's own files.
+2. **Edge.** A file that is appended to, such as a log, is read up to its last complete record, and the design says how the reader finds that record. What an unfinished write leaves behind is removed at the next start or by the next write, so that no partial copy of user data stays: [PRINCIPLE-047](#principle-047). A design whose files are written in more than one step is a candidate for a model under [PRINCIPLE-068](#principle-068).
+3. **See.** [PRINCIPLE-087](#principle-087), [quality-requirements.md](quality-requirements.md#the-checklist).
+
+### PRINCIPLE-087
+
+**Disk errors go through Apache Cassandra's error types, so the operator's disk failure policy acts.** The policy an operator set for a failed or corrupt disk acts on the project's files as it acts on Apache Cassandra's own. So code of the project that cannot read or write a file in a data directory, or that finds one corrupt, reports the failure through the error types Apache Cassandra uses for such failures. Such a failure is never caught and only logged.
+
+1. **Applies to.** Every read and write of a file by the project's code in a directory the node's failure policy covers. For example a read of a file beside an sstable on a request path, a write of such a file during compaction, and a background task that writes a file of its own. The request or the task that met the failure fails as it would on a failure in one of Apache Cassandra's files, and never returns a partial answer: [PRINCIPLE-030](#principle-030).
+2. **Edge.** A file the node can do without, such as one that only speeds a restart, MAY be discarded and rebuilt when it cannot be read or is corrupt, where the design says so, and each such event is counted. A write that fails is still reported. A file that is absent after a crash is not a disk failure: [PRINCIPLE-086](#principle-086). A tool that runs without a node has no policy to meet and reports the error itself.
+3. **See.** [PRINCIPLE-086](#principle-086), [quality-requirements.md](quality-requirements.md#the-checklist).
+
+### PRINCIPLE-088
+
+**A write between nodes may arrive once, twice, late or out of order, and the code handles each.** What a feature does when a write is applied on a node leaves the same end state whether the write arrives once, twice, late or out of order, by any route Apache Cassandra delivers it. The feature's own state follows the data as Apache Cassandra reconciles it, never the order of arrival. The design also says what the feature does for data that arrives as files and never passes the write path.
+
+1. **Applies to.** Every feature that keeps or changes state when a write is applied, and every message of the project that changes state on the node that receives it. For example data a feature derives from each write, and a message that records a step of a background task on another node. The routes are for example the coordinator's request, a retry by the client after an error, a hint delivered hours later, a replay of the batchlog, a replay of the commit log at restart, read repair and a Paxos commit. Streaming, and with it repair, brings data as files, which pass the write path for some tables only. A late write can arrive after the object it was written for was altered or dropped.
+2. **Edge.** This is about delivery, not about a hostile sender: a peer is trusted as [PRINCIPLE-043](#principle-043) says. The retries, hints and replays themselves are Apache Cassandra's behaviour and stay as they are: [PRINCIPLE-028](#principle-028). State that must go with a write is carried in the write's own data, so that every route carries it: [PRINCIPLE-006](#principle-006). A feature that changes no state when a write is applied says so in one line.
+3. **See.** [PRINCIPLE-030](#principle-030), [PRINCIPLE-068](#principle-068), [testing.md](testing.md#test-levels).
 
 ## Testing
 
@@ -667,7 +733,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **Names are additions, and say what they mean.** A name of Apache Cassandra follows the rule for what it names. A name an application sees, such as a keyword, a column of a result or an error code, changes only behind a feature switch that is off by default: [PRINCIPLE-001](#principle-001). A name an operator sees, such as a metric, an MBean, a virtual table, a setting or a command, stays as stock where that is reasonable, and a difference is recorded: [PRINCIPLE-002](#principle-002). The project's signals and settings live under its own names, and stock metric types gain no new metrics. Those names never contain "cassandra" or "axon", and no key or value contains "stock". A setting that means what an existing setting means in the idiom the design follows SHOULD carry that setting's name, and an option that defers to the node's global setting takes the value `inherit`. Such an option is an operator control under [PRINCIPLE-024](#principle-024) and never decides what a statement returns. Apache Cassandra has no single word for this, so the value is the project's own.
 
-1. **Applies to.** Every new user facing name: yaml keys, nodetool commands, MBeans, metric types, packages and options.
+1. **Applies to.** Every new user facing name: yaml keys, nodetool commands, MBeans, metric types, packages and options. What happens to a name of the project's own once a release has shipped it is [PRINCIPLE-082](#principle-082).
 2. **Edge.** A name the maintainers fixed in a decision record. A file that stands beside one of Apache Cassandra's files MAY carry that file's name, as the configuration file of [PRINCIPLE-026](#principle-026) does. An object of a kind Apache Cassandra already measures, such as a thread pool, appears under the stock metric type with the project's scope. On a line whose metric registry accepts only the types on its own list, the project's type is added to that list, a hook point with its delta entry. A fix to a defect in stock that needs a new metric on a stock metric type is applied with its fix record, and the metric is recorded as a difference in what operators see, see [PRINCIPLE-004](#principle-004) and [PRINCIPLE-002](#principle-002).
 3. **See.** [conventions.md](conventions.md#names).
 
@@ -686,3 +752,11 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 1. **Applies to.** The process, the documents and the formats the project publishes.
 2. **Edge.** None.
 3. **See.** [standards.md](standards.md).
+
+### PRINCIPLE-082
+
+**A name the project has shipped is not renamed or removed within a line.** A name of the project's own that a release has shipped is not renamed in place and is not removed within a line. Where a better name is wanted, the new name is added and the old one is kept as an alias: it keeps working with the same meaning, and it says that it is deprecated where its surface can say so. The old name is removed no earlier than the first release of the next line, and the release notes name it.
+
+1. **Applies to.** Every name of the project's own that a user or an operator can write or read, once a release holds it. For example a setting, an option of a schema object and its values, a keyword, a command and its arguments, a metric, an MBean and its operations, and a virtual table and its columns. A renamed setting still loads under its old key, and a renamed metric is still registered under its old name.
+2. **Edge.** A name of Apache Cassandra follows [PRINCIPLE-079](#principle-079), and one that Apache Cassandra renames or removes arrives with its import. Where a surface cannot carry two names, such as a column of a result, the shipped name stays for the line. A shipped name that an import from Apache Cassandra takes for something else is a conflict the maintainers decide before the import merges: [PRINCIPLE-074](#principle-074). The new name is chosen as [PRINCIPLE-057](#principle-057) and [PRINCIPLE-079](#principle-079) say.
+3. **See.** [conventions.md](conventions.md#names), [release.md](release.md#what-a-release-may-contain).

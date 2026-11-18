@@ -97,7 +97,7 @@ The integrator lists each change in the import record's Configuration changes se
 2. **Taken with a different value:** our file has the setting with our value, and the record gives the value and the reason.
 3. **Not taken:** our file leaves it out or keeps its old value, and the record gives the reason.
 
-A change to a setting of the line's minimum setup is also flagged for the line's upgrade runbook. The reviewer checks the mapping, and a maintainer approves it by merging the import. Within a line, the values our file ships change only for a fix, a security fix or an import from Apache Cassandra, each named in the release notes. Any other value change waits for the next line. The rule is [PRINCIPLE-018](principles.md#principle-018).
+A change to a setting of the line's minimum setup is also flagged for the line's upgrade runbook. The reviewer checks the mapping, and a maintainer approves it by merging the import. Within a line, the values our file ships change only for a fix, a security fix or an import from Apache Cassandra, each named in the release notes. Any other value change waits for the next line. The rule is [PRINCIPLE-018](principles.md#principle-018). An imported change that refuses a key or a value an earlier release of the line accepted is named in the release notes, under the edge of [PRINCIPLE-083](principles.md#principle-083).
 
 ## The delta register
 

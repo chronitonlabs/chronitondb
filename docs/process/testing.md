@@ -76,6 +76,7 @@ Scenarios are written in Gherkin and run with Cucumber, in the fork's own test m
 3. Apache's own upgrade tests for paths ChronitonDB does not support, such as a path from an older major version, are not run on the lines.
 4. An upgrade test of the project names both versions explicitly. The older version is built under a jar name that tells an Apache Cassandra release from a release of the line. Apache Cassandra's runner names a jar by the Apache version alone, which a release of the line shares.
 5. Apache Cassandra's upgrade test runner refuses Java 17, the Java version of the 5.0 line. The change that lets it run there is a change to a stock file, with its delta entry.
+6. What these tests read back follows [PRINCIPLE-084](principles.md#principle-084) and [PRINCIPLE-085](principles.md#principle-085): a stored form records the version that wrote it, and a reader has a stated answer for a value it does not recognise.
 
 ## Benchmarks
 

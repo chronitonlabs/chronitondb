@@ -494,6 +494,7 @@ class Exceptions(Repo):
         known = doclint.principles_at(self.repo, "line")
         self.assertIn("PRINCIPLE-001", known)
         self.assertIn("PRINCIPLE-081", known)
+        self.assertIn("PRINCIPLE-090", known)
         self.assertEqual(len(known), len(set(known)))
 
     def test_none_and_ids_of_the_page_pass(self):

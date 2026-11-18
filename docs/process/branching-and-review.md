@@ -117,7 +117,7 @@ A change to a sensitive path requests a review from the code owners in `.github/
 1. Authentication, transport, network and security code: `src/java/org/apache/cassandra/auth/`, `transport/`, `net/`, `security/`, `service/ClientState.java`, and the authentication and network code under `org/chronitondb/`.
 2. The build and its inputs: `build.xml`, `.build/`, `lib/`.
 3. Configuration and packaging: `conf/`, `bin/`, `packaging/`, `debian/`, `redhat/`. `packaging/` does not exist yet. The pull request that creates it adds it to `.github/CODEOWNERS`.
-4. The project's own tooling and automation: `tools/chronitondb/`, `.github/`, `CODEOWNERS`.
+4. The project's own tooling and automation: `tools/chronitondb/`, `.github/`, `CODEOWNERS`. The checks of a pull request run from these folders, and a pull request runs the workflow files it brings, so the maintainers are their code owners. A pull request that changes a file under `.github/` or `tools/chronitondb/` merges only with an approving review from a code owner of that path in `.github/CODEOWNERS`.
 
 ## Reviews
 

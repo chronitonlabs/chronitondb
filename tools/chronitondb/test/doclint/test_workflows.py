@@ -222,5 +222,37 @@ class Workflows(unittest.TestCase):
             self.assertIn('if [ "$HEAD_REPO" = "$REPO" ]', text, name)
 
 
+class CodeOwners(unittest.TestCase):
+    """A pull request runs the workflow files it brings, so the folders
+    that hold the checks have the maintainers as their only code owners."""
+
+    def owners(self, path):
+        """The owners GitHub takes for a path: those of the last line
+        whose pattern matches it."""
+        found = None
+        for line in read(".github/CODEOWNERS").split("\n"):
+            words = line.split("#", 1)[0].split()
+            if not words:
+                continue
+            pattern = words[0]
+            if pattern.endswith("/") and ("/" + path).startswith(pattern if pattern.startswith("/") else "/" + pattern):
+                found = words[1:]
+            elif "/" + path == pattern:
+                found = words[1:]
+        return found
+
+    def test_the_maintainers_own_the_folders_of_the_checks(self):
+        for path in [".github/workflows/" + name for name in OURS] + [
+                ".github/CODEOWNERS", ".github/workflows/code-check.yaml", "tools/chronitondb/doclint.py",
+                "tools/chronitondb/importlint.py", "tools/chronitondb/subjectlint.py", "tools/chronitondb/semgrep/banned-apis.yml",
+                "tools/chronitondb/test/doclint/test_workflows.py"]:
+            self.assertEqual(self.owners(path), ["@chronitonlabs/maintainers"], path)
+
+    def test_the_other_sensitive_paths_keep_their_owners(self):
+        self.assertEqual(self.owners("build.xml"), ["@chronitonlabs/sensitive-reviewers"])
+        self.assertEqual(self.owners("docs/process/principles.md"), ["@chronitonlabs/maintainers"])
+        self.assertIsNone(self.owners("src/java/org/apache/cassandra/db/Keyspace.java"))
+
+
 if __name__ == "__main__":
     unittest.main()

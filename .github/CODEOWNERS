@@ -14,9 +14,8 @@
 # limitations under the License.
 
 # The sensitive paths (branching-and-review.md). A change to any of them
-# requests a review from the team. /.github/ covers this file too. Until
-# the line rulesets require code owner review, this file only requests the
-# review.
+# requests a review from the team. Until the line rulesets require code
+# owner review, this file only requests the review.
 /src/java/org/apache/cassandra/auth/                  @chronitonlabs/sensitive-reviewers
 /src/java/org/apache/cassandra/transport/             @chronitonlabs/sensitive-reviewers
 /src/java/org/apache/cassandra/net/                   @chronitonlabs/sensitive-reviewers
@@ -29,8 +28,6 @@
 /lib/                                                 @chronitonlabs/sensitive-reviewers
 /conf/                                                @chronitonlabs/sensitive-reviewers
 /bin/                                                 @chronitonlabs/sensitive-reviewers
-/tools/chronitondb/                                   @chronitonlabs/sensitive-reviewers
-/.github/                                             @chronitonlabs/sensitive-reviewers
 /debian/                                              @chronitonlabs/sensitive-reviewers
 /redhat/                                              @chronitonlabs/sensitive-reviewers
 
@@ -38,3 +35,11 @@
 # so changes there request a maintainer's review.
 /docs/process/                                        @chronitonlabs/maintainers
 /docs/governance/                                     @chronitonlabs/maintainers
+
+# The checks of a pull request run from these two folders, and a pull
+# request runs the workflow files it brings. So the maintainers own them,
+# and a change there merges only with a maintainer's approving review once
+# the line rulesets require code owner review. /.github/ covers this file
+# too.
+/tools/chronitondb/                                   @chronitonlabs/maintainers
+/.github/                                             @chronitonlabs/maintainers

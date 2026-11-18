@@ -109,7 +109,7 @@ The Risk, Size and Reach rows are the feature's class, as [classification.md](..
 
 ### 2.5 Cross cutting concepts
 
-{Required from Challenging size. Settings, limits, observability, error handling and security concepts shared across components.}
+{Required from Challenging size. Settings, limits, observability, error handling and security concepts shared across components. The level of isolation the feature needs and why, see [PRINCIPLE-051](../principles.md#principle-051).}
 
 ### 2.6 Deployment
 

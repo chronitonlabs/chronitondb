@@ -29,7 +29,7 @@ The design is the fastest correct design known when it is written. Each design r
 
 ### Isolation levers
 
-Every fork feature has levers on the coordinator and on each replica that keep it from harming the rest of the node: its own thread pools, limits on work per request, load shedding, timeouts, memory budgets and a kill switch. Each lever has a yaml setting and a metric. The rule is [PRINCIPLE-051](principles.md#principle-051).
+A fork feature that adds work to a shared path cannot starve the rest of the node, and its design names what bounds it on every node role that does the work: [PRINCIPLE-051](principles.md#principle-051). Working out what level of isolation a feature needs is part of its architecture. A feature that adds no work to a shared path says so in one line.
 
 ### Observability
 
@@ -88,8 +88,8 @@ Copy this table into the feature spec or design record. Fill the last column for
 | ISO/IEC 25010 characteristic | Line | Requirements, or the reason it does not apply |
 |---|---|---|
 | Performance efficiency | Fastest correct design, with benchmarks in the design and in the gates | |
-| Performance efficiency | Memory budgets on coordinator and replica | |
-| Reliability | Isolation levers on coordinator and replica: thread pools, limits, load shedding, timeouts, kill switch | |
+| Performance efficiency | Memory of a feature that adds work to a shared path bounded on every node role that does the work | |
+| Reliability | A feature that adds work to a shared path cannot starve the rest of the node: threads and work per operation bounded, load shed, run time limited and a way for an operator to turn it off, on every node role that does the work | |
 | Reliability | Automatic fallbacks opt in on the schema object, with a node control that turns them off, each use counted and logged without flooding | |
 | Reliability | A TLA+ model where the maintainers asked for one, or one line on why the design needs none | |
 | Compatibility | An application behaves as it did on Apache Cassandra, and a change to what it sees from a stock feature is behind a switch that is off by default | |

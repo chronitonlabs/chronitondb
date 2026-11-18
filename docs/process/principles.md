@@ -426,10 +426,10 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-051
 
-**Isolation levers.** Every fork feature has levers on the coordinator and on each replica that keep it from harming the rest of the node: its own thread pools, limits on work per request, load shedding, timeouts, memory budgets and a kill switch. Each lever has a yaml setting and a metric.
+**A feature that adds work to a shared path cannot starve the rest of the node.** A fork feature that adds work to a shared path cannot starve the rest of the node. Its design names what bounds its threads, its memory and its work per operation, how it sheds load, how long it may run, and how an operator turns it off, on every node role that does the work. Each bound can be set by an operator at the scope the design chose and is visible in a metric. Working out what level of isolation a feature needs is part of its architecture: it is investigated and argued for each feature, and the design states the result with its reasons.
 
-1. **Applies to.** Every fork feature.
-2. **Edge.** A design states the reason a lever does not apply to it, and the maintainers approve the reason with the design.
+1. **Applies to.** Every fork feature. For example a search feature needs isolation, such as pools, limits, shedding, timeouts and budgets of its own, and a nodetool command or an uptime view does not.
+2. **Edge.** A feature that adds no work to a shared path says so in one line.
 3. **See.** [quality-requirements.md](quality-requirements.md#isolation-levers), [templates/design-record.md](templates/design-record.md#isolation-levers).
 
 ### PRINCIPLE-052

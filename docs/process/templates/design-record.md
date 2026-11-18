@@ -161,7 +161,7 @@ These rules apply to every source:
 
 ### Isolation levers
 
-{Yaml settings and nodetool toggles, thread pool, memory limit, kill switch, and stock behaviour when each lever is off.}
+{For a change that adds work to a shared path: what bounds its threads, its memory and its work per operation, how it sheds load, how long it may run and how an operator turns it off, on every node role that does the work. For each bound, how an operator sets it, at which scope, and the metric that shows it. Why this level of isolation is what the change needs. A change that adds no work to a shared path says so in one line. See [PRINCIPLE-051](../principles.md#principle-051).}
 
 ### Benchmarks that prove it
 

@@ -30,7 +30,7 @@ ChronitonDB runs its open source compliance as an OpenChain programme: ISO/IEC 5
 
 ## Third party licences
 
-Every third party component is checked against the Apache Software Foundation licence categories, as Apache Cassandra does.
+Every third party component is checked against the Apache Software Foundation licence categories. They say which licences a work under the Apache License 2.0 may include, and both this project and Apache Cassandra are under that licence.
 
 | Category | Meaning here | Examples |
 |---|---|---|

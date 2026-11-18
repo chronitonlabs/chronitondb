@@ -69,7 +69,7 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 **REUSE.** The FSFE's REUSE specification records the copyright and licence of every file in the repository, checked by `reuse lint`. It is adopted before the first release. See [compliance.md](compliance.md).
 
-**The ASF licence categories.** Every third party dependency is checked against the Apache Software Foundation categories A, B and X before use, as Apache Cassandra does.
+**The ASF licence categories.** Every third party dependency is checked against the Apache Software Foundation categories A, B and X before use. They say which licences a work under the Apache License 2.0 may include.
 
 ## Code and history
 

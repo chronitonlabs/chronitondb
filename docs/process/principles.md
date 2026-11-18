@@ -31,6 +31,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 6. Each principle links the decision record that set it, where one exists, and the page that gives the procedure.
 7. A document cites a principle by its id, as a link to its entry, for example `[PRINCIPLE-016](../process/principles.md#principle-016)` with the path from the citing document. A document cites nothing that a reader of the repository cannot open. See [PRINCIPLE-080](#principle-080).
 8. The maintainers approve a new principle, or a change to one, by merging the change to this page, with the decision record behind it where a question was answered. The change is first read against the four questions of [governance.md](governance.md#changes-to-this-page).
+9. What Apache Cassandra does is evidence for a design, and never by itself the reason to allow something: the design states the reason.
 
 ## Compatibility with Apache Cassandra
 

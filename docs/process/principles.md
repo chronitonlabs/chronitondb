@@ -314,15 +314,15 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **Operator actions and node states are logged.** Every runtime change of a setting logs the old and the new value at INFO. Startup logs the effective state of each fork switch. A state in which the node runs degraded is logged at WARN, without flooding.
 
 1. **Applies to.** Every setting, switch and degraded state a feature adds.
-2. **Edge.** The change of a setting that holds a secret is logged without either value.
+2. **Edge.** The change of a setting that holds a secret is logged without either value. Such a setting is logged without its value at startup too, and its value is hidden on every surface that prints settings, such as the startup line and the settings virtual table.
 3. **See.** [quality-requirements.md](quality-requirements.md#observability).
 
 ### PRINCIPLE-035
 
-**No log line the project writes carries user data or a secret.** Code the project writes never puts user data or a secret in a log line, at any log level. User data means partition keys, clustering and column values, bind values, query literals, query text that carries them, and any other value or term a user supplied in a statement. A log line names what it is about by schema object and by a value that identifies no user. Diagnosis that needs the data itself goes through a path with its own access control, as the design chooses.
+**No log line the project writes carries user data or a secret.** Code the project writes never puts user data or a secret in a log line, at any log level. User data means partition keys, clustering and column values, bind values, query literals, query text that carries them, and any other value or term a user supplied in a statement. A log line names what it is about by schema object and by a value that identifies no user. A trace line the project's code writes follows the same rule and carries no user data. Diagnosis that needs the data itself goes through a path with its own access control, as the design chooses.
 
-1. **Applies to.** Every log line fork code writes. For example a line names the keyspace and table, a token, a count, a size or a duration. Tracing or a virtual table is a path with its own access control.
-2. **Edge.** None. Log lines that Apache Cassandra writes follow [PRINCIPLE-008](#principle-008).
+1. **Applies to.** Every log line and trace line the project's own code writes. For example a line names the keyspace and table, a token under a hashing partitioner, a count, a size or a duration. A line of the project that logs a stock exception or a stock object logs its class and the schema object, never its message or its string form, unless the design shows that form holds no user data. A virtual table in a system keyspace is a path with its own access control: reading it needs a grant on the table or its keyspace. Tracing is not such a path: Apache Cassandra lets every authenticated role read the trace tables.
+2. **Edge.** Log lines that Apache Cassandra writes follow [PRINCIPLE-008](#principle-008). A stock log line that prints a statement prints a value given to a feature of the project as it prints every other value, and that is left as it is. The design names in one line the stock lines its input reaches.
 3. **See.** [quality-requirements.md](quality-requirements.md#observability).
 
 ### PRINCIPLE-036
@@ -345,8 +345,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **A limit reaches the client, and state reaches the operator.** A limit that changes results or rejects work reaches the client and is counted. State that an operator would otherwise search the logs for is exposed where it can be queried. Such a surface holds operational state, not user data.
 
-1. **Applies to.** Every limit and every operational state a feature adds. For example a virtual table row shows the state of a build.
-2. **Edge.** A surface carries user data only where the design chose it as the path with its own access control for diagnosis, see [PRINCIPLE-035](#principle-035).
+1. **Applies to.** Every limit and every operational state a feature adds. For example a virtual table row shows the state of a build. A surface for operators follows the permission scheme Apache Cassandra already has for that kind of surface, see [PRINCIPLE-045](#principle-045).
+2. **Edge.** A surface carries user data only where the design chose it as the path with its own access control for diagnosis, see [PRINCIPLE-035](#principle-035). Such a surface sits where Apache Cassandra asks for a grant of its own, such as a virtual table in a system keyspace.
 3. **See.** [templates/design-record.md](templates/design-record.md#8-observability).
 
 ## Security
@@ -361,41 +361,41 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-042
 
-**A value a client supplies never picks code or a resource.** A name that a client supplies never picks code to load unless it is on an allow list. The project's own list is fixed in the code, proposed by the design with a reason for each entry, and approved by the maintainers in a decision record. A new entry is a new decision. A value a client can set names no class, file, address, command or other resource of the node: names resolve against a fixed set.
+**A value a client supplies never picks code or a resource.** In the project's own lookups, a name that a client supplies never picks code to load unless it is on an allow list. The project's own list is fixed in the code, proposed by the design with a reason for each entry, and approved by the maintainers in a decision record. A new entry is a new decision. The allow list governs the project's own lookups, and an option of Apache Cassandra that takes a class name keeps its behaviour. A class of the project that such an option can reach refuses by itself when its feature is off, with the error that names the switch. A value a client can set in something the project adds names no class, file, address, command or other resource of the node: names resolve against a fixed set.
 
-1. **Applies to.** Every option, argument and name in a statement that a feature accepts. For example an analyzer name, an option of a compaction strategy, or a file name in a statement.
+1. **Applies to.** Every option, argument and name in a statement that a feature accepts. For example an analyzer name, an option of a compaction strategy, or a file name in a statement. A class of the project that an option of Apache Cassandra can reach refuses where the statement that names it is received, see [PRINCIPLE-024](#principle-024).
 2. **Edge.** An operator's extension of the allow list in a node's configuration, for code the operator has placed on the node, is not ruled out: it is designed and decided when a feature needs it.
 3. **See.** [conventions.md](conventions.md#code-layout).
 
 ### PRINCIPLE-043
 
-**Every untrusted input is bounded before the work.** Every untrusted input has a bound that is checked before the expensive step it protects. Over a bound the request fails with a client error that names the input, the object, the count and the limit. It never fails with a server error, a stack trace or an internal path.
+**Every untrusted input is bounded before the work.** Every untrusted input has a bound that is checked before the expensive step it protects. Untrusted input is input from a client. A peer is trusted as in Apache Cassandra, behind internode authentication and encryption, and the project's serializers are not asked to bound what they read from a peer. Over a bound the request fails with a client error that names the input, the object, the count and the limit. It never fails with a server error, a stack trace or an internal path.
 
 1. **Applies to.** Everything a feature parses or takes from a client. For example a length is checked before a parse, the size of a pattern before it is compiled, a count during a walk, and a number of rows before they are held in memory.
-2. **Edge.** None.
+2. **Edge.** The client error that names the bound is promised on a coordinator. A bound checked on a replica has the edge of [PRINCIPLE-025](#principle-025).
 3. **See.** [templates/design-record.md](templates/design-record.md#10-threat-model-and-security).
 
 ### PRINCIPLE-045
 
-**Nothing lets a role learn about data it cannot read.** Nothing the project adds lets a role learn about data it could not `SELECT`: not through results, counts, derived values such as a rank or an estimate, error text, or timing that an attacker can measure in practice.
+**Nothing lets a role learn about data it cannot read.** Nothing the project adds lets a role learn about data it could not `SELECT`, or could `SELECT` only masked: not through results, counts, derived values such as a rank or an estimate, error text, or timing that an attacker can measure in practice.
 
-1. **Applies to.** Every result, error and signal a feature gives a client.
-2. **Edge.** None.
+1. **Applies to.** Every result, error and signal a feature gives a client. A trace line is such a signal, since every authenticated role can read the trace tables.
+2. **Edge.** This principle is about what a statement returns to a role. A surface for operators, such as a virtual table, a metric or JMX, follows the permission scheme Apache Cassandra already has for that kind of surface. The project adds no scheme of its own there and filters nothing by the reader's `SELECT` permission. Counts, sizes and states per schema object on such a surface are operational data. User data appears there only as the edge of [PRINCIPLE-039](#principle-039) allows.
 3. **See.** [templates/design-record.md](templates/design-record.md#10-threat-model-and-security).
 
 ### PRINCIPLE-046
 
 **A limit the project adds binds every client.** A guardrail or limit the project adds binds every client, superusers and clusters without authentication included. Apache Cassandra's own guardrails keep their own rules.
 
-1. **Applies to.** Every guardrail and limit a fork feature adds.
-2. **Edge.** None. This is a deliberate difference from how stock guardrails treat superusers, made for security, as [PRINCIPLE-059](#principle-059) asks it to be stated.
+1. **Applies to.** Every guardrail and limit a fork feature adds. Such a limit follows Apache Cassandra's guardrails in what the client sees: a warn value and a fail value, a warning and then a failure in the guardrail's message form, and values an operator can change at runtime. It is built from the project's own classes, so that it binds every client, is counted and logs no line for each violation.
+2. **Edge.** None. This is a deliberate difference from how stock guardrails treat superusers and every client of a cluster without authentication, made for security, as [PRINCIPLE-059](#principle-059) asks it to be stated.
 3. **See.** [templates/design-record.md](templates/design-record.md#10-threat-model-and-security).
 
 ### PRINCIPLE-047
 
-**Every copy of user data has a lifetime.** A new copy of user data, or of anything derived from it, is listed in the design with its lifetime and what deletes it. No copy the project makes outlives its source, and the smaller copy is the default. Every new kind of file that stores values has a test that writes a value, deletes it, runs the purge the design names and searches the files for the value and its derived forms.
+**Every copy of user data has a lifetime.** A new copy of user data, or of anything derived from it, is listed in the design with its lifetime and what deletes it. A copy the project makes lives no longer than the last copy Apache Cassandra keeps of its source, and the smaller copy is the default. Where Apache Cassandra keeps the source, in a snapshot, a backup, an sstable not yet compacted, the commit log or hints, the project's copy may stay with it. Data kept per sstable is purged by the compaction that purges its source. Every new kind of file that stores values has a test that writes a value, deletes it, runs the stock steps that remove the source and searches the files the feature writes for the value and its derived forms. The design lists the stock copies that also hold the value.
 
-1. **Applies to.** Every file, cache and structure a feature adds that holds user data. For example data kept per sstable is registered with the sstable, so that snapshots, streaming, cleanup and compaction see it. Derived data, such as hashed, truncated or normalised values, is treated as its source is.
+1. **Applies to.** Every file, cache and structure a feature adds that holds user data. For example data kept per sstable is written by an observer of the sstable writer, so that every rewrite rebuilds it: flush, compaction, cleanup, scrub, upgrade, anticompaction and a stream that carries rows. Its file carries the sstable's file name prefix in the sstable's directory, so it is deleted with the sstable. It is registered in the sstable's component list, so snapshots and whole file streaming carry it. Derived data, such as hashed, truncated or normalised values, is treated as its source is.
 2. **Edge.** None.
 3. **See.** [templates/design-record.md](templates/design-record.md#12-compliance-impact).
 

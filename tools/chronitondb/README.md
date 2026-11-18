@@ -170,6 +170,8 @@ A coverage file, `ac-coverage.md` in a design directory, is checked against the 
 
 A research report, `docs/research/<issue>-<slug>.md`, is checked against the research report template, and its References row names the issue in its file name. `docs/research/README.md` is not a report.
 
+A review record, `docs/reviews/<work>.md`, is checked against the review record template: its document control table with Status Open or Closed, its five numbered sections in order, its Contents index and no placeholder left. A line that has no review record template yet passes the record over.
+
 ### The revision history
 
     tools/chronitondb/doclint.py history --repo . --templates origin/<line> FILE              print the history link FILE needs

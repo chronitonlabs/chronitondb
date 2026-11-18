@@ -56,6 +56,8 @@ The type of each PATH comes from where it lives:
     docs/releases/*.md                     release proposal
     docs/research/<issue>-<slug>.md        research report (README.md is
                                            not one)
+    docs/reviews/<work>.md                 review record (README.md is
+                                           not one)
 
 Any other path is not a document of the process and is passed over, except
 that no file under docs/design/ may keep a clarification marker.
@@ -156,6 +158,10 @@ A feature spec is also checked for:
 
 A decision record and a delta entry also have their unnumbered sections,
 and a decision record keeps none of its template's <...> placeholders.
+
+A review record is checked against the review record template once the
+line has it. At a REF with no such template the record is passed over and
+not counted: the first records were merged before the template was.
 
 A plan, a milestone report, a design record and a fix record are also
 checked for the form of their class rows, when their template has them. A
@@ -424,8 +430,12 @@ TEMPLATES = {
     "release-proposal": "docs/process/templates/release-proposal.md",
     "ac-coverage": "docs/process/templates/ac-coverage.md",
     "research-report": "docs/process/templates/research-report.md",
+    "review-record": "docs/process/templates/review-record.md",
     "decision": "docs/decisions/README.md",
 }
+# The types whose first documents were merged before their template. Such a
+# document is passed over at a rules ref that has no template for it.
+LATE_TEMPLATES = ("review-record",)
 # Unnumbered sections the type requires beside the numbered ones.
 REQUIRED_PLAIN = {
     "feature-spec": ["Glossary"],
@@ -505,6 +515,8 @@ def doc_type(path, text):
         return "release-proposal"
     if re.match(r"^docs/research/[^/]+\.md$", path) and path != "docs/research/README.md":
         return "research-report"
+    if re.match(r"^docs/reviews/[^/]+\.md$", path) and path != "docs/reviews/README.md":
+        return "review-record"
     return None
 
 
@@ -3283,6 +3295,9 @@ def main(argv):
         template_text = cache[template_path]
         if template_text is not None and kind == "decision":
             template_text = decision_template(template_text)
+        if template_text is None and kind in LATE_TEMPLATES:
+            checked -= 1
+            continue
         if template_text is None:
             doc.error(0, "no %s template at %s on %s, so this document cannot be checked against it" % (kind.replace("-", " "), template_path, templates))
         else:

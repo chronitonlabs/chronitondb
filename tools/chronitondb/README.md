@@ -130,6 +130,24 @@ The repository makes the pull request title the subject of the squash or merge c
 
     python3 -m unittest discover -s tools/chronitondb/test/subjectlint
 
+## Import history: `importlint.py`
+
+Checks the commits an import branch adds to its line against [upstream.md](../../docs/process/upstream.md#the-import-history-check). The CI workflow `.github/workflows/chronitondb-import.yml` runs it on every pull request from an `import/` branch of this repository, with this file, `doclint.py` and `markdown.py` taken from the base branch. Python 3 and git 2.38 or later, no other dependency.
+
+    tools/chronitondb/importlint.py history --repo . --base origin/chronitondb-5.0 --head HEAD --branch import/cassandra-5.0.8/chronitondb-5.0
+    tools/chronitondb/importlint.py history --repo . --base origin/chronitondb-5.0 --head HEAD --branch BRANCH --body DESCRIPTION-FILE --reviews REVIEWS-FILE
+
+The branch name gives the form. A release import and a branch import have one merge commit whose second parent is the commit of Apache Cassandra's tag, or the commit of its branch that the short hash names. A single fix has one commit made by `git cherry-pick -x` from a commit of an Apache branch whose message names the ticket, with its author, date and message kept. A commit of another project is held the same way against the repository the description's `Origin:` line names. Any other commit changes only the project's own files or merges the line into the branch.
+
+The checker fetches Apache Cassandra's tag or branches from `https://github.com/apache/cassandra.git` into refs of its own under `refs/import-check/`, so it needs the network. A tag or a branch of the clone is no proof. It makes each merge again with `git merge-tree` and compares the lines of a cherry-pick with those of its original. Where they differ it prints the files on `RESOLVED` lines and fails, until `--reviews` holds an approving review by a maintainer of `docs/governance/committers.md` on the line, at a commit that holds the resolved one. The reviews file is the answer of the GitHub API for the reviews of the pull request.
+
+    RESOLVED src/java/org/apache/cassandra/service/StorageService.java
+    import-history failed
+
+`test/importlint/` holds its unit tests, run by the same workflow. Each builds a stand-in for the public repositories in a directory:
+
+    python3 -m unittest discover -s tools/chronitondb/test/importlint
+
 ## Process documents: `doclint.py`
 
 Checks the process documents under `docs/` against their templates on the line, and the rules [docs/process/](../../docs/process/README.md) sets for them: the document control table, every numbered section in order, the Contents index, the revision history and its link to the file's commits, no template placeholder and no `[NEEDS CLARIFICATION` marker left, and per document type the feature spec, plan, milestone report, decision record and delta entry rules. It also checks the feature keys and requirement ids of [additive.md](../../docs/process/additive.md#feature-keys-and-requirement-ids) across the lines. Two more commands check the library declarations of [compliance.md](../../docs/process/compliance.md) (`dependencies`) and that `conf/cassandra_chronitondb.yaml` holds every setting of Apache's two yaml files (`settings`, [release.md](../../docs/process/release.md#the-configuration-file)). No CI workflow runs these two yet. Both have unit tests, and `settings` has nothing to compare until the file exists. `markdown.py` beside it is its Markdown reader. Python 3 only, no other dependency.
@@ -163,7 +181,7 @@ A file is ChronitonDB's own when it falls under a path of the table Where things
     tools/chronitondb/doclint.py stock-tests --repo . --base origin/chronitondb-5.0 --source worktree --body DESCRIPTION-FILE
     tools/chronitondb/doclint.py stock-tests --repo . --base origin/chronitondb-5.0 --source HEAD --branch BRANCH --body DESCRIPTION-FILE
 
-A stock test file is a file the line has, in a directory named `test`, that is not ChronitonDB's own by the table Where things live. A change to one passes in an import from Apache Cassandra, by its branch name `import/cassandra-<...>` or `import/CASSANDRA-<n>`, which CI gives only for a branch of this repository. Otherwise the description names the issue on a line `Fixes #<issue>` or `Part of #<issue>`, and a record of that issue on the line permits the change: the fix record lists the file as `test` in its Planned file list, a design record or fix record names it on a line `Pinned listing: <path>` and the change only adds lines, or an accepted decision record has the line `Stock test change: <path> for #<issue>, because <reason>`. The records are read at `--base`, never from the change, so a pull request cannot write its own permit. A stock test file that is deleted, renamed, binary or a symbolic link passes only in an import.
+A stock test file is a file the line has, in a directory named `test`, that is not the project's own by the table Where things live. A change to one passes in an import from Apache Cassandra, by its branch name `import/cassandra-<...>` or `import/CASSANDRA-<n>`, which CI gives only for a branch of this repository. Otherwise the description names the issue on a line `Fixes #<issue>` or `Part of #<issue>`, and a record of that issue on the line permits the change: the fix record lists the file as `test` in its Planned file list, a design record or fix record names it on a line `Pinned listing: <path>` and the change only adds lines, or an accepted decision record has the line `Stock test change: <path> for #<issue>, because <reason>`. The records are read at `--base`, never from the change, so a pull request cannot write its own permit. A stock test file that is deleted, renamed, binary or a symbolic link passes only in an import.
 
     test/unit/org/apache/cassandra/tools/nodetool/VersionTest.java: the file is a pre-existing test file of Apache Cassandra and no record on origin/chronitondb-5.0 of #142 permits the change
     stock-tests 1 checked 1 failed

@@ -86,6 +86,18 @@ Each import has a short import record at `docs/imports/<apache-version-or-range>
 
 Tests for this change MAY be none only with a written reason in the record. For example, the range changes only build files and documentation, or an Apache fix merged without a test and the suites at risk cover the changed code. A bare none is refused. The suites at risk and the stock suites still run, and the reviewer checks the reason.
 
+## The import history check
+
+The `import-history` check holds what an import branch brings. It runs on every pull request from an `import/` branch of this repository. It reads Apache Cassandra's tags and branches from the public repository `apache/cassandra` when it runs, never from this repository, where anyone who can push can create a tag or a branch.
+
+1. On a branch `import/cassandra-<x.y.z>/<line>` the branch has one merge commit, and the second parent of that merge is the commit of Apache Cassandra's tag `cassandra-<x.y.z>`. On `import/cassandra-<x.y>-<short hash>/<line>` it is the commit of Apache Cassandra's `cassandra-<x.y>` branch whose hash opens with `<short hash>`.
+2. On `import/CASSANDRA-<n>/<line>` the branch adds one commit that changes Apache Cassandra's files. Its message ends with the line `(cherry picked from commit <full hash>)`, the hash is a commit of a branch of `apache/cassandra` whose message names `CASSANDRA-<n>`, and the commit keeps the author, the author date and the message of that commit.
+3. On `import/<owner>-<repo>-<12 character hash>/<line>` the same holds against the repository that the `Origin:` line of the description names, and the lines the commit adds and removes are those of the original commit. The check cannot read whether the maintainers approved that repository as a source.
+4. Every other commit the branch adds is a merge of the line into the branch, or a commit that changes only the project's own files, such as the import record, the review record and a delta entry. A commit that changes a file of Apache Cassandra outside the merge or the cherry-pick is refused.
+5. A conflict resolved by hand is, to the check, a merge commit whose content is not what git gives when it merges the two parents again, or a cherry-picked commit whose added and removed lines are not those of the original commit. The check cannot tell such a resolution from any other change, so the maintainers decide it, as for a finding of [PRINCIPLE-074](principles.md#principle-074). The check prints each file that differs on a `RESOLVED` line, and the import record lists each of them with how it was resolved. The check fails until a maintainer approves the import pull request with an approving review, given at a commit of the branch that holds the resolved commit. The maintainers are those of [docs/governance/committers.md](../governance/committers.md). The check passes when it is run again after that review. A commit of another project is never changed, so one whose lines differ is refused whoever approves: [Commits from other projects](#commits-from-other-projects).
+
+Other checks take a pull request for an import by its branch name: the stock test check, the delta register check, the Semgrep check and the title check. This check holds what a branch of that name brings.
+
 ## Configuration changes
 
 ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`, once it exists. Apache's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched. See [release.md](release.md#the-configuration-file). Every import, a whole release, a weekly branch merge, a single fix or a commit from another project, is checked for configuration changes over the imported range:

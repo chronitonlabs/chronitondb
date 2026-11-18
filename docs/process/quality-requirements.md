@@ -42,7 +42,7 @@ Observability is a gate item, not an afterthought.
 5. Code ChronitonDB writes never puts user data or a secret in a log line, at any log level: [PRINCIPLE-035](principles.md#principle-035). A log line that Apache Cassandra writes changes only as [PRINCIPLE-008](principles.md#principle-008) says.
 6. Every metric, MBean and virtual table row a feature creates is released when its object is dropped: [PRINCIPLE-037](principles.md#principle-037).
 
-Four more principles bind what a feature logs and exposes. Nothing is logged once per request or per element: [PRINCIPLE-036](principles.md#principle-036). Every signal has a bound on its cost: [PRINCIPLE-038](principles.md#principle-038). A limit reaches the client and state reaches the operator: [PRINCIPLE-039](principles.md#principle-039). Any collector can read the signals: [PRINCIPLE-040](principles.md#principle-040).
+Two more principles bind what a feature logs and exposes. Nothing is logged once per request or per element: [PRINCIPLE-036](principles.md#principle-036). A limit reaches the client and state reaches the operator: [PRINCIPLE-039](principles.md#principle-039).
 
 ### Automatic fallbacks are opt-in and counted
 

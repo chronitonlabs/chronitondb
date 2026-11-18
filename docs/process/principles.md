@@ -17,14 +17,14 @@ limitations under the License.
 
 # Principles
 
-This page states the architectural and design rules the project holds to. Each rule is stated once, here, with an id. A feature spec, a design record, a fix record, a decision record or a review cites a rule by that id. The other pages in this folder give the procedures and point here for the rule. In this page "the project" is ChronitonDB.
+This page states the architectural and design rules the project holds to. Each rule is stated once, here, with an id. A feature spec, a design record, a fix record, a decision record or a review cites a rule by that id. The other pages in this folder give the procedures and point here for the rule. The numbers are not reused, and a gap in the numbers is a number that was never published. In this page "the project" is ChronitonDB.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
 ## How to read and cite a principle
 
 1. The id of a principle is `PRINCIPLE-nnn`, with three digits, for example `PRINCIPLE-001`. The principles are numbered across the whole page, in the order they were first written. The heading a principle stands under is not part of its id.
-2. An id is never reused and never renumbered. A principle that is withdrawn keeps its entry, which then says that it is withdrawn and names the decision record that withdrew it. A principle that moves to another heading keeps its id.
+2. An id is never reused and never renumbered. A gap in the numbers is a number that was never published. A principle that is withdrawn after it was published keeps its entry, which then says that it is withdrawn and names the decision record that withdrew it. A principle that moves to another heading keeps its id.
 3. The id cannot be mistaken for another id of the project. A requirement id and a decision record id carry a feature key of 3 to 5 capital letters, an issue number or the key `GOV`. See [additive.md](additive.md#feature-keys-and-requirement-ids).
 4. A principle says what must be true. Words after "for example" or "such as" give one way to meet it, never the only way.
 5. Each principle says where it applies and gives its edge: what the exception is and who decides it. An exception that a principle does not name is a decision of the maintainers, recorded in a [decision record](../decisions/README.md) that names the principle.
@@ -340,14 +340,6 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 2. **Edge.** None.
 3. **See.** [quality-requirements.md](quality-requirements.md#observability).
 
-### PRINCIPLE-038
-
-**Every signal has a bound on its cost.** A signal does not slow the path it measures: recording adds no allocation, no lock and no lookup per element, and the benchmark that covers the feature proves it. Anything that tracks requests has a hard bound on its memory or is sampled, and the design states which. The cost of a signal is reasoned about at the highest load, with every request failing or slow.
-
-1. **Applies to.** Every metric, trace event and log line a feature adds to a request path or a per element path.
-2. **Edge.** Where a signal cannot meet this, the design states its measured cost and the maintainers decide.
-3. **See.** [testing.md](testing.md#benchmarks).
-
 ### PRINCIPLE-039
 
 **A limit reaches the client, and state reaches the operator.** A limit that changes results or rejects work reaches the client and is counted. State that an operator would otherwise search the logs for is exposed where it can be queried. Such a surface holds operational state, not user data.
@@ -355,14 +347,6 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 1. **Applies to.** Every limit and every operational state a feature adds. For example a virtual table row shows the state of a build.
 2. **Edge.** A surface carries user data only where the design chose it as the path with its own access control for diagnosis, see [PRINCIPLE-035](#principle-035).
 3. **See.** [templates/design-record.md](templates/design-record.md#8-observability).
-
-### PRINCIPLE-040
-
-**Any collector can read the project's signals.** The project's signals are exposed on the surfaces Apache Cassandra has: metrics over JMX, virtual tables, nodetool and logs. Names and units are chosen so that a collector reads them without translation. A design MUST NOT depend on how the agent of one monitoring product collects data.
-
-1. **Applies to.** Every signal a feature adds.
-2. **Edge.** None.
-3. **See.** [PRINCIPLE-079](#principle-079).
 
 ## Security
 
@@ -379,7 +363,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **A value a client supplies never picks code or a resource.** A name that a client supplies never picks code to load unless it is on an allow list. The project's own list is fixed in the code, proposed by the design with a reason for each entry, and approved by the maintainers in a decision record. A new entry is a new decision. A value a client can set names no class, file, address, command or other resource of the node: names resolve against a fixed set.
 
 1. **Applies to.** Every option, argument and name in a statement that a feature accepts. For example an analyzer name, an option of a compaction strategy, or a file name in a statement.
-2. **Edge.** A stock option that already takes a class name keeps its stock behaviour, and the project adds no new one. An operator's extension of the allow list in a node's configuration, for code the operator has placed on the node, is not ruled out: it is designed and decided when a feature needs it.
+2. **Edge.** An operator's extension of the allow list in a node's configuration, for code the operator has placed on the node, is not ruled out: it is designed and decided when a feature needs it.
 3. **See.** [conventions.md](conventions.md#code-layout).
 
 ### PRINCIPLE-043
@@ -389,14 +373,6 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 1. **Applies to.** Everything a feature parses or takes from a client. For example a length is checked before a parse, the size of a pattern before it is compiled, a count during a walk, and a number of rows before they are held in memory.
 2. **Edge.** None.
 3. **See.** [templates/design-record.md](templates/design-record.md#10-threat-model-and-security).
-
-### PRINCIPLE-044
-
-**The replica checks again.** A bound that the coordinator enforces is enforced again on the replica, where the replica does the work the bound protects. A replica cannot assume that the coordinator runs the same version and the same settings.
-
-1. **Applies to.** Every bound on work that a replica does for a coordinator.
-2. **Edge.** None.
-3. **See.** [PRINCIPLE-043](#principle-043).
 
 ### PRINCIPLE-045
 

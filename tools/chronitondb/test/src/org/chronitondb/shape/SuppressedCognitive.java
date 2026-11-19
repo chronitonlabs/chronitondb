@@ -17,25 +17,14 @@
 
 package org.chronitondb.shape;
 
-import java.util.List;
-import java.util.ArrayList;
-
 /**
- * Fixture for format-check.sh --self-test: Apache Cassandra layout (Allman braces, four space
- * indent, unsorted imports), which Google Java Style rejects.
+ * Fixture for shape-check.sh --self-test: an annotation that hides a method from a PMD rule. The marker is the finding.
  */
-public class Unformatted
+public class SuppressedCognitive
 {
-    private final List<String> names = new ArrayList<>();
-
-    public void add(String name)
+    @SuppressWarnings("PMD.CognitiveComplexity")
+    public int first(int[] values)
     {
-        if (name != null)
-            names.add(name);
-    }
-
-    public int size()
-    {
-        return names.size();
+        return values.length == 0 ? 0 : values[0];
     }
 }

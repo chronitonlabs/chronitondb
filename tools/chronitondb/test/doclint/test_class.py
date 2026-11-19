@@ -110,10 +110,13 @@ def spec(risk="Normal: a slow use case at worst, no floor applied",
     lines = ["# Feature spec: Test feature", "", "| Field | Value |", "|---|---|"]
     values = {"Title": "Test feature", "Document type": "Specification and description (ISO/IEC/IEEE 15289)",
               "Status": "Draft", "Version": "1", "Author": "Architect: millerjp",
-              "Approver": "The maintainer who merges the pull request", "References": "Issue 61",
+              "Approver": "The maintainer who merges the pull request", "References": "Issue 61", "Areas": "search",
               "Risk": risk, "Size": size, "Reach": reach, "Touches": touches}
     for field, value in values.items():
         lines.append("| %s | %s |" % (field, value))
+    lines += ["", "Revision history, one row for each version:", "", "| Version | Date | Change | Decision record |", "|---|---|---|---|",
+              "| 1 | 2026-11-17 | First version | None |", "",
+              "Full history in git: [commits of this file](https://github.com/example/product/commits/line/%s)" % SPEC]
     lines += ["", "## Contents", ""]
     for raw in template("feature-spec.md").split("\n"):
         match = re.match(r"^(#{2,3}) (.*)$", raw)
@@ -136,8 +139,9 @@ class Repo(unittest.TestCase):
         os.makedirs(os.path.join(self.repo, "docs", "process", "templates"))
         for name in os.listdir(TEMPLATES):
             self.put("docs/process/templates/" + name, template(name))
-        with open(os.path.join(ROOT, "docs", "process", "quality-requirements.md"), encoding="utf-8") as handle:
-            self.put("docs/process/quality-requirements.md", handle.read())
+        for page in ("quality-requirements.md", "areas.md"):
+            with open(os.path.join(ROOT, "docs", "process", page), encoding="utf-8") as handle:
+                self.put("docs/process/" + page, handle.read())
         self.git("add", "-A")
         self.git("commit", "-q", "-m", "line")
         self.git("branch", "-f", "line")
@@ -389,10 +393,10 @@ class SpecClass(Repo):
         self.assertEqual(rc, 1)
         self.assertIn("section Glossary says Not applicable, and the class requires it (Byzantine size)", err)
 
-    def test_touches_names_only_the_seven_phrases_or_none(self):
+    def test_touches_names_only_its_phrases_or_none(self):
         rc, err = self.spec_errors(touches="the planner")
         self.assertEqual(rc, 1)
-        self.assertIn("the 'Touches' row names 'the planner', which is none of: public interface, stock behaviour, new input or privilege, new dependency, shared state, request path, new feature or switch, or none (classification.md)", err)
+        self.assertIn("the 'Touches' row names 'the planner', which is none of: public interface, stock behaviour, new input or privilege, new dependency, shared state, request path, new feature or switch, on-disk files, flush, compaction, streaming, repair, or none (classification.md)", err)
 
     def test_touches_reads_any_case_and_a_semicolon(self):
         # The phrases are read in any case, split at a comma, a semicolon or
@@ -404,9 +408,40 @@ class SpecClass(Repo):
         rc, err = self.spec_errors(touches="Shared state; request path")
         self.assertNotIn("the 'Touches' row", err)
 
-    def test_touches_names_what_a_code_review_adds_a_lens_for(self):
+    def test_touches_names_what_a_code_review_adds_a_checklist_for(self):
         rc, err = self.spec_errors(touches="shared state, request path and new feature or switch")
         self.assertNotIn("the 'Touches' row", err)
+
+    def test_touches_names_what_the_code_does_on_the_critical_floor(self):
+        # The five phrases say what the code of the change does, in Apache
+        # Cassandra's files or in ChronitonDB's own.
+        critical = "Critical: a lost write at worst, Correctness"
+        rc, err = self.spec_errors(risk=critical, touches="on-disk files, flush, compaction, streaming and repair")
+        self.assertNotIn("the 'Touches' row", err)
+        for phrase in ("on-disk files", "flush", "compaction", "streaming", "repair"):
+            rc, err = self.spec_errors(risk=critical, touches=phrase)
+            self.assertNotIn("the 'Touches' row", err, phrase)
+        rc, err = self.spec_errors(risk=critical, touches="On-disk files; Compaction, request path")
+        self.assertNotIn("the 'Touches' row", err)
+        # A near miss is refused, and the message lists the five.
+        rc, err = self.spec_errors(risk=critical, touches="on disk, compactions")
+        self.assertEqual(rc, 1)
+        self.assertIn("the 'Touches' row names 'on disk', which is none of:", err)
+        self.assertIn("the 'Touches' row names 'compactions', which is none of:", err)
+        self.assertIn("new feature or switch, on-disk files, flush, compaction, streaming, repair, or none (classification.md)", err)
+        # An on-disk file is still a public interface by its area, and the
+        # new phrase stands beside it.
+        rc, err = self.spec_errors(risk=critical, touches="public interface (sstable components), on-disk files")
+        self.assertNotIn("the 'Touches' row", err)
+
+    def test_every_template_row_lists_the_touches_phrases(self):
+        # The three templates name the phrases the checker takes, so an
+        # author who copies the row can write each of them.
+        for name in ("feature-spec.md", "design-record.md", "fix-record.md"):
+            row = re.search(r"^\| Touches \|(.*)\|$", template(name), flags=re.M).group(1).lower()
+            for phrase in doclint.TOUCHES:
+                self.assertIn(phrase, row, (name, phrase))
+            self.assertIn("request path (any path whose cost grows with data or traffic)", row, name)
 
     def test_the_floor_keeps_a_public_interface_off_low_risk(self):
         rc, err = self.spec_errors(risk="Low: documentation only change", touches="public interface (yaml)",
@@ -433,6 +468,20 @@ class SpecClass(Repo):
                      "operational routines", "virtual tables"):
             rc, err = self.spec_errors(touches="public interface (%s)" % area)
             self.assertNotIn("the 'Touches' row", err, area)
+
+    def test_an_area_is_named_by_its_full_name_with_its_own_brackets_commas_and_and(self):
+        # The message of the check lists the areas by their full names, so
+        # each full name is taken as written. One holds brackets of its
+        # own, several hold a comma or "and", and none of that splits the
+        # row.
+        for area, _ in doclint.FLOOR_AREAS:
+            rc, err = self.spec_errors(touches="public interface (%s), shared state and request path" % area)
+            self.assertNotIn("the 'Touches' row", err, area)
+        rc, err = self.spec_errors(risk="Low: documentation only change",
+                                   touches="public interface (pluggable components (SPIs) such as authorisation and triggers)")
+        self.assertIn("the risk is Low, and Touches names public interface", err)
+        rc, err = self.spec_errors(touches="public interface (pluggable components (SPIs) such as authorisation and triggers) and the planner")
+        self.assertIn("the 'Touches' row names 'the planner', which is none of", err)
 
     def test_a_compatibility_area_alone_counts_as_a_public_interface(self):
         rc, err = self.spec_errors(touches="gossip, shared state", na=("Compatibility",),
@@ -478,6 +527,7 @@ def filled(name, replacements):
     text = re.sub(r"^\| Size \|.*\|$", "| Size | Normal: one index type only |", text, flags=re.M)
     text = re.sub(r"^\| Reach \|.*\|$", "| Reach | One area: the index package only |", text, flags=re.M)
     text = re.sub(r"^\| Touches \|.*\|$", "| Touches | none |", text, flags=re.M)
+    text = re.sub(r"^\| Exceptions \|.*\|$", "| Exceptions | None |", text, flags=re.M)
     text = text.replace("| Status | Draft, Approved or Superseded |", "| Status | Draft |")
     return re.sub(r"\{[^{}]*\}", "a value written by the author for the test", text)
 

@@ -45,7 +45,7 @@ class Markdown:
     included, and fences the opening and closing fence lines. A fence
     closes only with the same character, at least as long and with no info
     string, as in CommonMark. visible holds each line with its HTML
-    comments cut out, so a class after a comment on the same line still
+    comments cut out, so text after a comment on the same line still
     counts. commented holds the lines that are nothing but
     comment, which no list or table reads. doclint.py reads
     documents this way."""

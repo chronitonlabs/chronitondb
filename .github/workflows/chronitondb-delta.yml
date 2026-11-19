@@ -23,9 +23,16 @@
 # read as data. Before the checker is on the line it says so and passes. It
 # reruns when the description changes, since a line "No delta entry:
 # <reason>" there lets a stock change pass without an entry, and it reads
-# the description from the API when it runs. The checker's unit tests run
-# in the doclint-tests job of chronitondb-documents.yml. Every action is
-# pinned to a commit.
+# the description from the API when it runs. An import of a whole Apache
+# release or of Apache's branch needs no entry, and the checker knows one by
+# its branch name, import/cassandra-<...>. The author of a pull request from
+# a fork chooses that name, so the name is passed to the checker only when
+# the head branch is in this repository, where an import branch is created
+# only by those the project allows (docs/process/branching-and-review.md,
+# Work branches). An import that starts on a fork is pushed to an import
+# branch of this repository by a maintainer, and its pull request is opened
+# from there. The checker's unit tests run in the doclint-tests job of
+# chronitondb-documents.yml. Every action is pinned to a commit.
 name: ChronitonDB delta register
 
 on:
@@ -76,11 +83,19 @@ jobs:
         if: steps.checker.outputs.present == 'yes'
         env:
           BASE: ${{ github.base_ref }}
-          BRANCH: ${{ github.head_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.pull_request.number }}
         run: |
+          # The branch name counts only for a branch of this repository. A
+          # fork's branch has any name its author likes.
+          BRANCH=""
+          if [ "$HEAD_REPO" = "$REPO" ]
+          then
+            BRANCH="$HEAD_REF"
+          fi
           # The description as it is now, not as the event that started
           # this run saw it.
           gh api "repos/$REPO/pulls/$NUMBER" --jq '.body // ""' > "$RUNNER_TEMP/body.txt"

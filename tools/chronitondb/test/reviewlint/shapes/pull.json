@@ -1,0 +1,35 @@
+{
+  "url": "https://api.github.com/repos/example/product/pulls/7",
+  "id": 3000000001,
+  "number": 7,
+  "state": "open",
+  "title": "fix(startup): bound the disk check",
+  "user": {
+    "login": "octocat",
+    "id": 583231,
+    "type": "User"
+  },
+  "body": "What and why.\n\nFixes #42\n",
+  "draft": false,
+  "head": {
+    "label": "example:agent/42-disk-check/chronitondb-5.0",
+    "ref": "agent/42-disk-check/chronitondb-5.0",
+    "sha": "34103ea892f7e67e8160e023504d565a8a16104f",
+    "repo": {
+      "id": 900000001,
+      "name": "product",
+      "full_name": "example/product"
+    }
+  },
+  "base": {
+    "label": "example:chronitondb-5.0",
+    "ref": "chronitondb-5.0",
+    "sha": "8f6787959e001c2d50696ef0f9df3e9c85ac36c8",
+    "repo": {
+      "id": 900000001,
+      "name": "product",
+      "full_name": "example/product"
+    }
+  },
+  "labels": []
+}

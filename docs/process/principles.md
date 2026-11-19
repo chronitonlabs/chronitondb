@@ -49,7 +49,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 1. **Applies to.** Every change to a surface an operator reads. For example the release version that `nodetool version` prints, or a new column in the output of a stock command. The rows of Apache Cassandra's virtual tables are what operators see, not what an application sees.
 2. **Edge.** Whether staying as stock is reasonable is judged case by case, by the maintainers when they merge the design. A stock surface that lists what the node holds, such as the settings virtual table, the startup configuration line, `tpstats` or the list of virtual tables, shows what the project adds to those. That is not a difference to record. Log lines have their own rule, see [PRINCIPLE-008](#principle-008).
-3. **See.** [DEC-GOV-0001](../decisions/DEC-GOV-0001-what-stays-as-apache-cassandra-has-it.md), record [0002](../decisions/0002-nodetool-version-output-on-a-chronitondb-node.md). [The delta register](../delta/README.md), [release.md](release.md#what-nodetool-version-shows).
+3. **See.** [DEC-GOV-0001](../decisions/DEC-GOV-0001-what-stays-as-apache-cassandra-has-it.md). [The delta register](../delta/README.md), [release.md](release.md#what-nodetool-version-shows).
 
 ### PRINCIPLE-003
 

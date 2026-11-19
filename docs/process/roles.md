@@ -24,7 +24,7 @@ The maintainers and eight roles carry the work. The roles follow the technical p
 The maintainers decide stakeholder needs and own every approval. For new work they answer the requirements analyst's questions and confirm its requirements brief.
 
 1. They decide scope and priority, and set the maintenance category of each change they ask for. An item opened by the integrator, the security engineer or the release engineer carries the category its source gives it: adaptive for a whole release import or branch merge, the fix's category for a cherry-pick, corrective for a dependency patch or a test failure.
-2. They approve each step by merging its pull request: the feature spec, the plan with its delivery plan, each milestone report, each design record or fix record, each code pull request and each import pull request. They merge pull requests after the reviewer's verdict is posted on them. Committers may also merge, within their area or line.
+2. They approve each step by merging its pull request: the feature spec, the plan with its delivery plan, each milestone report, each design record or fix record, each code pull request and each import pull request. They merge a pull request the project's own automation wrote, or one a maintainer accepted for review with the label `triage:accepted`, after the reviewer's verdict on it is clean. Any other pull request has no such verdict, and a maintainer reviews it directly before the merge. Committers may also merge, within their area or line.
 3. They answer questions that change or settle behaviour, scope or process. An answer becomes a decision record where [the decision records](../decisions/README.md#when-a-record-is-written) ask for one. They decide each idea: do it, do not do it, or a spike first. See [additive.md](additive.md#work-intake).
 4. They decide everything about a security vulnerability: whether it is valid, its severity, the CVE, the disclosure date and the advisory. See [security.md](security.md).
 5. They decide which features are offered to Apache Cassandra, case by case, and file the Apache JIRA and patch for each stock bug fix.
@@ -75,13 +75,13 @@ The developer owns the implementation of one approved item.
 
 ## Reviewer
 
-The reviewer owns verification of each pull request, as an ISO/IEC 20246 inspection.
+The reviewer owns verification of each pull request it reviews, as an ISO/IEC 20246 inspection.
 
 1. Inspects the pull request against the approved design and the checklists in [branching-and-review.md](branching-and-review.md).
 2. Records each finding with a severity: blocker, major, minor or nit.
 3. Gives a verdict in one short review for each round, posted by the project's review App, with the count of findings at each severity, and gives the author the findings. The reviewer is never the author of the pull request. A clean verdict marks the pull request ready for a maintainer.
 4. Checks that documentation, the delta entry and the decision records the change needs are present. In a library update it checks that the notice and licence text matches what the security engineer named.
-5. Reviews every pull request: our own, outside contributors', imports and dependency updates. A pull request that the project's automated agents did not write is reviewed only after a maintainer adds the label `triage:accepted`, the maintainers' own pull requests and outside contributors' alike. The verdict is posted on the pull request before a maintainer or committer merges it.
+5. Reviews every pull request the project's own automation wrote, imports and dependency updates among them, and every pull request a maintainer accepted for review with the label `triage:accepted`. It reviews no other pull request: a maintainer's own, and an outside contributor's that no maintainer accepted, are reviewed by a maintainer directly. Where the reviewer reviews, its verdict is posted on the pull request before a maintainer or committer merges it.
 
 ## Integrator
 

@@ -125,11 +125,13 @@ A change to a sensitive path requests a review from the code owners in `.github/
 
 ## Reviews
 
-Reviews follow ISO/IEC 20246. Every pull request is reviewed by the reviewer first: our own, outside contributors', imports and dependency updates. A pull request that the project's automated agents did not write is reviewed only after a maintainer adds the label `triage:accepted`, the maintainers' own pull requests and outside contributors' alike. A review by the project's review roles runs only on a pull request the project's own automation wrote, or one a maintainer accepted with that label, never on submission alone. See [contributing.md](contributing.md#checks-and-review). The reviewer's verdict for each round is posted on the pull request as one short review, by the project's review App, and the findings are kept in the review record, a file the pull request commits: see [The review record](#the-review-record). A maintainer reads both and then merges, or requests changes.
+Reviews follow ISO/IEC 20246. A pull request the project's own automation wrote, or one a maintainer accepted for review with the label `triage:accepted`, is reviewed by the project's review roles before a maintainer merges it. Imports and dependency updates the automation wrote are among them. A maintainer's own pull request, and an outside contributor's that no maintainer accepted, have no such verdict: a maintainer reviews them directly. A review by the project's review roles never runs on submission alone. See [contributing.md](contributing.md#checks-and-review). Where the review roles review, the reviewer's verdict for each round is posted on the pull request as one short review, by the project's review App, and the findings are kept in the review record, a file the pull request commits: see [The review record](#the-review-record). A maintainer reads both and then merges, or requests changes.
+
+The table says who reviews a pull request that the review roles review. On any other pull request the maintainer who reviews it is the reviewer, and what these pages ask the reviewer to check, that maintainer checks.
 
 | Work product | Review type | Reviewed by | Approver |
 |---|---|---|---|
-| Code pull request, from anyone | Inspection | Reviewer | Maintainer |
+| Code pull request | Inspection | Reviewer | Maintainer |
 | Design record or fix record | Technical review | The designer's own check of the design against the code and a scope review, then the reviewer | Maintainer |
 | Feature spec, plan, delivery plan, milestone report | Technical review | Reviewer, then the maintainer, with the architect as author | Maintainer |
 | Import pull request | Inspection of the imported diff | Reviewer | Maintainer |

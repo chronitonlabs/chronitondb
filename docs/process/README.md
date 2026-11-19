@@ -62,7 +62,7 @@ The maintainers decide stakeholder needs, scope, priority, releases and security
 2. The architect writes the feature spec, the plan, the delivery plan and the milestone reports of a large feature, and the research report of a spike.
 3. The designer writes the design record or fix record of one item.
 4. The developer writes the code, its tests and its documentation.
-5. The reviewer reviews every pull request and posts its verdict on it, one short review for each round.
+5. The reviewer reviews every pull request the project's own automation wrote or a maintainer accepted for review, and posts its verdict on it, one short review for each round. A maintainer reviews any other pull request directly.
 6. The integrator keeps the lines current with Apache Cassandra and prepares the import pull requests.
 7. The security engineer watches every shipped library for vulnerabilities and triages private reports.
 8. The release engineer proposes each release and runs the release pipeline once a maintainer approves it.

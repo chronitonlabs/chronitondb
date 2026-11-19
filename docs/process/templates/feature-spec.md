@@ -26,18 +26,27 @@ limitations under the License.
 | Author | Architect: {GitHub username} |
 | Approver | The maintainer who merges the pull request |
 | References | {line, Apache base commit, related issues, decision records} |
+| Areas | {one or more areas of [areas.md](../areas.md), joined by commas} |
 | Risk | {Critical, Normal or Low}: {the worst Bug Category the feature could cause if wrong, and the floor if one applied} |
 | Size | {Low Hanging Fruit, Normal, Challenging or Byzantine}: {why} |
 | Reach | {One area or Cross-cutting}: {why, naming the packages touched} |
-| Touches | {public interface (its compatibility area, an on-disk file by its area: sstable components, or commitlog, hint log and cache files), stock behaviour, new input or privilege, new dependency, shared state (threads, pools or shared state), request path (a read, write or query path), new feature or switch, or none} |
+| Touches | {public interface (its compatibility area, an on-disk file by its area: sstable components, or commitlog, hint log and cache files), stock behaviour, new input or privilege, new dependency, shared state (threads, pools, caches or other state several requests share), request path (any path whose cost grows with data or traffic), new feature or switch, on-disk files, flush, compaction, streaming, repair, or none} |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 1 | {RFC 3339 date} | First version | {the id of the decision record behind this version, or None} |
+
+Full history in git: [commits of this file]({the address `tools/chronitondb/doclint.py history --write` puts here})
 
 Location: `docs/design/<KEY>-<slug>/feature-spec.md` on the line the feature targets, with the [feature key](../additive.md#feature-keys-and-requirement-ids) in the directory name. Process: [additive.md](../additive.md).
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
-The Risk, Size and Reach rows are the feature's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the feature touches, from the phrases in the row, in any case and separated by commas, or says none. A public interface names its area in brackets, one of the compatibility areas in [classification.md](../classification.md#the-floor), such as public interface (configuration). A public interface or stock behaviour in Touches means the risk is Normal or Critical. The class decides which sections are required, as each section says. A required section holds its content. Any other section holds its content or the one line `Not applicable: <reason>`. A section that says Not applicable covers its subsections, which are then left out.
+A rule of the project is cited by its id from [principles.md](../principles.md), as a link to its entry, for example `[PRINCIPLE-001](../principles.md#principle-001)`. This document cites nothing that a reader of the repository cannot open.
+
+The Risk, Size and Reach rows are the feature's class, as [classification.md](../classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels. Each value is the level, a colon and the reason. Touches lists what the feature touches, from the phrases in the row, in any case and separated by commas, or says none. A public interface names its area in brackets, one of the compatibility areas in [classification.md](../classification.md#the-floor), such as public interface (configuration). A public interface or stock behaviour in Touches means the risk is Normal or Critical. On-disk files, flush, compaction, streaming and repair name what the code of the change does, in Apache Cassandra's files or in ChronitonDB's own, and any of them in Touches means the risk is Critical, unless the maintainers said for this change that it is not. A change whose code takes part in authentication, authorisation, encryption, audit logging or the decoding of bytes from the network is Critical too: its Risk row says so, since Touches has no phrase for it. See [classification.md](../classification.md#the-critical-floor). The class decides which sections are required, as each section says. A required section holds its content. Any other section holds its content or the one line `Not applicable: <reason>`. A section that says Not applicable covers its subsections, which are then left out.
 
 ## Contents
 
@@ -100,7 +109,7 @@ The Risk, Size and Reach rows are the feature's class, as [classification.md](..
 
 ### 2.5 Cross cutting concepts
 
-{Required from Challenging size. Settings, limits, observability, error handling and security concepts shared across components.}
+{Required from Challenging size. Settings, limits, observability, error handling and security concepts shared across components. The level of isolation the feature needs and why, see [PRINCIPLE-051](../principles.md#principle-051).}
 
 ### 2.6 Deployment
 
@@ -108,23 +117,23 @@ The Risk, Size and Reach rows are the feature's class, as [classification.md](..
 
 ### 2.7 Package dependencies and hook points
 
-{Required from Normal size. For each ChronitonDB package under `org/chronitondb`: the packages it MAY import. A check refuses any other import, and changing these rules is a change to this spec. Then the hook points: each stock Apache Cassandra file that imports ChronitonDB code, why it must, and its [delta entry](../../delta/README.md). Keep the hook points few, since each one is a place where an Apache import can conflict.}
+{Required from Normal size. For each ChronitonDB package under `org/chronitondb`: the packages it MAY import. The reviewer refuses any other import, and changing these rules is a change to this spec. Then the hook points: each stock Apache Cassandra file that imports ChronitonDB code, why it must, and its [delta entry](../../delta/README.md). Keep the hook points few, since each one is a place where an Apache import can conflict.}
 
 ### 2.8 Feature class and switches
 
-{Required for every class. The class of the feature and of each switch, each with its reason. A purely additive feature or switch is reachable only through new syntax, new index types or new settings that stock Apache Cassandra rejects. Its default MAY be on from a line's first release. A behaviour-changing feature or switch changes something stock Apache Cassandra already does: results, errors, warnings or the performance of existing operations. Its default MUST be off on every line, except the one exception in [release.md](../release.md#what-a-release-may-contain). A default never changes within a line. A feature that passes its final milestone gate after a line's first release is off by default on that line. Name the stock operations each behaviour-changing switch changes. Each departure in a design record's Apache Cassandra behaviour table links to its switch's row here. See [branching-and-review.md](../branching-and-review.md#feature-switches-and-defaults).}
+{Required for every class. The class of the feature and of each switch, each with its reason. A purely additive feature or switch is reachable only through something stock Apache Cassandra does not have, for example new CQL syntax, a new index type, a new nodetool command, a new virtual table or a new setting. A purely additive feature is on by default: its switch, where it has one, ships on. A behaviour-changing feature or switch changes what an application sees from something stock Apache Cassandra already does: results, errors, warnings or the bytes on the wire. Its default MUST be off on every line. A statement that Apache Cassandra accepts as valid and refuses for a reason, such as a missing `ALLOW FILTERING`, a guardrail or a missing index, is stock behaviour: a feature that makes it succeed is behaviour-changing. A difference in what operators see, such as metrics, nodetool output, logs or JMX, is recorded in the delta register and the release notes and does not by itself make a feature behaviour-changing. A default does not change within a line. A purely additive feature that passes its final milestone gate after a line's first release is still on by default on that line. It is off by default on that line only when it does work without being asked or adds anything nodes share, and this section then says which it is. Name the stock operations each behaviour-changing switch changes. Each departure in a design record's Apache Cassandra behaviour table links to its switch's row here. A behaviour-changing feature always has a switch, and so does a feature built in more than one milestone, whatever its class. So does a feature that sends, gossips, streams or commits anything a node without it cannot read: it ships off, also when it is purely additive, and this section says which of the two ways of [PRINCIPLE-016](../principles.md#principle-016) holds it back. Any other purely additive feature has a switch only when something needs it to be turned off: a requirement, a decision of the maintainers, a rule of these pages, or a named risk such as load on a shared path. One with no switch says in one line below the feature class line why it needs none, and leaves the table out. See [branching-and-review.md](../branching-and-review.md#feature-switches-and-defaults).}
 
 Feature class: {purely additive or behaviour-changing}, because {reason}.
 
 | Switch | Class | Reason | Default per line | Apache Cassandra operations it changes |
 |---|---|---|---|---|
-| {yaml setting and nodetool toggle} | {class} | {reason} | {line: on or off} | {operations, or none} |
+| {the switch: its name and how an operator sets it} | {class} | {reason} | {line: on or off} | {operations, or none} |
 
 ## 3. Feature requirements
 
 {Required for every class. One requirement per entry, on one line: an id `FREQ-<KEY>-nnn` with the feature key and three digits, one EARS shape, one BCP 14 key word, and a source. Each requirement passes the ISO/IEC/IEEE 29148 checklist in [design-record.md](design-record.md).}
 
-FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, risk or stakeholder need}.
+FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, principle by its id, risk or stakeholder need}.
 
 ## 4. Where problems could occur
 
@@ -151,11 +160,11 @@ FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, risk o
 
 ### 7.1 On-disk format changes
 
-{Each change with its version marker, and how a reader that predates it behaves.}
+{Each change with its version marker, and how a reader that predates it behaves. For each form the feature stores or sends: the version it records and, for a sent form, how the receiver knows it. For each file a node reads back: what the node does when it is absent after a crash, and for an appended file how the reader finds the last complete record. See [PRINCIPLE-084](../principles.md#principle-084) and [PRINCIPLE-086](../principles.md#principle-086).}
 
 ### 7.2 Mixed-version cluster
 
-{Behaviour during a rolling upgrade, one sentence per path.}
+{Behaviour during a rolling upgrade, one sentence per path. For each value a reader can meet that another release or node wrote: the reader's answer, passed over or refused, and the step that avoids a node that does not start. What a client sees while nodes differ in a setting. For state kept when a write is applied: each route a write arrives by and data that arrives as files, or one line that no state is kept. See [PRINCIPLE-085](../principles.md#principle-085), [PRINCIPLE-024](../principles.md#principle-024) and [PRINCIPLE-088](../principles.md#principle-088).}
 
 ### 7.3 Upgrade path and prerequisites
 
@@ -163,7 +172,7 @@ FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, risk o
 
 ### 7.4 Rollback path
 
-{How to go back, including what MUST be dropped or rebuilt first.}
+{How to go back, including what MUST be dropped or rebuilt first. How the feature is removed, and what is removed when an object stops using it. See [PRINCIPLE-019](../principles.md#principle-019) and [PRINCIPLE-089](../principles.md#principle-089).}
 
 ### 7.5 Runbook entries
 
@@ -185,7 +194,7 @@ FREQ-{KEY}-001 ({shape}): {requirement}. Source: {issue, decision record, risk o
 
 ## 10. Decisions
 
-{Required for every class. Links to the decision records in `docs/decisions/` that shape this feature, each with a one line reminder.}
+{Required for every class. Links to the decision records that shape this feature, each by its id with a one line reminder: the feature's own in `decisions/` beside this file, and any of the whole project in `docs/decisions/`.}
 
 ## 11. Milestones outline
 

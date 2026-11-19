@@ -1,0 +1,33 @@
+[
+  {
+    "id": 5970525038,
+    "node_id": "PRR_kwDOExample0000000000",
+    "user": {
+      "login": "example-review[bot]",
+      "id": 175728472,
+      "node_id": "BOT_kgDOExample",
+      "avatar_url": "https://avatars.githubusercontent.com/in/1000001?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/example-review%5Bbot%5D",
+      "html_url": "https://github.com/apps/example-review",
+      "type": "Bot",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "Round 2. Clean: 0 blocker, 0 major, 1 minor, 0 nit.\n\n```json\n{\n  \"head\": \"34103ea892f7e67e8160e023504d565a8a16104f\",\n  \"round\": 2,\n  \"approve\": true,\n  \"ready\": true,\n  \"lenses\": {\n    \"correctness\": true,\n    \"security\": true\n  },\n  \"blockers\": 0,\n  \"majors\": 0,\n  \"minors\": 1,\n  \"nits\": 0\n}\n```\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/example/product/pull/7#pullrequestreview-5970525038",
+    "pull_request_url": "https://api.github.com/repos/example/product/pulls/7",
+    "author_association": "NONE",
+    "_links": {
+      "html": {
+        "href": "https://github.com/example/product/pull/7#pullrequestreview-5970525038"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/example/product/pulls/7"
+      }
+    },
+    "submitted_at": "2026-11-19T06:47:51Z",
+    "commit_id": "34103ea892f7e67e8160e023504d565a8a16104f"
+  }
+]

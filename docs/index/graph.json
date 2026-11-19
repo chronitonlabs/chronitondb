@@ -87,10 +87,10 @@
     "schema:DigitalDocument"
    ],
    "identifier": "docs/delta/checkstyle-import-order-suppression.md",
-   "status": "Current",
+   "status": "Dropped",
    "title": "Import order check suppressed for ChronitonDB code",
    "type": "Delta entry",
-   "version": "4"
+   "version": "5"
   },
   {
    "@id": "../delta/github-actions-pinned.md",

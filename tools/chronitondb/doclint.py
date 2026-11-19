@@ -28,7 +28,8 @@ before they commit.
     doclint.py history --repo DIR --templates REF [--write | --check] PATH...
     doclint.py indexes --repo DIR --templates REF [--source SRC] [--write]
     doclint.py delta --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE]
-    doclint.py stock-tests --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE]
+    doclint.py stock-tests --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE] [--issue STATE]
+    doclint.py stock-tests-issue [--branch NAME] [--body FILE]
 
 SRC is where the documents are read: "index" (the default, the staged
 version), "worktree", or a commit. REF is where the rules are read, the line
@@ -299,7 +300,10 @@ gives it only for a branch whose name it can trust: CI gives it for a
 branch of the repository itself and never for the branch of a fork, whose
 author chooses its name. It also passes without one when FILE, the pull
 request's description, has a line "No delta entry: <reason>" with a reason
-of three words or more, which the reviewer judges. Every entry the change adds or
+of three words or more. The line is for a feature's change that touches
+only log lines Apache Cassandra writes. The check reads only that it is
+there: the reviewer judges it against the change, and any other use of
+it is a decision of the maintainers at review. Every entry the change adds or
 changes passes the document rules of a delta entry above, against the
 template at REF, and a changed entry has a Last-Update later than at REF,
 or the same date when that is the date of the change, the date of the
@@ -312,10 +316,11 @@ stock-tests is the check of docs/process/testing.md, Policy 4, on the
 change at SRC since its merge base with REF: a pre-existing test file of
 Apache Cassandra changes in four ways only (principles.md, PRINCIPLE-013).
 Such a file is one the line has at the merge base, in a directory named
-test, that is not the project's own by the table Where things live, read
-as the delta check reads it. The permits are read at REF, the line, never
-from the change, so a pull request cannot write its own. A changed file
-passes by one of:
+test or with the name of a test (*Test.java, *Tests.java, test_*.py,
+*_test.py), that is not the project's own by the table Where things live,
+read as the delta check reads it. The permits are read at REF, the line,
+never from the change, so a pull request cannot write its own. A changed
+file passes by one of:
 
   1. NAME, the pull request's branch, is an import from Apache
      Cassandra: import/cassandra-<...>, a release or Apache's branch, or
@@ -324,19 +329,33 @@ passes by one of:
      it brings. A commit of another project is no import from Apache
      Cassandra and takes one of the other ways. NAME is taken as given,
      as for delta
-  2. FILE, the pull request's description, names an issue on a line
-     "Fixes #<issue>" or "Part of #<issue>", and the fix record of that
-     issue at REF, a document under docs/design/ whose first heading
-     opens "# Fix: #<issue>", lists the file in its Planned file list
-     with the word test
-  3. the design record or fix record of a named issue at REF has a line
-     "Pinned listing: <path>" with the file's path, and the change only
-     adds lines to the file
+  2. the fix record of the pull request's issue at REF, a document under
+     docs/design/ whose first heading opens "# Fix: #<issue>", lists the
+     file in its Planned file list with the word test
+  3. the design record or fix record of the pull request's issue at REF
+     has a line "Pinned listing: <path>" with the file's path, and the
+     change only adds lines of the listing to the file: any line in a
+     file of plain data, one with no extension or a .txt, .json or .csv
+     file, and in any other file only lines that are one quoted string,
+     alone on the line but for a "+" or a ","
   4. a decision record at REF with the Status Accepted has a line
      "Approved stock test change: <path> for #<issue>, because
-     <explanation>" with the file's path, a named issue and a written
-     explanation: eight different words or more, with no placeholder of a
-     template left in it
+     <explanation>" with the file's path, the pull request's issue and a
+     written explanation: eight different words or more, with no
+     placeholder of a template left in it
+
+A record permits the change of its own issue only. The pull request's
+issue is the issue of NAME when NAME is given: NAME is then a work branch,
+<name>/<issue>-<slug>/<line>, and FILE, the pull request's description,
+names that issue on a line "Fixes #<issue>" or "Part of #<issue>". With no
+NAME, as for the branch of a fork, it is the one issue FILE names on such
+a line. STATE is the answer of the GitHub API for that issue, and the
+issue it shows is open and is no pull request. stock-tests-issue prints
+the issue, so the caller can read its state first. A permit is used up
+once a change to the file has reached REF, on its first parent history,
+with the last change of the record or after it: a record permits the one
+change it plans. A line of a record indented by four spaces or a tab is
+code and permits nothing.
 
 A record whose Status opens with Superseded permits nothing. A stock test
 file that is deleted, renamed, binary, a symbolic link or changed in its
@@ -349,6 +368,7 @@ A usage error exits 2.
 
 import fnmatch
 import html
+import json
 import os
 import re
 import subprocess
@@ -1613,7 +1633,7 @@ def check_register(repo, base, where, branch, body):
             note = "no delta entry, as the pull request says: %s" % waiver
         else:
             shown = ", ".join(stock[:10]) + (" and %d more" % (len(stock) - 10) if len(stock) > 10 else "")
-            errors.append("the change touches %d stock file(s), %s, and adds or updates no entry in docs/delta/. Add its entry from docs/process/templates/delta-entry.md with its row in the Index of docs/delta/README.md, or update the entry of the change it extends, with a new Last-Update. Only when no entry applies, give the reason in the pull request description on a line 'No delta entry: <reason>'" % (len(stock), shown))
+            errors.append("the change touches %d stock file(s), %s, and adds or updates no entry in docs/delta/. Add its entry from docs/process/templates/delta-entry.md with its row in the Index of docs/delta/README.md, or update the entry of the change it extends, with a new Last-Update. A feature's change that touches only log lines Apache Cassandra writes needs no entry and says so in the pull request description on a line 'No delta entry: <reason>'. Any other use of that line is a decision of the maintainers at review (docs/process/principles.md, PRINCIPLE-011)" % (len(stock), shown))
     return errors, stock, entries, note
 
 
@@ -1622,6 +1642,10 @@ def check_register(repo, base, where, branch, body):
 # a record of one issue, and the lines of the records that permit a change
 # to a stock test file.
 TEST_DIR = re.compile(r"(?:^|/)test/")
+TEST_NAME = re.compile(r"(?:^|/)(?:[^/]*Tests?\.java|test_[^/]*\.py|[^/]*_test\.py)$")
+WORK_BRANCH = re.compile(r"^[^/]+/([0-9]+)-[^/]+/[^/]+$")
+LISTING_DATA = re.compile(r"(?:^|/)(?:[^/.]+|[^/]+\.(?:txt|json|csv))$")
+LISTING_STRING = re.compile(r"""^\s*(?:\+\s*)?(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\s*[,+]?\s*$""")
 ISSUE_LINE = re.compile(r"^(?:Fixes|Part of) #([0-9]+)\.?$")
 RECORD_OF = re.compile(r"^(Fix|Design): #([0-9]+)(?![0-9])")
 PLANNED = re.compile(r"^(\S+) (new|edit|test|stock)$")
@@ -1636,7 +1660,10 @@ FOUR_WAYS = ("A pre-existing test file of Apache Cassandra changes in four ways 
              "by lines added to a listing that the merged design record or fix record names on a line 'Pinned listing: <path>', "
              "or with an accepted decision record that has the line 'Approved stock test change: <path> for #<issue>, because <explanation>', the explanation in eight different words or more. "
              "The record merges first, in its own pull request, and this pull request names its issue on a line 'Fixes #<issue>' "
-             "or 'Part of #<issue>'. A fork feature puts its tests in its own files (docs/process/conventions.md, Where things live)")
+             "or 'Part of #<issue>'. A record permits the change of its own issue only: the issue of the work branch, "
+             "<name>/<issue>-<slug>/<line>, for a branch of this repository, and the one issue the description names for a fork. "
+             "The issue is open, and a permit is used up once a change to the file has reached the line after the record. "
+             "A fork feature puts its tests in its own files (docs/process/conventions.md, Where things live)")
 
 
 def is_explained(text):
@@ -1648,7 +1675,7 @@ def is_explained(text):
 
 
 def is_stock_test(path, paths):
-    return bool(TEST_DIR.search(path)) and not is_own(path, paths)
+    return bool(TEST_DIR.search(path) or TEST_NAME.search(path)) and not is_own(path, paths)
 
 
 def diff_since(repo, merge_base, where, *options):
@@ -1708,7 +1735,78 @@ def issues_of(body):
 
 
 def plain_lines(doc):
-    return [doc.visible[index].strip() for index in range(len(doc.lines)) if index not in doc.fenced and index not in doc.commented]
+    """The lines of a document outside fences and comments. A line
+    indented by four spaces or a tab is left out: Markdown shows such a
+    line as code."""
+    return [doc.visible[index].strip() for index in range(len(doc.lines))
+            if index not in doc.fenced and index not in doc.commented and not re.match(r"^(?: {4}| {0,3}\t)", doc.visible[index])]
+
+
+def own_issue(branch, body):
+    """The issue a pull request is the work of, and when there is none
+    the reason. For a branch of the repository it is the issue of its
+    work branch, <name>/<issue>-<slug>/<line>, which the description
+    names too. With no branch name, as for a fork, whose author chooses
+    the name, it is the one issue the description names."""
+    named = issues_of(body)
+    if branch:
+        match = WORK_BRANCH.match(branch)
+        if not match:
+            return None, "the head branch %s is not the work branch of an issue, <name>/<issue>-<slug>/<line>" % branch
+        if match.group(1) not in named:
+            return None, ("the pull request description does not name #%s, the issue of the branch %s, on a line 'Fixes #%s' or 'Part of #%s'"
+                          % (match.group(1), branch, match.group(1), match.group(1)))
+        return match.group(1), None
+    if not named:
+        return None, "the pull request description names no issue"
+    if len(named) > 1:
+        return None, "the pull request description names more than one issue, %s, and a pull request is the work of one" % " and ".join("#" + issue for issue in named)
+    return named[0], None
+
+
+def issue_closed(state, issue):
+    """Why the answer of the GitHub API for an issue does not show the
+    issue open, None when it does. A pull request has a number too and
+    is no issue."""
+    if not isinstance(state, dict) or str(state.get("number")) != issue:
+        return "the state of #%s cannot be read" % issue
+    if "pull_request" in state:
+        return "#%s is a pull request, not an issue" % issue
+    if state.get("state") != "open":
+        return "the issue #%s is not open" % issue
+    return None
+
+
+def first_parents(repo, base):
+    out = git(repo, "rev-list", "--first-parent", base)
+    return out.split() if out else []
+
+
+def is_unused(repo, base, line, record, path):
+    """Whether the permit a record gives for a file is still unused: no
+    change to the file reached the line with the last change of the
+    record or after it. line is the first parent history of REF, newest
+    first."""
+    def last(name):
+        return (git(repo, "log", "-1", "--first-parent", "--no-show-signature", "--format=%H", base, "--", name) or "").strip()
+    permit, change = last(record), last(path)
+    if permit not in line:
+        return False
+    return change not in line or line.index(change) > line.index(permit)
+
+
+def added_lines(repo, merge_base, where, path):
+    """The lines a change adds to a file, None when they cannot be read."""
+    args = ["diff", "-U0", "--no-color", "--no-ext-diff", "--no-textconv", "--no-renames"]
+    if where == "index":
+        args.append("--cached")
+    args.append(merge_base)
+    if where not in ("index", "worktree"):
+        args.append(where)
+    out = git(repo, *(args + ["--", path]))
+    if out is None:
+        return None
+    return [line[1:] for line in out.split("\n") if line.startswith("+") and not line.startswith("+++ ")]
 
 
 def test_permits(repo, base):
@@ -1755,10 +1853,12 @@ def test_permits(repo, base):
     return planned, pinned, approved
 
 
-def check_stock_tests(repo, base, where, branch, body):
+def check_stock_tests(repo, base, where, branch, body, state=None):
     """The stock test check. Returns the findings, for each stock test
     file the change touches that passes the file and the way it passes,
-    and the number of stock test files the change touches."""
+    and the number of stock test files the change touches. state is the
+    answer of the GitHub API for the issue of the pull request, None when
+    the caller has none."""
     conventions = git(repo, "show", "%s:%s" % (base, CONVENTIONS))
     paths = own_paths(conventions) if conventions else []
     if not paths:
@@ -1780,9 +1880,20 @@ def check_stock_tests(repo, base, where, branch, body):
     if branch and APACHE_IMPORT.match(branch):
         way = "the branch %s is an import from Apache Cassandra, which brings its own test files. The import history check holds what it brings" % branch
         return [], [(old, way) for old, _, _, _, _, _, _ in touched], len(touched)
-    issues = issues_of(body)
+    issue, no_issue = own_issue(branch, body)
+    if issue and state is not None:
+        no_issue = issue_closed(state, issue)
+        issue = None if no_issue else issue
     planned, pinned, approved = test_permits(repo, base)
+    line = first_parents(repo, base)
     errors, passed = [], []
+
+    def permit(found, old):
+        """The record that permits the change of a file for the issue of
+        the pull request, and whether its permit is used up."""
+        record = next((record for of, name, record in found if name == old and of == issue), None)
+        return record, bool(record) and not is_unused(repo, base, line, record, old)
+
     for old, path, status, before, after, added, removed in touched:
         refused = None
         if status == "D":
@@ -1797,27 +1908,47 @@ def check_stock_tests(repo, base, where, branch, body):
             errors.append("%s: the file %s. A pre-existing test file of Apache Cassandra is deleted, renamed, replaced by a link "
                           "or changed as a binary file only by an import from Apache Cassandra" % (old, refused))
             continue
-        record = next((record for issue, name, record in planned if name == old and issue in issues), None)
-        if record:
+        used = None
+        record, spent = permit(planned, old)
+        if record and not spent:
             passed.append((old, "the fix record %s plans it as test" % record))
             continue
-        record = next((record for issue, name, record in approved if name == old and issue in issues), None)
-        if record:
+        used = record or used
+        record, spent = permit(approved, old)
+        if record and not spent:
             passed.append((old, "the decision record %s approves the change" % record))
             continue
-        record = next((record for issue, name, record in pinned if name == old and issue in issues), None)
-        if record and not removed:
-            passed.append((old, "%s names it as a pinned listing and the change only adds lines" % record))
-        elif record:
-            errors.append("%s: %s names the file as a pinned listing, and the change removes or alters %d line(s) of it. "
-                          "A pinned listing only gains lines. A change to an existing line needs an accepted decision record with the line "
-                          "'Approved stock test change: %s for #<issue>, because <explanation>'" % (old, record, removed, old))
-        elif not issues:
-            errors.append("%s: the file is a pre-existing test file of Apache Cassandra and the pull request description names no issue, "
-                          "so no record on %s can permit the change" % (old, base))
+        used = record or used
+        record, spent = permit(pinned, old)
+        if record and not spent:
+            lines = [] if LISTING_DATA.search(old) else added_lines(repo, merge_base, where, old)
+            other = None if lines is None else [text for text in lines if not LISTING_STRING.match(text)]
+            if removed:
+                errors.append("%s: %s names the file as a pinned listing, and the change removes or alters %d line(s) of it. "
+                              "A pinned listing only gains lines. A change to an existing line needs an accepted decision record with the line "
+                              "'Approved stock test change: %s for #<issue>, because <explanation>'" % (old, record, removed, old))
+            elif other is None or other:
+                errors.append("%s: %s names the file as a pinned listing, and the change adds %s that no listing holds. "
+                              "A file of plain data, one with no extension or a .txt, .json or .csv file, gains any line. In any other file, "
+                              "such as a test class, a pinned listing gains only lines that are one quoted string, alone on the line but for a "
+                              "'+' or a ','. Any other added line needs an accepted decision record with the line "
+                              "'Approved stock test change: %s for #<issue>, because <explanation>'"
+                              % (old, record, "lines that cannot be read" if other is None else "%d line(s)" % len(other), old))
+            else:
+                passed.append((old, "%s names it as a pinned listing and the change only adds lines of the listing" % record))
+            continue
+        used = record or used
+        if used and not line:
+            errors.append("%s: the history of %s cannot be read here, so the permit of %s cannot be told unused. Fetch the whole line first" % (old, base, used))
+        elif used:
+            errors.append("%s: the permit of %s is used up: a change to the file reached %s with that record or after it. "
+                          "A record permits the one change it plans. A further change needs its own record" % (old, used, base))
+        elif not issue:
+            errors.append("%s: the file is a pre-existing test file of Apache Cassandra and %s, so no record on %s can permit the change"
+                          % (old, no_issue, base))
         else:
-            errors.append("%s: the file is a pre-existing test file of Apache Cassandra and no record on %s of %s permits the change"
-                          % (old, base, " or ".join("#" + issue for issue in issues)))
+            errors.append("%s: the file is a pre-existing test file of Apache Cassandra and no record on %s of #%s permits the change"
+                          % (old, base, issue))
     if errors:
         errors.append(FOUR_WAYS)
     return errors, passed, len(touched)
@@ -3352,11 +3483,11 @@ def check_settings(repo, base, where):
     return errors, len(apache_now)
 
 
-def run_delta(args, stock_tests=False):
-    repo, base, where, branch, body = None, None, "index", None, None
+def run_delta(args, stock_tests=False, issue_only=False):
+    repo, base, where, branch, body, issue = None, None, "index", None, None, None
     index = 0
     while index < len(args):
-        if args[index] in ("--repo", "--base", "--source", "--branch", "--body") and index + 1 < len(args):
+        if args[index] in ("--repo", "--base", "--source", "--branch", "--body") + (("--issue",) if stock_tests else ()) and index + 1 < len(args):
             value = args[index + 1]
             if args[index] == "--repo":
                 repo = value
@@ -3366,13 +3497,15 @@ def run_delta(args, stock_tests=False):
                 where = value
             elif args[index] == "--branch":
                 branch = value
+            elif args[index] == "--issue":
+                issue = value
             else:
                 body = value
             index += 2
             continue
         sys.stderr.write(__doc__)
         return 2
-    if not repo or not base:
+    if not issue_only and (not repo or not base):
         sys.stderr.write(__doc__)
         return 2
     text = None
@@ -3383,8 +3516,21 @@ def run_delta(args, stock_tests=False):
         except (OSError, UnicodeDecodeError):
             sys.stderr.write("the pull request description %s cannot be read\n" % body)
             return 2
+    if issue_only:
+        # The issue whose state the caller reads before the check.
+        print(own_issue(branch, text)[0] or "")
+        return 0
     if stock_tests:
-        errors, passed, checked = check_stock_tests(repo, base, where, branch, text)
+        state = None
+        if issue:
+            # An answer that cannot be read is the state of no issue.
+            state = {}
+            try:
+                with open(issue, encoding="utf-8") as handle:
+                    state = json.load(handle)
+            except (OSError, ValueError):
+                pass
+        errors, passed, checked = check_stock_tests(repo, base, where, branch, text, state)
         for path, way in passed:
             print("stock-test %s: %s" % (path, way))
         for error in errors:
@@ -3409,6 +3555,8 @@ def main(argv):
         return run_delta(argv[1:])
     if argv and argv[0] == "stock-tests":
         return run_delta(argv[1:], stock_tests=True)
+    if argv and argv[0] == "stock-tests-issue":
+        return run_delta(argv[1:], issue_only=True)
     if argv and argv[0] == "history":
         return run_history(argv[1:])
     if argv and argv[0] == "indexes":

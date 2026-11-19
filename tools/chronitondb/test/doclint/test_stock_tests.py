@@ -369,6 +369,8 @@ class StockTests(unittest.TestCase):
         # A word has two letters or more, and a number is no word.
         self.assertFalse(doclint.is_explained("a b c d e f g h i j k l"))
         self.assertFalse(doclint.is_explained("1 2 3 4 5 6 7 8 9 10 11 12"))
+        self.assertFalse(doclint.is_explained("10 11 12 13 14 15 16 17 18 19"))
+        self.assertFalse(doclint.is_explained("the test prints 10 11 12 13 14 15 lines"))
         self.assertFalse(doclint.is_explained("x y one two three four five six seven"))
         self.assertFalse(doclint.is_explained("one two three four five six seven 8"))
         self.assertFalse(doclint.is_explained("n/a n/a one two three four five six"))

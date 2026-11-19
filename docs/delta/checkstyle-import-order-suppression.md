@@ -22,7 +22,7 @@ limitations under the License.
 | Title | Import order check suppressed for ChronitonDB code |
 | Document type | Record (ISO/IEC/IEEE 15289) |
 | Status | Dropped |
-| Version | 5 |
+| Version | 6 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
 | References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
@@ -32,6 +32,7 @@ Revision history, one row for each version:
 | Version | Date | Change | Decision record |
 |---|---|---|---|
 | 5 | 2026-11-19 | The suppression is removed and the entry is Dropped, since the project's own code follows Apache Cassandra's code style | None |
+| 6 | 2026-11-19 | The pull request that removed the suppression is named | None |
 
 Full history in git: [commits of this file](https://github.com/chronitonlabs/chronitondb/commits/chronitondb-6.0/docs/delta/checkstyle-import-order-suppression.md)
 
@@ -56,11 +57,11 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Forwarded | Not needed. It applies to ChronitonDB code only. |
 | Added | 2026-10-30 |
 | Last-Update | 2026-11-19 |
-| Pull requests | `chronitondb-6.0`: [#36](https://github.com/chronitonlabs/chronitondb/pull/36) and [#66](https://github.com/chronitonlabs/chronitondb/pull/66), commits `bd0a4f3a85` and `9f9b4f94b4`. The suppression is removed by this pull request. |
+| Pull requests | `chronitondb-6.0`: [#36](https://github.com/chronitonlabs/chronitondb/pull/36) and [#66](https://github.com/chronitonlabs/chronitondb/pull/66), commits `bd0a4f3a85` and `9f9b4f94b4`. The suppression is removed by [#147](https://github.com/chronitonlabs/chronitondb/pull/147), commit `60f73fcbc1`. |
 
 ## What
 
-Apache's checkstyle suppressions skipped the `ImportOrder` check for files under `org/chronitondb`. This pull request removed the suppression.
+Apache's checkstyle suppressions skipped the `ImportOrder` check for files under `org/chronitondb`. Pull request [#147](https://github.com/chronitonlabs/chronitondb/pull/147), commit `60f73fcbc1`, removed the suppression.
 
 ## Why
 

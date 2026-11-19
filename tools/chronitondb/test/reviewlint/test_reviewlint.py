@@ -484,12 +484,17 @@ class Verdict(unittest.TestCase):
         block = json.dumps(json.loads(self.body(self.head).split("```")[1][4:]))
         self.reviews[0]["body"] = "Round 3.\n\n```json \t\n%s\n``` \t\n" % block
         self.passes()
-        for body in ("Round 3.\n\n ```json\n%s\n ```\n" % block, "Round 3.\r\n\r\n```json\r\n%s\r\n```\r\n" % block):
+        for body in ("Round 3.\n\n ```json\n%s\n```\n" % block, "Round 3.\n\n```json\r\n%s\n```\n" % block):
             self.reviews[0]["body"] = body
             self.refused("holds no verdict: its text has no verdict block")
+        # A closing fence that is not at the margin closes nothing.
+        self.reviews[0]["body"] = "Round 3.\n\n```json\n%s\n   ```\n" % block
+        self.refused("holds no verdict: its text has no verdict block")
         # A later block the helper does not read is no block here either.
-        self.reviews[0]["body"] = self.body(self.head) + "\n   ```json\n%s\n   ```\n" % self.body(OTHER).split("```")[1][4:]
-        self.passes()
+        other = self.body(OTHER).split("```")[1][4:]
+        for later in ("\n   ```json\n%s\n```\n", "\n```json\r\n%s\n```\n"):
+            self.reviews[0]["body"] = self.body(self.head) + later % other
+            self.passes()
 
     def test_a_newer_review_of_the_app_with_no_verdict_block_fails(self):
         # The newest review of the App decides: an older clean verdict does not count again.

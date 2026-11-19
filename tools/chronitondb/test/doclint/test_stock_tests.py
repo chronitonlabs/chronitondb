@@ -514,7 +514,8 @@ class StockTests(unittest.TestCase):
                          ("    \"org.apache.cassandra.config.Duration\",\n", "    \"org.apache.cassandra.config.Duration\",\n    + \"suffix\",\n"),
                          ("                  \"OPTIONS\\n\"\n", "                  \"  --release\\n\" +\n                  \"OPTIONS\\n\"\n"),
                          ("                  \"OPTIONS\\n\"\n", "                  \"OPTIONS\\n\"\n    \"x\",\n"),
-                         ("    check(classes, help)\n", "    ++count\n    check(classes, help)\n")):
+                         # A line of the hunk whose text opens with "++ " is an added line too.
+                         ("    check(classes, help)\n", "++ count\n    check(classes, help)\n")):
             self.assertIn(old, self.CLASS_TEXT)
             self.put(self.PINNED_CLASS, self.CLASS_TEXT.replace(old, new))
             self.commit()
@@ -568,6 +569,13 @@ class StockTests(unittest.TestCase):
             self.refused(self.check("Fixes #150\n"), "the change adds lines that cannot be read that no listing holds", self.PINNED_CLASS)
         finally:
             doclint.added_lines = kept
+        # The file after the change, which gives the line above each added line, cannot be read.
+        kept = doclint.Source.read
+        doclint.Source.read = lambda source, path: None if path == self.PINNED_CLASS else kept(source, path)
+        try:
+            self.refused(self.check("Fixes #150\n"), "the change adds lines that cannot be read that no listing holds", self.PINNED_CLASS)
+        finally:
+            doclint.Source.read = kept
 
     def test_a_history_that_cannot_be_read_leaves_no_permit_unused(self):
         import doclint

@@ -15,10 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """The review verdict check, docs/process/branching-and-review.md, The
-review record: the newest review of the project's review App that carries
-a verdict is a clean verdict on the commit the pull request is at. The
-files under shapes/ are the
-answers of the GitHub API the check reads, recorded from a review that a
+review record: the newest review of the project's review App is a clean
+verdict on the commit the pull request is at. The files under shapes/ are
+the answers of the GitHub API the check reads, recorded from a review that a
 GitHub App posted on a public pull request, with the names and ids
 replaced: reviews.json from GET /repos/{owner}/{repo}/pulls/{number}/reviews,
 edits.json from the GraphQL query of the workflow, pull.json from GET
@@ -164,24 +163,60 @@ class Verdict(unittest.TestCase):
         self.pull["labels"] = [{"name": "triage:accepted"}]
         self.label(login="someone")
         self.not_due("the label triage:accepted was set by someone, who is no maintainer")
-        # The one who set it last counts.
+        # The maintainer who set it last counts.
         self.label("unlabeled", login="someone")
         self.label(login=MAINTAINER.upper())
         self.refused("the pull request has no review of example-review[bot]")
         self.label("unlabeled")
         self.label(login="someone")
-        self.not_due("was set by someone")
+        self.not_due("a maintainer, %s, took the label triage:accepted off last" % MAINTAINER.lower())
         # The list of maintainers is the one given, the line's.
         self.maintainers = ["someone"]
         self.refused("the pull request has no review of example-review[bot]")
 
-    def test_the_last_event_is_told_by_its_time(self):
+    def test_only_a_maintainer_takes_the_acceptance_back(self):
         self.by_someone_else()
         self.pull["labels"] = [{"name": "triage:accepted"}]
         self.label()
+        self.refused("the pull request has no review of example-review[bot]")
+        # Anyone else takes the label off: the maintainer's acceptance stands.
+        self.label("unlabeled", login="someone")
+        self.pull["labels"] = []
+        self.refused("the pull request has no review of example-review[bot]")
+        # And sets it again: the newest event of a maintainer still decides.
         self.label(login="someone")
+        self.pull["labels"] = [{"name": "triage:accepted"}]
+        self.refused("the pull request has no review of example-review[bot]")
+        self.review()
+        self.passes()
+        # Only a maintainer's own event ends it.
+        self.label("unlabeled")
+        self.pull["labels"] = []
+        self.not_due("a maintainer, %s, took the label triage:accepted off last" % MAINTAINER.lower())
+
+    def test_a_list_of_maintainers_that_cannot_be_read_fails(self):
+        self.by_someone_else()
+        self.maintainers = []
+        # Nothing of the label: no verdict is due, whatever the list says.
+        self.not_due("no maintainer has accepted it for review with the label triage:accepted")
+        for labels, events in (([{"name": "triage:accepted"}], [("labeled", MAINTAINER)]), ([], [("labeled", "someone")]),
+                               ([], [("labeled", MAINTAINER), ("unlabeled", "someone")])):
+            self.pull["labels"] = labels
+            self.events = shape("events.json")
+            for event, login in events:
+                self.label(event, login=login)
+            self.refused("the table Maintainers of docs/governance/committers.md on the line cannot be read, so the check cannot "
+                         "tell whether a maintainer set the label triage:accepted")
+
+    def test_the_last_event_is_told_by_its_time(self):
+        self.by_someone_else()
+        self.label()
+        self.label("unlabeled")
         self.events.reverse()
-        self.not_due("was set by someone")
+        self.not_due("a maintainer, %s, took the label triage:accepted off last" % MAINTAINER.lower())
+        taken, put = self.events[0], self.events[1]
+        taken["created_at"], put["created_at"] = put["created_at"], taken["created_at"]
+        self.refused("the pull request has no review of example-review[bot]")
 
     def test_a_label_nobody_is_seen_to_set_fails(self):
         self.by_someone_else()
@@ -264,7 +299,7 @@ class Verdict(unittest.TestCase):
         errors, note = self.check()
         self.assertIsNone(note)
         self.assertEqual(len(errors), 1, errors)
-        self.assertTrue(errors[0].startswith("the newest review of example-review[bot] that holds a verdict block, 5970525038, is no clean verdict: "), errors)
+        self.assertTrue(errors[0].startswith("the newest review of example-review[bot], 5970525038, is no clean verdict: "), errors)
         self.assertIn(text, errors[0])
 
     def test_a_verdict_with_a_major_finding_fails(self):
@@ -317,7 +352,7 @@ class Verdict(unittest.TestCase):
         # An earlier clean verdict does not count once a later verdict has findings.
         self.reviews = shape("reviews.json")
         late = self.review(body=self.body(self.head, "Round 3.", ready=False, approve=False, majors=1))
-        self.refused("the newest review of example-review[bot] that holds a verdict block, %d, is no clean verdict" % late["id"])
+        self.refused("the newest review of example-review[bot], %d, is no clean verdict" % late["id"])
         # The reviewer's next verdict on the head is clean, for a fix or for a waiver it records.
         self.review(body=self.body(self.head, "Round 4. One finding waived by a maintainer."))
         self.passes()
@@ -410,7 +445,7 @@ class Verdict(unittest.TestCase):
     def test_the_newest_is_told_by_the_time_it_was_submitted(self):
         late = self.review(commit_id=OTHER, body=self.body(OTHER))
         self.reviews.reverse()
-        self.refused("the newest review of example-review[bot] that holds a verdict block, %d, is a review of the commit %s" % (late["id"], OTHER))
+        self.refused("the newest review of example-review[bot], %d, is a review of the commit %s" % (late["id"], OTHER))
         late["submitted_at"] = "2026-11-19T06:00:00Z"
         self.passes()
 
@@ -436,30 +471,61 @@ class Verdict(unittest.TestCase):
 
     def test_a_review_without_a_verdict_block_is_refused(self):
         clean = json.loads(self.body(self.head).split("```")[1][4:])
-        for body in ("Round 2. Clean.", "", None, self.body(self.head, lenses=False), "```json\nnot json\n```\n",
+        for body in ("Round 2. Clean.", "", None, 7, self.body(self.head, lenses=False), "```json\nnot json\n```\n",
                      "```\n%s\n```\n" % json.dumps(clean),
                      "```json\n%s\n" % json.dumps(clean),
                      "    ```json\n    %s\n    ```\n" % json.dumps(clean)):
             self.reviews[0]["body"] = body
-            self.refused("no review of example-review[bot], the review App, holds a verdict block, a fenced json block that names "
-                         "\"lenses\", so no verdict has been posted")
+            self.refused("the newest review of example-review[bot], 5970525038, holds no verdict: its text has no verdict block, a "
+                         "fenced json block at the margin that names \"lenses\"")
 
-    def test_a_review_of_the_app_with_no_verdict_block_is_passed_over(self):
-        # A newer review of the App that is no verdict, such as a security review's text, leaves the clean verdict green.
-        for body in ("Security review: no finding.", "", None, "```json\n{\"note\": \"no verdict\"}\n```\n"):
+    def test_the_fences_of_the_verdict_block_stand_at_the_margin(self):
+        # The same three texts as the tests of the review App's helper.
+        block = json.dumps(json.loads(self.body(self.head).split("```")[1][4:]))
+        self.reviews[0]["body"] = "Round 3.\n\n```json \t\n%s\n``` \t\n" % block
+        self.passes()
+        for body in ("Round 3.\n\n ```json\n%s\n```\n" % block, "Round 3.\n\n```json\r\n%s\n```\n" % block):
+            self.reviews[0]["body"] = body
+            self.refused("holds no verdict: its text has no verdict block")
+        # A closing fence that is not at the margin closes nothing.
+        self.reviews[0]["body"] = "Round 3.\n\n```json\n%s\n   ```\n" % block
+        self.refused("holds no verdict: its text has no verdict block")
+        # A later block the helper does not read is no block here either.
+        other = self.body(OTHER).split("```")[1][4:]
+        for later in ("\n   ```json\n%s\n```\n", "\n```json\r\n%s\n```\n"):
+            self.reviews[0]["body"] = self.body(self.head) + later % other
+            self.passes()
+
+    def test_a_newer_review_of_the_app_with_no_verdict_block_fails(self):
+        # The newest review of the App decides: an older clean verdict does not count again.
+        for body in ("Round 4.", "", None, "```json\n{\"note\": \"no verdict\"}\n```\n"):
             self.reviews = shape("reviews.json")
-            self.review(commit_id=OTHER, state="APPROVED", body=body)
-            self.assertEqual(self.passes(), "the review 5970525038 of example-review[bot] is the clean verdict on the commit " + self.head)
-        # Nor does it stand in for a verdict: an older verdict that is not clean still fails.
+            late = self.review(body=body)
+            self.refused("the newest review of example-review[bot], %d, holds no verdict" % late["id"])
+        # Nor does it stand in for a verdict when the older one is not clean.
         self.reviews[0]["body"] = self.body(self.head, ready=False, approve=False, majors=1)
-        self.refused("the newest review of example-review[bot] that holds a verdict block, 5970525038, is no clean verdict")
-        # Reviews of the App and none with a verdict block fail as no verdict posted.
-        self.reviews[0]["body"] = "Security review: no finding."
-        self.refused("so no verdict has been posted")
+        self.refused("the newest review of example-review[bot], %d, holds no verdict" % late["id"])
+
+    def test_a_verdict_whose_block_was_taken_out_does_not_bring_back_an_older_one(self):
+        # A clean verdict, then a verdict on the same commit with a major finding.
+        late = self.review(body=self.body(self.head, "Round 3.", ready=False, majors=1))
+        self.refused("the newest review of example-review[bot], %d, is no clean verdict" % late["id"])
+        # Someone who can edit the review's text takes the block out.
+        late["body"] = "Round 3."
+        self.edits["data"]["repository"]["pullRequest"]["reviews"]["nodes"][-1].update(
+            lastEditedAt="2026-11-19T09:00:00Z", editor={"login": "chronitondb-agent"})
+        errors, note = self.check()
+        self.assertIsNone(note)
+        self.assertIn("the newest review of example-review[bot], %d, holds no verdict" % late["id"], errors[0])
+        self.assertIn("was edited after it was posted, by chronitondb-agent", errors[-1])
+        # Or renames "lenses" in it, unseen by the edits of the API.
+        late["body"] = self.body(self.head, "Round 3.", ready=False, majors=1).replace('"lenses"', '"lens"')
+        self.edits["data"]["repository"]["pullRequest"]["reviews"]["nodes"][-1].update(lastEditedAt=None, editor=None)
+        self.refused("the newest review of example-review[bot], %d, holds no verdict" % late["id"])
 
     def test_a_newer_verdict_block_that_cannot_be_read_still_fails(self):
         late = self.review(body="Round 4.\n\n```json\n{\"lenses\": \n```\n")
-        self.refused("the newest review of example-review[bot] that holds a verdict block, %d, has a verdict block that cannot be read"
+        self.refused("the newest review of example-review[bot], %d, has a verdict block that cannot be read"
                      % late["id"])
 
     def test_the_block_names_the_commit_of_the_review(self):
@@ -490,7 +556,7 @@ class Verdict(unittest.TestCase):
         self.edit().update(lastEditedAt=None, editor=None)
         late = self.review()
         self.edits["data"]["repository"]["pullRequest"]["reviews"]["nodes"][-1].update(lastEditedAt="2026-11-19T07:50:00Z")
-        self.refused("the newest review of example-review[bot] that holds a verdict block, %d, was edited after it was posted" % late["id"])
+        self.refused("the newest review of example-review[bot], %d, was edited after it was posted" % late["id"])
 
     def test_a_review_the_edits_do_not_know_is_refused(self):
         for edits in ({"data": {"repository": {"pullRequest": {"reviews": {"nodes": []}}}}}, {}, None, [], {"errors": [{"message": "x"}]},
@@ -602,8 +668,9 @@ class Command(unittest.TestCase):
         self.assertEqual(rc, 1)
         self.assertIn("the pull request has no review of example-review[bot]", err)
         # A list of maintainers or events that cannot be read accepts nothing and proves nothing.
-        self.assertIn("no review verdict is due: the label triage:accepted was set by %s, who is no maintainer" % MAINTAINER.lower(),
-                      self.verdict(maintainers="none.json")[1])
+        rc, out, err = self.verdict(maintainers="none.json")
+        self.assertEqual((rc, out), (1, "review-verdict failed\n"))
+        self.assertIn("the table Maintainers of docs/governance/committers.md on the line cannot be read", err)
         self.assertIn("no event of the pull request says who set it", self.verdict(events="none.json")[2])
 
     def test_usage(self):
@@ -715,7 +782,7 @@ class Workflow(unittest.TestCase):
         self.assertIn("the review App is not named yet: tools/chronitondb/review-app.json on the line holds a placeholder", err)
 
     def test_before_the_check_is_on_the_line_it_says_so_and_passes(self):
-        for path in ("tools/chronitondb/reviewlint.py", "tools/chronitondb/markdown.py", APP_FILE, COMMITTERS):
+        for path in ("tools/chronitondb/reviewlint.py", "tools/chronitondb/markdown.py"):
             self.git("checkout", "-q", "--detach", "HEAD")
             self.git("rm", "-q", path)
             self.commit()
@@ -723,6 +790,27 @@ class Workflow(unittest.TestCase):
             rc, out, err, present = self.steps()
             self.assertEqual((rc, present), (0, "present=no\n"))
             self.assertIn("%s is not on chronitondb-5.0 yet, so there is no checker to run. The check starts once it is merged." % path, out)
+            self.git("reset", "-q", "--hard", "HEAD~1")
+
+    def test_once_the_checker_is_on_the_line_a_file_it_reads_that_is_missing_fails(self):
+        with open(os.path.join(self.answers, "pull.json"), encoding="utf-8") as handle:
+            pull = json.load(handle)
+        pull["user"] = {"login": "someone", "id": 424242, "type": "User"}
+        pull["labels"] = [{"name": "triage:accepted"}]
+        with open(os.path.join(self.answers, "pull.json"), "w", encoding="utf-8") as handle:
+            json.dump(pull, handle)
+        with open(os.path.join(self.answers, "events.json"), "w", encoding="utf-8") as handle:
+            json.dump([{"id": 20000000009, "event": "labeled", "label": {"name": "triage:accepted"}, "actor": {"login": MAINTAINER},
+                        "created_at": "2026-11-19T08:00:00Z"}], handle)
+        for path, text in ((APP_FILE, "the review App is not named yet"),
+                           (COMMITTERS, "the table Maintainers of docs/governance/committers.md on the line cannot be read")):
+            self.git("checkout", "-q", "--detach", "HEAD")
+            self.git("rm", "-q", path)
+            self.commit()
+            self.git("update-ref", "refs/remotes/origin/chronitondb-5.0", "HEAD")
+            rc, out, err, present = self.steps()
+            self.assertEqual((rc, present, out), (1, "present=yes\n", "review-verdict failed\n"), path)
+            self.assertIn(text, err)
             self.git("reset", "-q", "--hard", "HEAD~1")
 
     def test_an_answer_the_api_does_not_give_fails(self):
@@ -776,7 +864,11 @@ class Workflow(unittest.TestCase):
             self.assertNotIn("${{", step_script(WORKFLOW, name))
         self.assertIn('git show "origin/$BASE:$file" > "$dir/${file##*/}"', text)
         self.assertNotIn("tools/chronitondb/reviewlint.py verdict", text)
-        self.assertIn("  reviewlint-tests:\n    if: github.event_name == 'pull_request'\n", text)
+        # The unit tests run on every event the workflow runs on, so no run of it skips them.
+        tests = text[text.index("\n  reviewlint-tests:\n"):]
+        self.assertTrue(tests.startswith("\n  reviewlint-tests:\n    runs-on: ubuntu-latest\n"), tests[:80])
+        self.assertNotIn("\n    if:", tests)
+        self.assertNotIn("\n      if:", tests)
         self.assertIn("python3 -m unittest discover -s tools/chronitondb/test/reviewlint -v", text)
 
 

@@ -511,9 +511,95 @@ class SingleFix(Fixture):
         rc, out, err = self.check(FIX)
         self.assertEqual(rc, 1)
         self.assertIn("RESOLVED %s\n" % STOCK_TEST, out)
-        self.assertIn("the lines the commit adds and removes are not those of the commit %s it was picked from, in 3 file(s)" % self.fix, err)
+        self.assertNotIn("RESOLVED %s\n" % STOCK, out)
+        self.assertIn("the commit is not what git gives when it picks the commit %s again, in 1 file(s)" % self.fix, err)
         self.passes(self.check(FIX, reviews=[self.review()]), "and a maintainer approved it")
-        self.refused(self.check(FIX, reviews=[self.review(login="someone")]), "the lines the commit adds and removes are not those")
+        self.refused(self.check(FIX, reviews=[self.review(login="someone")]), "the commit is not what git gives when it picks")
+
+    def moved(self, path, before, after, picked):
+        """An Apache commit that changes BEFORE to AFTER in PATH, and a
+        commit on the import branch with the message, author and date of
+        its cherry-pick whose content is PICKED."""
+        self.repo = self.apache
+        self.put(path, before)
+        self.commit("Lay out the file")
+        self.put(path, after)
+        fix = self.commit("Close before the call\n\npatch by A Committer for CASSANDRA-100", author="A Committer <a@apache.example>")
+        self.repo = os.path.join(self.site, "clone")
+        self.git("fetch", "-q", self.apache, "cassandra-5.0")
+        self.git("checkout", "-q", "line")
+        self.put(path, before)
+        self.commit("feat(startup): hold the same file")
+        self.git("update-ref", "refs/remotes/origin/line", "line")
+        self.branch(FIX)
+        self.git("cherry-pick", "-x", fix)
+        good = self.check(FIX)
+        self.put(path, picked)
+        self.git("add", "-A")
+        self.git("commit", "-q", "--amend", "--no-edit")
+        return fix, good
+
+    def test_a_pick_whose_lines_sit_in_another_place_is_reported_and_refused(self):
+        # The same lines removed and added as the original, each in
+        # another method than the original has them in.
+        path = "src/java/org/apache/cassandra/db/Mover.java"
+        before = "class Mover {\n  void one() {\n    foo()\n  }\n  void two() {\n    foo()\n  }\n  void three() {\n    bar()\n  }\n}\n"
+        after = "class Mover {\n  void one() {\n  }\n  void two() {\n    foo()\n  }\n  void three() {\n    check()\n    bar()\n  }\n}\n"
+        picked = "class Mover {\n  void one() {\n    foo()\n  }\n  void two() {\n  }\n  void three() {\n    bar()\n    check()\n  }\n}\n"
+        fix, good = self.moved(path, before, after, picked)
+        self.passes(good)
+        rc, out, err = self.check(FIX)
+        self.assertEqual(rc, 1)
+        self.assertIn("RESOLVED %s\n" % path, out)
+        self.assertIn("the commit is not what git gives when it picks the commit %s again, in 1 file(s)" % fix, err)
+
+    def test_a_pick_with_other_indentation_is_reported_and_refused(self):
+        path = "pylib/mover.py"
+        before = "def f(x):\n    if x:\n        y = 1\n    return 2\n"
+        after = "def f(x):\n    if x:\n        y = 1\n        return y\n    return 2\n"
+        picked = "def f(x):\n    if x:\n        y = 1\n    return y\n    return 2\n"
+        fix, good = self.moved(path, before, after, picked)
+        self.passes(good)
+        rc, out, err = self.check(FIX)
+        self.assertEqual(rc, 1)
+        self.assertIn("RESOLVED %s\n" % path, out)
+        self.assertIn("the commit is not what git gives when it picks the commit %s again" % fix, err)
+
+    def test_a_pick_that_keeps_the_conflict_git_met_is_reported_and_refused(self):
+        # The line changed the line the fix changes, so git meets a
+        # conflict. The commit holds the very tree git leaves, markers
+        # and all.
+        self.git("checkout", "-q", "line")
+        self.put(STOCK, "class StorageService {\n  void start() { hook() }\n\n\n\n  void stop() { ours() }\n}\n")
+        self.commit("fix(service): our own change")
+        self.git("update-ref", "refs/remotes/origin/line", "line")
+        self.branch(FIX)
+        onto, before = self.git("rev-parse", "HEAD"), self.git("rev-parse", self.fix + "^")
+        done = subprocess.run(["git", "-C", self.repo, "merge-tree", "--write-tree", "--no-messages", "--merge-base=" + before, onto, self.fix],
+                              capture_output=True, text=True, check=False)
+        self.assertEqual(done.returncode, 1)
+        tree = done.stdout.split("\n")[0]
+        date = self.git("log", "-1", "--format=%ad", "--date=raw", self.fix)
+        pick = self.git("commit-tree", tree, "-p", "HEAD", "-m", "%s\n\n(cherry picked from commit %s)" % (FIX_MESSAGE, self.fix),
+                        GIT_AUTHOR_NAME="A Committer", GIT_AUTHOR_EMAIL="a@apache.example", GIT_AUTHOR_DATE=date)
+        self.git("reset", "-q", "--hard", pick)
+        rc, out, err = self.check(FIX)
+        self.assertEqual(rc, 1, out)
+        self.assertIn("the commit is not what git gives when it picks the commit %s again" % self.fix, err)
+
+    def test_a_pick_of_a_merge_commit_is_refused(self):
+        self.repo = self.apache
+        self.git("checkout", "-q", "-b", "side", "cassandra-5.0.7")
+        self.put("NOTICE.txt", "Notice\n")
+        self.commit("Add a notice for CASSANDRA-100")
+        self.git("checkout", "-q", "cassandra-5.0")
+        self.git("merge", "-q", "--no-ff", "-m", "Merge the notice for CASSANDRA-100", "side")
+        merge = self.git("rev-parse", "HEAD")
+        self.repo = os.path.join(self.site, "clone")
+        self.git("fetch", "-q", self.apache, "cassandra-5.0")
+        self.branch(FIX)
+        self.git("cherry-pick", "-x", "-m", "1", merge)
+        self.refused(self.check(FIX), "the commit %s cannot be picked again here" % merge)
 
     def test_a_pick_on_other_lines_of_context_passes(self):
         self.git("checkout", "-q", "line")

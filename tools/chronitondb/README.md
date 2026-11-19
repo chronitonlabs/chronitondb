@@ -132,14 +132,14 @@ The repository makes the pull request title the subject of the squash or merge c
 
 ## Import history: `importlint.py`
 
-Checks the commits an import branch adds to its line against [upstream.md](../../docs/process/upstream.md#the-import-history-check). The CI workflow `.github/workflows/chronitondb-import.yml` runs it on every pull request from an `import/` branch of this repository, with this file, `doclint.py` and `markdown.py` taken from the base branch. Python 3 and git 2.38 or later, no other dependency.
+Checks the commits an import branch adds to its line against [upstream.md](../../docs/process/upstream.md#the-import-history-check). The CI workflow `.github/workflows/chronitondb-import.yml` runs it on every pull request from an `import/` branch of this repository, with this file, `doclint.py` and `markdown.py` taken from the base branch. Python 3 and git 2.40 or later, no other dependency.
 
     tools/chronitondb/importlint.py history --repo . --base origin/chronitondb-5.0 --head HEAD --branch import/cassandra-5.0.8/chronitondb-5.0
     tools/chronitondb/importlint.py history --repo . --base origin/chronitondb-5.0 --head HEAD --branch BRANCH --body DESCRIPTION-FILE --reviews REVIEWS-FILE
 
 The branch name gives the form. A release import and a branch import have one merge commit whose second parent is the commit of Apache Cassandra's tag, or the commit of its branch that the short hash names. A single fix has one commit made by `git cherry-pick -x` from a commit of an Apache branch whose message names the ticket, with its author, date and message kept. A commit of another project is held the same way against the repository the description's `Origin:` line names. Any other commit changes only the project's own files or merges the line into the branch.
 
-The checker fetches Apache Cassandra's tag or branches from `https://github.com/apache/cassandra.git` into refs of its own under `refs/import-check/`, so it needs the network. A tag or a branch of the clone is no proof. It makes each merge again with `git merge-tree` and compares the lines of a cherry-pick with those of its original. Where they differ it prints the files on `RESOLVED` lines and fails, until `--reviews` holds an approving review by a maintainer of `docs/governance/committers.md` on the line, at a commit that holds the resolved one. The reviews file is the answer of the GitHub API for the reviews of the pull request.
+The checker fetches Apache Cassandra's tag or branches from `https://github.com/apache/cassandra.git` into refs of its own under `refs/import-check/`, so it needs the network. A tag or a branch of the clone is no proof. It makes each merge and each cherry-pick again with `git merge-tree` and compares the result with the commit, so a line in another place or with other whitespace is seen. Where they differ it prints the files on `RESOLVED` lines and fails, until `--reviews` holds an approving review by a maintainer of `docs/governance/committers.md` on the line, at a commit that holds the resolved one. The reviews file is the answer of the GitHub API for the reviews of the pull request.
 
     RESOLVED src/java/org/apache/cassandra/service/StorageService.java
     import-history failed

@@ -68,8 +68,8 @@ have. They are held to:
      commit/<full hash>" of FILE, the pull request's description, names.
      NAME is that owner, repository and the first 12 characters of the
      hash. The repository is not apache/cassandra, whose commits come
-     as a single fix. Its change is the change of the original commit,
-     with no way round: a commit of another project comes in unchanged or
+     as a single fix. Its commit is the one git makes of the original
+     commit, with no way round: a commit of another project comes in unchanged or
      not at all. Whether the maintainers approved the repository as a
      source is not something the check can read
   5. no merge commit has more than two parents
@@ -77,8 +77,10 @@ have. They are held to:
 A conflict resolved by hand is what the check can see of a merge or of a
 cherry-pick that git did not make alone. For a merge commit: its tree is
 not the tree git gives when it merges the two parents again, with no
-conflict. For the commit of a single fix: the lines it adds and removes
-are not those of the original commit. The check prints "RESOLVED PATH" on
+conflict. For the commit of a single fix: its tree is not the tree git
+gives when it picks the original commit onto the same parent again, with
+no conflict. So a line that sits in another place than git puts it, or
+has other whitespace, is seen. The check prints "RESOLVED PATH" on
 stdout for each file that differs, for the import's assessment, and
 refuses the import until a maintainer has approved it: FILE of --reviews
 holds the reviews of the pull request as the GitHub API gives them, one
@@ -323,15 +325,20 @@ class History:
     def message(self, commit):
         return read(self.repo, "log", "-1", "--no-show-signature", "--format=%B", commit) or ""
 
-    def patch(self, commit):
-        """The lines a commit adds and removes, as git's patch id of its
-        change with no context lines."""
-        rc, diff = git(self.repo, "diff-tree", "-p", "-U0", "--binary", "--no-ext-diff", "--no-textconv", "--no-renames", commit)
-        if rc != 0:
+    def picked_again(self, commit, original):
+        """What git gives when it picks the original commit onto the parent
+        of the pick again: (the tree, whether git made it with no
+        conflict), or None when it cannot be made here. The pick is held
+        to that tree, so a line in another place, with other whitespace
+        or in another file is seen."""
+        before, onto = self.parents(original), self.parents(commit)
+        if len(before) != 1 or len(onto) != 1:
             return None
-        data = diff.encode("utf-8") if isinstance(diff, str) else diff
-        rc, out = git(self.repo, "patch-id", "--stable", data=data)
-        return out.split()[0] if rc == 0 and isinstance(out, str) and out.split() else ""
+        rc, out = git(self.repo, "merge-tree", "--write-tree", "--no-messages", "--merge-base=" + before[0], onto[0], original)
+        tree = out.split("\n", 1)[0].strip() if isinstance(out, str) else ""
+        if rc not in (0, 1) or not re.match(r"^[0-9a-f]{40,64}$", tree):
+            return None
+        return tree, rc == 0
 
     def pick_form(self, source, heads, ticket=None, wanted=None, unchanged_only=False):
         """One commit taken with git cherry-pick -x. heads is where the
@@ -374,16 +381,22 @@ class History:
                 self.repo, "log", "-1", "--no-show-signature", "--date=raw", form, original):
             self.error("%s: the author or the author date is not that of the commit %s. An imported commit keeps its author, "
                        "and the author is never rewritten (docs/process/principles.md, PRINCIPLE-075)" % (self.subject(commit), original))
-        ours, theirs = self.patch(commit), self.patch(original)
-        if ours is None or theirs is None or ours != theirs:
-            _, names = git(self.repo, "diff", "--name-only", "-z", "--no-renames", commit + "^1", commit)
-            files = [path for path in names.split("\0") if path] if isinstance(names, str) else ["(the change)"]
+        again = self.picked_again(commit, original)
+        if again is None:
+            self.error("%s: the commit %s cannot be picked again here, so the pick cannot be checked. The original has one parent, "
+                       "and the check needs git 2.40 or later" % (self.subject(commit), original))
+            return
+        tree, clean = again
+        if not clean or tree != read(self.repo, "rev-parse", commit + "^{tree}"):
+            _, names = git(self.repo, "diff", "--name-only", "-z", "--no-renames", tree, commit)
+            files = [path for path in names.split("\0") if path] if isinstance(names, str) else []
+            files = files or ["(the change)"]
             if unchanged_only:
-                self.error("%s: the lines the commit adds and removes are not those of the commit %s. A commit of another project comes "
+                self.error("%s: the commit is not what git gives when it picks the commit %s again. A commit of another project comes "
                            "in unchanged or not at all. A maintainer ports it instead, as the project's own change that credits its "
                            "authors (docs/process/upstream.md, Commits from other projects)" % (self.subject(commit), original))
             else:
-                self.by_hand(commit, "the lines the commit adds and removes are not those of the commit %s it was picked from" % original, files)
+                self.by_hand(commit, "the commit is not what git gives when it picks the commit %s again" % original, files)
         self.notes.append("%s is the commit %s of %s, on %s" % (commit[:10], original, source, holds.split("\n")[0][len(heads):]))
 
 

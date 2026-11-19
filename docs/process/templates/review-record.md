@@ -64,12 +64,12 @@ One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A f
 
 1. **Fixed in `<hash>`**: the commit that fixes the finding, a commit of the pull request's branch. Several commits are joined with "and". A finding on the pull request's title or body is "Fixed in the pull request title" or "body".
 2. **Accepted: `<reason>`**: the work product stays as it is, for the reason given. The reviewer judges the reason in the next round.
-3. **Waived by `<the maintainers>`: `<reason>`**: the maintainers decided the finding needs no change, as "the maintainers" or "a maintainer, `<GitHub username>`". A waiver counts only as a review of the pull request by a maintainer listed in `docs/governance/committers.md`, which names the finding by its id and is posted after the review of its round. A comment does not count. Until then the disposition is Open.
+3. **Waived by `<the maintainers>`: `<reason>`**: the maintainers decided the finding needs no change, as "the maintainers" or "a maintainer, `<GitHub username>`". A waiver counts only as a maintainer's line in the set form on the pull request, such as `Waived: R1-3`: see [branching-and-review.md](../branching-and-review.md#the-review-record), item 4. Until then the disposition is Open.
 4. **Open: `<what settles it>`**: no disposition yet, while the maintainers decide. A clean review leaves none open from an earlier round.
 
 ## 3. Decisions
 
-{One subsection per decision the maintainers took during the review, in the form below, or the one line "No decisions.". A decision counts only as a review of the pull request by a maintainer listed in `docs/governance/committers.md`, which names it by its id and is posted after the review of its round. A comment does not count.}
+{One subsection per decision the maintainers took during the review, in the form below, or the one line "No decisions.". A decision counts only as a maintainer's line in the set form on the pull request, such as `Decided: D1 B`, with the id of the decision and the letter of its Chosen line: see [branching-and-review.md](../branching-and-review.md#the-review-record), item 4.}
 
 ### D{n}. {The question in one line}
 

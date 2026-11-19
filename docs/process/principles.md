@@ -409,7 +409,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### PRINCIPLE-048
 
-**A vulnerability is private until disclosure.** All work on a vulnerability happens in private until disclosure. The fix record of a security defect, its reviews and its code stay in the private advisory until then, and no public pull request is opened for them. At disclosure the fix record lands on the public line, with the fix. Before disclosure no public text names the vulnerability, and a fix is described by its mechanics. Only the maintainers decide validity, severity, the disclosure date and publication.
+**A vulnerability is private until disclosure.** All work on a vulnerability happens in private until disclosure. The fix record of a security defect, its reviews and its code stay in the private advisory until then, and no public pull request is opened for them. At disclosure the fix record lands on the public line, with the fix. The review record does not: it stays private, in the advisory, after disclosure too, and it is no file of the branch that lands. The fix record says in one line that the fix was reviewed under the private process. Before disclosure no public text names the vulnerability, and a fix is described by its mechanics. Only the maintainers decide validity, severity, the disclosure date and publication.
 
 1. **Applies to.** Every vulnerability in the project's code, in Apache Cassandra's code on a line and in a shipped library.
 2. **Edge.** None. When Apache Cassandra's code is affected, its security team is notified at once, with the fix.
@@ -742,7 +742,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 **A document is complete with the repository alone.** A document, a code comment and a commit of the project cite only what a reader of the repository can open: these pages, the decision records, the design documents, the code and public sources. A rule is cited by its id from this page. Nothing cites private material, such as a note or a conversation.
 
 1. **Applies to.** Every document, comment and commit message. For example a requirement that follows from a rule names the principle, and a record never links to the brief it was written from.
-2. **Edge.** The work on a vulnerability stays in its private advisory until disclosure, see [PRINCIPLE-048](#principle-048).
+2. **Edge.** The work on a vulnerability stays in its private advisory until disclosure, and the review record of its fix stays there after it, see [PRINCIPLE-048](#principle-048). The line a fix record carries on that review names the private process and links nothing.
 3. **See.** [The decision records](../decisions/README.md#rules), [additive.md](additive.md).
 
 ### PRINCIPLE-081

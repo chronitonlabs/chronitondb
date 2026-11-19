@@ -164,7 +164,7 @@ The record of a review is a file the pull request commits, `docs/reviews/<work>.
 3. The reviewer checks each row of the record against its own findings.
 4. Only the maintainers waive a finding. A waiver or a decision counts only as a review of the pull request by a maintainer listed in [docs/governance/committers.md](../governance/committers.md) on the line, which names the finding or the decision by its id and is posted after the review of its round. A comment does not count: anyone with write access can edit a comment.
 5. The maintainer's decision is made through GitHub: approve, or request changes with the rework listed, and the merge.
-6. The review record of a security fix stays in its private advisory with the fix record until disclosure: [PRINCIPLE-048](principles.md#principle-048).
+6. The review record of a security fix is kept in its private advisory and stays there, private, after disclosure too. It is no file of the branch that lands. At disclosure the public line gets the fix and its fix record, and the fix record says in one line that the fix was reviewed under the private process: [PRINCIPLE-048](principles.md#principle-048).
 
 ## Pull requests
 

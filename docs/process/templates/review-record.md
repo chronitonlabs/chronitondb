@@ -35,7 +35,7 @@ A review record has no version. Its history is the commits of this file.
 
 Location: `docs/reviews/<work>.md`, where `<work>` is the pull request's branch without its first part, `agent/` or a username, and without the line. An import branch keeps its first part, as `import-`. Process: [branching-and-review.md](../branching-and-review.md#the-review-record). Structure: the review record of ISO/IEC 20246 and the review report and anomaly list of IEEE 1028. The review record of a security fix is not committed: it is kept in the private advisory and stays there after disclosure, see [security.md](../security.md#private-until-disclosure).
 
-Only the project's own automation keeps this record: it is the committed record of the review of a pull request the automation wrote. An outside contributor writes none, and the findings on such a pull request come in the reviewer's review comment for the round, one row for each finding. The author keeps this record current and commits it with the change: when the pull request opens, after each review round and after the last one. It states in the third person what each round found, what was done about each finding and what the maintainers decided.
+Only the project's own automation keeps this record: it is the committed record of the review of a pull request the automation wrote. An outside contributor writes none, and on such a pull request the verdict's own review comment for the round carries the findings, one row for each finding. The author keeps this record current and commits it with the change: when the pull request opens, after each review round and after the last one. It states in the third person what each round found, what was done about each finding and what the maintainers decided.
 
 {How the record is kept. The pull request opens with it: Status Open, Version reviewed `Not reviewed yet`, the Rounds table and the anomaly list with their header rows only, `No decisions.`, `None.` and `Open.`. After each round, and before the work goes back to the reviewer, the author adds the round's row, one row for each finding with its disposition, each decision a maintainer took and what the round did not read. The counts of a round equal the counts of the reviewer's comment for that round, and every finding of an earlier round has a disposition. After a clean review the author adds its round and its findings, sets Status to Closed and writes the exit decision. Entries are short and plain: what was found, where, what was done about it and who decided. A decision is stated cleanly, with its options and its reason, never in a maintainer's own words from a conversation. The record cites nothing a reader of the repository cannot open.}
 
@@ -56,11 +56,11 @@ Only the project's own automation keeps this record: it is the committed record 
 
 ## 2. Anomaly list
 
-One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A finding raised again in a later round gets a new id and names the earlier one.
+One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A finding raised again in a later round gets a new id and names the earlier one. The source says which checklist raised the finding, or that the security engineer's review did. On Critical risk work the security engineer's findings reach the record only through the reviewer, and stand here as rows like any other.
 
-| Id | Location | Description | Classification | Disposition |
-|---|---|---|---|---|
-| R{round}-{n} | {the symbol or the heading}, `{path}:{line}` at `{commit}`, or {the pull request title or body} | {What is wrong, in short.} | {Blocker, Major, Minor or Nit} | {Fixed in `{short hash}`, Accepted: {reason}, Waived by {the maintainers}: {reason}, or Open: {what settles it}} |
+| Id | Location | Description | Source | Classification | Disposition |
+|---|---|---|---|---|---|
+| R{round}-{n} | {the symbol or the heading}, `{path}:{line}` at `{commit}`, or {the pull request title or body} | {What is wrong, in short.} | {The checklist that raised it, such as correctness or tests, or Security review} | {Blocker, Major, Minor or Nit} | {Fixed in `{short hash}`, Accepted: {reason}, Waived by {the maintainers}: {reason}, or Open: {what settles it}} |
 
 1. **Fixed in `<hash>`**: the commit that fixes the finding, a commit of the pull request's branch. Several commits are joined with "and". A finding on the pull request's title or body is "Fixed in the pull request title" or "body".
 2. **Accepted: `<reason>`**: the work product stays as it is, for the reason given. The reviewer judges the reason in the next round.

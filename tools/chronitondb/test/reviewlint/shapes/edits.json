@@ -1,0 +1,17 @@
+{
+  "data": {
+    "repository": {
+      "pullRequest": {
+        "reviews": {
+          "nodes": [
+            {
+              "fullDatabaseId": "5970525038",
+              "lastEditedAt": null,
+              "editor": null
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -25,7 +25,11 @@ before they commit.
     doclint.py dependencies --repo DIR --base REF --line REF [--source SRC] FILE...
     doclint.py settings --repo DIR --base REF [--source SRC]
     doclint.py index [--write | --check] FILE...
+    doclint.py history --repo DIR --templates REF [--write | --check] PATH...
+    doclint.py indexes --repo DIR --templates REF [--source SRC] [--write]
     doclint.py delta --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE]
+    doclint.py stock-tests --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE] [--issue STATE]
+    doclint.py stock-tests-issue [--branch NAME] [--body FILE]
 
 SRC is where the documents are read: "index" (the default, the staged
 version), "worktree", or a commit. REF is where the rules are read, the line
@@ -45,12 +49,16 @@ The type of each PATH comes from where it lives:
                                            its first heading ("# Design:",
                                            "# Fix:")
     docs/imports/*.md                      import record
-    docs/decisions/NNNN-<slug>.md          decision record
+    docs/design/<dir>/decisions/*.md       decision record
+    docs/decisions/*.md                    decision record (README.md is
+                                           not one)
     docs/delta/<name>.md                   delta entry (README.md is the
                                            register)
     docs/releases/<line>-plan.md           line plan
     docs/releases/*.md                     release proposal
     docs/research/<issue>-<slug>.md        research report (README.md is
+                                           not one)
+    docs/reviews/<work>.md                 review record (README.md is
                                            not one)
 
 Any other path is not a document of the process and is passed over, except
@@ -79,17 +87,44 @@ Every document is checked for:
      edited, docs/decisions/README.md rule 2, so one merged before its
      template had the section keeps none
 
-A new decision record also takes the next number after the highest
-record merged at REF, one number per new record and in order, so it
-neither reuses a merged number nor leaves a gap (rule 1 of the README).
+A decision record new at REF is also checked for rule 1 of the README:
+its name is its id and a slug, DEC-<KEY>-nnnn-<slug>.md, four digits or
+more, under docs/design/<KEY>-<slug>/decisions/ with the key of that
+directory (the issue number for a directory <issue>-<slug>), or under
+docs/decisions/ with the key GOV, its title opens with its id, no other
+record at SRC has that id, and its number is the next after the highest
+merged at REF under its key, one number per new record and in order, so
+it neither reuses a merged number nor leaves a gap. A record merged at
+REF is never edited and is held to none of this: the records NNNN-<slug>.md
+of docs/decisions/ were merged before the ids.
+
+A document whose template at REF has the revision history, a table
+Version, Date, Change, Decision record under the document control table,
+is checked for it when the document is new at REF, has the table at REF or
+at SRC, or is at another Version than at REF: one row for each version, in
+order with no gap, each with a whole number, a YYYY-MM-DD date, what
+changed and the id of a decision record or None, the last row the
+document's Version, every row merged at REF unchanged, and under the table
+the line "Full history in git: [commits of this file](ADDRESS)", ADDRESS
+being https://github.com/<owner>/<repository>/commits/<line>/<path>: the
+repository of the remote REF names (origin when REF names none), the line
+REF names, and the document's own path. A document merged before its
+template had the table keeps its old change history line until its next
+version.
 
 A feature spec is also checked for:
 
   1. its directory is docs/design/<KEY>-<slug>/
   2. its Feature class and switches section states the feature class
   3. its Feature requirements are FREQ-<KEY>-nnn lines, each with one EARS
-     shape, one BCP 14 keyword, a source and no unmeasured word without a
-     number
+     shape, one BCP 14 keyword and a source. A word of size or amount
+     (large, small, many, few, reasonable, soon, high, low, scalable)
+     needs a number on the line. A word of speed (fast, faster, quick,
+     quickly, slow, efficient, efficiently) needs a number, or the
+     mechanism that makes it so, named after the word in three words or
+     more that follow "by", "because", "since" or "through" (the design
+     record template, Requirement quality checklist, item 2). Whether the
+     words name a mechanism is the reviewer's to judge
   4. its Quality requirements table has a row for every line of the
      quality checklist, each answered
   5. its Threat model has a STRIDE row or the statement "This feature adds
@@ -104,7 +139,8 @@ A feature spec is also checked for:
      its family, a colon and a reason of three words or more, Touches the
      phrases of TOUCHES (public interface, stock behaviour, new input or
      privilege, new dependency, shared state, request path, new feature or
-     switch) in any case, split at a comma, a semicolon or "and", or none,
+     switch, on-disk files, flush, compaction, streaming, repair) in any
+     case, split at a comma, a semicolon or "and", or none,
      a public interface naming its area in brackets, one of FLOOR_AREAS
      (a phrase that names an area alone counts as a public interface and
      is refused), and a Low risk never touching a public
@@ -124,6 +160,10 @@ A feature spec is also checked for:
 
 A decision record and a delta entry also have their unnumbered sections,
 and a decision record keeps none of its template's <...> placeholders.
+
+A review record is checked against the review record template once the
+line has it. At a REF with no such template the record is passed over and
+not counted: the first records were merged before the template was.
 
 A plan, a milestone report, a design record and a fix record are also
 checked for the form of their class rows, when their template has them. A
@@ -182,7 +222,8 @@ coordinate added or moved to another version passes when a line of the
 Dependencies section of a merged feature spec or design record on the line
 (--line) names the library and the version, or when it is a patch-version
 bump of the same library (same major and minor), which the pull request
-states with its reason. It prints "patch NAME OLD NEW FILE" for each.
+states with its reason. It prints "patch NAME OLD NEW FILE" for each. No CI
+workflow runs it yet.
 
 index prints the Contents section each FILE needs, read from the working
 tree, whatever its type. With --write it puts that section in the file in
@@ -193,6 +234,45 @@ With --check it reports what is wrong with the file's index, the check of
 point 4 above, also for a template. Authors and their tools run it after
 any heading changes, before the commit.
 
+history prints the history link each PATH needs, read from the working
+tree. With --write it puts the link in place of the old one, or under the
+revision history table, and in a document that still has the line "Change
+history: the git history of this file." it puts the table in that line's
+place, with one row for the document's Version and today's date, whose
+change and decision record the author fills in. With --check it reports
+what is wrong with the revision history and its link, whatever REF holds
+of the document.
+
+A document with an Areas row names one area or more of the list of
+docs/process/areas.md at REF, joined by commas, each once, and one with a
+Source row names one source of that page's list. A document merged at REF
+without a row its template gained later, Areas, Supersedes or Source, keeps
+none while it is at the Version it was merged at, a decision record for
+good.
+
+A document with an Exceptions row, a design record or a fix record, says
+None there or names each principle it departs from by its id,
+PRINCIPLE-nnn, joined by commas, each once and each a principle of
+docs/process/principles.md at REF. A link whose text is the id counts as
+the id. A document merged at REF without the row keeps none while it is at
+the Version it was merged at, as for the rows above.
+
+The supersede links of decision records hold both ways: each record a
+Supersedes row names says "Superseded by" that record in its Status, and a
+record whose Status says "Superseded by" another is named in that one's
+Supersedes row, when it has the row.
+
+indexes checks the generated indexes of the tree at SRC, and with --write
+writes them into the working tree: docs/index/documents.md, every document
+under docs/ whose document control table has a Document type row, by kind,
+and once a record's Exceptions row names a principle a last section with
+every such record under each principle it names,
+docs/index/decisions.md, every decision record, docs/index/areas.md, the
+same under each area of the areas page at REF, and INDEX.md in each
+feature directory docs/design/<KEY>-<slug>/, its documents, the design
+records that define its REQ ids and its decision records. A page that is
+not what the documents give is a finding.
+
 settings is the setting name check of release.md, The configuration file.
 A setting name is a top level key of a yaml file, active ("name:") or
 commented ("# name:" or "#name:"). Every setting of Apache's
@@ -202,7 +282,8 @@ reason on a line "# Left out: <name>: <reason>". A setting Apache's two
 files had at the merge base REF and have no more is gone from ours, or
 flagged on a line "# Apache removed: <name>". Ours removed while the line
 had it fails. With no file of ours on the line yet the check has nothing to
-compare and says so.
+compare and says so. No CI workflow runs it yet: it becomes a check of
+every pull request once the file exists.
 
 delta is the delta register check of docs/delta/README.md, Keeping it
 current, on the change at SRC since its merge base with REF. A file is
@@ -214,9 +295,15 @@ came from Apache Cassandra. A change that adds, edits, deletes or renames a
 stock file adds or changes at least one entry docs/delta/<name>.md. It
 passes without one when NAME, the pull request's branch, is an import of a
 whole Apache release or of Apache's branch, import/cassandra-<...>, which
-brings Apache Cassandra's own code, or when FILE, the pull request's
-description, has a line "No delta entry: <reason>" with a reason of three
-words or more, which the reviewer judges. Every entry the change adds or
+brings Apache Cassandra's own code. NAME is taken as given, so the caller
+gives it only for a branch whose name it can trust: CI gives it for a
+branch of the repository itself and never for the branch of a fork, whose
+author chooses its name. It also passes without one when FILE, the pull
+request's description, has a line "No delta entry: <reason>" with a reason
+of three words or more. The line is for a feature's change that touches
+only log lines Apache Cassandra writes. The check reads only that it is
+there: the reviewer judges it against the change, and any other use of
+it is a decision of the maintainers at review. Every entry the change adds or
 changes passes the document rules of a delta entry above, against the
 template at REF, and a changed entry has a Last-Update later than at REF,
 or the same date when that is the date of the change, the date of the
@@ -225,12 +312,63 @@ change no longer carried keeps its entry with Status Dropped. It prints
 "stock PATH" on stdout for each stock file, and the reason a change passes
 without an entry.
 
+stock-tests is the check of docs/process/testing.md, Policy 4, on the
+change at SRC since its merge base with REF: a pre-existing test file of
+Apache Cassandra changes in four ways only (principles.md, PRINCIPLE-013).
+Such a file is one the line has at the merge base, in a directory named
+test or with the name of a test (*Test.java, *Tests.java, test_*.py,
+*_test.py), that is not the project's own by the table Where things live,
+read as the delta check reads it. The permits are read at REF, the line,
+never from the change, so a pull request cannot write its own. A changed
+file passes by one of:
+
+  1. NAME, the pull request's branch, is an import from Apache
+     Cassandra: import/cassandra-<...>, a release or Apache's branch, or
+     import/CASSANDRA-<n>, a single fix. Such an import brings Apache
+     Cassandra's own test files, and the import history check holds what
+     it brings. A commit of another project is no import from Apache
+     Cassandra and takes one of the other ways. NAME is taken as given,
+     as for delta
+  2. the fix record of the pull request's issue at REF, a document under
+     docs/design/ whose first heading opens "# Fix: #<issue>", lists the
+     file in its Planned file list with the word test
+  3. the design record or fix record of the pull request's issue at REF
+     has a line "Pinned listing: <path>" with the file's path, and the
+     change only adds lines of the listing to the file: any line in a
+     file of plain data, one with no extension or a .txt, .json or .csv
+     file, and in any other file only lines that are one quoted string,
+     alone on the line but for a "+" or a ","
+  4. a decision record at REF with the Status Accepted has a line
+     "Approved stock test change: <path> for #<issue>, because
+     <explanation>" with the file's path, the pull request's issue and a
+     written explanation: eight different words or more, each of two
+     letters or more, with no placeholder in it, such as TBD or todo
+
+A record permits the change of its own issue only. The pull request's
+issue is the issue of NAME when NAME is given: NAME is then a work branch,
+<name>/<issue>-<slug>/<line>, and FILE, the pull request's description,
+names that issue on a line "Fixes #<issue>" or "Part of #<issue>". With no
+NAME, as for the branch of a fork, it is the one issue FILE names on such
+a line. STATE is the answer of the GitHub API for that issue, and the
+issue it shows is open and is no pull request. stock-tests-issue prints
+the issue, so the caller can read its state first. A permit is used up
+once a change to the file has reached REF, on its first parent history,
+with the last change of the record or after it: a record permits the one
+change it plans. A line of a record indented by four spaces or a tab is
+code and permits nothing.
+
+A record whose Status opens with Superseded permits nothing. A stock test
+file that is deleted, renamed, binary, a symbolic link or changed in its
+type passes only in an import. It prints "stock-test PATH: <way>" on
+stdout for each file that passes, and "stock-tests N checked M failed".
+
 Findings go to stderr as "PATH:LINE: reason", exit 1 when there is one.
 A usage error exits 2.
 """
 
 import fnmatch
 import html
+import json
 import os
 import re
 import subprocess
@@ -247,7 +385,12 @@ MARKER = "[NEEDS CLARIFICATION"
 KEY_DIR = re.compile(r"^docs/design/([A-Z]{3,5})-[a-z0-9]+(?:-[a-z0-9]+)*/")
 FREQ_LINE = re.compile(r"^\s*(?:(?:[-*+]|[0-9]+[.)])\s+)?[*_`]*(FREQ-([A-Z]{3,5})-[0-9]{3})(?![0-9])[*_`]*\s*(\([^)]*\))?\s*:?\s*(.*)$")
 KEYWORDS = re.compile(r"\b(MUST NOT|MUST|SHALL NOT|SHALL|SHOULD NOT|SHOULD|NOT RECOMMENDED|RECOMMENDED|MAY|REQUIRED|OPTIONAL)\b")
-UNMEASURED = re.compile(r"\b(fast|faster|quick|quickly|slow|large|small|many|few|efficient|efficiently|reasonable|soon|high|low|scalable)\b", re.I)
+# A word of size or amount needs a number. A word of speed needs a number
+# or the mechanism that makes it so, which the line names after the word
+# (the design record template, Requirement quality checklist, item 2).
+UNMEASURED = re.compile(r"\b(large|small|many|few|reasonable|soon|high|low|scalable)\b", re.I)
+SPEED = re.compile(r"\b(fast|faster|quick|quickly|slow|efficient|efficiently)\b", re.I)
+MECHANISM = re.compile(r"\b(?:by|because|since|through)\s+\S+(?:\s+\S+){2,}", re.I)
 EARS = ("The ", "When ", "While ", "Where ", "If ")
 DATE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 JIRA = re.compile(r"https://issues\.apache\.org/jira/browse/CASSANDRA-[0-9]+")
@@ -262,10 +405,16 @@ RISKS = ("Critical", "Normal", "Low")
 SIZES = ("Low Hanging Fruit", "Normal", "Challenging", "Byzantine")
 REACHES = ("One area", "Cross-cutting")
 CLASS_ROWS = (("Risk", RISKS), ("Size", SIZES), ("Reach", REACHES))
-# The last three name what a Normal risk code review adds a lens for: threads,
-# pools or shared state, a read, write or query path, and a new feature or switch.
+# Shared state, request path and new feature or switch name what a Normal risk
+# code review adds a checklist for: threads, pools, caches or other state
+# several requests share, any path whose cost grows with data or traffic, and
+# a new feature or switch. The last five
+# name what the code of a change does on the Critical floor, in Apache
+# Cassandra's files or in ChronitonDB's own (classification.md, The Critical
+# floor).
 TOUCHES = ("public interface", "stock behaviour", "new input or privilege", "new dependency",
-           "shared state", "request path", "new feature or switch")
+           "shared state", "request path", "new feature or switch",
+           "on-disk files", "flush", "compaction", "streaming", "repair")
 FLOOR = ("public interface", "stock behaviour")
 # The floor's public interfaces: the areas of compatibility the Cassandra
 # Enhancement Proposals page lists under Compatibility Concerns, plus
@@ -289,7 +438,10 @@ FLOOR_AREAS = (
 )
 # The words of an on-disk format, which the CEP list names by its files.
 ON_DISK = re.compile(r"on.?disk|\bformats?\b|\bfiles?\b", re.I)
-PUBLIC_INTERFACE = re.compile(r"public\s+interface\b(\s*\(([^)]*)\))?", re.I)
+# Text in brackets, which may itself hold one pair of brackets, as the area
+# "pluggable components (SPIs) such as authorisation and triggers" does.
+BRACKETS = r"\(((?:[^()]|\([^()]*\))*)\)"
+PUBLIC_INTERFACE = re.compile(r"public\s+interface\b(\s*" + BRACKETS + r")?", re.I)
 # The strictest value of each family, which a missing or unreadable row counts as.
 STRICTEST = {"Risk": "Critical", "Size": "Byzantine", "Reach": "Cross-cutting"}
 NOT_APPLICABLE = re.compile(r"^Not applicable:\s*(\S.*)$")
@@ -316,7 +468,8 @@ EMPTY_RISK = re.compile(r"^\W*(none|low|n/?a|nothing|no risk|low risk|minimal|ne
 # is not held to it.
 DISMISSIVE_RISK = re.compile(r"^\W*((low|no|minimal|negligible)\s+risk\b|(none|low|nothing)\s*([.,;:!]|$))", re.I)
 # The Touches phrases are split at a comma, a semicolon or "and", and read
-# in any case.
+# in any case. An area in brackets is cut out first, so its own commas and
+# "and" split nothing.
 TOUCHES_SPLIT = re.compile(r"\s*[,;]\s*(?:and\s+)?|\s+and\s+")
 WPCO_WORDS = 5
 
@@ -333,8 +486,12 @@ TEMPLATES = {
     "release-proposal": "docs/process/templates/release-proposal.md",
     "ac-coverage": "docs/process/templates/ac-coverage.md",
     "research-report": "docs/process/templates/research-report.md",
+    "review-record": "docs/process/templates/review-record.md",
     "decision": "docs/decisions/README.md",
 }
+# The types whose first documents were merged before their template. Such a
+# document is passed over at a rules ref that has no template for it.
+LATE_TEMPLATES = ("review-record",)
 # Unnumbered sections the type requires beside the numbered ones.
 REQUIRED_PLAIN = {
     "feature-spec": ["Glossary"],
@@ -399,10 +556,12 @@ def doc_type(path, text):
             return None
         if len(parts) == 5 and parts[3] == "milestones":
             return "milestone-report"
+        if len(parts) == 5 and parts[3] == "decisions":
+            return "decision"
         return None
     if re.match(r"^docs/imports/[^/]+\.md$", path):
         return "import-record"
-    if re.match(r"^docs/decisions/[0-9]{4}-[^/]+\.md$", path):
+    if re.match(r"^docs/decisions/[^/]+\.md$", path) and path != "docs/decisions/README.md":
         return "decision"
     if re.match(r"^docs/delta/[^/]+\.md$", path) and path != "docs/delta/README.md":
         return "delta-entry"
@@ -412,6 +571,8 @@ def doc_type(path, text):
         return "release-proposal"
     if re.match(r"^docs/research/[^/]+\.md$", path) and path != "docs/research/README.md":
         return "research-report"
+    if re.match(r"^docs/reviews/[^/]+\.md$", path) and path != "docs/reviews/README.md":
+        return "review-record"
     return None
 
 
@@ -455,6 +616,14 @@ def control_table(doc):
     return fields, rows[0][0]
 
 
+# The id of a decision record: DEC, the feature key, the reserved key GOV
+# for a decision of the whole project, or the issue number of a design
+# directory that has no key, then four digits or more.
+DECISION_ID = r"DEC-(?:[A-Z]{3,5}|[0-9]+)-[0-9]{4,}"
+DECISION_WORD = "DEC-<KEY>-nnnn"
+GOV_KEY = "GOV"
+
+
 def allowed_statuses(value):
     """The Status values a template allows: "Draft, Approved or Superseded",
     "Current or Dropped", "Proposed, Accepted, or Superseded by NNNN"."""
@@ -464,8 +633,12 @@ def allowed_statuses(value):
 
 def status_ok(value, allowed):
     for word in allowed:
-        if "NNNN" in word:
-            if re.match("^" + re.escape(word).replace("NNNN", "[0-9]{4}") + r"(\b|$)", value):
+        # A record is superseded by a record named by its id, or by its
+        # number when the record that replaces it is one merged before the
+        # ids (docs/decisions/README.md, rule 1).
+        if "NNNN" in word or DECISION_WORD in word:
+            stem = word.replace("NNNN", "").replace(DECISION_WORD, "")
+            if re.match("^" + re.escape(stem) + r"(?:" + DECISION_ID + r"|[0-9]{4})(?![0-9A-Za-z])", value):
                 return True
         elif value == word or (word == "Superseded" and value.startswith("Superseded")):
             return True
@@ -505,8 +678,9 @@ def text_lines(doc, span):
 
 
 def check_requirement(doc, index, rid, text, unit):
-    """One EARS shape, one BCP 14 keyword, a source, no unmeasured word
-    without a number."""
+    """One EARS shape, one BCP 14 keyword, a source, no word of size or
+    amount without a number, and no word of speed without a number or the
+    mechanism that makes it so."""
     # A code span is a word of the sentence: removed, a source that starts
     # with one reads as no source. It becomes "code", which no keyword,
     # shape or vague word check reads.
@@ -521,11 +695,15 @@ def check_requirement(doc, index, rid, text, unit):
         doc.error(index, "%s has %d BCP 14 keywords, %s has exactly one (split it)" % (rid, count, unit))
     if unit != "an acceptance criterion" and not re.search(r"Source: [^<{\s]", body):
         doc.error(index, "%s has no source" % rid)
-    if UNMEASURED.search(before_source) and not re.search(r"[0-9]", before_source):
-        doc.error(index, "%s uses an unmeasured word without a number" % rid)
+    if not re.search(r"[0-9]", before_source):
+        if UNMEASURED.search(before_source):
+            doc.error(index, "%s uses an unmeasured word without a number" % rid)
+        speed = SPEED.search(before_source)
+        if speed and not MECHANISM.search(before_source, speed.end()):
+            doc.error(index, "%s says '%s' without a number or the mechanism that makes it so, named after by, because, since or through" % (rid, speed.group(1)))
 
 
-def check_common(doc, kind, template_text, path):
+def check_common(doc, kind, template_text, path, late=()):
     for index, line in enumerate(doc.lines):
         if MARKER in line:
             doc.error(index, "a clarification marker is left: every [NEEDS CLARIFICATION: ...] is answered and removed before the document merges")
@@ -539,7 +717,8 @@ def check_common(doc, kind, template_text, path):
         else:
             for field, (template_value, _) in wanted.items():
                 if field not in fields:
-                    doc.error(table_line, "the document control table has no '%s' row (ISO/IEC/IEEE 15289)" % field)
+                    if field not in late:
+                        doc.error(table_line, "the document control table has no '%s' row (ISO/IEC/IEEE 15289)" % field)
                     continue
                 value, line = fields[field]
                 # A template value in braces or angle brackets is a placeholder.
@@ -714,7 +893,7 @@ def class_of(doc, fields, kind, rows):
                     if ON_DISK.search(match.group(2)):
                         hint = ". An on-disk file is named by its area: sstable components, or commitlog, hint log and cache files"
                     doc.error(line, "the 'Touches' row names public interface (%s), which names none of the compatibility areas: %s%s (classification.md, The floor)" % (match.group(2).strip(), areas, hint))
-            text = re.sub(r"\([^)]*\)", "", value).strip().rstrip(".")
+            text = re.sub(BRACKETS, "", value).strip().rstrip(".")
             words = [w.strip().lower() for w in TOUCHES_SPLIT.split(text) if w.strip()]
             if words == ["none"]:
                 pass
@@ -1454,8 +1633,328 @@ def check_register(repo, base, where, branch, body):
             note = "no delta entry, as the pull request says: %s" % waiver
         else:
             shown = ", ".join(stock[:10]) + (" and %d more" % (len(stock) - 10) if len(stock) > 10 else "")
-            errors.append("the change touches %d stock file(s), %s, and adds or updates no entry in docs/delta/. Add its entry from docs/process/templates/delta-entry.md with its row in the Index of docs/delta/README.md, or update the entry of the change it extends, with a new Last-Update. Only when no entry applies, give the reason in the pull request description on a line 'No delta entry: <reason>'" % (len(stock), shown))
+            errors.append("the change touches %d stock file(s), %s, and adds or updates no entry in docs/delta/. Add its entry from docs/process/templates/delta-entry.md with its row in the Index of docs/delta/README.md, or update the entry of the change it extends, with a new Last-Update. A feature's change that touches only log lines Apache Cassandra writes needs no entry and says so in the pull request description on a line 'No delta entry: <reason>'. Any other use of that line is a decision of the maintainers at review (docs/process/principles.md, PRINCIPLE-011)" % (len(stock), shown))
     return errors, stock, entries, note
+
+
+# The stock test check: the directory name that marks a test file, the
+# lines of a pull request description that name its issue, the heading of
+# a record of one issue, and the lines of the records that permit a change
+# to a stock test file.
+TEST_DIR = re.compile(r"(?:^|/)test/")
+TEST_NAME = re.compile(r"(?:^|/)(?:[^/]*Tests?\.java|test_[^/]*\.py|[^/]*_test\.py)$")
+WORK_BRANCH = re.compile(r"^[^/]+/([0-9]+)-[^/]+/[^/]+$")
+LISTING_DATA = re.compile(r"(?:^|/)(?:[^/.]+|[^/]+\.(?:txt|json|csv))$")
+LISTING_STRING = re.compile(r"""^\s*(?:\+\s*)?(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\s*[,+]?\s*$""")
+ISSUE_LINE = re.compile(r"^(?:Fixes|Part of) #([0-9]+)\.?$")
+RECORD_OF = re.compile(r"^(Fix|Design): #([0-9]+)(?![0-9])")
+PLANNED = re.compile(r"^(\S+) (new|edit|test|stock)$")
+PINNED = re.compile(r"^Pinned listing: ([^\s{}`]+)$")
+TEST_CHANGE = re.compile(r"^Approved stock test change: ([^\s{}`]+) for #([0-9]+), because (\S.*)$")
+EXPLANATION_WORDS = 8
+PLACEHOLDER = re.compile(r"(?i:\b(?:tbd|todo|fixme|xxx|lorem)\b)|\.\.\.|\u2026|<[a-z][a-z ,.'-]*>|\{[^{}]*\}")
+APACHE_IMPORT = re.compile(r"^import/(?:cassandra-[0-9]|CASSANDRA-[1-9])")
+SYMLINK = "120000"
+FOUR_WAYS = ("A pre-existing test file of Apache Cassandra changes in four ways only (docs/process/principles.md, PRINCIPLE-013): "
+             "in an import from Apache Cassandra, in a fix to stock whose merged fix record lists the file as 'test' in its Planned file list, "
+             "by lines added to a listing that the merged design record or fix record names on a line 'Pinned listing: <path>', "
+             "or with an accepted decision record that has the line 'Approved stock test change: <path> for #<issue>, because <explanation>', the explanation in eight different words of two letters or more, with no placeholder such as TBD. "
+             "The record merges first, in its own pull request, and this pull request names its issue on a line 'Fixes #<issue>' "
+             "or 'Part of #<issue>'. A record permits the change of its own issue only: the issue of the work branch, "
+             "<name>/<issue>-<slug>/<line>, for a branch of this repository, and the one issue the description names for a fork. "
+             "The issue is open, and a permit is used up once a change to the file has reached the line after the record. "
+             "A fork feature puts its tests in its own files (docs/process/conventions.md, Where things live)")
+
+
+def is_explained(text):
+    """Whether the explanation of an approval is written: eight different
+    words or more, each of two letters or more with the case of letters
+    ignored, and no placeholder in it. A placeholder is one of the words
+    TBD, TODO, FIXME, XXX and lorem in any case of letters, three full
+    stops or an ellipsis, a text in braces or lower case words in angle
+    brackets."""
+    words = set(word.lower() for word in re.findall(r"[^\W\d_]{2,}", text))
+    return len(words) >= EXPLANATION_WORDS and not PLACEHOLDER.search(text)
+
+
+def is_stock_test(path, paths):
+    return bool(TEST_DIR.search(path) or TEST_NAME.search(path)) and not is_own(path, paths)
+
+
+def diff_since(repo, merge_base, where, *options):
+    args = ["diff", "-z", "-M"] + list(options)
+    if where == "index":
+        args.append("--cached")
+    args.append(merge_base)
+    if where not in ("index", "worktree"):
+        args.append(where)
+    return git(repo, *args)
+
+
+def file_changes(repo, merge_base, where):
+    """Each file changed at SRC since the merge base, by its path there:
+    (status, path at the merge base, mode before, mode after, lines
+    added, lines removed), the two counts None for a binary file. None
+    when the change cannot be read."""
+    raw = diff_since(repo, merge_base, where, "--raw", "--abbrev=40")
+    counts = diff_since(repo, merge_base, where, "--numstat")
+    if raw is None or counts is None:
+        return None
+    lines = {}
+    words = counts.split("\0")
+    index = 0
+    while index < len(words) and words[index]:
+        added, removed, path = words[index].split("\t", 2)
+        if path:
+            index += 1
+        else:
+            path = words[index + 2]
+            index += 3
+        lines[path] = (None, None) if added == "-" else (int(added), int(removed))
+    found = {}
+    words = raw.split("\0")
+    index = 0
+    while index + 1 < len(words) and words[index]:
+        before, after, _, _, status = words[index].lstrip(":").split(" ")
+        if status[0] in "RC":
+            old, path = words[index + 1], words[index + 2]
+            index += 3
+        else:
+            old = path = words[index + 1]
+            index += 2
+        found[path] = (status[0], old, before, after) + lines.get(path, (None, None))
+    return found
+
+
+def issues_of(body):
+    """The issues a pull request description names on its lines "Fixes
+    #<issue>" and "Part of #<issue>"."""
+    found = []
+    for line in (body or "").splitlines():
+        match = ISSUE_LINE.match(line.strip())
+        if match and match.group(1) not in found:
+            found.append(match.group(1))
+    return found
+
+
+def plain_lines(doc):
+    """The lines of a document outside fences and comments. A line
+    indented by four spaces or a tab is left out: Markdown shows such a
+    line as code."""
+    return [doc.visible[index].strip() for index in range(len(doc.lines))
+            if index not in doc.fenced and index not in doc.commented and not re.match(r"^(?: {4}| {0,3}\t)", doc.visible[index])]
+
+
+def own_issue(branch, body):
+    """The issue a pull request is the work of, and when there is none
+    the reason. For a branch of the repository it is the issue of its
+    work branch, <name>/<issue>-<slug>/<line>, which the description
+    names too. With no branch name, as for a fork, whose author chooses
+    the name, it is the one issue the description names."""
+    named = issues_of(body)
+    if branch:
+        match = WORK_BRANCH.match(branch)
+        if not match:
+            return None, "the head branch %s is not the work branch of an issue, <name>/<issue>-<slug>/<line>" % branch
+        if match.group(1) not in named:
+            return None, ("the pull request description does not name #%s, the issue of the branch %s, on a line 'Fixes #%s' or 'Part of #%s'"
+                          % (match.group(1), branch, match.group(1), match.group(1)))
+        return match.group(1), None
+    if not named:
+        return None, "the pull request description names no issue"
+    if len(named) > 1:
+        return None, "the pull request description names more than one issue, %s, and a pull request is the work of one" % " and ".join("#" + issue for issue in named)
+    return named[0], None
+
+
+def issue_closed(state, issue):
+    """Why the answer of the GitHub API for an issue does not show the
+    issue open, None when it does. A pull request has a number too and
+    is no issue."""
+    if not isinstance(state, dict) or str(state.get("number")) != issue:
+        return "the state of #%s cannot be read" % issue
+    if "pull_request" in state:
+        return "#%s is a pull request, not an issue" % issue
+    if state.get("state") != "open":
+        return "the issue #%s is not open" % issue
+    return None
+
+
+def first_parents(repo, base):
+    out = git(repo, "rev-list", "--first-parent", base)
+    return out.split() if out else []
+
+
+def is_unused(repo, base, line, record, path):
+    """Whether the permit a record gives for a file is still unused: no
+    change to the file reached the line with the last change of the
+    record or after it. line is the first parent history of REF, newest
+    first."""
+    def last(name):
+        return (git(repo, "log", "-1", "--first-parent", "--no-show-signature", "--format=%H", base, "--", name) or "").strip()
+    permit, change = last(record), last(path)
+    if permit not in line:
+        return False
+    return change not in line or line.index(change) > line.index(permit)
+
+
+def added_lines(repo, merge_base, where, path):
+    """The lines a change adds to a file, None when they cannot be read."""
+    args = ["diff", "-U0", "--no-color", "--no-ext-diff", "--no-textconv", "--no-renames"]
+    if where == "index":
+        args.append("--cached")
+    args.append(merge_base)
+    if where not in ("index", "worktree"):
+        args.append(where)
+    out = git(repo, *(args + ["--", path]))
+    if out is None:
+        return None
+    return [line[1:] for line in out.split("\n") if line.startswith("+") and not line.startswith("+++ ")]
+
+
+def test_permits(repo, base):
+    """What the records at REF permit, as three lists: (issue, path,
+    record) for each file a fix record plans as test, the same for each
+    Pinned listing line of a design record or fix record, and for each
+    Approved stock test change line of an accepted decision record, when
+    its explanation is written."""
+    planned, pinned, approved = [], [], []
+    listing = git(repo, "ls-tree", "-r", "--name-only", base, "--", "docs/design/", "docs/decisions/") or ""
+    for path in listing.split("\n"):
+        kind = doc_type(path, "") if path.endswith(".md") else None
+        if kind != "decision" and len(path.split("/")) != 4:
+            continue
+        text = git(repo, "show", "%s:%s" % (base, path))
+        if text is None:
+            continue
+        doc = Markdown(path, text)
+        fields, _ = control_table(doc)
+        status = fields["Status"][0] if fields and "Status" in fields else ""
+        if kind == "decision":
+            if status != "Accepted":
+                continue
+            for line in plain_lines(doc):
+                match = TEST_CHANGE.match(line)
+                if match and is_explained(match.group(3)):
+                    approved.append((match.group(2), match.group(1), path))
+            continue
+        heading = RECORD_OF.match(first_heading(text))
+        if not heading or status.startswith("Superseded"):
+            continue
+        issue = heading.group(2)
+        for line in plain_lines(doc):
+            match = PINNED.match(line)
+            if match:
+                pinned.append((issue, match.group(1), path))
+        span = plain_section_span(doc, "Planned file list")
+        if heading.group(1) == "Fix" and span is not None:
+            for index in range(span[0] + 1, span[1]):
+                if index in doc.fenced and index not in doc.fences:
+                    match = PLANNED.match(doc.lines[index].strip())
+                    if match and match.group(2) == "test":
+                        planned.append((issue, match.group(1), path))
+    return planned, pinned, approved
+
+
+def check_stock_tests(repo, base, where, branch, body, state=None):
+    """The stock test check. Returns the findings, for each stock test
+    file the change touches that passes the file and the way it passes,
+    and the number of stock test files the change touches. state is the
+    answer of the GitHub API for the issue of the pull request, None when
+    the caller has none."""
+    conventions = git(repo, "show", "%s:%s" % (base, CONVENTIONS))
+    paths = own_paths(conventions) if conventions else []
+    if not paths:
+        return ["%s on %s has no Where things live table, so the project's own files cannot be told from stock files" % (CONVENTIONS, base)], [], 0
+    head = "HEAD" if where in ("index", "worktree") else where
+    merge_base = (git(repo, "merge-base", base, head) or "").strip()
+    changed = file_changes(repo, merge_base, where) if merge_base else None
+    if changed is None:
+        return ["no merge base of %s and %s, so the change cannot be read. Fetch the line first" % (base, where)], [], 0
+    touched = []
+    for path in sorted(changed):
+        status, old, before, after, added, removed = changed[path]
+        # A file the change adds is not a pre-existing one. A renamed file
+        # is, by the name the line has it under.
+        if status != "A" and is_stock_test(old, paths) and git(repo, "cat-file", "-e", "%s:%s" % (merge_base, old)) is not None:
+            touched.append((old, path, status, before, after, added, removed))
+    if not touched:
+        return [], [], 0
+    if branch and APACHE_IMPORT.match(branch):
+        way = "the branch %s is an import from Apache Cassandra, which brings its own test files. The import history check holds what it brings" % branch
+        return [], [(old, way) for old, _, _, _, _, _, _ in touched], len(touched)
+    issue, no_issue = own_issue(branch, body)
+    if issue and state is not None:
+        no_issue = issue_closed(state, issue)
+        issue = None if no_issue else issue
+    planned, pinned, approved = test_permits(repo, base)
+    line = first_parents(repo, base)
+    errors, passed = [], []
+
+    def permit(found, old):
+        """The record that permits the change of a file for the issue of
+        the pull request, and whether its permit is used up."""
+        record = next((record for of, name, record in found if name == old and of == issue), None)
+        return record, bool(record) and not is_unused(repo, base, line, record, old)
+
+    for old, path, status, before, after, added, removed in touched:
+        refused = None
+        if status == "D":
+            refused = "is deleted"
+        elif status in "RC":
+            refused = "is renamed to %s" % path
+        elif status == "T" or SYMLINK in (before, after):
+            refused = "is or becomes a symbolic link or another type of file"
+        elif added is None:
+            refused = "is a binary file"
+        if refused:
+            errors.append("%s: the file %s. A pre-existing test file of Apache Cassandra is deleted, renamed, replaced by a link "
+                          "or changed as a binary file only by an import from Apache Cassandra" % (old, refused))
+            continue
+        used = None
+        record, spent = permit(planned, old)
+        if record and not spent:
+            passed.append((old, "the fix record %s plans it as test" % record))
+            continue
+        used = record or used
+        record, spent = permit(approved, old)
+        if record and not spent:
+            passed.append((old, "the decision record %s approves the change" % record))
+            continue
+        used = record or used
+        record, spent = permit(pinned, old)
+        if record and not spent:
+            lines = [] if LISTING_DATA.search(old) else added_lines(repo, merge_base, where, old)
+            other = None if lines is None else [text for text in lines if not LISTING_STRING.match(text)]
+            if removed:
+                errors.append("%s: %s names the file as a pinned listing, and the change removes or alters %d line(s) of it. "
+                              "A pinned listing only gains lines. A change to an existing line needs an accepted decision record with the line "
+                              "'Approved stock test change: %s for #<issue>, because <explanation>'" % (old, record, removed, old))
+            elif other is None or other:
+                errors.append("%s: %s names the file as a pinned listing, and the change adds %s that no listing holds. "
+                              "A file of plain data, one with no extension or a .txt, .json or .csv file, gains any line. In any other file, "
+                              "such as a test class, a pinned listing gains only lines that are one quoted string, alone on the line but for a "
+                              "'+' or a ','. Any other added line needs an accepted decision record with the line "
+                              "'Approved stock test change: %s for #<issue>, because <explanation>'"
+                              % (old, record, "lines that cannot be read" if other is None else "%d line(s)" % len(other), old))
+            else:
+                passed.append((old, "%s names it as a pinned listing and the change only adds lines of the listing" % record))
+            continue
+        used = record or used
+        if used and not line:
+            errors.append("%s: the history of %s cannot be read here, so the permit of %s cannot be told unused. Fetch the whole line first" % (old, base, used))
+        elif used:
+            errors.append("%s: the permit of %s is used up: a change to the file reached %s with that record or after it. "
+                          "A record permits the one change it plans. A further change needs its own record" % (old, used, base))
+        elif not issue:
+            errors.append("%s: the file is a pre-existing test file of Apache Cassandra and %s, so no record on %s can permit the change"
+                          % (old, no_issue, base))
+        else:
+            errors.append("%s: the file is a pre-existing test file of Apache Cassandra and no record on %s of #%s permits the change"
+                          % (old, base, issue))
+    if errors:
+        errors.append(FOUR_WAYS)
+    return errors, passed, len(touched)
 
 
 MILESTONE_STATUSES = ("delivered", "not delivered", "delivered in part, as planned")
@@ -1770,31 +2269,67 @@ def run_index(args):
     return 1 if failed else 0
 
 
-RECORD = re.compile(r"^docs/decisions/([0-9]{4})-[^/]+\.md$")
+OLD_RECORD = re.compile(r"^docs/decisions/([0-9]{4})-[^/]+\.md$")
+SLUG = r"[a-z0-9]+(?:-[a-z0-9]+)*"
+GOV_RECORD = re.compile(r"^docs/decisions/(DEC-(GOV)-([0-9]{4,}))-" + SLUG + r"\.md$")
+FEATURE_RECORD = re.compile(r"^docs/design/((?:([A-Z]{3,5})|([0-9]+))-" + SLUG + r")/decisions/(DEC-([A-Z]{3,5}|[0-9]+)-([0-9]{4,}))-" + SLUG + r"\.md$")
+RECORD_FORM = ("a decision record is DEC-<KEY>-nnnn-<slug>.md, four digits or more and a slug of lower case words joined by single hyphens: "
+               "docs/design/<KEY>-<slug>/decisions/ for a decision of one feature, with the key of its directory (the issue number where the directory has no key), "
+               "or docs/decisions/DEC-GOV-nnnn-<slug>.md for a decision of the whole project (docs/decisions/README.md, rule 1)")
+
+
+def record_id(path):
+    """(id, key, number) of a decision record named in the form of rule 1,
+    None for any other path. The key is the feature key, GOV, or the issue
+    number of a design directory that has no key."""
+    match = GOV_RECORD.match(path)
+    if match:
+        return match.group(1), match.group(2), int(match.group(3))
+    match = FEATURE_RECORD.match(path)
+    if match and match.group(5) == (match.group(2) or match.group(3)) and match.group(5) != GOV_KEY:
+        return match.group(4), match.group(5), int(match.group(6))
+    return None
 
 
 def records_at(repo, where):
-    """The decision record paths of docs/decisions/ at where: "index",
-    "worktree" or a commit."""
+    """The decision record paths at where, "index", "worktree" or a
+    commit: every file of docs/decisions/ but its README, and every file
+    of a decisions/ directory of a design directory."""
+    places = ("docs/decisions/", "docs/design/")
     if where == "index":
-        listing = git(repo, "ls-files", "--", "docs/decisions/")
+        listing = git(repo, "ls-files", "--", *places)
     elif where == "worktree":
-        listing = git(repo, "ls-files", "--cached", "--others", "--exclude-standard", "--", "docs/decisions/")
+        listing = git(repo, "ls-files", "--cached", "--others", "--exclude-standard", "--", *places)
     else:
-        listing = git(repo, "ls-tree", "-r", "--name-only", where, "--", "docs/decisions/")
-    return [line for line in (listing or "").split("\n") if RECORD.match(line)]
+        listing = git(repo, "ls-tree", "-r", "--name-only", where, "--", *places)
+    return [line for line in (listing or "").split("\n") if doc_type(line, "") == "decision"]
 
 
 def record_rules(repo, templates, where, rules):
-    """The decision records merged at the rules ref, and the numbers the
-    new ones may take: the next numbers after the highest merged one, one
-    each, in order (docs/decisions/README.md, rule 1)."""
+    """The decision records merged at the rules ref, the highest number
+    merged under each key, and the numbers the new records of each key may
+    take: the next ones after the highest merged, one each, in order
+    (docs/decisions/README.md, rule 1)."""
     if "records" not in rules:
         merged = set(records_at(repo, templates))
-        numbers = [int(RECORD.match(path).group(1)) for path in merged]
-        last = max(numbers) if numbers else 0
-        new = [path for path in records_at(repo, where) if path not in merged]
-        rules["records"] = (merged, last, set(range(last + 1, last + 1 + len(new))))
+        last = {}
+        for path in merged:
+            found = record_id(path)
+            if found:
+                last[found[1]] = max(last.get(found[1], 0), found[2])
+        count = {}
+        here = records_at(repo, where)
+        for path in here:
+            found = record_id(path)
+            if found and path not in merged:
+                count[found[1]] = count.get(found[1], 0) + 1
+        allowed = {key: set(range(last.get(key, 0) + 1, last.get(key, 0) + 1 + n)) for key, n in count.items()}
+        ids = {}
+        for path in here:
+            found = record_id(path)
+            if found:
+                ids.setdefault(found[0], []).append(path)
+        rules["records"] = (merged, last, allowed, ids)
     return rules["records"]
 
 
@@ -1805,22 +2340,732 @@ def needs_index(kind, path, repo, templates, where, rules):
     2), so one merged before its template had the section keeps none."""
     if kind != "decision":
         return True
-    merged, _, _ = record_rules(repo, templates, where, rules)
-    return path not in merged
+    return path not in record_rules(repo, templates, where, rules)[0]
 
 
-def check_record_number(doc, path, repo, templates, where, rules):
-    """A new decision record takes the next number after the highest
-    record merged at the rules ref, so it neither reuses a merged number
-    nor leaves a gap (docs/decisions/README.md, rule 1)."""
-    merged, last, allowed = record_rules(repo, templates, where, rules)
-    match = RECORD.match(path)
-    if path in merged or not match:
+def check_record(doc, path, repo, templates, where, rules):
+    """A new decision record is named in the form of rule 1 and lives where
+    its key puts it, its title opens with its id, its id is no other
+    record's, and its number is the next after the highest merged under its
+    key, so it neither reuses a merged number nor leaves a gap. A record
+    merged at the rules ref is never edited (rule 2) and is not held to
+    this: the records numbered NNNN in docs/decisions/ were merged before
+    the ids."""
+    merged, last, allowed, ids = record_rules(repo, templates, where, rules)
+    if path in merged:
         return
-    number = int(match.group(1))
-    if number not in allowed:
-        span = "%04d" % (last + 1) if len(allowed) == 1 else "%04d to %04d" % (last + 1, last + len(allowed))
-        doc.error(0, "a new decision record takes a number after the highest merged one, %04d, in order with no gap: %s here, and this one is %04d (docs/decisions/README.md, rule 1)" % (last, span, number))
+    found = record_id(path)
+    if not found:
+        if OLD_RECORD.match(path):
+            doc.error(0, "a new decision record takes an id, not a number alone: " + RECORD_FORM)
+        else:
+            doc.error(0, RECORD_FORM)
+        return
+    name, key, number = found
+    title = doc.headings[0][1] if doc.headings and doc.headings[0][0] == 1 else ""
+    if not title.startswith(name + ". "):
+        doc.error(doc.headings[0][2] if doc.headings else 0, "the title of this record opens with its id: '# %s. <Short title of the decision>'" % name)
+    others = [other for other in ids.get(name, []) if other != path]
+    if others:
+        doc.error(0, "the id %s is also the id of %s. Each decision record has an id of its own (docs/decisions/README.md, rule 1)" % (name, ", ".join(sorted(others))))
+    numbers = allowed.get(key, set())
+    if number not in numbers:
+        first = last.get(key, 0) + 1
+        span = "%s-%s-%04d" % ("DEC", key, first) if len(numbers) <= 1 else "DEC-%s-%04d to DEC-%s-%04d" % (key, first, key, first + len(numbers) - 1)
+        before = "the highest merged one, DEC-%s-%04d" % (key, last[key]) if key in last else "none merged under the key %s yet" % key
+        doc.error(0, "a new decision record takes the next number of its key, in order with no gap: after %s, %s here, and this one is %s (docs/decisions/README.md, rule 1)" % (before, span, name))
+
+
+AREAS_PAGE = "docs/process/areas.md"
+AREA_NAME = re.compile(r"^`([a-z][a-z0-9]*(?:-[a-z0-9]+)*)`$")
+# The rows a template gained after documents were merged from it. A
+# document merged without one keeps none until it is at another version
+# than on the line, a decision record, which has no version, for good.
+LATE_ROWS = ("Areas", "Supersedes", "Source", "Exceptions")
+
+
+def names_at(repo, ref, section, rules=None):
+    """The names of one closed list of docs/process/areas.md at ref, in the
+    page's order: the names in backticks in the first column of the table
+    of the section. None when the page or the table is not there."""
+    if rules is not None and ("names", section) in rules:
+        return rules[("names", section)]
+    found = None
+    text = git(repo, "show", "%s:%s" % (ref, AREAS_PAGE))
+    if text is not None:
+        doc = Markdown(AREAS_PAGE, text)
+        span = plain_section_span(doc, section)
+        if span is not None:
+            names = [AREA_NAME.match(cells[0]) for _, cells in first_table(doc, span[0], span[1]) if cells]
+            found = [match.group(1) for match in names if match] or None
+    if rules is not None:
+        rules[("names", section)] = found
+    return found
+
+
+def areas_at(repo, ref, rules=None):
+    return names_at(repo, ref, "The areas", rules)
+
+
+def late_rows(doc, path, kind, repo, templates):
+    """The rows of LATE_ROWS this document may lack: the ones it lacked
+    when it was merged at the rules ref, while it is the version it was
+    merged at. A decision record is never edited (README rule 2), so it
+    keeps the rows it was merged with."""
+    merged = git(repo, "show", "%s:%s" % (templates, path))
+    if merged is None:
+        return ()
+    old_fields, _ = control_table(Markdown(path, merged))
+    fields, _ = control_table(doc)
+    if not old_fields or not fields:
+        return ()
+    if kind != "decision" and old_fields.get("Version", ("",))[0] != fields.get("Version", ("",))[0]:
+        return ()
+    return tuple(row for row in LATE_ROWS if row not in old_fields and row not in fields)
+
+
+def areas_of(value):
+    return [word.strip().strip("`") for word in value.split(",") if word.strip()]
+
+
+def check_areas(doc, repo, templates, rules):
+    """The Areas row names one area or more of docs/process/areas.md on the
+    line, joined by commas, and nothing else."""
+    fields, _ = control_table(doc)
+    if not fields or "Areas" not in fields:
+        return
+    value, line = fields["Areas"]
+    if not value or outer_braces(value) or re.search(r"<[^>]+>", value):
+        return
+    known = areas_at(repo, templates, rules)
+    if known is None:
+        doc.error(line, "no list of areas at %s on %s, so the Areas row cannot be checked" % (AREAS_PAGE, templates))
+        return
+    named = areas_of(value)
+    for name in named:
+        if name not in known:
+            doc.error(line, "'%s' is not an area. The Areas row names one or more of %s, joined by commas (%s). A new area is a change to that page" % (name, ", ".join(known), AREAS_PAGE))
+    if len(set(named)) != len(named):
+        doc.error(line, "the Areas row names an area twice")
+
+
+def check_source(doc, repo, templates, rules):
+    """The Source row names one source of the list on the areas page: how
+    the change came into the line."""
+    fields, _ = control_table(doc)
+    if not fields or "Source" not in fields:
+        return
+    value, line = fields["Source"]
+    if not value or outer_braces(value):
+        return
+    known = names_at(repo, templates, "The sources", rules)
+    if known is None:
+        doc.error(line, "no list of sources at %s on %s, so the Source row cannot be checked" % (AREAS_PAGE, templates))
+    elif value.strip("`") not in known:
+        doc.error(line, "'%s' is not a source. The Source row names one of %s (%s)" % (value, ", ".join(known), AREAS_PAGE))
+
+
+PRINCIPLES_PAGE = "docs/process/principles.md"
+PRINCIPLE_ID = re.compile(r"^PRINCIPLE-[0-9]{3}$")
+NO_EXCEPTION = "None"
+
+
+def principles_at(repo, ref, rules=None):
+    """The ids of the principles page at ref: each heading that is an id
+    PRINCIPLE-nnn. None when the page is not there or holds no principle."""
+    if rules is not None and "principles" in rules:
+        return rules["principles"]
+    found = None
+    text = git(repo, "show", "%s:%s" % (ref, PRINCIPLES_PAGE))
+    if text is not None:
+        found = [title for _, title, _ in Markdown(PRINCIPLES_PAGE, text).headings if PRINCIPLE_ID.match(title)] or None
+    if rules is not None:
+        rules["principles"] = found
+    return found
+
+
+def exceptions_of(value):
+    """The words an Exceptions row names, a link read as its text. None
+    names nothing."""
+    plain = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", value).strip()
+    if plain == NO_EXCEPTION:
+        return []
+    return [word.strip().strip("`") for word in plain.split(",") if word.strip()]
+
+
+def check_exceptions(doc, repo, templates, rules):
+    """The Exceptions row marks a record that departs from a principle
+    (docs/process/principles.md, How to read and cite a principle): it
+    says None, or names each principle the record departs from by its id,
+    joined by commas, each one a principle of the page on the line."""
+    fields, _ = control_table(doc)
+    if not fields or "Exceptions" not in fields:
+        return
+    value, line = fields["Exceptions"]
+    if not value or outer_braces(value):
+        return
+    named = exceptions_of(value)
+    if not named:
+        if value.strip() != NO_EXCEPTION:
+            doc.error(line, "the Exceptions row names each principle this record departs from by its id, such as PRINCIPLE-016, joined by commas, or says None")
+        return
+    known = principles_at(repo, templates, rules)
+    if known is None:
+        doc.error(line, "no principles at %s on %s, so the Exceptions row cannot be checked" % (PRINCIPLES_PAGE, templates))
+    for name in named:
+        if not PRINCIPLE_ID.match(name):
+            doc.error(line, "'%s' is not the id of a principle. The Exceptions row names each principle this record departs from by its id, such as PRINCIPLE-016, joined by commas, or says None" % name)
+        elif known is not None and name not in known:
+            doc.error(line, "%s is not a principle of %s on %s. The Exceptions row names a principle the page states" % (name, PRINCIPLES_PAGE, templates))
+    if len(set(named)) != len(named):
+        doc.error(line, "the Exceptions row names a principle twice")
+
+
+RECORD_REF = re.compile(r"(?<![0-9A-Za-z-])(" + DECISION_ID + r"|[0-9]{4})(?![0-9A-Za-z])")
+
+
+def own_record_name(path):
+    """The id a decision record is cited by: its id, or its number for a
+    record merged before the ids."""
+    found = record_id(path)
+    if found:
+        return found[0]
+    match = OLD_RECORD.match(path)
+    return match.group(1) if match else None
+
+
+def check_supersedes(doc, path, source, repo, where):
+    """Supersede links hold both ways (README rule 2): each record this
+    one's Supersedes row names says "Superseded by" this one in its Status,
+    and a record whose Status says "Superseded by" another is named in that
+    one's Supersedes row. A record merged before the Supersedes row has
+    none, and is not asked for it."""
+    own = own_record_name(path)
+    fields, _ = control_table(doc)
+    if own is None or not fields:
+        return
+    by_name = {}
+    for other in records_at(repo, where):
+        name = own_record_name(other)
+        if name:
+            by_name.setdefault(name, other)
+
+    def fields_of(name):
+        other = by_name.get(name)
+        text = source.read(other) if other else None
+        if text is None:
+            return other, None
+        return other, control_table(Markdown(other, text))[0] or {}
+
+    if "Supersedes" in fields:
+        value, line = fields["Supersedes"]
+        names = RECORD_REF.findall(re.sub(r"\\([^)]*\\)", "", value))
+        if value != "None" and not names and not re.search(r"<[^>]+>", value):
+            doc.error(line, "the Supersedes row names each record this one replaces by its id, such as DEC-VER-0003, or says None")
+        for name in names:
+            if name == own:
+                doc.error(line, "a record does not supersede itself")
+                continue
+            other, theirs = fields_of(name)
+            if theirs is None:
+                doc.error(line, "this record supersedes %s, and there is no such record" % name)
+            elif theirs.get("Status", ("",))[0] != "Superseded by %s" % own:
+                doc.error(line, "this record supersedes %s, and the Status of %s is '%s'. It becomes 'Superseded by %s' in the same pull request (docs/decisions/README.md, rule 2)" % (name, other, theirs.get("Status", ("",))[0], own))
+    status, line = fields.get("Status", ("", 0))
+    match = re.match(r"^Superseded by (" + DECISION_ID + r"|[0-9]{4})$", status)
+    if match:
+        other, theirs = fields_of(match.group(1))
+        if theirs is None:
+            doc.error(line, "the Status names %s, and there is no such record" % match.group(1))
+        elif "Supersedes" in theirs and own not in RECORD_REF.findall(re.sub(r"\\([^)]*\\)", "", theirs["Supersedes"][0])):
+            doc.error(line, "the Status says this record is superseded by %s, and the Supersedes row of %s does not name %s (docs/decisions/README.md, rule 2)" % (match.group(1), other, own))
+
+
+REVISION_HEAD = ["Version", "Date", "Change", "Decision record"]
+REVISION_INTRO = "Revision history, one row for each version:"
+OLD_HISTORY = "Change history: the git history of this file."
+HISTORY_LABEL = "Full history in git: "
+HISTORY_LINE = re.compile(r"^Full history in git: \[commits of this file\]\((\S+)\)$")
+RECORD_CELL = re.compile(r"^(?:None|(?:\[?(?:" + DECISION_ID + r"|[0-9]{4})\]?(?:\([^)\s]+\))?)(?:(?:, | and )\[?(?:" + DECISION_ID + r"|[0-9]{4})\]?(?:\([^)\s]+\))?)*)$")
+GITHUB_REMOTE = re.compile(r"github\.com[:/]([^/\s]+)/([^/\s]+?)(?:\.git)?/?\s*$")
+
+
+def preamble(doc):
+    """The line range between the title and the first section."""
+    first = [h for h in doc.headings if h[0] == 1]
+    start = first[0][2] + 1 if first else 0
+    stop = len(doc.lines)
+    for level, _, index in doc.headings:
+        if index >= start and level >= 2:
+            stop = index
+            break
+    return start, stop
+
+
+def revision_rows(doc):
+    """(header line, rows) of the revision history table of a document:
+    the table of its preamble whose header is Version, Date, Change,
+    Decision record. (None, []) when it has none."""
+    start, stop = preamble(doc)
+    for index in range(start, stop):
+        if index in doc.fenced or index in doc.commented:
+            continue
+        line = doc.visible[index].strip()
+        if line.startswith("|") and table_cells(line) == REVISION_HEAD:
+            return index, first_table(doc, index, stop)
+    return None, []
+
+
+def history_url(repo, ref, path):
+    """The address of the commits of path on its line on GitHub: the
+    repository is the one the rules ref is fetched from, so the link
+    follows a move or a rename of the repository, and the line is the
+    branch the rules ref names. None when the clone has no GitHub remote
+    to read it from."""
+    remote, _, line = ref.partition("/")
+    url = git(repo, "remote", "get-url", remote) if line else None
+    if url is None:
+        url = git(repo, "remote", "get-url", "origin")
+        line = ref
+    match = GITHUB_REMOTE.search(url or "")
+    if not match or not re.match(r"^[A-Za-z0-9._-]+$", line):
+        return None
+    return "https://github.com/%s/%s/commits/%s/%s" % (match.group(1), match.group(2), line, path)
+
+
+def history_line(doc):
+    """(line index, address) of the history link of the preamble."""
+    start, stop = preamble(doc)
+    for index in range(start, stop):
+        if index in doc.fenced or index in doc.commented:
+            continue
+        if doc.visible[index].startswith(HISTORY_LABEL):
+            match = HISTORY_LINE.match(doc.visible[index].rstrip())
+            return index, match.group(1) if match else ""
+    return None, None
+
+
+def held_to_revision(doc, path, repo, templates, template_text):
+    """True when the document carries its revision history: its template
+    on the line has the table, and the document is new, or already has the
+    table on the line, or is at another version than on the line. A
+    document merged before its template had the table keeps the old line
+    until its next version, which adds the table with that version's
+    row."""
+    if revision_rows(Markdown("template", template_text))[0] is None:
+        return False
+    merged = git(repo, "show", "%s:%s" % (templates, path))
+    if merged is None:
+        return True
+    old = Markdown(path, merged)
+    if revision_rows(old)[0] is not None or revision_rows(doc)[0] is not None:
+        return True
+    old_fields, _ = control_table(old)
+    fields, _ = control_table(doc)
+    return bool(old_fields and fields and "Version" in old_fields and "Version" in fields and old_fields["Version"][0] != fields["Version"][0])
+
+
+def check_revision_table(doc, path, repo, templates):
+    """The revision history table and the history link of a document."""
+    head, rows = revision_rows(doc)
+    if head is None:
+        doc.error(0, "no revision history table under the document control table: a table Version, Date, Change, Decision record with one row for each version, and under it the link to the commits of this file. doclint.py history --write puts both in")
+        return
+    fields, _ = control_table(doc)
+    if not rows:
+        doc.error(head, "the revision history has no row. Each version has one: its number, its date, what changed and the decision record behind it")
+    previous = None
+    for index, cells in rows:
+        cells = cells + [""] * (4 - len(cells))
+        version, date, change, record = cells[:4]
+        if not re.match(r"^[1-9][0-9]*$", version):
+            doc.error(index, "the Version of a revision history row is a whole number, 1 for the first version")
+        else:
+            if previous is not None and int(version) != previous + 1:
+                doc.error(index, "the revision history rows are in order with no gap: version %d follows version %d" % (previous + 1, previous))
+            previous = int(version)
+        if not DATE.match(date):
+            doc.error(index, "the Date of a revision history row is an RFC 3339 date, YYYY-MM-DD")
+        if not change or outer_braces(change):
+            doc.error(index, "the Change of a revision history row says what changed in that version")
+        if not RECORD_CELL.match(record):
+            doc.error(index, "the Decision record of a revision history row names the record behind the change by its id, such as DEC-VER-0003, several joined by commas, or says None")
+    if previous is not None and fields and "Version" in fields:
+        value, line = fields["Version"]
+        if re.match(r"^[1-9][0-9]*$", value) and int(value) != previous:
+            doc.error(line, "the Version row says %s and the last row of the revision history is version %d. A new version adds its row" % (value, previous))
+    # A version that is merged keeps its row as it was merged.
+    merged = git(repo, "show", "%s:%s" % (templates, path))
+    if merged is not None:
+        for index, cells in revision_rows(Markdown(path, merged))[1]:
+            if cells not in [found for _, found in rows]:
+                doc.error(head, "the revision history row of version %s on the line is changed or gone. A merged version keeps its row" % (cells[0] if cells else "?"))
+    line, address = history_line(doc)
+    wanted = history_url(repo, templates, path)
+    if line is None:
+        doc.error(head, "no link to the commits of this file under the revision history: '%s[commits of this file](%s)'. doclint.py history --write puts it in" % (HISTORY_LABEL, wanted or "https://github.com/<owner>/<repository>/commits/<line>/" + path))
+    elif wanted is not None and address != wanted:
+        doc.error(line, "the history link is not the commits of this file on its line: '%s[commits of this file](%s)'. doclint.py history --write puts it right" % (HISTORY_LABEL, wanted))
+    elif wanted is None and not re.match(r"^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/commits/[A-Za-z0-9._-]+/" + re.escape(path) + "$", address):
+        doc.error(line, "the history link is not the commits of this file on GitHub: https://github.com/<owner>/<repository>/commits/<line>/%s" % path)
+
+
+def check_revision(doc, path, repo, templates, template_text):
+    if held_to_revision(doc, path, repo, templates, template_text):
+        check_revision_table(doc, path, repo, templates)
+
+
+def with_history(doc, path, repo, templates, today):
+    """The lines of the document with its revision history as doclint
+    writes it: the old change history line becomes the table with the row
+    of the document's version, which the author fills in, and the history
+    link is the one of this file on its line. None when the document has
+    neither the old line nor the table to start from, False when the clone
+    has no GitHub remote to build the link from."""
+    lines = list(doc.lines)
+    start, stop = preamble(doc)
+    head, _ = revision_rows(doc)
+    wanted = history_url(repo, templates, path)
+    if wanted is None:
+        return False
+    link = "%s[commits of this file](%s)" % (HISTORY_LABEL, wanted)
+    if head is None:
+        old = [index for index in range(start, stop) if lines[index].strip() == OLD_HISTORY]
+        if not old:
+            return None
+        fields, _ = control_table(doc)
+        version = fields["Version"][0] if fields and "Version" in fields and re.match(r"^[1-9][0-9]*$", fields["Version"][0]) else "1"
+        block = [REVISION_INTRO, "", "| " + " | ".join(REVISION_HEAD) + " |", "|---|---|---|---|",
+                 "| %s | %s | {what changed in this version} | {the id of the decision record behind it, or None} |" % (version, today), "", link]
+        return lines[:old[0]] + block + lines[old[0] + 1:]
+    line, _ = history_line(doc)
+    if line is not None:
+        lines[line] = link
+        return lines
+    end = head
+    while end + 1 < stop and lines[end + 1].strip().startswith("|"):
+        end += 1
+    return lines[:end + 1] + ["", link] + lines[end + 1:]
+
+
+def run_history(args):
+    repo, templates, mode, paths = None, None, None, []
+    index = 0
+    while index < len(args):
+        word = args[index]
+        if word in ("--repo", "--templates") and index + 1 < len(args):
+            if word == "--repo":
+                repo = args[index + 1]
+            else:
+                templates = args[index + 1]
+            index += 2
+            continue
+        if word in ("--write", "--check") and mode is None:
+            mode = word
+        elif word.startswith("--"):
+            sys.stderr.write(__doc__)
+            return 2
+        else:
+            paths.append(word)
+        index += 1
+    if not repo or not templates or not paths:
+        sys.stderr.write(__doc__)
+        return 2
+    failed = 0
+    for path in paths:
+        text = Source(repo, "worktree").read(path)
+        if text is None:
+            sys.stderr.write("%s:0: cannot be read\n" % path)
+            failed += 1
+            continue
+        doc = Markdown(path, text)
+        if mode == "--check":
+            check_revision_table(doc, path, repo, templates)
+            for error in doc.errors:
+                sys.stderr.write(error + "\n")
+            failed += 1 if doc.errors else 0
+        elif mode == "--write":
+            new = with_history(doc, path, repo, templates, time.strftime("%Y-%m-%d", time.gmtime()))
+            if new is False:
+                sys.stderr.write("%s:0: the clone has no GitHub remote for %s to build the link from, so nothing is written. Add the remote the line is fetched from\n" % (path, templates))
+                failed += 1
+            elif new is None:
+                sys.stderr.write("%s:0: has neither a revision history table nor the line '%s' under its document control table, so there is nothing to write\n" % (path, OLD_HISTORY))
+                failed += 1
+            elif new != doc.lines:
+                with open(os.path.join(repo, path), "w", encoding="utf-8") as handle:
+                    handle.write("\n".join(new))
+                print("history %s written" % path)
+            else:
+                print("history %s current" % path)
+        else:
+            print("%s[commits of this file](%s)" % (HISTORY_LABEL, history_url(repo, templates, path) or "https://github.com/<owner>/<repository>/commits/<line>/" + path))
+    if mode == "--check":
+        print("history %d checked %d failed" % (len(paths), failed))
+    return 1 if failed else 0
+
+
+INDEX_DIR = "docs/index"
+INDEX_PAGES = {"documents": INDEX_DIR + "/documents.md", "decisions": INDEX_DIR + "/decisions.md", "areas": INDEX_DIR + "/areas.md"}
+FEATURE_INDEX = "INDEX.md"
+INDEX_LICENCE = """<!--
+Copyright 2026 AxonOps Limited
+SPDX-License-Identifier: Apache-2.0
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+"""
+INDEX_NOTE = "This page is generated by `tools/chronitondb/doclint.py indexes --write` from the document control table of each document. It is never edited by hand."
+# The kind of a document is the word before the colon of its title, as its
+# template writes it. These read better with their noun.
+KIND_NAMES = {"Design": "Design record", "Fix": "Fix record", "Import": "Import record", "Release": "Release proposal", "Delta": "Delta entry"}
+KIND_ORDER = ("Feature spec", "Plan", "Delivery plan", "Milestone report", "Design record", "Fix record", "Import record",
+              "Research report", "Line plan", "Release proposal", "Delta entry", "Review record")
+NO_AREA = "Documents with no Areas row"
+EXCEPTIONS_SECTION = "Exceptions to principles"
+JIRA_ID = re.compile(r"\bCASSANDRA-[0-9]+\b")
+UPSTREAM = re.compile(r"`([0-9a-f]{7,40}|cassandra-[0-9][0-9A-Za-z.-]*)`|\b(cassandra-[0-9]+\.[0-9]+(?:\.[0-9]+)?(?:-[a-z0-9]+)?)\b")
+
+
+def docs_at(repo, where):
+    if where == "index":
+        listing = git(repo, "ls-files", "--", "docs/")
+    elif where == "worktree":
+        listing = git(repo, "ls-files", "--cached", "--others", "--exclude-standard", "--", "docs/")
+    else:
+        listing = git(repo, "ls-tree", "-r", "--name-only", where, "--", "docs/")
+    return sorted(line for line in (listing or "").split("\n") if line.endswith(".md"))
+
+
+def cell(text):
+    return re.sub(r"\s+", " ", text).replace("|", "\\|").strip()
+
+
+def indexed_documents(repo, where):
+    """Every document of docs/ at where that carries the common header: a
+    document control table with a Document type row. A template, a generated
+    index and a page with no such table are not documents. Each is a dict
+    of its path, kind, title, status, version, areas and, by kind, what
+    its header says more."""
+    source = Source(repo, where)
+    found = []
+    for path in docs_at(repo, where):
+        if path.startswith("docs/process/templates/") or path.startswith(INDEX_DIR + "/") or os.path.basename(path) == FEATURE_INDEX:
+            continue
+        text = source.read(path)
+        if text is None:
+            continue
+        doc = Markdown(path, text)
+        fields, _ = control_table(doc)
+        if not fields or "Document type" not in fields:
+            continue
+        heading = first_heading(text)
+        value = lambda name: fields[name][0] if name in fields else ""
+        entry = {"path": path, "heading": heading, "status": value("Status"), "version": value("Version"),
+                 "areas": areas_of(value("Areas")) if "Areas" in fields else None, "references": value("References"),
+                 "title": value("Title") or heading,
+                 "exceptions": [name for name in exceptions_of(value("Exceptions")) if PRINCIPLE_ID.match(name)]}
+        if doc_type(path, text) == "decision":
+            entry["kind"] = "Decision record"
+            entry["id"] = own_record_name(path) or ""
+            entry["title"] = re.sub(r"^\S+\.\s+", "", heading)
+            entry["date"] = value("Date")
+            entry["supersedes"] = value("Supersedes") if "Supersedes" in fields else ""
+            entry["feature"] = path.split("/")[2] if path.startswith("docs/design/") else ""
+        else:
+            word = heading.split(":")[0].strip() if ":" in heading else ""
+            entry["kind"] = KIND_NAMES.get(word, word) or "Other document"
+            entry["title"] = heading.split(":", 1)[1].strip() if ":" in heading else heading
+        if entry["kind"] == "Import record":
+            both = heading + " " + entry["references"]
+            line = re.search(r" into (\S+)\s*$", heading)
+            entry["line"] = line.group(1) if line else ""
+            entry["source"] = value("Source")
+            entry["jira"] = sorted(set(JIRA_ID.findall(both)), key=lambda name: int(name.split("-")[1]))
+            entry["upstream"] = []
+            for match in UPSTREAM.finditer(both):
+                name = match.group(1) or match.group(2)
+                if name not in entry["upstream"]:
+                    entry["upstream"].append(name)
+        found.append(entry)
+    return found
+
+
+def link(entry, page, text=None):
+    return "[%s](%s)" % (cell(text or entry["title"]), os.path.relpath(entry["path"], os.path.dirname(page)).replace(os.sep, "/"))
+
+
+def kind_key(kind):
+    return (KIND_ORDER.index(kind) if kind in KIND_ORDER else len(KIND_ORDER), kind)
+
+
+def record_key(entry):
+    found = record_id(entry["path"])
+    return (0, "", int(entry["id"])) if not found else (1, found[1], found[2])
+
+
+def table(head, rows):
+    return ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)] + ["| " + " | ".join(row) + " |" for row in rows]
+
+
+def areas_cell(entry):
+    return ", ".join("`%s`" % name for name in entry["areas"]) if entry["areas"] else ""
+
+
+def index_pages(repo, where, rules_ref):
+    """The generated indexes of the tree at where, as a path to text map:
+    every document by kind, every decision record, every document by area,
+    and the documents of each feature in its own directory. The areas and
+    their order come from the areas page at rules_ref, the line."""
+    entries = indexed_documents(repo, where)
+    records = sorted((entry for entry in entries if entry["kind"] == "Decision record"), key=record_key)
+    others = [entry for entry in entries if entry["kind"] != "Decision record"]
+    pages = {}
+
+    def page(path, title, body):
+        pages[path] = "\n".join([INDEX_LICENCE, "# " + title, "", INDEX_NOTE, ""] + body).rstrip("\n") + "\n"
+
+    # Every document, by kind.
+    here = INDEX_PAGES["documents"]
+    body = ["Every document under `docs/` that carries the common header, by kind. The decision records are in [decisions.md](decisions.md), and the same documents by area in [areas.md](areas.md).", ""]
+    for kind in sorted({entry["kind"] for entry in others}, key=kind_key):
+        body += ["## %s" % kind, ""]
+        rows = sorted((entry for entry in others if entry["kind"] == kind), key=lambda entry: entry["path"])
+        if kind == "Import record":
+            body += table(["Import", "Line", "Source", "Apache JIRA", "Release or commit", "Status", "Version", "Areas"],
+                          [[link(entry, here), cell(entry["line"]), cell(entry["source"]), ", ".join(entry["jira"]), ", ".join("`%s`" % name for name in entry["upstream"]),
+                            cell(entry["status"]), cell(entry["version"]), areas_cell(entry)] for entry in rows])
+        else:
+            body += table(["Document", "Status", "Version", "Areas"],
+                          [[link(entry, here), cell(entry["status"]), cell(entry["version"]), areas_cell(entry)] for entry in rows])
+        body += [""]
+    # The records that carry an exception to a principle, by principle. The
+    # section is written once a record names one.
+    marked = sorted(((name, entry) for entry in others for name in sorted(set(entry["exceptions"]))), key=lambda pair: (pair[0], pair[1]["path"]))
+    if marked:
+        principles = os.path.relpath(PRINCIPLES_PAGE, os.path.dirname(here)).replace(os.sep, "/")
+        body += ["## %s" % EXCEPTIONS_SECTION, "",
+                 "Every record whose `Exceptions` row names a principle of [principles.md](%s), under each principle it departs from. The record gives the reason." % principles, ""]
+        body += table(["Principle", "Record", "Kind", "Status", "Version"],
+                      [["[%s](%s#%s)" % (name, principles, name.lower()), link(entry, here), entry["kind"], cell(entry["status"]), cell(entry["version"])] for name, entry in marked])
+        body += [""]
+    page(here, "Documents", body)
+
+    # Every decision record.
+    here = INDEX_PAGES["decisions"]
+    body = ["Every decision record of the project and of its features, by key and number. The records named by a number alone were merged before records had ids.", ""]
+    body += table(["Id", "Decision", "Feature", "Status", "Date", "Areas", "Supersedes"],
+                  [[link(entry, here, entry["id"]), cell(entry["title"]), "`%s`" % entry["feature"] if entry["feature"] else "", cell(entry["status"]),
+                    cell(entry["date"]), areas_cell(entry), cell(entry["supersedes"])] for entry in records])
+    page(here, "Decision records", body)
+
+    # Every document, by area.
+    here = INDEX_PAGES["areas"]
+    names = areas_at(repo, rules_ref) or []
+    extra = sorted({name for entry in entries for name in (entry["areas"] or []) if name not in names})
+    body = ["Every document and decision record under each of [the areas](../process/areas.md) its `Areas` row names. A document that names several areas is listed under each.", ""]
+    for name in names + extra + [None]:
+        rows = [entry for entry in entries if (name in (entry["areas"] or []) if name else not entry["areas"])]
+        rows.sort(key=lambda entry: (kind_key(entry["kind"]), record_key(entry) if entry["kind"] == "Decision record" else (), entry["path"]))
+        body += ["## %s" % ("`%s`" % name if name else NO_AREA), ""]
+        if not name:
+            body += ["Documents of a kind that has no `Areas` row, and documents merged before the row.", ""]
+        if rows:
+            body += table(["Document", "Kind", "Status", "Version"],
+                          [[link(entry, here, "%s. %s" % (entry["id"], entry["title"]) if entry["kind"] == "Decision record" else None),
+                            entry["kind"], cell(entry["status"]), cell(entry.get("version", ""))] for entry in rows])
+        else:
+            body += ["None."]
+        body += [""]
+    page(here, "Documents by area", body)
+
+    # The documents of each feature, in its directory.
+    source = Source(repo, where)
+    owners = {}
+    for entry in others:
+        if entry["kind"] in ("Design record", "Fix record"):
+            text = source.read(entry["path"]) or ""
+            for rid, _ in requirement_definitions(Markdown(entry["path"], text), r"REQ-[A-Z]{3,5}-[0-9]{3}"):
+                owners.setdefault(rid.split("-")[1], set()).add(entry["path"])
+    features = sorted({path.split("/")[2] for path in docs_at(repo, where) if path.startswith("docs/design/") and path.count("/") >= 3})
+    for name in features:
+        match = DIR_FORM.match(name)
+        if not match or not match.group(1):
+            continue
+        key = match.group(1)
+        here = "docs/design/%s/%s" % (name, FEATURE_INDEX)
+        own = [entry for entry in others if entry["path"].startswith("docs/design/%s/" % name) or entry["path"] in owners.get(key, ())]
+        own.sort(key=lambda entry: (kind_key(entry["kind"]), entry["path"]))
+        body = ["The documents of the feature `%s`: those of this directory, and the design records of its items, which define its `REQ-%s-nnn` requirements." % (key, key), ""]
+        body += table(["Document", "Kind", "Status", "Version", "Areas"],
+                      [[link(entry, here), entry["kind"], cell(entry["status"]), cell(entry["version"]), areas_cell(entry)] for entry in own]) if own else ["None."]
+        body += ["", "## Decision records", ""]
+        mine = [entry for entry in records if entry["feature"] == name]
+        body += table(["Id", "Decision", "Status", "Date", "Areas", "Supersedes"],
+                      [[link(entry, here, entry["id"]), cell(entry["title"]), cell(entry["status"]), cell(entry["date"]), areas_cell(entry), cell(entry["supersedes"])]
+                       for entry in mine]) if mine else ["None."]
+        page(here, "%s: documents of this feature" % key, body)
+    return pages
+
+
+def run_indexes(args):
+    repo, rules_ref, where, write = None, None, "index", False
+    index = 0
+    while index < len(args):
+        word = args[index]
+        if word in ("--repo", "--templates", "--source") and index + 1 < len(args):
+            if word == "--repo":
+                repo = args[index + 1]
+            elif word == "--templates":
+                rules_ref = args[index + 1]
+            else:
+                where = args[index + 1]
+            index += 2
+            continue
+        if word == "--write":
+            write = True
+            index += 1
+            continue
+        sys.stderr.write(__doc__)
+        return 2
+    if not repo or not rules_ref:
+        sys.stderr.write(__doc__)
+        return 2
+    if write:
+        where = "worktree"
+    pages = index_pages(repo, where, rules_ref)
+    source = Source(repo, where)
+    stale = [path for path in sorted(pages) if source.read(path) != pages[path]]
+    gone = [path for path in docs_at(repo, where)
+            if (path.startswith(INDEX_DIR + "/") or (path.startswith("docs/design/") and os.path.basename(path) == FEATURE_INDEX)) and path not in pages]
+    if write:
+        for path in stale:
+            full = os.path.join(repo, path)
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            with open(full, "w", encoding="utf-8") as handle:
+                handle.write(pages[path])
+            print("index %s written" % path)
+        for path in gone:
+            os.remove(os.path.join(repo, path))
+            print("index %s removed" % path)
+        print("indexes %d pages %d written" % (len(pages), len(stale)))
+        return 0
+    for path in stale:
+        sys.stderr.write("%s:0: is not the index the documents give now. doclint.py indexes --write regenerates it, then commit it with the change\n" % path)
+    for path in gone:
+        sys.stderr.write("%s:0: is an index of nothing: no feature directory or index page of this name is generated. doclint.py indexes --write removes it\n" % path)
+    print("indexes %d pages %d stale" % (len(pages), len(stale) + len(gone)))
+    return 1 if stale or gone else 0
 
 
 def decision_template(text):
@@ -1883,6 +3128,9 @@ def check_keys(repo, base, where):
         match = DIR_FORM.match(name)
         if not match:
             errors.append("docs/design/%s:0: a design directory is <KEY>-<slug> for a feature, KEY 3 to 5 capital letters, or <issue>-<slug>, the slug lower case words joined by single hyphens" % name)
+            continue
+        if match.group(1) == GOV_KEY:
+            errors.append("docs/design/%s:0: the key GOV is kept for the decision records of the whole project, docs/decisions/DEC-GOV-nnnn-<slug>.md. A feature takes another key" % name)
             continue
         if match.group(1):
             keys.setdefault(match.group(1), []).append(name)
@@ -2238,11 +3486,11 @@ def check_settings(repo, base, where):
     return errors, len(apache_now)
 
 
-def run_delta(args):
-    repo, base, where, branch, body = None, None, "index", None, None
+def run_delta(args, stock_tests=False, issue_only=False):
+    repo, base, where, branch, body, issue = None, None, "index", None, None, None
     index = 0
     while index < len(args):
-        if args[index] in ("--repo", "--base", "--source", "--branch", "--body") and index + 1 < len(args):
+        if args[index] in ("--repo", "--base", "--source", "--branch", "--body") + (("--issue",) if stock_tests else ()) and index + 1 < len(args):
             value = args[index + 1]
             if args[index] == "--repo":
                 repo = value
@@ -2252,13 +3500,15 @@ def run_delta(args):
                 where = value
             elif args[index] == "--branch":
                 branch = value
+            elif args[index] == "--issue":
+                issue = value
             else:
                 body = value
             index += 2
             continue
         sys.stderr.write(__doc__)
         return 2
-    if not repo or not base:
+    if not issue_only and (not repo or not base):
         sys.stderr.write(__doc__)
         return 2
     text = None
@@ -2269,6 +3519,27 @@ def run_delta(args):
         except (OSError, UnicodeDecodeError):
             sys.stderr.write("the pull request description %s cannot be read\n" % body)
             return 2
+    if issue_only:
+        # The issue whose state the caller reads before the check.
+        print(own_issue(branch, text)[0] or "")
+        return 0
+    if stock_tests:
+        state = None
+        if issue:
+            # An answer that cannot be read is the state of no issue.
+            state = {}
+            try:
+                with open(issue, encoding="utf-8") as handle:
+                    state = json.load(handle)
+            except (OSError, ValueError):
+                pass
+        errors, passed, checked = check_stock_tests(repo, base, where, branch, text, state)
+        for path, way in passed:
+            print("stock-test %s: %s" % (path, way))
+        for error in errors:
+            sys.stderr.write(error + "\n")
+        print("stock-tests %d checked %d failed" % (checked, checked - len(passed) if checked else len(errors)))
+        return 1 if errors else 0
     errors, stock, entries, note = check_register(repo, base, where, branch, text)
     for path in stock:
         print("stock %s" % path)
@@ -2285,6 +3556,14 @@ def main(argv):
         return run_index(argv[1:])
     if argv and argv[0] == "delta":
         return run_delta(argv[1:])
+    if argv and argv[0] == "stock-tests":
+        return run_delta(argv[1:], stock_tests=True)
+    if argv and argv[0] == "stock-tests-issue":
+        return run_delta(argv[1:], issue_only=True)
+    if argv and argv[0] == "history":
+        return run_history(argv[1:])
+    if argv and argv[0] == "indexes":
+        return run_indexes(argv[1:])
     if argv and argv[0] == "settings":
         repo, base, where = None, None, "index"
         args = argv[1:]
@@ -2419,14 +3698,22 @@ def main(argv):
         template_text = cache[template_path]
         if template_text is not None and kind == "decision":
             template_text = decision_template(template_text)
+        if template_text is None and kind in LATE_TEMPLATES:
+            checked -= 1
+            continue
         if template_text is None:
             doc.error(0, "no %s template at %s on %s, so this document cannot be checked against it" % (kind.replace("-", " "), template_path, templates))
         else:
-            check_common(doc, kind, template_text, path)
+            check_common(doc, kind, template_text, path, late_rows(doc, path, kind, repo, templates))
+            check_areas(doc, repo, templates, rules)
+            check_source(doc, repo, templates, rules)
+            check_exceptions(doc, repo, templates, rules)
             if has_contents(Markdown(template_path, template_text)) and needs_index(kind, path, repo, templates, where, rules):
                 check_index(doc, path)
             if kind == "decision":
-                check_record_number(doc, path, repo, templates, where, rules)
+                check_record(doc, path, repo, templates, where, rules)
+                check_supersedes(doc, path, source, repo, where)
+            check_revision(doc, path, repo, templates, template_text)
             template_doc = Markdown(template_path, template_text)
             template_fields, _ = control_table(template_doc)
             if kind == "feature-spec" and template_fields and "Risk" in template_fields:

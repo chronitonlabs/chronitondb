@@ -26,11 +26,18 @@ limitations under the License.
 | Author | Architect: {GitHub username} |
 | Approver | The maintainer who merges the pull request, which approves the gate |
 | References | Feature spec, plan, delivery plan, the merged pull requests of the milestone |
+| Areas | {one or more areas of [areas.md](../areas.md), joined by commas} |
 | Risk | {the feature spec's risk, Critical, Normal or Low}: {its reason} |
 | Size | {the feature spec's size, Low Hanging Fruit, Normal, Challenging or Byzantine}: {its reason} |
 | Reach | {the feature spec's reach, One area or Cross-cutting}: {its reason} |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 1 | {RFC 3339 date} | First version | {the id of the decision record behind this version, or None} |
+
+Full history in git: [commits of this file]({the address `tools/chronitondb/doclint.py history --write` puts here})
 
 Location: `docs/design/<KEY>-<slug>/milestones/`. Process: [additive.md](../additive.md#milestone-gates).
 
@@ -74,7 +81,7 @@ The Risk, Size and Reach rows repeat the feature spec's class, the level words t
 
 ### Behaviour nobody asked for
 
-{Behaviour of the merged code that no feature requirement asks for, found by the same check. Write "None found." when the check found none. Otherwise list each finding: what the code does and where.}
+{Behaviour of the merged code that no feature requirement, decision record or principle asks for, found by the same check. Write "None found." when the check found none. Otherwise list each finding: what the code does and where.}
 
 ## 5. Deviations
 

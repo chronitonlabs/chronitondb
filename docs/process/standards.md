@@ -17,7 +17,7 @@ limitations under the License.
 
 # Standards
 
-ChronitonDB uses published standards in place of house rules wherever one fits. This page lists each standard and what it governs here. Where a page in this folder and a standard differ, the page says why.
+ChronitonDB uses published standards in place of house rules wherever one fits. This page lists each standard and what it governs here. Where a page in this folder and a standard differ, the page says why. The rule is [PRINCIPLE-081](principles.md#principle-081).
 
 ## Process and roles
 
@@ -27,11 +27,11 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 **ISO/IEC/IEEE 16326 (project management plans).** The delivery plan of a feature follows it: milestones, the reason for their order, exit criteria, the release and line each milestone ships in, the limit on parallel work and what triggers a re-plan. See [additive.md](additive.md).
 
-**ISO/IEC/IEEE 15289 (content of life cycle information items).** Every template is based on its 15289 document type and carries the common header: title, document type, status, version, author, approver and references. Git holds the change history. The merge that approves a document records its approver. Each template and each document written from it also carries a Contents index of its headings, see [conventions.md](conventions.md#contents-index-of-process-documents). See [templates/](templates/).
+**ISO/IEC/IEEE 15289 (content of life cycle information items).** Every template is based on its 15289 document type and carries the common header: title, document type, status, version, author, approver and references. Each document that can change carries a revision history, one row for each version with the decision record behind it, and a link to its commits in git. See [conventions.md](conventions.md#versions-and-revision-history). The merge that approves a document records its approver. Each template and each document written from it also carries a Contents index of its headings, see [conventions.md](conventions.md#contents-index-of-process-documents). See [templates/](templates/).
 
 ## Requirements and architecture
 
-**ISO/IEC/IEEE 29148 (requirements engineering).** Stakeholder requirements come first. The requirements analyst elicits them from the maintainers in short rounds of questions and writes them in a requirements brief that a maintainer confirms. Requirements are then written at three levels: feature requirements in the feature spec, acceptance criteria in the plan, and item requirements in the design record. Each requirement is checked against seven qualities: necessary, unambiguous, singular, verifiable, feasible, consistent and traceable. See [roles.md](roles.md#requirements-analyst) and [templates/design-record.md](templates/design-record.md).
+**ISO/IEC/IEEE 29148 (requirements engineering).** Stakeholder requirements come first. The requirements analyst elicits them from the maintainers in rounds of up to three questions and writes them in a requirements brief that a maintainer confirms. Requirements are then written at three levels: feature requirements in the feature spec, acceptance criteria in the plan, and item requirements in the design record. Each requirement is checked against seven qualities: necessary, unambiguous, singular, verifiable, feasible, consistent and traceable. See [roles.md](roles.md#requirements-analyst) and [templates/design-record.md](templates/design-record.md).
 
 **EARS (Easy Approach to Requirements Syntax).** Every requirement uses one of five shapes: ubiquitous, event driven (When), state driven (While), optional feature (Where) and unwanted behaviour (If, then). A requirement that fits none of them is rewritten until it fits one.
 
@@ -41,7 +41,7 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 **ISO/IEC 25010 (product quality model).** The quality requirements of every feature spec and design record are organised by its quality characteristics. Our standing project rules sit under those characteristics as a checklist. See [quality-requirements.md](quality-requirements.md).
 
-**MADR (Markdown Architectural Decision Records).** Every answered question that changes or settles behaviour, scope or process gets a decision record in MADR format. See [../decisions/README.md](../decisions/README.md).
+**MADR (Markdown Architectural Decision Records).** Decision records are written in MADR format. When one is written is in [the decision records](../decisions/README.md#when-a-record-is-written).
 
 **STRIDE (threat modelling).** Every new entry point in a feature (syntax, settings, commands, files, network) is checked against spoofing, tampering, repudiation, information disclosure, denial of service and elevation of privilege. Each mitigation becomes a feature requirement.
 
@@ -49,7 +49,7 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 **ISO/IEC/IEEE 29119 (software testing).** Our test policy and strategy, test plans, test design, test logs and test completion reports use its names and required contents. See [testing.md](testing.md).
 
-**ISO/IEC 20246 (work product reviews).** Code pull requests get an inspection. Design records, fix records, feature specs, plans, delivery plans and milestone reports get a technical review. The review record lives on the pull request. See [branching-and-review.md](branching-and-review.md).
+**ISO/IEC 20246 (work product reviews).** Code pull requests get an inspection. Design records, fix records, feature specs, plans, delivery plans and milestone reports get a technical review. The review record of a pull request the project's own automation wrote is a file that pull request commits, `docs/reviews/<work>.md`, from [templates/review-record.md](templates/review-record.md), and the reviewer posts one short review per round on the pull request. Any other author gets the findings in the reviewer's review comment for the round, one row for each finding, and no committed review record is kept. See [branching-and-review.md](branching-and-review.md#the-review-record).
 
 ## Security
 
@@ -69,7 +69,7 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 **REUSE.** The FSFE's REUSE specification records the copyright and licence of every file in the repository, checked by `reuse lint`. It is adopted before the first release. See [compliance.md](compliance.md).
 
-**The ASF licence categories.** Every third party dependency is checked against the Apache Software Foundation categories A, B and X before use, as Apache Cassandra does.
+**The ASF licence categories.** Every third party dependency is checked against the Apache Software Foundation categories A, B and X before use. They say which licences a work under the Apache License 2.0 may include.
 
 ## Code and history
 
@@ -77,7 +77,7 @@ ChronitonDB uses published standards in place of house rules wherever one fits. 
 
 **Trunk-based development.** Work merges into the lines in small, short lived branches. Unfinished features stay off behind their switch. See [branching-and-review.md](branching-and-review.md).
 
-**Google Java Style.** New ChronitonDB Java code follows it. Apache Cassandra code keeps Apache's style. See [conventions.md](conventions.md).
+**Apache Cassandra's code style.** ChronitonDB Java code follows it on each line, as Apache Cassandra's own code does. See [conventions.md](conventions.md#code-style).
 
 **Debian and Red Hat version ordering.** A ChronitonDB release version is the line followed by ChronitonDB's own release number on it, `<line>-chronitondb<n>`, for example `5.0-chronitondb3`, with `~rc<k>` in the package version of a release candidate and `-rc<k>` in its git tag. It is written so that the version comparison of the [Debian Policy Manual](https://www.debian.org/doc/debian-policy/ch-controlfields.html#version) and of rpm orders every release and release candidate correctly. It is not Semantic Versioning. See [release.md](release.md#version-numbers).
 

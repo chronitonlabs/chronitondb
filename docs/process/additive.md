@@ -54,18 +54,19 @@ Each large feature has its own public GitHub issue, opened by the architect. Its
 
 ## Feature keys and requirement ids
 
-Every fork feature has a feature key: 3 to 5 capital letters, for example `LUC`. The key names the feature's directory and its requirement ids.
+Every fork feature has a feature key: 3 to 5 capital letters, for example `CLD` or `VER`. The key names the feature's directory and its requirement ids.
 
-1. The feature's directory is `docs/design/<KEY>-<slug>/`, for example `docs/design/LUC-fulltext-search/`.
+1. The feature's directory is `docs/design/<KEY>-<slug>/`, for example `docs/design/CLD-commitlog-disk-check/`.
 2. The merge of the pull request that creates the directory reserves the key. For a feature that needs several items, that is the feature spec pull request. For a feature that fits one item, the designer proposes a free key in the design record pull request: a key that no feature directory and no open pull request uses. The key is reserved when a maintainer merges that pull request.
 3. A key is never reused. A withdrawn feature keeps its directory.
 4. Later work that extends a feature that already has a key keeps that key. It continues the feature's `REQ-<KEY>-nnn` numbering, and its records go in the feature's folders as rules 7 and 8 place them. It never opens a second key for the same feature.
 5. A new key SHOULD read well. It MAY use up to 5 letters where 3 read poorly, for example `STCHK` rather than `SCV`.
-6. Feature requirements in the feature spec have ids `FREQ-<KEY>-nnn`. Requirements in the feature's design records have ids `REQ-<KEY>-nnn`, numbered across the whole feature. `nnn` is three digits, for example `FREQ-LUC-001` and `REQ-LUC-014`.
+6. Feature requirements in the feature spec have ids `FREQ-<KEY>-nnn`. Requirements in the feature's design records have ids `REQ-<KEY>-nnn`, numbered across the whole feature. `nnn` is three digits, for example `FREQ-CLD-001` and `REQ-CLD-014`.
 7. The item design records of a feature that needs several items stay in `docs/design/<issue>-<slug>/`.
 8. A feature that fits one item has no feature spec. Its design record lives in the feature's directory and states the feature class. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults).
 9. Fix records and other items that are not feature work keep `docs/design/<issue>-<slug>/` and plain ids `REQ-n`.
-10. A required pull request check enforces these rules: directory names are well formed and keys are unique, every keyed id uses a reserved key, each id is defined exactly once (a FREQ in its feature spec, a REQ in one design record of its feature), every requirement tag on a scenario names a defined id, and removing a feature directory fails the check.
+10. The decision records of a feature live in `docs/design/<KEY>-<slug>/decisions/` with ids `DEC-<KEY>-nnnn`, numbered across the whole feature, whichever item asked the question. Work with no feature key keeps its records in its own design directory, with its issue number in place of the key. The key `GOV` is kept for the records of the whole project and no feature takes it. See [the decision records](../decisions/README.md#rules).
+11. A required pull request check enforces these rules: directory names are well formed and keys are unique, every keyed id uses a reserved key, each id is defined exactly once (a FREQ in its feature spec, a REQ in one design record of its feature), every requirement tag on a scenario names a defined id, and removing a feature directory fails the check.
 
 ### Level 1: the feature spec
 
@@ -124,7 +125,7 @@ Each milestone in the plan has validation items next to its build items. A valid
 
 ## Documentation with each item
 
-An item is not done until the user documentation, operator documentation and runbook entries it affects are in the same pull request. The reviewer checks them. At each milestone gate the architect checks that the feature's documentation reads as one whole. Release notes are generated from commits at release.
+An item is not done until the user documentation, operator documentation and runbook entries it affects are in the same pull request. The reviewer checks them. At each milestone gate the architect checks that the feature's documentation reads as one whole. Release notes are generated from commits at release. The rule is [PRINCIPLE-077](principles.md#principle-077).
 
 ## Milestone gates
 
@@ -138,7 +139,7 @@ Only the current milestone is in progress. When all its items are merged:
 4. A maintainer approves the gate by merging the report's pull request.
 5. The next milestone starts only after that merge.
 
-Until its final milestone gate, the feature's switch refuses to turn on, whatever its default. The final gate makes the feature switchable with yaml or nodetool. From then on the switch starts from the default the feature spec sets for the line, and that default never changes within the line. A feature that passes its final gate after its line's first release ships with its default off on that line. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults) and [release.md](release.md#what-a-release-may-contain).
+A feature built in more than one milestone always has a switch: [PRINCIPLE-016](principles.md#principle-016). Until its final milestone gate, the feature's switch refuses to turn on, whatever its default. The final gate makes the feature switchable, by the means its design chose. From then on the switch starts from the default the feature spec sets for the line, and that default never changes within the line. A purely additive feature that passes its final gate after its line's first release is still on by default on that line, with the one edge that [release.md](release.md#what-a-release-may-contain) states. See [branching-and-review.md](branching-and-review.md#feature-switches-and-defaults) and [release.md](release.md#what-a-release-may-contain).
 
 ## Change control after a merge
 
@@ -146,7 +147,7 @@ An approved feature spec, plan or delivery plan changes only through this path:
 
 1. Whoever finds a needed change raises it with the maintainers. Work that depends on it waits.
 2. The maintainers' answer becomes a [decision record](../decisions/README.md).
-3. The architect updates the feature spec, plan or delivery plan in a small pull request that cites the decision record.
+3. The architect updates the feature spec, plan or delivery plan in a small pull request that cites the decision record. The update raises the document's version by one and adds its row to the revision history, with the id of that record. See [conventions.md](conventions.md#versions-and-revision-history).
 4. Waiting work resumes after that pull request is merged.
 
 Re-planning normally happens at a milestone gate. Changes to the risk list follow the same path.

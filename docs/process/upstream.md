@@ -19,25 +19,25 @@ limitations under the License.
 
 ChronitonDB relates to Apache Cassandra as Ubuntu relates to Debian. Apache Cassandra is upstream. Each ChronitonDB line is a superset of the Apache Cassandra releases of its major version: it contains every Apache patch release we have imported, plus the changes in the [delta register](../delta/README.md).
 
-The integrator does this work: it watches Apache, prepares every import pull request, resolves conflicts, runs the tests and writes the import record. The reviewer reviews each import pull request and posts its review. A maintainer merges it. See [roles.md](roles.md#integrator).
+The integrator does this work: it watches Apache, prepares every import pull request, resolves conflicts, runs the tests and writes the import record. The reviewer reviews each import pull request the project's own automation wrote, or a maintainer accepted for review, and posts its verdict. A maintainer merges it. See [roles.md](roles.md#integrator).
 
-## Apache files stay untouched
+## Apache files change only where needed
 
-Apache Cassandra's own files stay as Apache has them, so imports never conflict on them. This covers `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like.
+Apache Cassandra's own files stay as Apache has them wherever ChronitonDB can put its own file beside them, so imports rarely conflict on them. This covers `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like. The rule is [PRINCIPLE-009](principles.md#principle-009).
 
-1. ChronitonDB's own files sit beside them: `.github/README.md`, `CHANGES-chronitondb.txt`, `NEWS-chronitondb.txt`, `docs/`, `packaging/`, `.github/CONTRIBUTING.md` and our own workflows. See [conventions.md](conventions.md#where-things-live).
+1. ChronitonDB's own files sit beside them, each in its place once it exists: `.github/README.md`, `CHANGES-chronitondb.txt`, `NEWS-chronitondb.txt`, `docs/`, `packaging/`, `.github/CONTRIBUTING.md` and our own workflows. See [conventions.md](conventions.md#where-things-live).
 2. A change to an Apache file is made only where we need it, and it gets its [delta entry](../delta/README.md).
 
 ## Imports keep their upstream identity
 
-Every import pull request, a whole release or a single cherry-pick from Apache Cassandra or another project, is merged by a maintainer with a merge commit. The imported commits keep their original author, their message and, for a cherry-pick, the `(cherry picked from commit <full hash>)` line. Import pull requests are the only pull requests merged with a merge commit. All our own work is squash merged. See [branching-and-review.md](branching-and-review.md#history-rules).
+Every import pull request, a whole release or a single cherry-pick from Apache Cassandra or another project, is merged by a maintainer with a merge commit. The imported commits keep their original author, their message and, for a cherry-pick, the `(cherry picked from commit <full hash>)` line. Import pull requests are the only pull requests merged with a merge commit. All our own work is squash merged. See [branching-and-review.md](branching-and-review.md#history-rules). The rule is [PRINCIPLE-075](principles.md#principle-075).
 
 ## Whole Apache releases
 
-1. Every Apache Cassandra patch release of a line's major version is imported into that line in whole, as one import item. The release is always taken.
-2. The integrator merges the Apache release tag into an import branch named after the Apache release tag, `import/cassandra-<x.y.z>/<line>`, cut from the line. That merge commit's subject is `import(apache-<version>): merge Apache Cassandra <version>`. A maintainer then merges the import pull request into the line with a merge commit. Every Apache commit keeps its identity, so git itself shows which Apache releases a line contains.
-3. Each import is assessed on its merits before its pull request opens: the code checks and the reviewer's checklists run on the imported diff. The integrator resolves conflicts with the ChronitonDB delta. A finding or conflict it cannot resolve goes to the maintainers as a decision: adjust the imported code, offer a fix upstream, or wait for a conflict to be resolved before the merge. An import is never changed for style alone.
-4. Apache's own `CHANGES.txt` and `NEWS.txt` arrive with the import and are never edited.
+1. Every Apache Cassandra patch release of a line's major version is imported into that line in whole, as one import item. A release is never skipped. Its import is held while a finding on it is open, as rule 3 says. The rule is [PRINCIPLE-073](principles.md#principle-073).
+2. The integrator merges the Apache release tag into an import branch named after the Apache release tag, `import/cassandra-<x.y.z>/<line>`, cut from the line. That merge commit's subject is `import(apache-<version>): merge Apache Cassandra <version>`. A maintainer then merges the import pull request into the line with a merge commit. Who may bypass the signature rule for that merge is in [History rule 6](branching-and-review.md#history-rules). Every Apache commit keeps its identity, so git itself shows which Apache releases a line contains.
+3. Each import is assessed on its merits before its pull request opens: the code checks and the reviewer's checklists run on the imported diff. The integrator resolves conflicts with the ChronitonDB delta. A correctness, security or performance finding of major severity or worse in the imported Apache Cassandra code goes to the maintainers before the import's pull request merges, with the evidence for it. So does any finding that an imported change conflicts with something ChronitonDB adds. The import does not merge until the maintainers decide for each finding: report it to Apache Cassandra, hold the import, fix it as a fix to stock as [maintenance.md](maintenance.md#corrective-fixing-a-fault) says, or accept it. An early import, a branch merge or a single fix, that changes a stored or sent form, such as an on-disk version or a message version, leaves no Apache Cassandra release to move back to until Apache Cassandra releases that form. The assessment names each such form, and the maintainers decide the import before it merges: [PRINCIPLE-003](principles.md#principle-003). A security finding is handled in private, as [security.md](security.md) says. Findings on shape limits and style in Apache Cassandra's own code are listed in the import's assessment and go no further. An import is never changed for style alone. The Semgrep check prints each finding in imported code on a `REPORT` line and does not fail on it. Those lines go into the import's assessment. The rule is [PRINCIPLE-074](principles.md#principle-074). An import is not on the Critical floor merely because Apache Cassandra's own commits touch an area of the floor: [PRINCIPLE-071](principles.md#principle-071).
+4. Apache's own `CHANGES.txt` and `NEWS.txt` arrive with the import and are never edited by hand. A single fix taken early is the one case that touches them, see [Single fixes taken early](#single-fixes-taken-early).
 
 ## Before Apache's first release of a major version
 
@@ -47,6 +47,8 @@ Until Apache releases `x.0.0` of a major version, the matching line follows the 
 2. A maintainer merges the import pull request into the line with a merge commit, like a release import.
 3. From Apache's `x.0.0` release onwards, release tags are merged instead.
 
+Until then the line has no entry point from Apache Cassandra: a cluster moves onto a line only from the latest Apache Cassandra release of the line's major version, the entry condition of [PRINCIPLE-003](principles.md#principle-003), and the line's release notes say so. The project owns no path from one major version to the next ahead of Apache Cassandra.
+
 ## Single fixes taken early
 
 A single Apache fix MAY be cherry-picked into a line ahead of the Apache release that contains it. There is no fixed list of reasons for taking a fix early. The integrator proposes a fix it finds worth taking now, or a maintainer asks for one. The import pull request states its reason in its own words on a line `Reason: <why the line takes it now>`, and any reason MAY be given, a feature or a performance improvement included. The maintainers decide by merging the import pull request, and closing it declines the fix.
@@ -55,6 +57,7 @@ A single Apache fix MAY be cherry-picked into a line ahead of the Apache release
 2. The import carries the regression test of the original fix.
 3. The branch is named `import/CASSANDRA-<n>/<line>`.
 4. A maintainer merges the import pull request with a merge commit, so the cherry-picked commit reaches the line unchanged. That merge commit's subject is `import(CASSANDRA-<n>): <original Apache subject>` and its body, taken from the import pull request's description, names the Apache commit hash. See [conventions.md](conventions.md#commit-messages).
+5. A cherry-pick taken early resolves `CHANGES.txt` and `NEWS.txt` by taking the Apache line as written, under the section Apache Cassandra put it in. The release import that contains the fix restores both files to Apache Cassandra's.
 
 ## Commits from other projects
 
@@ -64,7 +67,7 @@ A single commit MAY be taken unchanged from a project other than Apache Cassandr
 2. A repository of our own organisation, chronitonlabs, is never a source. Its work is ours, not another project's.
 3. A commit of Apache Cassandra never comes in this way, even through a fork that holds it. It follows [Single fixes taken early](#single-fixes-taken-early).
 4. The commit MUST be on a branch of the repository named, not only on a fork of it.
-5. The integrator cherry-picks it with `git cherry-pick -x`. It keeps its original author, date and message, with the `(cherry picked from commit <full hash>)` line. It is assessed and tested like a single Apache fix.
+5. The integrator cherry-picks it with `git cherry-pick -x`. It keeps its original author, date and message, with the `(cherry picked from commit <full hash>)` line. It is assessed and tested like a single Apache fix. The Semgrep check holds it as the project's own change, so a finding in a file it changes fails the check: no check can read whether the maintainers approved its source.
 6. It comes in unchanged or not at all. A commit that does not apply unchanged to the line is not imported. A maintainer ports it instead, as our own change that credits its authors. See [Code from elsewhere](conventions.md#code-from-elsewhere).
 7. The branch is named `import/<owner>-<repo>-<12 character hash>/<line>`, with the first 12 characters of the commit hash.
 8. The import pull request's title is `import(<owner>/<repo>@<12 character hash>): <original subject>`. Its description gives the `Reason:` line and ends with the line `Origin: https://github.com/<owner>/<repo>/commit/<full hash>`. A maintainer merges it with a merge commit whose subject is the title and whose message ends with that `Origin:` line. See [conventions.md](conventions.md#imports-from-apache-cassandra).
@@ -72,20 +75,32 @@ A single commit MAY be taken unchanged from a project other than Apache Cassandr
 
 ## The import record
 
-Each import has a short import record at `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project, named after its branch. The integrator writes it from [templates/import-record.md](templates/import-record.md), in the import pull request. It covers:
+Each import has a short import record at `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project, named after its branch. The integrator writes it from [templates/import-record.md](templates/import-record.md), in the import pull request. Its header names the [areas](areas.md) of what came in and its [source](areas.md#the-sources): `apache-merge` for a release or a branch of Apache Cassandra, `apache-cherry-pick` for single commits of it, `third-party` for a commit from another project. It covers:
 
 1. What came in: the Apache release, the Apache commit or the other project's commit, and the range of commits. A single fix and a commit from another project also give their `Reason:` line.
 2. Conflicts with ChronitonDB changes, and how each was resolved.
 3. Delta entries that Apache has now fixed, which are dropped in the same import.
 4. Tests run, in the five test lists of a design record's Testing section. The results go in the evidence of the import pull request.
-5. Confirmation that stock behaviour is unchanged with every fork feature off: the parity suite passes.
+5. Confirmation that stock behaviour is unchanged with every fork feature off: the parity suite passes, or until it exists the stock suites pass with every fork feature off.
 6. Configuration changes: every changed setting in Apache's two yaml files and every changed default in `Config.java`, each mapped to our own file. See [Configuration changes](#configuration-changes).
 
 Tests for this change MAY be none only with a written reason in the record. For example, the range changes only build files and documentation, or an Apache fix merged without a test and the suites at risk cover the changed code. A bare none is refused. The suites at risk and the stock suites still run, and the reviewer checks the reason.
 
+## The import history check
+
+The `import-history` check holds what an import branch brings. It runs on every pull request from an `import/` branch of this repository. It reads Apache Cassandra's tags and branches from the public repository `apache/cassandra` when it runs, never from this repository, where anyone who can push can create a tag or a branch.
+
+1. On a branch `import/cassandra-<x.y.z>/<line>` the branch has one merge commit, and the second parent of that merge is the commit of Apache Cassandra's tag `cassandra-<x.y.z>`. On `import/cassandra-<x.y>-<short hash>/<line>` it is the commit of Apache Cassandra's `cassandra-<x.y>` branch whose hash opens with `<short hash>`.
+2. On `import/CASSANDRA-<n>/<line>` the branch adds one commit that changes Apache Cassandra's files. Its message ends with the line `(cherry picked from commit <full hash>)`, the hash is a commit of a branch of `apache/cassandra` whose message names `CASSANDRA-<n>`, and the commit keeps the author, the author date and the message of that commit.
+3. On `import/<owner>-<repo>-<12 character hash>/<line>` the same holds against the repository that the `Origin:` line of the description names, and the commit is the one git makes when it picks the original commit. The check cannot read whether the maintainers approved that repository as a source.
+4. Every other commit the branch adds is a merge of the line into the branch, or a commit that changes only the project's own files, such as the import record, the review record and a delta entry. A commit that changes a file of Apache Cassandra outside the merge or the cherry-pick is refused.
+5. A conflict resolved by hand is, to the check, a merge commit whose content is not what git gives when it merges the two parents again, or a cherry-picked commit whose content is not what git gives when it picks the original commit onto the same parent again. A line that sits in another place than git puts it, or has other whitespace, is such a difference. The check cannot tell such a resolution from any other change, so the maintainers decide it, as for a finding of [PRINCIPLE-074](principles.md#principle-074). The check prints each file that differs on a `RESOLVED` line, and the import record lists each of them with how it was resolved. The check fails until a maintainer approves the import pull request with an approving review, given at a commit of the branch that holds the resolved commit. The maintainers are those of [docs/governance/committers.md](../governance/committers.md). The check passes when it is run again after that review. A commit of another project is never changed, so one whose content differs is refused whoever approves: [Commits from other projects](#commits-from-other-projects).
+
+Other checks take a pull request for an import by its branch name: the stock test check, the delta register check, the Semgrep check and the title check. The stock test check and the Semgrep check take only an import from Apache Cassandra that way. This check holds what a branch of that name brings.
+
 ## Configuration changes
 
-ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`. Apache's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched. See [release.md](release.md#the-configuration-file). Every import, a whole release, a weekly branch merge, a single fix or a commit from another project, is checked for configuration changes over the imported range:
+ChronitonDB ships its own configuration file, `conf/cassandra_chronitondb.yaml`, once it exists. Apache's `conf/cassandra.yaml` and `conf/cassandra_latest.yaml` stay untouched. See [release.md](release.md#the-configuration-file). Every import, a whole release, a weekly branch merge, a single fix or a commit from another project, is checked for configuration changes over the imported range:
 
 1. Every setting in Apache's two yaml files that was added, removed, or changed in value or comment.
 2. Every default that changed, meaning the value a node runs with when its yaml file leaves the setting out: the defaults in `Config.java`, nested options named with dots such as `sstable.selected_format`, and the defaults a node computes at startup. A setting a cluster's yaml file leaves out takes its default, so a changed default changes running clusters too.
@@ -96,7 +111,7 @@ The integrator lists each change in the import record's Configuration changes se
 2. **Taken with a different value:** our file has the setting with our value, and the record gives the value and the reason.
 3. **Not taken:** our file leaves it out or keeps its old value, and the record gives the reason.
 
-A change to a setting of the line's minimum setup is also flagged for the line's upgrade runbook. The reviewer checks the mapping, and a maintainer approves it by merging the import. Within a line, the values our file ships change only for a fix. Upgrading within a line never changes behaviour by itself, so any other value change waits for the next line.
+A change to a setting of the line's minimum setup is also flagged for the line's upgrade runbook. The reviewer checks the mapping, and a maintainer approves it by merging the import. Within a line, the values our file ships change only for a fix, a security fix or an import from Apache Cassandra, each named in the release notes. Any other value change waits for the next line. The rule is [PRINCIPLE-018](principles.md#principle-018). An imported change that refuses a key or a value an earlier release of the line accepted is named in the release notes, under the edge of [PRINCIPLE-083](principles.md#principle-083).
 
 ## The delta register
 
@@ -106,13 +121,13 @@ The [delta register](../delta/README.md) lists every change ChronitonDB carries 
 2. **Declined,** with the Apache JIRA and a one line reason.
 3. **Not needed,** with the reason.
 
-Every pull request that changes stock code or stock behaviour adds or updates its entry. The `delta-register` check enforces it for stock files, and the reviewer checks it for stock behaviour. Entries that Apache has since fixed are dropped at the next import.
+Every pull request that changes stock code or stock behaviour adds or updates its entry. The `delta-register` check enforces it for stock files, and the reviewer checks it for stock behaviour. Entries that Apache has since fixed are dropped at the next import. The rule is [PRINCIPLE-011](principles.md#principle-011).
 
 ## Offering changes upstream
 
-1. Every fix to stock code gets an Apache JIRA. A maintainer starts each offer. The integrator drafts the JIRA and the patch, and the maintainers file them.
+1. Every fix to stock code is offered to Apache Cassandra: with a new Apache JIRA, on the existing JIRA when Apache Cassandra already has one, or for a security fix through the Apache Cassandra security team until disclosure, as [Security coordination with Apache](#security-coordination-with-apache) says. A maintainer starts each offer. The integrator drafts the JIRA and the patch, and the maintainers file them. A change to stock code is a fix only once the maintainers have approved it as one, by merging its fix record after the reviewer's finding on the evidence. See [maintenance.md](maintenance.md#corrective-fixing-a-fault). The rules are [PRINCIPLE-012](principles.md#principle-012) and [PRINCIPLE-004](principles.md#principle-004).
 2. Features are offered upstream only when the maintainers decide, case by case.
-3. Code offered to Apache is reformatted to Apache Cassandra's style and follows Apache Cassandra's contribution process.
+3. Code offered to Apache follows Apache Cassandra's code style, as the project's own code already does, and Apache Cassandra's contribution process.
 4. Patches offered to Apache are prepared on [chronitonlabs/chronitondb-upstream](https://github.com/chronitonlabs/chronitondb-upstream), a fork of Apache Cassandra kept apart from the ChronitonDB lines, each on a branch from the Apache branch it targets.
 
 ## The upstream radar
@@ -125,7 +140,7 @@ The upstream radar is the integrator's daily watch of Apache Cassandra, summed u
 4. Apache fixes worth taking early, as single cherry-picks.
 5. Delta entries that Apache has since fixed.
 
-The security engineer watches Apache security announcements and dependency advisories with the integrator. See [security.md](security.md). Whole releases and the weekly branch merges are always imported. The integrator proposes single Apache fixes to take early, each with its reason, as [Single fixes taken early](#single-fixes-taken-early) says, and the maintainers decide by merging. A fix with no reason to take it now stays in the digest. Each import gets a public GitHub issue and follows this page.
+The security engineer watches Apache security announcements and dependency advisories with the integrator. See [security.md](security.md). Whole releases and the weekly branch merges are always imported, and an import is held while a finding on it is open. The integrator proposes single Apache fixes to take early, each with its reason, as [Single fixes taken early](#single-fixes-taken-early) says, and the maintainers decide by merging. A fix with no reason to take it now stays in the digest. Each import gets a public GitHub issue and follows this page.
 
 ## Security coordination with Apache
 

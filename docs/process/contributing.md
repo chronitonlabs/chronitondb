@@ -62,7 +62,7 @@ Never report a security problem in a public issue, pull request or discussion. R
 
 1. **Its category or its feature.** Say which maintenance category the change is (corrective, preventive, adaptive, perfective or additive), or name the feature spec item it delivers. See [README.md](README.md). A maintainer gives the issue its kind label at triage, and the pull request carries the same one. It also carries the class of the change, one `risk:`, one `size:` and one `reach:` label, see [classification.md](classification.md).
 2. **An issue.** Link it with `Fixes #<issue>`. A change made on several lines writes `Part of #<issue>` on every pull request but the newest line's. See [branching-and-review.md](branching-and-review.md#pull-requests).
-3. **Tests.** A fix includes a test that fails without it and passes with it. A new behaviour includes tests for each of its requirements. See [testing.md](testing.md).
+3. **Tests.** A fix to code includes a test that fails without it and passes with it. A new behaviour includes tests for each of its requirements. See [testing.md](testing.md).
 4. **Documentation.** User and operator documentation and runbook entries the change affects, in the same pull request.
 5. **A delta entry,** if the change touches stock Apache Cassandra code or behaviour. See [the delta register](../delta/README.md).
 6. **A title and commits** in Conventional Commits form. The title becomes the commit subject on the line.
@@ -75,9 +75,9 @@ Changes that need a design record follow [maintenance.md](maintenance.md) or [ad
 1. Workflow runs on pull requests from first time and outside contributors wait for a maintainer's approval before CI runs.
 2. Your pull request runs the GitHub checks and the tests of the changed areas on GitHub's own runners. The required checks MUST pass. See [branching-and-review.md](branching-and-review.md#required-checks) and [testing.md](testing.md#full-test-suites).
 3. Changes to sensitive paths request a review from the code owners. See [branching-and-review.md](branching-and-review.md#sensitive-paths).
-4. A maintainer adds the label `triage:accepted` to your pull request before it is reviewed. No review starts without it. The same holds for every pull request the project's automated agents did not write, the maintainers' own included.
-5. The reviewer then reviews your pull request first and posts its review on it. Review follows [branching-and-review.md](branching-and-review.md#reviews). Answer each finding with its own commit.
-6. Only maintainers and committers merge, after the review is posted. See [governance.md](governance.md).
+4. A maintainer reviews your pull request. A maintainer MAY first accept it for a review by the project's review roles, by adding the label `triage:accepted` to it. No review by those roles starts without the label, and none starts on submission alone. The same holds for every pull request the project's automation did not write, the maintainers' own included.
+5. Once a maintainer has accepted it, the reviewer reviews your pull request and posts one short review for each round on it, with its verdict. It gives you its findings in its review comment for the round, one row for each finding. No committed review record is kept for your pull request, and you write none: see [branching-and-review.md](branching-and-review.md#the-review-record). Review follows [branching-and-review.md](branching-and-review.md#reviews). The project's review roles read your code and never build or run it on the project's own machines: the repository's CI runs it, on GitHub's runners, and the reviewer reads the results. Answer each finding with its own commit.
+6. Only maintainers and committers merge. A pull request that was accepted for review merges after the reviewer's verdict on it is clean. Any other is reviewed by a maintainer directly before the merge. See [governance.md](governance.md).
 
 ### AI assistance
 

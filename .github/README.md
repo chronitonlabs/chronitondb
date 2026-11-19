@@ -18,7 +18,7 @@ ChronitonDB is an open source database built on [Apache Cassandra](https://cassa
 
 - **Apache License 2.0, always.** ChronitonDB is released under the Apache License 2.0 and will stay under it. There will be no license change and no proprietary edition with features held back.
 - **Apache Cassandra comes first.** We aim to offer our fixes and features to the Apache Cassandra project and work to get them accepted there. Work we bring in from Apache Cassandra keeps its original authors.
-- **A way back to Apache Cassandra.** We aim to keep a supported path from ChronitonDB back to Apache Cassandra, and we document any feature that makes going back harder.
+- **A way back to Apache Cassandra.** An application that moves onto ChronitonDB behaves as it did on Apache Cassandra, and a user can move back, by the steps each release states. We document any feature that makes going back harder.
 
 ## Branches
 
@@ -29,7 +29,7 @@ ChronitonDB is an open source database built on [Apache Cassandra](https://cassa
 
 ## Moving from Apache Cassandra
 
-ChronitonDB is built on Apache Cassandra 5.0 and later. A cluster on an earlier version of Apache Cassandra must first be upgraded to Apache Cassandra 5.0, with the upgrade fully completed and the settings that upgrade requires in place, before it can move to ChronitonDB 5.0.
+ChronitonDB is built on Apache Cassandra 5.0 and later. A cluster moves onto a line from the latest Apache Cassandra release of the line's major version, with all of that version's own options on: the values of Apache Cassandra's `conf/cassandra_latest.yaml`, with no storage compatibility mode for an older version. A cluster on an older version reaches that setup on Apache Cassandra first. No older version and no compatibility mode for one is supported. Until Apache releases 6.0, the 6.0 line has no entry point from Apache Cassandra. No line offers an upgrade from one major version to the next ahead of Apache Cassandra. See [release.md](../docs/process/release.md#the-configuration-file).
 
 ## Contributing
 

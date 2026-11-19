@@ -62,7 +62,7 @@ The maintainers decide stakeholder needs, scope, priority, releases and security
 2. The architect writes the feature spec, the plan, the delivery plan and the milestone reports of a large feature, and the research report of a spike.
 3. The designer writes the design record or fix record of one item.
 4. The developer writes the code, its tests and its documentation.
-5. The reviewer reviews every pull request and posts its review on it.
+5. The reviewer reviews every pull request the project's own automation wrote or a maintainer accepted for review, and posts its verdict on it, one short review for each round. A maintainer reviews any other pull request directly.
 6. The integrator keeps the lines current with Apache Cassandra and prepares the import pull requests.
 7. The security engineer watches every shipped library for vulnerabilities and triages private reports.
 8. The release engineer proposes each release and runs the release pipeline once a maintainer approves it.
@@ -84,11 +84,14 @@ A role MAY be carried out by a person or by an automated agent. Approvals are al
 11. [release.md](release.md): release cadence, support lifetime, release candidates, freezes and version numbers.
 12. [security.md](security.md): how vulnerabilities are reported, fixed and disclosed.
 13. [compliance.md](compliance.md): open source licence compliance, notices, SBOM and VEX.
-14. [quality-requirements.md](quality-requirements.md): the quality checklist every feature spec and design record answers.
-15. [classification.md](classification.md): the risk and size of a change, and what each class changes.
-16. [templates/](templates/): the document templates.
-17. [The delta register](../delta/README.md): every change ChronitonDB carries on top of Apache Cassandra.
-18. [Decision records](../decisions/README.md): answered questions that settle behaviour, scope or process.
+14. [quality-requirements.md](quality-requirements.md): the quality checklist a feature spec and a design record answer. Its rules are stated in full in principles.md.
+15. [principles.md](principles.md): the architectural and design rules the project holds to, each with the id a document cites it by.
+16. [classification.md](classification.md): the risk and size of a change, and what each class changes.
+17. [areas.md](areas.md): the areas a document and an issue name, and the sources a change comes from.
+18. [templates/](templates/): the document templates.
+19. [The delta register](../delta/README.md): every change ChronitonDB carries on top of Apache Cassandra.
+20. [Decision records](../decisions/README.md): answered questions that settle behaviour, scope or process.
+21. [The generated indexes](../index/documents.md): every document by kind, [every decision record](../index/decisions.md), and [every document by area](../index/areas.md).
 
 The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. ChronitonDB does not edit it. ChronitonDB's own guide is in [.github/CONTRIBUTING.md](../../.github/CONTRIBUTING.md) and in [contributing.md](contributing.md).
 
@@ -110,8 +113,8 @@ The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. 
 9. **Fix record**: the short design record of a corrective change.
 10. **Coverage file**: the file in an item's design folder that names the test of each requirement no scenario proves, and the reason for each requirement deliberately not tested.
 11. **EARS**: the five sentence shapes every requirement uses.
-12. **Feature switch**: the yaml setting and nodetool toggle that turn a fork feature on or off. Before the feature's final milestone gate the switch refuses to turn on. After it, operators may turn the feature on or off. Its default depends on the feature class and never changes within a line.
-13. **Parity suite**: the tests that prove a line behaves as stock with every fork feature off.
+12. **Feature switch**: the means an operator has to turn a fork feature on or off, chosen in the feature's design. For example a node setting with a runtime command, or an option on a schema object. Before the feature's final milestone gate the switch refuses to turn on. After it, operators may turn the feature on or off. A behaviour-changing feature always has one, and so does a feature built in more than one milestone. Any other purely additive feature has one only when something needs it to be turned off. Its default depends on the feature class and does not change within a line.
+13. **Parity suite**: the tests that prove a line behaves as stock with every fork feature off, apart from the fixes and differences the delta register lists.
 14. **Import**: bringing an Apache Cassandra release or fix into a line.
 15. **Delta entry**: one record in the delta register for a change ChronitonDB carries on top of Apache Cassandra. Its header follows Debian's DEP-3 patch header convention.
 16. **Upstream radar**: the integrator's daily watch of Apache Cassandra releases, branches, JIRAs and commits, summed up in a weekly digest for the maintainers.
@@ -119,8 +122,9 @@ The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. 
 18. **Release candidate**: a release published as a GitHub pre-release and in the proposed package repositories for verification and a soak before it is promoted unchanged.
 19. **Scheduled check**: a daily check the project runs on its own: the integrator's check of Apache Cassandra, the security engineer's check of shipped libraries and private vulnerability reports, and the release engineer's check of the latest CI results. Items it opens are requested by the maintainer who set it up.
 20. **Feature key**: 3 to 5 capital letters that name a fork feature, used in its directory `docs/design/<KEY>-<slug>/` and in its requirement ids.
-21. **Feature class**: purely additive, for a feature reachable only through syntax, index types or settings that stock Apache Cassandra rejects, or behaviour-changing, for a feature that changes something stock Apache Cassandra already does. A purely additive feature may be on by default from a line's first release. A behaviour-changing feature is always off by default, except the one exception in [release.md](release.md#what-a-release-may-contain).
+21. **Feature class**: purely additive, for a feature reachable only through something stock Apache Cassandra does not have, such as new syntax, a new nodetool command or a new setting, or behaviour-changing, for a feature that changes what an application sees from something stock Apache Cassandra already does. A purely additive feature is on by default. A behaviour-changing feature is always off by default. See [quality-requirements.md](quality-requirements.md#compatibility-with-apache-cassandra).
 22. **Scenario**: the executable form of a fork feature's EARS requirements, written in Gherkin and kept in `test/bdd/`.
 23. **Idea**: an issue labelled `idea`, work the maintainers have not yet decided to do.
 24. **Spike**: an issue labelled `spike`, a question of how to do something or whether it can be done, answered by a research report.
 25. **Research report**: the architect's report on a spike, in `docs/research/<issue>-<slug>.md`.
+26. **Principle**: one architectural or design rule of the project, stated once in [principles.md](principles.md) with an id `PRINCIPLE-nnn` that is never reused or renumbered. A document cites a rule by that id.

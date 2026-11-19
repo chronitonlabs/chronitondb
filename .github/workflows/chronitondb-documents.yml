@@ -14,7 +14,9 @@
 # limitations under the License.
 
 # The process documents and feature keys a pull request changes, checked
-# with tools/chronitondb/doclint.py. The checker and the templates come from
+# with tools/chronitondb/doclint.py, and the generated indexes and graph of
+# the documents (tools/chronitondb/docgraph.py), which must be what the
+# documents give. The checker, the graph writer and the templates come from
 # the base branch, never from the pull request, so a pull request cannot
 # weaken its own check. The pull request's files are only read as data. It
 # runs only when the pull request changes a file under docs/ or test/bdd/.
@@ -61,6 +63,15 @@ jobs:
             fi
           done
           echo "present=yes" >> "$GITHUB_OUTPUT"
+          # The graph writer, where the line has one. It reads the checker
+          # beside it.
+          if git show "origin/$BASE:tools/chronitondb/docgraph.py" > "$dir/docgraph.py" 2>/dev/null
+          then
+            echo "graph=yes" >> "$GITHUB_OUTPUT"
+          else
+            rm -f "$dir/docgraph.py"
+            echo "graph=no" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Process documents
         if: steps.checker.outputs.present == 'yes'
@@ -89,6 +100,45 @@ jobs:
             fi
           done <<< "$out"
           exit "$rc"
+
+      # The generated indexes are what the documents of the pull request
+      # give. A line whose checker has no indexes command asks for none.
+      - name: Generated indexes
+        if: steps.checker.outputs.present == 'yes'
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          if ! grep -q '^    doclint.py indexes ' "$RUNNER_TEMP/doclint/doclint.py"
+          then
+            echo "The checker on the line has no indexes command."
+            exit 0
+          fi
+          if [ -z "$(git diff --name-only "origin/$BASE...HEAD" -- docs)" ]
+          then
+            echo "No document changed."
+            exit 0
+          fi
+          python3 "$RUNNER_TEMP/doclint/doclint.py" indexes --repo . --templates "origin/$BASE" --source HEAD
+
+      # The generated graph is what the documents of the pull request give,
+      # as the indexes are. A line with no graph writer asks for none.
+      - name: Generated graph
+        if: steps.checker.outputs.present == 'yes'
+        env:
+          BASE: ${{ github.base_ref }}
+          GRAPH: ${{ steps.checker.outputs.graph }}
+        run: |
+          if [ "$GRAPH" != "yes" ]
+          then
+            echo "The line has no graph writer."
+            exit 0
+          fi
+          if [ -z "$(git diff --name-only "origin/$BASE...HEAD" -- docs)" ]
+          then
+            echo "No document changed."
+            exit 0
+          fi
+          python3 "$RUNNER_TEMP/doclint/docgraph.py" --repo . --templates "origin/$BASE" --source HEAD
 
       - name: Feature keys
         if: steps.checker.outputs.present == 'yes'

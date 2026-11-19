@@ -72,7 +72,7 @@ A security release is prepared in private, after the practice Debian and Ubuntu 
 1. Its proposal names the commit in the security advisory's private fork, not a commit on the public line. The proposal and its review stay private until disclosure.
 2. Its release candidate is built and verified in private.
 3. It skips the soak once it is verified.
-4. Its packages publish at the moment of disclosure, together with the advisory, on the date the maintainers set. The fix and its fix record reach the public line at the same time.
+4. Its packages publish at the moment of disclosure, together with the advisory, on the date the maintainers set. The fix and its fix record reach the public line at the same time, by a maintainer's merge of the advisory: [security.md](security.md#private-until-disclosure).
 
 Every other release names one commit on the public line. See [security.md](security.md).
 
@@ -192,7 +192,7 @@ A runbook covers the minimum setup to reach first, the order of nodes, the check
 
 The rule is [PRINCIPLE-003](principles.md#principle-003).
 
-1. Each release states, in its release notes, which Apache Cassandra release, or releases, a cluster on it can move back to. It says so when there is none yet, and names the cause. There is none yet only while the line holds Apache Cassandra code that no Apache Cassandra release has yet, such as an on-disk version that came with an early import. Nothing the project adds is a reason for none.
+1. Each release states, in its release notes, which Apache Cassandra release, or releases, a cluster on it can move back to. It says so when there is none yet, and names the cause. There is none yet only while the line writes a stored or sent form that no Apache Cassandra release reads yet, and that form came with Apache Cassandra code no Apache Cassandra release has yet, such as an on-disk version that came with an early import. Nothing the project adds is a reason for none.
 2. Moving back follows the steps the release gives. It does not have to be a swap of binaries on untouched files.
 3. The steps say what is removed first. For example the project's own keys are removed from the configuration file, since Apache Cassandra refuses to start on a key it does not know.
 4. The target is an Apache Cassandra set up as the entry condition says.

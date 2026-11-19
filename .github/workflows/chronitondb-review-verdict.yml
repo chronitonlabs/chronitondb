@@ -15,34 +15,42 @@
 
 # The review verdict check (docs/process/branching-and-review.md, The
 # review record), with tools/chronitondb/reviewlint.py: the newest review
-# of the project's review App that carries a verdict is a clean verdict, and
-# it names the commit the pull request is at now. A clean verdict says
-# the pull request is ready, with no open blocker and no open major
-# finding. A verdict with such a finding open fails the job until a later
+# of the project's review App is a clean verdict, and it names the commit
+# the pull request is at now. A review of the App with no verdict block
+# fails: the App posts nothing but verdicts, so an older verdict never
+# counts in its place. A clean verdict says the pull request is ready,
+# every checklist it ran passed, and no blocker and no major finding is
+# open. A verdict with such a finding open fails the job until a later
 # verdict on the head is clean. The job reads no waiver: the reviewer
-# records a waiver in a new verdict. The job only reads: it
-# starts no review and asks for none. A review by the project's review
-# roles runs on a pull request the project's automation wrote, and on one
-# a maintainer accepted for review with the label triage:accepted, so a
+# records a waiver in a new verdict. The job only reads: it starts no
+# review and asks for none. A review by the project's review roles runs
+# on a pull request the project's automation wrote, and on one a
+# maintainer accepted for review with the label triage:accepted, so a
 # verdict is due on those and on no other. The automation is told by the
-# id of the pull request's author, and the label counts only when the
-# event that set it names a maintainer of docs/governance/committers.md.
-# Any other pull request passes with the line "no review verdict is due".
-# The reviewer's verdict is posted by the review App, an account no author
-# of a pull request can act as, so an author cannot post a verdict on its
-# own work. The checker, the file that names the App and the automation,
-# tools/chronitondb/review-app.json, and the list of maintainers come from the base
-# branch, never from the pull request. The pull request, its events, its
-# reviews and their edits are read from the API when the job runs, and
-# nothing of the pull request is run. A review of any other account counts for nothing, and so does a
-# verdict that was edited after it was posted. Before the checker and the
-# file are on the line the job says so and passes. While the file holds its
-# placeholders the job fails, with a message that says which file to fill.
-# The job runs again when a review is posted, edited or dismissed, so a
-# verdict posted after the last push is seen, and when a label is set or
-# taken off. A separate job runs the
-# checker's unit tests from the pull request. Every action is pinned to a
-# commit.
+# id of the pull request's author. Of the events of the label only those
+# of a maintainer of docs/governance/committers.md count, and the newest
+# of them decides. Any other pull request passes with the line "no review
+# verdict is due". The reviewer's verdict is posted by the review App. The
+# job proves that the App's user posted it, on the head commit, and that
+# nobody edited it since. It cannot prove who asked the App to post it:
+# that the App's key is kept from the accounts that write pull requests is
+# a matter of where the project runs its roles, not of GitHub. The
+# checker, the file that names the App and the automation,
+# tools/chronitondb/review-app.json, and the list of maintainers come from
+# the base branch, never from the pull request. The pull request, its
+# events, its reviews and their edits are read from the API when the job
+# runs, and nothing of the pull request is run. A review of any other
+# account counts for nothing, and so does a verdict that was edited after
+# it was posted. Before the checker is on the line the job says so and
+# passes. Once it is, a missing file that names the App or the
+# maintainers fails the job as a file that cannot be read. While the file
+# that names the App holds its placeholders the job fails, with a message
+# that says which file to fill. The job runs again when a review is
+# posted, edited or dismissed, so a verdict posted after the last push is
+# seen, and when a label is set or taken off. A separate job runs the
+# checker's unit tests from the pull request, on every event this
+# workflow runs on, so it is never skipped on the head a review run
+# reads. Every action is pinned to a commit.
 name: Review verdict
 
 on:
@@ -75,7 +83,7 @@ jobs:
         run: |
           dir="$RUNNER_TEMP/reviewlint"
           mkdir -p "$dir"
-          for file in tools/chronitondb/reviewlint.py tools/chronitondb/markdown.py tools/chronitondb/review-app.json docs/governance/committers.md
+          for file in tools/chronitondb/reviewlint.py tools/chronitondb/markdown.py
           do
             if ! git show "origin/$BASE:$file" > "$dir/${file##*/}" 2>/dev/null
             then
@@ -83,6 +91,12 @@ jobs:
               echo "present=no" >> "$GITHUB_OUTPUT"
               exit 0
             fi
+          done
+          # Once the checker is on the line, a file it reads that the line
+          # lacks is left empty, and the checker fails on it.
+          for file in tools/chronitondb/review-app.json docs/governance/committers.md
+          do
+            git show "origin/$BASE:$file" > "$dir/${file##*/}" 2>/dev/null || : > "$dir/${file##*/}"
           done
           echo "present=yes" >> "$GITHUB_OUTPUT"
 
@@ -113,7 +127,6 @@ jobs:
           python3 "$dir/reviewlint.py" verdict --app "$dir/review-app.json" --maintainers "$dir/committers.md" --pull "$dir/pull.json" --events "$dir/events.json" --reviews "$dir/reviews.json" --edits "$dir/edits.json"
 
   reviewlint-tests:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

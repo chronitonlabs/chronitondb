@@ -15,7 +15,7 @@
 
 # The review verdict check (docs/process/branching-and-review.md, The
 # review record), with tools/chronitondb/reviewlint.py: the newest review
-# of the project's review App on the pull request is a clean verdict, and
+# of the project's review App that carries a verdict is a clean verdict, and
 # it names the commit the pull request is at now. A clean verdict says
 # the pull request is ready, with no open blocker and no open major
 # finding. A verdict with such a finding open fails the job until a later

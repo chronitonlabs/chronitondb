@@ -41,7 +41,7 @@ Revision history, one row for each version:
 
 Full history in git: [commits of this file]({the address `tools/chronitondb/doclint.py history --write` puts here})
 
-Location: `docs/design/<issue>-<slug>/`, with the coverage file `ac-coverage.md` next to it. Process: [maintenance.md](../maintenance.md). The fix record of a security fix, its reviews and its code stay in its private advisory until disclosure, with no public pull request before then. At disclosure the record lands on the public line. Its review record stays private, in the advisory, and section 9 of the record says in one line that the fix was reviewed under the private process. See [security.md](../security.md#private-until-disclosure).
+Location: `docs/design/<issue>-<slug>/`, with the coverage file `ac-coverage.md` next to it. Process: [maintenance.md](../maintenance.md). The fix record of a security fix and its code stay in its private advisory until disclosure, with no public pull request before then. Its reviews and their review record stay private, in the advisory, after disclosure too. At disclosure the record lands on the public line, and section 9 of the record says in one line that the fix was reviewed under the private process. See [security.md](../security.md#private-until-disclosure).
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 

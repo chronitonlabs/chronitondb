@@ -31,10 +31,10 @@ ChronitonDB uses Conventional Commits. This is a project rule on top of the orga
 ### Subject
 
 1. The subject has the form `type(scope): description`.
-2. The description is imperative and in plain words, for example `feat(fulltext): add the phrase operator`.
+2. The description is imperative and in plain words, for example `feat(nodetool): print the release version` or `feat(compaction): count a skipped sstable once`.
 3. The subject is at most 72 characters. A trailing ` (chronitondb-<line>)` that names the line is not counted, nor GitHub's ` (#<number>)` on the commit on the line. An import subject carries the original subject unchanged, so it has no length limit, and it keeps its exact import form.
 4. The subject never lists files. A subject such as `Update <path>`, as GitHub writes for a suggestion, is refused. Apply suggestions locally with a real subject.
-5. The scope names the area of the change, for example `fulltext`, `analyzer`, `build` or `github`.
+5. The scope names the area of the change, for example `compaction`, `build` or `github`.
 
 ### Types
 
@@ -54,7 +54,7 @@ ChronitonDB uses Conventional Commits. This is a project rule on top of the orga
 
 ### Breaking changes
 
-A breaking change takes `!` after the type or scope, for example `feat(fulltext)!: rename the analyzer option`. It also takes a footer `BREAKING CHANGE: <what breaks and what to do>` in a commit message of the pull request. The squash commit on the line carries the messages of the pull request's commits, never its description, so a footer only in the description is refused. One without the other is refused.
+A breaking change takes `!` after the type or scope, for example `feat(compaction)!: rename a strategy option`. It also takes a footer `BREAKING CHANGE: <what breaks and what to do>` in a commit message of the pull request. The squash commit on the line carries the messages of the pull request's commits, never its description, so a footer only in the description is refused. One without the other is refused.
 
 ### Body
 
@@ -81,7 +81,7 @@ See [upstream.md](upstream.md).
 
 1. A person MAY note AI assistance with an `Assisted-by:` trailer naming the tool, as the organisation's guide describes.
 2. A commit written by an automated agent carries two trailers: `Assisted-by: <tool>:<model>` and `Requested-by: <GitHub username> <GitHub no-reply address>` of the maintainer who asked for the work. For work items from an approved plan, that is the maintainer who approved the plan. For an item opened from one of the project's scheduled checks, it is the maintainer who set up that check. The squash commit on the line keeps these trailers. The username has no `@`, so it is never a mention.
-3. An AI tool is never listed as an author or co-author.
+3. An AI tool is never listed as an author or co-author. A commit message and a pull request description carry no `Co-authored-by` line that names an AI tool or model, no link to a session of an AI tool and no line that says a tool generated the text. The `pr-title` check refuses them, and the `line-subjects` check reports them on a commit that reached a line.
 4. Adapted work by another person carries `Co-authored-by:` for each of its authors.
 
 ### Pull request titles
@@ -92,7 +92,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 
 1. `CHANGES-chronitondb.txt` is generated at release from the `feat`, `fix`, `perf`, `security` and `import` commits and the import merge commits. It is never edited by hand. Each line has the form ` * <Imperative description> (#<issue>)`. Security fixes have their own section.
 2. `NEWS-chronitondb.txt` carries upgrade notes per release and anything user facing or upgrade relevant: for example the cleanup statements to run before a downgrade. It is written in the pull request that makes the change.
-3. Apache's `CHANGES.txt` and `NEWS.txt` are never edited. They change only through imports.
+3. Apache's `CHANGES.txt` and `NEWS.txt` are never edited by hand. They change only through imports, a single fix taken early included: [upstream.md](upstream.md#single-fixes-taken-early).
 4. Release notes are built from our commits and `NEWS-chronitondb.txt`. The commit subject is the text a user reads. They also name the newest Apache Cassandra release the line fully contains and every change cherry-picked on top of it, taken from the import merge commits. See [release.md](release.md#what-a-release-contains).
 
 ## Where things live
@@ -100,7 +100,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Kind | Path |
 |---|---|
 | ChronitonDB Java code | `src/java/org/chronitondb/<area>/` |
-| ChronitonDB tests | `test/unit/org/chronitondb/`, `test/distributed/org/chronitondb/`, in the same packages as the code they test |
+| ChronitonDB tests | `test/unit/org/chronitondb/`, in the same packages as the code they test, and `test/distributed/org/chronitondb/`, as item 8 below says |
 | ChronitonDB tooling and code checks | `tools/chronitondb/` |
 | Scenarios of fork features and their shared step library | `test/bdd/` |
 | Parity suite tooling | `test/parity/` |
@@ -109,8 +109,13 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Feature spec, plan and delivery plan of a feature | `docs/design/<KEY>-<slug>/` |
 | Milestone reports of a feature | `docs/design/<KEY>-<slug>/milestones/` |
 | Design record or fix record of one item, with its coverage file | `docs/design/<issue>-<slug>/`, or `docs/design/<KEY>-<slug>/` for a fork feature that fits one item |
-| Decision records | `docs/decisions/NNNN-<slug>.md` |
+| Decision records of one feature | `docs/design/<KEY>-<slug>/decisions/DEC-<KEY>-nnnn-<slug>.md` |
+| Decision records of work with no feature key | `docs/design/<issue>-<slug>/decisions/DEC-<issue>-nnnn-<slug>.md` |
+| Decision records of the whole project | `docs/decisions/DEC-GOV-nnnn-<slug>.md`. The records there named by a number alone, `NNNN-<slug>.md`, were merged before records had ids |
+| Generated indexes of the documents | `docs/index/documents.md`, `docs/index/decisions.md`, `docs/index/areas.md`, and `INDEX.md` in each feature directory `docs/design/<KEY>-<slug>/` |
+| Generated graph of the documents and its context | `docs/index/graph.json`, `docs/index/context.json` |
 | Research reports of spikes | `docs/research/<issue>-<slug>.md` |
+| Review record of a pull request the project's own automation wrote | `docs/reviews/<work>.md`, named after the pull request's branch without its first part and without the line |
 | Import records | `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project |
 | Release proposals and their verification results | `docs/releases/<version>.md` |
 | Line plan: first release date, feature freeze and LTS designation | `docs/releases/<line>-plan.md` |
@@ -123,16 +128,17 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Contribution guide | `.github/CONTRIBUTING.md` |
 | Our CI workflows | `.github/workflows/chronitondb-*.yml` |
 | Code owners of the sensitive paths | `.github/CODEOWNERS` |
-| Editor settings for ChronitonDB code | `.editorconfig` |
+| Editor settings for ChronitonDB code, which follow Apache Cassandra's code style | `.editorconfig` |
 | ChronitonDB's configuration file | `conf/cassandra_chronitondb.yaml` |
 
-1. Apache's own files stay untouched: `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like. ChronitonDB's files sit beside them, as listed above. A change to an Apache file is made only where we need it, with its [delta entry](../delta/README.md). See [upstream.md](upstream.md#apache-files-stay-untouched). The `delta-register` check reads the table above: a file under none of its paths is a stock file.
+1. Apache's own files stay as Apache has them: `CHANGES.txt`, `NEWS.txt`, `README.asc`, `doc/`, the root `CONTRIBUTING.md`, `.asf.yaml`, `debian/`, `redhat/`, the Jenkins and CI files and the like. ChronitonDB's files sit beside them, as listed above. A change to an Apache file is made only where we need it, with its [delta entry](../delta/README.md). See [upstream.md](upstream.md#apache-files-change-only-where-needed). The `delta-register` check reads the table above: a file under none of its paths is a stock file. The rule is [PRINCIPLE-009](principles.md#principle-009).
 2. All ChronitonDB documentation lives in `docs/`.
 3. User and operator documentation follows Diátaxis: tutorials, how-to guides, reference and explanation, one kind per page. Its folder layout will be defined with the documentation site.
 4. Each line keeps its own documentation on its own branch.
 5. Documentation changes ship in the same pull request as the code they describe.
 6. Requirements and prerequisites in reference pages, how-to guides, runbooks, the process pages and templates, and design and decision records use BCP 14 key words. Tutorials and explanations use plain prose.
 7. Product documentation, meaning reference pages, operator guides, runbooks and design and decision records, never addresses the reader as "you". Pages that address people taking part may: [contributing.md](contributing.md), `.github/CONTRIBUTING.md`, the reporting part of [security.md](security.md) and the How we work section of `.github/README.md`.
+8. Apache Cassandra's build selects tests by path and by name. Distributed tests of the project sit under `test/distributed/org/chronitondb/<area>/test/` and upgrade tests under `test/distributed/org/chronitondb/<area>/upgrade/`. No other path of the project contains the word upgrade. Every test class name ends in `Test`: a class named otherwise is never run. `test/bdd/` and `test/parity/` need a hook in `build.xml`, with its delta entry.
 
 ## Contents index of process documents
 
@@ -142,33 +148,69 @@ Each document is one file, so each carries an index of its headings near the top
 2. The Contents section is the first section after the title, below the document control table and the opening lines. It holds only a nested list: one link per heading below the title, in the order of the headings. A `##` heading is not indented. Every other heading is indented two spaces more than the nearest heading above it of a higher level, so a heading that skips a level is still one step below its parent.
 3. Each entry shows its heading's text and links the heading's anchor. The anchor follows GitHub's rules: the text GitHub shows for the heading in lower case, every character that is not a letter, a digit, `_`, `-` or a space removed, and each space a hyphen. A heading whose anchor is taken already gets `-1`, then `-2`. For example `## 2.1 Context and scope` is `#21-context-and-scope`.
 4. The index is never written by hand. After any heading is added, removed or renamed, and before the commit, the author regenerates it with `tools/chronitondb/doclint.py index --write <file>`. It refuses, and leaves the file unchanged, when the Contents section holds anything but the list. `tools/chronitondb/doclint.py index <file>` prints it, and `index --check <file>` reports what is wrong with it.
-5. The process document check refuses a document of a templated kind, a decision record only when it is new to the line, whose index is missing, not first, misses a heading, lists a heading out of order or at the wrong depth, or links an anchor that no heading of the file has. It also refuses a new decision record that does not take the next number after the highest one merged on the line. See [the tools README](../../tools/chronitondb/README.md#process-documents-doclintpy).
+5. The process document check refuses a document of a templated kind, a decision record only when it is new to the line, whose index is missing, not first, misses a heading, lists a heading out of order or at the wrong depth, or links an anchor that no heading of the file has. It also refuses a new decision record that is not named by its id in the place its key gives it, whose title does not open with that id, whose id another record has, or that does not take the next number of its key after the highest one merged on the line. See [the tools README](../../tools/chronitondb/README.md#process-documents-doclintpy).
+
+## Versions and revision history
+
+A document that can change after it is merged carries its version and says what each version changed.
+
+1. Every template in [templates/](templates/) with a `Version` row in its document control table has a revision history under that table: a table with one row for each version. The row gives the version, its RFC 3339 date, what changed, and the id of the decision record behind the change, or `None`. The first version's row says `First version`.
+2. A change to a merged document raises its `Version` by one and adds one row. A merged version keeps its row as it was merged.
+3. Under the table one line links the commits of the file on its line on GitHub: `Full history in git: [commits of this file](<address>)`. The address is never written by hand. `tools/chronitondb/doclint.py history --repo . --templates origin/<line> --write <file>` writes it from the file's path, the line and the repository the line is fetched from, so it stays right when the repository moves or is renamed.
+4. A document merged before its template had the table keeps the line `Change history: the git history of this file.` until its next version. That version adds the table with its own row, which `history --write` starts.
+5. A decision record has no version. It is never edited, and the record that supersedes it is its history. See [the decision records](../decisions/README.md#rules). A review record has no version either: it changes with every review round, and its history is the commits of its file.
+6. The process document check refuses a document that is new to the line, or at another version than on the line, without its revision history. It refuses rows out of order or with a gap, a last row that is not the document's version, a row with no date, change or decision record, a changed row of a merged version, and a history link that is not the commits of the file on its line. `history --check <file>` reports the same.
+
+## Generated indexes
+
+The documents are found through four indexes that the document checker writes from each document's own header. No index is written or edited by hand.
+
+1. [docs/index/documents.md](../index/documents.md) lists every document under `docs/` that carries the common header, by kind, with its status, version and areas. A document counts when its document control table has a `Document type` row, whatever its file is called. An import record is listed with its line, its source, the Apache JIRA tickets and the release or commit its header names. Once a design record or fix record names a principle in its `Exceptions` row, the page ends with a section that lists every such record under each principle it departs from. See [principles.md](principles.md#how-to-read-and-cite-a-principle).
+2. [docs/index/decisions.md](../index/decisions.md) lists every decision record of the project and of its features, by key and number, with its status, date, areas and the records it supersedes.
+3. [docs/index/areas.md](../index/areas.md) lists the same documents and records under each of the [areas](areas.md) their `Areas` row names. A document of a kind with no `Areas` row, or merged before the row, is listed last.
+4. `INDEX.md` in each feature directory lists the documents of that feature, the design records of its items and its decision records.
+5. After a document is added, or its title, status, version, areas, exceptions or supersede row changes, the author regenerates the indexes with `tools/chronitondb/doclint.py indexes --repo . --templates origin/<line> --write`, and the graph with `tools/chronitondb/docgraph.py --repo . --templates origin/<line> --write`, and commits them with the change. Two pull requests that both add a document change the same pages: the one merged second runs the command again after it takes in the line.
+6. The process document check refuses a pull request whose indexes are not what the documents give: `tools/chronitondb/doclint.py indexes --repo . --templates origin/<line>` reports each stale page.
+
+## The document graph
+
+The links between the documents are also written as one graph, for tools that read data and not pages.
+
+1. `docs/index/graph.json` is generated by `tools/chronitondb/docgraph.py --repo . --templates origin/<line> --write` from the same headers the indexes read. The documents are the source of truth. The file is never edited by hand, and says so in its `description`.
+2. Its nodes are the documents the indexes list, the feature directories, the areas a document names, and the Apache JIRA tickets, releases and commits an import record names.
+3. A link is written only where a header or a table states it: a document's areas, the feature it belongs to, the records a decision record supersedes, the decision records the revision history of a document names, the feature spec a design record's References row links, and what an import was taken from. No link is read from prose.
+4. It is JSON-LD, in files named `.json` so that the licence audit, which passes over JSON, needs no change to Apache Cassandra's build files. It uses established terms: Dublin Core terms for titles, types, subjects, parts, replacements and references, schema.org for a document and its version, PROV for what an import derives from, SKOS for an area, and OSLC for a status and for a record that elaborates a spec. ChronitonDB's own terms are four, where no established one fits: `line`, the line a document is written for, `source`, how a change came in, `upstreamRevision`, a commit named where no address of it can be built from the header, and `Feature`, a feature directory.
+5. The context is the file `docs/index/context.json`, kept by hand beside the graph. Every address in the graph is relative to the graph file or is Apache's own, and the project's own terms are relative to the context file, so nothing in it names the repository or its owner.
+6. The same tree gives the same bytes: nodes in the order of their ids, keys sorted, no date of writing and no path of the machine. `tools/chronitondb/docgraph.py --repo . --templates origin/<line>` exits 1 when the committed file is not what the documents give. The process document check runs it on every pull request that changes a file under `docs/`.
 
 ## Claims about code
 
-A claim about what code does names the code it was read in. This applies to the process pages and to every document written from a template.
+A claim about what code does names the code it was read in. This applies to the process pages and to every document written from a template. The rule is [PRINCIPLE-078](principles.md#principle-078).
 
 1. A claim about Apache Cassandra code says "Apache Cassandra", never "stock".
-2. Each claim names the project, the branch and the commit, in one of these forms: `Apache Cassandra cassandra-5.0 at <hash>`, `Apache Cassandra trunk at <hash>` or `ChronitonDB chronitondb-5.0 at <hash>`. Next to it stand the symbol and the file and line, for example `CompactionManager.submitBackground`, `src/java/org/apache/cassandra/db/compaction/CompactionManager.java:<line>`.
+2. Each claim names the project, the branch and the commit, in the form `<project> <branch> at <hash>`. For example `Apache Cassandra cassandra-5.0 at <hash>`, `Apache Cassandra trunk at <hash>` or `ChronitonDB chronitondb-6.0 at <hash>`. Next to it stand the symbol and the file and line, for example `CompactionManager.submitBackground`, `src/java/org/apache/cassandra/db/compaction/CompactionManager.java:<line>`.
 3. Analysis keeps three sources apart and says which one each claim holds for: our line, the Apache Cassandra release our line is based on, and Apache Cassandra upstream now, meaning the head of the same branch, the next major version's branch and trunk.
-4. "Stock behaviour" still names the rule that Apache Cassandra behaviour does not change for anyone not using a fork feature. See [quality-requirements.md](quality-requirements.md#stock-behaviour-unchanged).
+4. "Stock behaviour" still names what the compatibility rule protects: what an application and an operator see from Apache Cassandra. See [quality-requirements.md](quality-requirements.md#compatibility-with-apache-cassandra).
 
 ## Code layout
 
-1. Fork logic lives in classes under `org.chronitondb`, in packages named for what they are, for example `org.chronitondb.fulltext`.
+The rules of this section are stated in full in [principles.md](principles.md): [PRINCIPLE-010](principles.md#principle-010) for where fork logic lives and how a stock file is edited, [PRINCIPLE-007](principles.md#principle-007) for code defaults, [PRINCIPLE-013](principles.md#principle-013) and [PRINCIPLE-065](principles.md#principle-065) for tests, and [PRINCIPLE-042](principles.md#principle-042) for code loaded by name.
+
+1. Fork logic lives in classes under `org.chronitondb`, in packages named for what they are, for example `org.chronitondb.startup` or `org.chronitondb.metrics`.
 2. Fork logic MUST NOT be added as a new class under `org.apache.cassandra`. A fork class that needs package private access to a stock package is a design decision, named in the design record and approved with it.
-3. An edit to a stock file is small and additive. It is the hook that calls fork code, nothing more.
+3. An edit to a stock source file is the smallest that does the job, of the kinds [PRINCIPLE-010](principles.md#principle-010) lists. A refactor is named in the design record and reviewed with it.
 4. Code defaults in stock classes, such as `Config.java`, stay exactly as Apache Cassandra has them.
-5. A test that existed before a change is not weakened. A change to a pre-existing test is additive and named in the design record.
+5. A test that existed before a change is not weakened, and a pre-existing stock test file changes in four ways only: [PRINCIPLE-065](principles.md#principle-065) and [PRINCIPLE-013](principles.md#principle-013). See [testing.md](testing.md#policy).
+6. In the project's own lookups, a name that a client supplies never picks code to load unless it is on an allow list, which the maintainers approve in a decision record. An option of Apache Cassandra that takes a class name keeps its behaviour: [PRINCIPLE-042](principles.md#principle-042).
 
 ## Code style
 
 ### ChronitonDB Java files
 
-1. Files under `org/chronitondb` follow Google Java Style. `tools/chronitondb/format-check.sh` checks it with google-java-format, in the `shape` check of every pull request. Formatting has no exceptions.
-2. The `.editorconfig` at the repository root carries the matching editor settings for those paths only.
-3. The 5.0 line uses Java 17. The 6.0 line uses Java 21. Code meant for both lines uses Java 17 features only.
-4. Apache Cassandra's banned API rules apply to fork code too. `var` is not used.
+1. Files under `org/chronitondb` follow Apache Cassandra's code style on each line: the line's checkstyle rules, its brace and import conventions and its banned APIs. Apache Cassandra's checkstyle, in `ant check`, runs on these files as on its own. The project runs no formatter and no formatting check of its own.
+2. Static analysis stays: the [shape limits](#shape-limits) below, Semgrep and SpotBugs. See [branching-and-review.md](branching-and-review.md#required-checks).
+3. The 5.0 line uses Java 17. The 6.0 line uses Java 21. Code meant for both lines uses Java 17 features only. The Java version of each line is a prerequisite that the release's steps state, for moving onto the line and for moving back: [release.md](release.md#moving-back-to-apache-cassandra).
+4. Apache Cassandra's banned API rules apply to fork code too.
 
 ### Shape limits
 
@@ -188,7 +230,9 @@ A claim about what code does names the code it was read in. This applies to the 
 | Cognitive complexity per method | 15 |
 | Duplicated block | 50 tokens |
 
-Tests and benchmarks are measured with looser limits (cyclomatic complexity 5, method length 150, file length 1,000, cognitive complexity 15, duplication 50 tokens). Their findings are warnings only.
+Tests and benchmarks are measured with their own limits, and their findings are warnings only: cyclomatic complexity 5, method length 150, file length 1,000, cognitive complexity 15, duplication 50 tokens.
+
+A Java file under `org/chronitondb` is named with ASCII letters, digits and `_ $ . - + @ /` only. The shape check stops on any other name.
 
 A production limit MAY be exceeded only with a waiver recorded in the item's design record and approved with it, naming the method, the rule and the reason. A suppression comment in code is not a waiver.
 
@@ -201,7 +245,7 @@ A production limit MAY be exceeded only with a waiver recorded in the item's des
 ### Comments in ChronitonDB code
 
 1. Comments say why, in their own words.
-2. Every public type and method has Javadoc that says what it does.
+2. Every public type has Javadoc that says what it does, and so has every public method whose behaviour is not obvious from its name. A method that overrides an interface or superclass method inherits that Javadoc, and a plain accessor needs none. Where the overridden stock method has no Javadoc and the override's behaviour is not obvious, the override carries its own.
 3. Comments carry no issue numbers (`#<n>`) and no Apache ticket ids (`CASSANDRA-<n>`). Those belong in commit messages and pull requests.
 4. Comments describe the code as it is, without history words such as "previously" or "no longer".
 5. No `TODO` comments. Open work goes in an issue.
@@ -228,14 +272,16 @@ An import whose author has not signed the contributor agreement fails the agreem
 
 ## Names
 
-1. New user facing names (yaml keys, nodetool commands, MBeans, metric types, packages) never contain "cassandra" or "axon". No key or value contains "stock".
+The rule behind these names is [PRINCIPLE-079](principles.md#principle-079). A name of the project's own that a release has shipped is kept for the line, with any new name added beside it: [PRINCIPLE-082](principles.md#principle-082).
+
+1. New user facing names (yaml keys, nodetool commands, MBeans, metric types, packages) never contain "cassandra" or "axon". No key or value contains "stock". A file that stands beside one of Apache Cassandra's files MAY carry that file's name, as the project's configuration file will once it exists.
 2. Settings that apply across the fork are named for what they do.
 3. ChronitonDB MBeans use the JMX domain `org.chronitondb`.
-4. Fork metrics use their own metric types. Stock metric types gain no new metrics.
+4. Fork metrics use their own metric types. Stock metric types gain no new metrics. An object of a kind Apache Cassandra already measures, such as a thread pool, appears under the stock type with the project's scope, see the edge of [PRINCIPLE-079](principles.md#principle-079).
 5. ChronitonDB release versions have the form `<line>-chronitondb<n>`, for example `5.0-chronitondb3`, with `n` from 1 on each line. They never carry an Apache patch number. Release candidate package versions add `~rc<k>`, for example `5.0-chronitondb3~rc1`. The git tag of a release is the version itself. The git tag of a release candidate adds `-rc<k>`, for example `5.0-chronitondb3-rc1`, since git does not allow `~` in a tag name. See [release.md](release.md#version-numbers).
 6. The package and its service are named `chronitondb`. A new install uses the configuration directory `/etc/chronitondb`, the data directory `/var/lib/chronitondb` and the system user `chronitondb`. See [release.md](release.md#packaging).
 7. Timestamps in our records, evidence, documentation and release notes use RFC 3339.
 
 ## Dependencies
 
-No new dependency, and no version change of an existing one, is used before it is declared and approved in a feature spec or design record. The one exception is a patch-version update of an approved library for a bug or security fix. See [compliance.md](compliance.md) and [maintenance.md](maintenance.md#dependency-patch-version-updates).
+No new dependency, and no version change of an existing one, is used before it is declared and approved in a feature spec or design record. The one exception is a patch-version update of an approved library for a bug or security fix. The rule is [PRINCIPLE-049](principles.md#principle-049). See [compliance.md](compliance.md) and [maintenance.md](maintenance.md#dependency-patch-version-updates).

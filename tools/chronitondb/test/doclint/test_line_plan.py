@@ -57,6 +57,8 @@ def filled_line_plan():
     text = template("line-plan.md").replace("{line}", "chronitondb-5.0")
     text = text.replace("| Status | Draft, Approved or Superseded |", "| Status | Draft |")
     text = text.replace("| Version | {n} |", "| Version | 1 |")
+    text = text.replace("{RFC 3339 date}", "2026-11-17").replace("{the id of the decision record behind this version, or None}", "None")
+    text = text.replace("{the address `tools/chronitondb/doclint.py history --write` puts here}", "https://github.com/example/product/commits/line/docs/releases/chronitondb-5.0-plan.md")
     text = text.replace("| Author | {GitHub username} |", "| Author | millerjp |")
     return re.sub(r"\{[^{}]*\}", "not set", text)
 

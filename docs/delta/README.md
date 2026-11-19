@@ -17,7 +17,7 @@ limitations under the License.
 
 # The delta register
 
-This register lists every change ChronitonDB carries on top of Apache Cassandra on its lines: features, fixes to stock code, and build and packaging changes. It works the way Ubuntu tracks its changes against Debian. Anyone can read here what ChronitonDB changes, why, and whether the change has been offered to Apache Cassandra.
+This register lists every change ChronitonDB carries on top of Apache Cassandra on its lines: features, fixes to stock code, and build and packaging changes. It works the way Ubuntu tracks its changes against Debian. Anyone can read here what ChronitonDB changes, why, and whether the change has been offered to Apache Cassandra. The rule is [PRINCIPLE-011](../process/principles.md#principle-011).
 
 ## Entries
 
@@ -44,13 +44,14 @@ This register lists every change ChronitonDB carries on top of Apache Cassandra 
 
 1. Every pull request that changes stock code or stock behaviour adds or updates its entry, with a new Last-Update and its row in the index below. The `delta-register` check enforces it on every pull request, with the checker and the rules taken from the line, and the reviewer reads the entry. The check:
     1. Finds the stock files the pull request adds, changes, deletes or renames: every file outside the paths of [Where things live](../process/conventions.md#where-things-live).
-    2. Fails when a stock file changes and no entry is added or updated. An import of a whole Apache release or of Apache's branch, from an `import/cassandra-<...>` branch, brings Apache Cassandra's own code and needs no entry. A single Apache fix or a commit from another project does.
-    3. Passes without an entry only when the pull request description has a line `No delta entry: <reason>`, with a reason of three words or more, for a stock change no entry describes. The reviewer judges the reason.
+    2. Fails when a stock file changes and no entry is added or updated. An import of a whole Apache release or of Apache's branch, from an `import/cassandra-<...>` branch, brings Apache Cassandra's own code and needs no entry. The branch name counts only for a branch of this repository. The author of a pull request from a fork chooses its branch name, so an import that starts on a fork is pushed to an import branch of this repository by a maintainer, and its pull request is opened from there. A single Apache fix or a commit from another project does need an entry.
+    3. Passes without an entry when the pull request description has a line `No delta entry: <reason>`, with a reason of three words or more. The line is for a feature's change that touches only log lines Apache Cassandra writes, as item 4 says. The check reads only that the line is there. The reviewer judges it against the change: the change touches nothing of Apache Cassandra's but those log lines. Any other use of the line is a decision of the maintainers at review, and the reviewer reports it to them as a finding.
     4. Checks every entry the pull request adds or changes: each field of the template in its form, a link to the Origin commit unless the Origin is ChronitonDB, a Last-Update later than on the line, and one row in the index below with the same Area, Lines, Forwarded, Added, Last update and Issue. An entry is never renamed or deleted. A change no longer carried keeps its entry with Status Dropped.
     5. Does not see a change to stock behaviour made only in ChronitonDB's own files. The reviewer looks for it.
-2. Every fix to stock code gets an Apache JIRA, filed by the maintainers. Its entry records it in Bug and Forwarded.
+2. Every fix to stock code is offered to Apache Cassandra, with an Apache JIRA the maintainers file, or for a security fix through the Apache Cassandra security team until disclosure. Its entry records the offer in Bug and Forwarded. See [upstream.md](../process/upstream.md#offering-changes-upstream).
 3. Features are offered to Apache Cassandra only when the maintainers decide, case by case.
-4. The integrator keeps the register current. Its upstream radar flags entries that Apache Cassandra has since fixed. Those entries are dropped at the next import, and its import record in `docs/imports/` lists them.
+4. A log line that differs from stock is not a compatibility concern and is never a finding by itself. A log line that ChronitonDB code adds gets no delta entry. A log line that Apache Cassandra writes changes in two ways only: in an approved fix to a defect in stock, or by a feature whose purpose is to change what Apache Cassandra logs, behind a switch that is off by default. It never changes as a side effect of other work. An approved fix that changes a stock log line has its delta entry as any fix to stock does. It is the only change to a stock log line that gets an entry. A feature's change that touches only stock log lines gets no entry: the feature's own record tracks it and git shows it, and its pull request description carries the line `No delta entry: <reason>`, with its reason after the colon. Nothing more is asked for the log lines themselves: no list for each line. The rule is [PRINCIPLE-008](../process/principles.md#principle-008).
+5. The integrator keeps the register current. Its upstream radar flags entries that Apache Cassandra has since fixed. Those entries are dropped at the next import, and its import record in `docs/imports/` lists them.
 
 See [upstream.md](../process/upstream.md) for how imports and upstreaming work.
 

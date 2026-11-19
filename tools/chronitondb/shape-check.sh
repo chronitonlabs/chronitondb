@@ -24,11 +24,19 @@
 #   tools/chronitondb/shape-check.sh --base REF  check the files changed since the merge base with REF
 #   tools/chronitondb/shape-check.sh --self-test run the fixtures under tools/chronitondb/test
 #
+# --tree DIR before any of these checks the files of DIR, another checkout
+# of the repository, with the limits and tools of this one. CI runs the
+# check of the line on a pull request's files this way, so a pull request
+# cannot loosen the limits it is measured by.
+#
 # Only paths matching org/chronitondb/**/*.java are kept, the rest are
 # ignored without a word. A file under a test/ directory (test/unit,
 # test/distributed, test/microbench, test/burn) gets the test limits and
 # every finding is a warning. Every other file is production code and every
-# finding blocks.
+# finding blocks. A Java file under org/chronitondb whose path holds
+# anything but ASCII letters, digits and the characters _ $ . - + @ / stops
+# the check: the tools take their files from lists that a space, a comma or
+# a quote would split, and such a file would go unmeasured.
 #
 # Tools: checkstyle from the build's own test classpath (build/test/lib/jars,
 # filled by `ant resolver-retrieve-build` or any build) and PMD, downloaded
@@ -186,7 +194,7 @@ run_pmd()
 # tokens|lines|file|line|the other occurrences
 cpd_records()
 {
-  awk -v root="$root/" '
+  awk -v root="$tree/" '
     function flush(   i, j, f, others, sep)
     {
       for (i = 1; i <= n; i++)
@@ -236,7 +244,7 @@ run_cpd()
   corpus="$work/cpd-corpus.txt"
   {
     cat "$list"
-    for dir in "$root/src" "$root/test"
+    for dir in "$tree/src" "$tree/test"
     do
       [ -d "$dir" ] && find "$dir" -path '*/org/chronitondb/*' -name '*.java' -type f
     done
@@ -259,6 +267,25 @@ run_cpd()
   done < "$parsed"
 }
 
+# A marker that hides code from PMD or CPD is a finding in each file
+# listed in $1: PMD and CPD obey such markers, and a suppression in the
+# code is not a waiver.
+run_suppressions()
+{
+  local list="$1" file line parsed="$work/suppressions-parsed.txt"
+  [ -s "$list" ] || return 0
+  while IFS= read -r file
+  do
+    [ -f "$file" ] || continue
+    LC_ALL=C grep -n -E 'NOPMD|CPD-(OFF|ON|START|END)|SuppressWarnings[^)]*PMD' "$file" | cut -d: -f1 > "$parsed"
+    while IFS= read -r line
+    do
+      emit "$file" "$line" "Suppression" \
+        "a marker that hides code from PMD or CPD (NOPMD, CPD-OFF, CPD-START or a SuppressWarnings of a PMD rule). A suppression in the code is not a waiver, see the Waivers section of the README"
+    done < "$parsed"
+  done < "$list"
+}
+
 # Reads the selected files from stdin, runs every tool, prints the findings.
 check_files()
 {
@@ -273,6 +300,10 @@ check_files()
   while IFS= read -r path
   do
     [ -n "$path" ] || continue
+    if printf '%s\n' "$(display "$path")" | LC_ALL=C grep -q -v -E '^[A-Za-z0-9_$./+@-]+$'
+    then
+      die "$(display "$path") has a name the tools cannot take. A Java file under org/chronitondb is named with ASCII letters, digits and _ \$ . - + @ / only"
+    fi
     if [ "$(classify "$path")" = test ]
     then
       printf '%s\n' "$path" >> "$test_list"
@@ -293,6 +324,7 @@ check_files()
   run_checkstyle "$test_config" "$test_list"
   run_pmd "$all_list"
   run_cpd "$all_list"
+  run_suppressions "$all_list"
   sort -u "$findings"
   n_err="$(grep -c '^ERROR ' "$findings")"
   n_warn="$(grep -c '^WARN ' "$findings")"
@@ -301,11 +333,20 @@ check_files()
   [ "$n_err" -eq 0 ]
 }
 
+# git in the repository the self-test makes, with no signing, hooks or
+# identity of the caller.
+selftest_git()
+{
+  git -C "$repo" -c user.name=selftest -c user.email=selftest@example.org \
+    -c commit.gpgsign=false -c core.hooksPath=/dev/null "$@" \
+    || die "git $1 failed in $(display "$repo")"
+}
+
 # Copies the fixtures into a staging tree shaped like the repository, runs the
 # check on them and compares the findings with tools/chronitondb/test/expected.txt.
 self_test()
 {
-  local stage out expected actual rc failed=0
+  local stage out expected actual rc failed=0 repo odd
   stage="$work/selftest"
   rm -rf "$stage"
   mkdir -p "$stage/src/java" "$stage/test/unit" || die "cannot create $(display "$stage")"
@@ -365,6 +406,60 @@ self_test()
     failed=$((failed + 1))
   fi
 
+  # The changed files of a repository, as CI asks for them: a file added
+  # since the base is measured. One with a name git would print in quotes
+  # is not passed over, it stops the check, and so does a base that does
+  # not exist.
+  repo="$work/selftest-repo"
+  rm -rf "$repo"
+  mkdir -p "$repo/src/java/org/chronitondb/shape" || die "cannot create $(display "$repo")"
+  selftest_git init -q
+  selftest_git commit -q --allow-empty -m "line"
+  cp "$fixtures/src/org/chronitondb/shape/CyclomaticTooHigh.java" "$repo/src/java/org/chronitondb/shape/"
+  selftest_git add -A
+  selftest_git commit -q -m "change"
+  "$0" --tree "$repo" --base HEAD~1 > "$out" 2>&1
+  rc=$?
+  if [ "$rc" -ne 1 ] || ! grep -q '^ERROR src/java/org/chronitondb/shape/CyclomaticTooHigh.java:[0-9:]* CyclomaticComplexity ' "$out"
+  then
+    cat "$out"
+    printf 'self-test: FAIL a file changed since the base exit %s, expected 1 with its finding\n' "$rc"
+    failed=$((failed + 1))
+  fi
+  "$0" --tree "$repo" --base no-such-ref > "$out" 2>&1
+  rc=$?
+  if [ "$rc" -ne 2 ]
+  then
+    cat "$out"
+    printf 'self-test: FAIL a base that does not exist exit %s, expected 2\n' "$rc"
+    failed=$((failed + 1))
+  fi
+  odd="$(printf 'Cyclomatick\303\251.java')"
+  cp "$fixtures/src/org/chronitondb/shape/CyclomaticTooHigh.java" "$repo/src/java/org/chronitondb/shape/$odd"
+  selftest_git add -A
+  selftest_git commit -q -m "a name git quotes"
+  "$0" --tree "$repo" --base HEAD~1 > "$out" 2>&1
+  rc=$?
+  if [ "$rc" -ne 2 ] || ! grep -q 'has a name the tools cannot take' "$out"
+  then
+    cat "$out"
+    printf 'self-test: FAIL a changed file with a name outside ASCII exit %s, expected 2, the file refused and not passed over\n' "$rc"
+    failed=$((failed + 1))
+  fi
+
+  # The staging tree checked as another tree, with --tree, its files given
+  # by their paths inside it: the same findings, shown by those paths.
+  (cd "$stage" && find src test -name '*.java' -type f | sort) | run_on_list --tree "$stage" > "$out" 2>&1
+  rc=$?
+  grep -v ' none$' "$expected" > "$work/selftest-expected-tree.txt"
+  sed -n -E "s#^(ERROR|WARN) ((src|test)/[^:]+):[0-9]+(:[0-9]+)? ([A-Za-z]+) .*#\2 \1 \5#p" "$out" | sort -u > "$actual"
+  if [ "$rc" -ne 1 ] || ! diff -u "$work/selftest-expected-tree.txt" "$actual"
+  then
+    cat "$out"
+    printf 'self-test: FAIL the staging tree given with --tree exit %s, expected 1 with the findings of %s shown by their paths in that tree\n' "$rc" "$(display "$fixtures/expected.txt")"
+    failed=$((failed + 1))
+  fi
+
   if [ "$failed" -eq 0 ]
   then
     printf 'self-test: PASS\n'
@@ -374,13 +469,20 @@ self_test()
   return 1
 }
 
+if [ "${1:-}" = "--tree" ]
+then
+  use_tree "${2:-}"
+  shift 2
+fi
+
 case "${1:-}" in
   --self-test)
     self_test
     ;;
   --base)
     [ -n "${2:-}" ] || die "--base needs a ref"
-    files_for base "$2" | check_files
+    changed_names --diff-filter=ACMR --merge-base "$2" HEAD
+    select_files < "$changed" | check_files
     ;;
   --help|-h)
     usage "Shape check"
@@ -389,9 +491,10 @@ case "${1:-}" in
     die "unknown option $1"
     ;;
   "")
-    files_for staged | check_files
+    changed_names --cached --diff-filter=ACMR
+    select_files < "$changed" | check_files
     ;;
   *)
-    files_for files "$@" | check_files
+    printf '%s\n' "$@" | select_files | check_files
     ;;
 esac

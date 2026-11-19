@@ -14,8 +14,10 @@
 # limitations under the License.
 
 # Fails when an agent instruction file is in the tree a pull request would
-# merge: AGENTS.md, CLAUDE.md, GEMINI.md, .mcp.json or a .claude/ directory,
-# at any depth. An Apache merge can bring them, and an agent working on the
+# merge: AGENTS.md, CLAUDE.md, CLAUDE.local.md, GEMINI.md, .mcp.json or a
+# .claude/ directory, at any depth and in any letter case, since some file
+# systems do not tell AGENTS.md from agents.md. An Apache merge can bring
+# them, and an agent working on the
 # line would read them as instructions. A required check on every line.
 # Every action is pinned to a commit.
 name: ChronitonDB instruction files
@@ -39,7 +41,7 @@ jobs:
 
       - name: No agent instruction files
         run: |
-          found="$(git ls-files | grep -E '(^|/)(AGENTS\.md|CLAUDE\.md|GEMINI\.md|\.mcp\.json)$|(^|/)\.claude/' || true)"
+          found="$(git ls-files | grep -i -E '(^|/)(AGENTS\.md|CLAUDE(\.local)?\.md|GEMINI\.md|\.mcp\.json)$|(^|/)\.claude/' || true)"
           if [ -n "$found" ]
           then
             printf '%s\n' "$found" | while IFS= read -r path

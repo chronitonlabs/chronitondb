@@ -26,8 +26,16 @@ limitations under the License.
 | Author | Integrator: {GitHub username} |
 | Approver | The maintainer who merges the import pull request |
 | References | Issue #{issue}. Apache release tag or commit hash, or the other project's commit link. Import pull request. |
+| Areas | {one or more areas of [areas.md](../areas.md), joined by commas} |
+| Source | {apache-cherry-pick, apache-merge or third-party, as [areas.md](../areas.md#the-sources) names them} |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 1 | {RFC 3339 date} | First version | {the id of the decision record behind this version, or None} |
+
+Full history in git: [commits of this file]({the address `tools/chronitondb/doclint.py history --write` puts here})
 
 Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project, added in the import pull request. Process: [upstream.md](../upstream.md).
 
@@ -53,7 +61,7 @@ Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-
 
 ## 2. Assessment
 
-{The code checks and review checklists run on the imported diff. Findings, and the maintainers' decision on each.}
+{The code checks and review checklists run on the imported diff. Each correctness, security or performance finding of major severity or worse in the imported code, and each conflict with something ChronitonDB adds, with its evidence and the maintainers' decision: reported to Apache Cassandra, import held, fixed as a fix to stock, or accepted. Findings on shape limits and style in Apache Cassandra's own code are listed and go no further. An import ahead of an Apache Cassandra release, a branch merge or a single fix taken early, also names each stored or sent form it changes, such as an on-disk version or a message version, with the maintainers' decision on it, or says in one line that it changes none: until Apache Cassandra releases that form, a cluster on the line has no Apache Cassandra release to move back to. See [upstream.md](../upstream.md#whole-apache-releases) and [PRINCIPLE-003](../principles.md#principle-003).}
 
 ## 3. Conflicts with ChronitonDB changes
 
@@ -65,7 +73,7 @@ Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-
 
 ## 5. Tests run
 
-{The tests this import runs, in the five lists of the design record's Testing section, with the same headings and format. Tooling reads them, so keep the headings. One fully qualified test class per line. Write `none` under a heading that has no entry, except Tests for this change, which takes a written reason. The results go in the evidence of the import pull request, not in this record. See [design-record.md](design-record.md#14-testing).}
+{The tests this import runs, in the five lists of the design record's Testing section, with the same headings and format. Keep the headings exact, since a check may read the lists. One fully qualified test class per line. Write `none` under a heading that has no entry, except Tests for this change, which takes a written reason. The results go in the evidence of the import pull request, not in this record. See [design-record.md](design-record.md#14-testing).}
 
 ### Tests for this change
 
@@ -77,19 +85,19 @@ Location: `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-
 
 ### Apache Cassandra suites run unchanged
 
-{Apache Cassandra's own suites, which run with every fork feature off and pass without modification.}
+{Apache Cassandra's own suites, which run as [testing.md](../testing.md#full-test-suites) says, with fork features off and with them on, and pass without modification.}
 
 ### Tracing test
 
-{The test that shows the imported change in query tracing, or "does not apply, because" with the reason.}
+{The test that shows the imported change in query tracing, for a change on a traced request. A change with other signals names their tests here too, for example the test of a changed metric or log line of a compaction change. Or "does not apply, because" with the reason.}
 
 ### Formats and configurations
 
-{`yes` when the import touches compaction or an on-disk format, so the tests also run with both sstable formats and both unit test configurations. Otherwise `no`.}
+{`yes` when the import reads a setting the test configurations set differently, for example when it touches compaction, an on-disk format or the memtable, so the tests also run with both sstable formats and in every test configuration [testing.md](../testing.md#test-levels) asks for. Otherwise `no`.}
 
 ## 6. Apache Cassandra behaviour confirmed
 
-{The parity suite result with every fork feature off.}
+{The parity suite result with every fork feature off, or until the parity suite exists the result of the stock suites with every fork feature off. See [upstream.md](../upstream.md#the-import-record).}
 
 ## 7. Security
 

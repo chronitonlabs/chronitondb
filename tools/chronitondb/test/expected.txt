@@ -36,6 +36,9 @@ src/java/org/chronitondb/shape/FileTooLong.java ERROR FileLength
 src/java/org/chronitondb/shape/CognitiveTooHigh.java ERROR CognitiveComplexity
 src/java/org/chronitondb/shape/DuplicateA.java ERROR CPD
 src/java/org/chronitondb/shape/DuplicateB.java ERROR CPD
+src/java/org/chronitondb/shape/SuppressedCognitive.java ERROR Suppression
+src/java/org/chronitondb/shape/SuppressedByComment.java ERROR Suppression
+src/java/org/chronitondb/shape/SuppressedDuplicate.java ERROR Suppression
 
 # Test fixtures, the test limits apply and every finding is a warning
 test/unit/org/chronitondb/shape/LongSetupTest.java none

@@ -26,8 +26,15 @@ limitations under the License.
 | Author | Architect: {GitHub username} |
 | Approver | The maintainer who merges the pull request |
 | References | {feature spec, plan, decision records} |
+| Areas | {one or more areas of [areas.md](../areas.md), joined by commas} |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 1 | {RFC 3339 date} | First version | {the id of the decision record behind this version, or None} |
+
+Full history in git: [commits of this file]({the address `tools/chronitondb/doclint.py history --write` puts here})
 
 Location: `docs/design/<KEY>-<slug>/delivery-plan.md`. Process: [additive.md](../additive.md).
 
@@ -50,7 +57,7 @@ Location: `docs/design/<KEY>-<slug>/delivery-plan.md`. Process: [additive.md](..
 - **Items:** {item numbers from the plan, build and validation}
 - **What it makes testable:** {one or two lines}
 - **Exit criteria:** {numbered, each checkable. Upgrade and rollback tests for any on-disk format change this milestone introduces}
-- **Release and line:** {the line, and the release it is planned to ship in. The feature becomes switchable at the final gate, with the default the feature spec sets for the line, or off when the final gate passes after the line's first release}
+- **Release and line:** {the line, and the release it is planned to ship in. The feature becomes switchable at the final gate, with the default the feature spec sets for the line. A purely additive feature whose final gate passes after the line's first release keeps that default, or is off on that line where the edge in [release.md](../release.md#what-a-release-may-contain) applies}
 
 ## 2. Order rationale
 
@@ -70,4 +77,4 @@ Location: `docs/design/<KEY>-<slug>/delivery-plan.md`. Process: [additive.md](..
 
 ## 6. Test plan
 
-{The ISO/IEC/IEEE 29119 test plan for the feature: test levels used, what each milestone tests at which level, test environments, the parity suite, upgrade and rollback tests, benchmarks with thresholds, and golden corpora if any. For each exit criterion, where it runs: on continuous integration or on the build machines. Until continuous integration exists, the parts of it the milestone gates need, which are in place before the final milestone. See [testing.md](../testing.md).}
+{The ISO/IEC/IEEE 29119 test plan for the feature: test levels used, what each milestone tests at which level, test environments, the parity suite, upgrade and rollback tests, benchmarks and the runs each is compared against, and golden corpora if any. For each exit criterion, where it runs: on continuous integration or on the build machines. Until continuous integration exists, the parts of it the milestone gates need, which are in place before the final milestone. See [testing.md](../testing.md).}

@@ -1,0 +1,226 @@
+{
+ "@context": "context.json",
+ "@graph": [
+  {
+   "@id": "../decisions/0001-initial-maintainers.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "date": "2026-11-01",
+   "identifier": "0001",
+   "status": "Accepted",
+   "title": "The first maintainers",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../decisions/0002-nodetool-version-output-on-a-chronitondb-node.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "date": "2026-11-10",
+   "identifier": "0002",
+   "status": "Accepted",
+   "title": "What nodetool version prints on a ChronitonDB node",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../decisions/0003-release-version-tests-before-a-package-exists.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "date": "2026-11-11",
+   "identifier": "0003",
+   "status": "Accepted",
+   "title": "Where the tests prove the release version before a package exists",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../decisions/0004-commit-log-disk-check-off-by-default.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "date": "2026-11-15",
+   "identifier": "0004",
+   "status": "Accepted",
+   "title": "The commit log disk check is off by default",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../decisions/0005-commit-log-disk-check-switched-under-startup-checks.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "date": "2026-11-15",
+   "identifier": "0005",
+   "status": "Accepted",
+   "title": "The commit log disk check is switched under startup_checks",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../decisions/0006-commit-log-disk-check-compares-file-systems.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "date": "2026-11-15",
+   "identifier": "0006",
+   "status": "Accepted",
+   "title": "The commit log disk check compares file systems",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../decisions/DEC-GOV-0001-what-stays-as-apache-cassandra-has-it.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#project"
+   ],
+   "date": "2026-11-18",
+   "identifier": "DEC-GOV-0001",
+   "status": "Accepted",
+   "title": "What stays as Apache Cassandra has it, and what may differ",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../delta/checkstyle-import-order-suppression.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/delta/checkstyle-import-order-suppression.md",
+   "status": "Current",
+   "title": "Import order check suppressed for ChronitonDB code",
+   "type": "Delta entry",
+   "version": "4"
+  },
+  {
+   "@id": "../delta/github-actions-pinned.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/delta/github-actions-pinned.md",
+   "status": "Current",
+   "title": "Apache workflow actions pinned to commits",
+   "type": "Delta entry",
+   "version": "3"
+  },
+  {
+   "@id": "../delta/github-checks-on-pull-requests.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/delta/github-checks-on-pull-requests.md",
+   "status": "Current",
+   "title": "Apache GitHub checks run on pull requests to the lines",
+   "type": "Delta entry",
+   "version": "4"
+  },
+  {
+   "@id": "../delta/github-pull-request-template-removed.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/delta/github-pull-request-template-removed.md",
+   "status": "Current",
+   "title": "Apache's pull request template removed",
+   "type": "Delta entry",
+   "version": "1"
+  },
+  {
+   "@id": "../delta/java-version-per-line.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/delta/java-version-per-line.md",
+   "status": "Current",
+   "title": "One Java version per line",
+   "type": "Delta entry",
+   "version": "3"
+  },
+  {
+   "@id": "../delta/run-ci-6.0-version-routing.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/delta/run-ci-6.0-version-routing.md",
+   "status": "Current",
+   "title": "run-ci routes 6.0 versions on the 5.0 line",
+   "type": "Delta entry",
+   "version": "3"
+  },
+  {
+   "@id": "../delta/run-ci-accepts-chronitondb.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/delta/run-ci-accepts-chronitondb.md",
+   "status": "Current",
+   "title": "run-ci accepts this repository",
+   "type": "Delta entry",
+   "version": "3"
+  },
+  {
+   "@id": "../design/CLD-commitlog-disk-check/",
+   "@type": [
+    "Feature"
+   ],
+   "identifier": "CLD"
+  },
+  {
+   "@id": "../design/CLD-commitlog-disk-check/design-record.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/design/CLD-commitlog-disk-check/design-record.md",
+   "isPartOf": [
+    "../design/CLD-commitlog-disk-check/"
+   ],
+   "line": "chronitondb-sandbox",
+   "status": "Draft",
+   "title": "#112 Warn at startup when the commit log shares a disk with the data directories",
+   "type": "Design record",
+   "version": "1"
+  },
+  {
+   "@id": "../design/VER-release-version/",
+   "@type": [
+    "Feature"
+   ],
+   "identifier": "VER"
+  },
+  {
+   "@id": "../design/VER-release-version/design-record.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/design/VER-release-version/design-record.md",
+   "isPartOf": [
+    "../design/VER-release-version/"
+   ],
+   "line": "chronitondb-sandbox",
+   "status": "Draft",
+   "title": "#67 Let operators see a node's ChronitonDB version from nodetool",
+   "type": "Design record",
+   "version": "1"
+  },
+  {
+   "@id": "../process/areas.md#project",
+   "@type": [
+    "skos:Concept"
+   ],
+   "inScheme": "../process/areas.md",
+   "prefLabel": "project"
+  },
+  {
+   "@id": "../reviews/112-warn-at-startup-when-the-commit-log-design.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/reviews/112-warn-at-startup-when-the-commit-log-design.md",
+   "status": "Closed",
+   "title": "design record of #112 Warn at startup when the commit log shares a disk with the data directories",
+   "type": "Review record"
+  }
+ ],
+ "@id": "graph.json",
+ "description": "Generated by tools/chronitondb/docgraph.py --write from the document control table of each document. Never edited by hand."
+}

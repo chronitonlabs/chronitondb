@@ -25,6 +25,7 @@ deleted. Run from the repository root:
 import contextlib
 import io
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -39,7 +40,7 @@ import doclint  # noqa: E402
 APACHE_HASH = "3f1593064cc89f3884e982dd74cb41b9d825bc1f"
 FORK_HASH = "579e35ae6c12d0b5a1f4e3c2b7a8d9e0f1a2b3c4"
 STOCK = "src/java/org/apache/cassandra/service/StorageService.java"
-OURS = "src/java/org/chronitondb/fulltext/Phrase.java"
+OURS = "src/java/org/chronitondb/startup/DiskCheck.java"
 
 APACHE_ORIGIN = "Apache commit [`3f1593064c`](https://github.com/apache/cassandra/commit/%s), taken whole." % APACHE_HASH
 FORK_ORIGIN = ("Another fork, rustyrazorblade/cassandra, commit [`579e35ae6c12`]"
@@ -97,6 +98,38 @@ def row(name, title="Storage service hook", area="Storage", lines="5.0, 6.0", fo
     return "| [%s](%s) | %s | %s | %s | %s | %s | none |" % (title, name, area, lines, forwarded, added, updated)
 
 
+def step_env(workflow, name, context):
+    """The environment the step NAME of a workflow file sets: each line of
+    its "env:" block, with a value "${{ <name> }}" read from context. A
+    value that is more than one such name cannot be worked out here and
+    raises KeyError."""
+    lines = read(workflow).split("\n")
+    start = lines.index("      - name: %s" % name)
+    index = next(i for i in range(start, len(lines)) if lines[i].strip() == "env:")
+    found = {}
+    for line in lines[index + 1:]:
+        match = re.match(r"^\s+([A-Z_]+): \$\{\{ (.*) \}\}$", line)
+        if not match:
+            break
+        found[match.group(1)] = context[match.group(2)]
+    return found
+
+
+def step_script(workflow, name):
+    """The shell script of the step NAME of a workflow file: the lines of
+    its "run: |" block, as the runner gives them to bash."""
+    lines = read(workflow).split("\n")
+    start = lines.index("      - name: %s" % name)
+    index = next(i for i in range(start, len(lines)) if lines[i].strip() == "run: |")
+    indent = len(lines[index]) - len(lines[index].lstrip()) + 2
+    script = []
+    for line in lines[index + 1:]:
+        if line.strip() and len(line) - len(line.lstrip()) < indent:
+            break
+        script.append(line[indent:])
+    return "\n".join(script) + "\n"
+
+
 def register(*rows):
     return "\n".join(["# The delta register", "", "## Index", "",
                       "| Entry | Area | Lines | Forwarded | Added | Last update | Issue |",
@@ -112,7 +145,7 @@ class Delta(unittest.TestCase):
         self.put("docs/process/conventions.md", read("docs/process/conventions.md"))
         self.put("docs/delta/README.md", register())
         self.put(STOCK, "class StorageService {}\n")
-        self.put(OURS, "class Phrase {}\n")
+        self.put(OURS, "class DiskCheck {}\n")
         self.git("add", "-A")
         self.git("commit", "-q", "-m", "line")
         self.git("branch", "-f", "line")
@@ -203,10 +236,10 @@ class Delta(unittest.TestCase):
         self.assertIn(STOCK, err)
 
     def test_a_change_to_our_own_files_needs_no_entry(self):
-        self.put(OURS, "class Phrase { int slop; }\n")
+        self.put(OURS, "class DiskCheck { void check() {} }\n")
         self.put(".github/workflows/chronitondb-new.yml", "name: new\n")
         self.put("tools/chronitondb/new.sh", "true\n")
-        self.put("docs/design/LUC-fulltext/notes.md", "# Notes\n")
+        self.put("docs/design/VER-release-version/notes.md", "# Notes\n")
         self.put(".github/CODEOWNERS", "* @owner\n")
         self.commit()
         rc, out, err = self.delta()
@@ -373,6 +406,78 @@ class Delta(unittest.TestCase):
         self.assertEqual(rc, 2)
 
 
+class Workflow(unittest.TestCase):
+    """The step of the CI workflow that runs the check, run here as the
+    shell script it is, with the environment the workflow gives it and a
+    stand-in for gh. The author of a pull request from a fork chooses its
+    branch name, so the name of an import branch counts only for a branch
+    of the repository itself."""
+
+    WORKFLOW = ".github/workflows/chronitondb-delta.yml"
+    REPO = "example/product"
+    IMPORT = "import/cassandra-5.0.8/chronitondb-5.0"
+    # The repository of the Delta tests, without their test methods.
+    setUp, tearDown, git, put, commit = Delta.setUp, Delta.tearDown, Delta.git, Delta.put, Delta.commit
+
+    def step(self, head_repo, head_ref, body=""):
+        temp = tempfile.mkdtemp()
+        try:
+            os.makedirs(os.path.join(temp, "doclint"))
+            for name in ("doclint.py", "markdown.py"):
+                shutil.copy(os.path.join(TOOLS, name), os.path.join(temp, "doclint", name))
+            os.makedirs(os.path.join(temp, "bin"))
+            gh = os.path.join(temp, "bin", "gh")
+            with open(gh, "w", encoding="utf-8") as handle:
+                handle.write("#!/bin/sh\nprintf '%s' \"$PR_BODY\"\n")
+            os.chmod(gh, 0o755)
+            self.git("update-ref", "refs/remotes/origin/line", "line")
+            context = {"github.base_ref": "line", "github.head_ref": head_ref, "github.repository": self.REPO,
+                       "github.event.pull_request.head.repo.full_name": head_repo,
+                       "github.event.pull_request.number": "7", "github.token": "none"}
+            env = dict(os.environ, PATH=os.path.join(temp, "bin") + os.pathsep + os.environ.get("PATH", ""),
+                       RUNNER_TEMP=temp, PR_BODY=body)
+            env.update(step_env(self.WORKFLOW, "Delta register", context))
+            done = subprocess.run(["bash", "-e", "-c", step_script(self.WORKFLOW, "Delta register")],
+                                  cwd=self.repo, env=env, capture_output=True, text=True, check=False)
+            return done.returncode, done.stdout, done.stderr
+        finally:
+            shutil.rmtree(temp)
+
+    def stock_change(self):
+        self.put(STOCK, "class StorageService { void apacheFix() {} }\n")
+        self.commit()
+
+    def test_an_import_branch_of_the_repository_needs_no_entry(self):
+        self.stock_change()
+        rc, out, err = self.step(self.REPO, self.IMPORT)
+        self.assertEqual((rc, err), (0, ""))
+        self.assertIn("the branch %s imports a whole Apache release" % self.IMPORT, out)
+
+    def test_a_fork_branch_named_as_an_import_needs_its_entry(self):
+        self.stock_change()
+        for head_repo in ("someone/product", "someone/" + self.REPO.split("/")[1], self.REPO + "-fork", ""):
+            rc, out, err = self.step(head_repo, self.IMPORT)
+            self.assertEqual(rc, 1, head_repo)
+            self.assertIn("adds or updates no entry", err)
+            self.assertNotIn("imports a whole Apache release", out)
+
+    def test_a_fork_still_passes_with_its_entry_or_the_waiver_line(self):
+        self.stock_change()
+        rc, out, err = self.step("someone/product", "a-fix", body="No delta entry: the line restores Apache's own text.\n")
+        self.assertEqual((rc, err), (0, ""))
+        self.assertIn("no delta entry, as the pull request says", out)
+
+    def test_the_branch_name_reaches_the_checker_only_through_that_test(self):
+        text = read(self.WORKFLOW)
+        self.assertNotIn("pull_request_target", text)
+        self.assertEqual([line.strip() for line in text.split("\n") if "github.head_ref" in line],
+                         ["HEAD_REF: ${{ github.head_ref }}"])
+        self.assertIn("HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}", text)
+        self.assertEqual(text.count("$HEAD_REF"), 1)
+        script = step_script(self.WORKFLOW, "Delta register")
+        self.assertIn('if [ "$HEAD_REPO" = "$REPO" ]\nthen\n  BRANCH="$HEAD_REF"\nfi\n', script)
+
+
 class OwnPaths(unittest.TestCase):
     """The table Where things live of conventions.md on this branch is the
     rule for ChronitonDB's own files."""
@@ -387,7 +492,7 @@ class OwnPaths(unittest.TestCase):
             self.assertIn(path, self.paths)
 
     def test_our_files_are_our_own(self):
-        for path in ("src/java/org/chronitondb/fulltext/Phrase.java", "test/distributed/org/chronitondb/X.java",
+        for path in ("src/java/org/chronitondb/startup/DiskCheck.java", "test/distributed/org/chronitondb/X.java",
                      "docs/delta/README.md", ".github/workflows/chronitondb-delta.yml", ".github/CODEOWNERS",
                      ".editorconfig", "conf/cassandra_chronitondb.yaml", "NEWS-chronitondb.txt"):
             self.assertTrue(doclint.is_own(path, self.paths), path)

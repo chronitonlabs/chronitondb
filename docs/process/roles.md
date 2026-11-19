@@ -24,8 +24,8 @@ The maintainers and eight roles carry the work. The roles follow the technical p
 The maintainers decide stakeholder needs and own every approval. For new work they answer the requirements analyst's questions and confirm its requirements brief.
 
 1. They decide scope and priority, and set the maintenance category of each change they ask for. An item opened by the integrator, the security engineer or the release engineer carries the category its source gives it: adaptive for a whole release import or branch merge, the fix's category for a cherry-pick, corrective for a dependency patch or a test failure.
-2. They approve each step by merging its pull request: the feature spec, the plan with its delivery plan, each milestone report, each design record or fix record, each code pull request and each import pull request. They merge pull requests after the reviewer's review is posted on them. Committers may also merge, within their area or line.
-3. They answer questions that change or settle behaviour, scope or process. Each answer becomes a [decision record](../decisions/README.md). They decide each idea: do it, do not do it, or a spike first. See [additive.md](additive.md#work-intake).
+2. They approve each step by merging its pull request: the feature spec, the plan with its delivery plan, each milestone report, each design record or fix record, each code pull request and each import pull request. They merge a pull request the project's own automation wrote, or one a maintainer accepted for review with the label `triage:accepted`, after the reviewer's verdict on it is clean. Any other pull request has no such verdict, and a maintainer reviews it directly before the merge. Committers may also merge, within their area or line.
+3. They answer questions that change or settle behaviour, scope or process. An answer becomes a decision record where [the decision records](../decisions/README.md#when-a-record-is-written) ask for one. They decide each idea: do it, do not do it, or a spike first. See [additive.md](additive.md#work-intake).
 4. They decide everything about a security vulnerability: whether it is valid, its severity, the CVE, the disclosure date and the advisory. See [security.md](security.md).
 5. They decide which features are offered to Apache Cassandra, case by case, and file the Apache JIRA and patch for each stock bug fix.
 6. They approve each release twice, both times by merging a pull request: the release proposal before its candidate is built, and the promotion after the soak and verification. Between the two, a maintainer starts the candidate run by hand, since it is expensive. See [release.md](release.md).
@@ -35,7 +35,7 @@ The maintainers decide stakeholder needs and own every approval. For new work th
 
 The requirements analyst elicits the requirements of new work from the maintainers, after ISO/IEC/IEEE 29148, and writes the requirements brief they confirm. The maintainers decide the stakeholder needs, the scope and the priority of the work. The analyst runs first on new work a maintainer asks for: before the architect on a feature that needs several items, and before the designer on the one-item path. Emergency work and documentation only changes skip it.
 
-1. Asks the maintainers what the work is for, in rounds of up to three questions. Each question is non technical, such as who the work is for, the problem, what success looks like, what is out of scope and what must not change. Each question carries a recommendation.
+1. Asks the maintainers what the work is for, in rounds of up to three questions. Each question is about the need, not the design, such as who the work is for, the problem, what success looks like, what is out of scope and what must not change. Each question carries a recommendation.
 2. Looks up every fact that the code, the documentation, the decision records or earlier issues can answer, and cites it. It never asks the maintainers for such a fact.
 3. Writes a short requirements brief: the problem, the users, the acceptance criteria, what is out of scope, the open risks and a proposed class in plain words. Each acceptance criterion is testable and names its source, a maintainer's answer or a cited fact. The brief proposes out of scope candidates, and out of scope holds only those the maintainers confirm. A brief for work that started as an idea or a spike cites its research report, if there is one, and states the maintainers' go in words. The feature spec or design record written next holds the decision record for the go and cites it.
 4. Once a maintainer confirms the brief and sets the class labels, hands the work on: to the designer when the work fits the one-item path, to the architect otherwise. The architect or the designer starts from the confirmed brief.
@@ -69,19 +69,19 @@ The developer owns the implementation of one approved item.
 
 1. Works test first: for a fix, against the reproducing test the designer wrote on the code branch, for a new feature, against the approved scenarios, removing `@wip` from each as it passes, and with tests for each requirement no scenario proves.
 2. Writes the code, the user and operator documentation, the runbook entries and the delta entry the item needs, in the same pull request.
-3. Opens the pull request as a draft and answers each review finding.
+3. Opens the pull request as a draft with its review record, and answers each review finding by a commit or in the record.
 4. Edits only the files the approved design record lists. A file outside the list needs the design record updated first.
 5. Opens the public GitHub issue of a documentation only change, which has no designer.
 
 ## Reviewer
 
-The reviewer owns verification of each pull request, as an ISO/IEC 20246 inspection.
+The reviewer owns verification of each pull request it reviews, as an ISO/IEC 20246 inspection.
 
 1. Inspects the pull request against the approved design and the checklists in [branching-and-review.md](branching-and-review.md).
 2. Records each finding with a severity: blocker, major, minor or nit.
-3. Gives a verdict in a review comment. A clean verdict marks the pull request ready for a maintainer.
+3. Gives a verdict in one short review for each round, posted by the project's review App, with the count of findings at each severity, and gives the author the findings. The reviewer is never the author of the pull request. A clean verdict marks the pull request ready for a maintainer.
 4. Checks that documentation, the delta entry and the decision records the change needs are present. In a library update it checks that the notice and licence text matches what the security engineer named.
-5. Reviews every pull request: our own, outside contributors', imports and dependency updates. A pull request that the project's automated agents did not write is reviewed only after a maintainer adds the label `triage:accepted`, the maintainers' own pull requests and outside contributors' alike. The review is posted on the pull request before a maintainer or committer merges it.
+5. Reviews every pull request the project's own automation wrote, imports and dependency updates among them, and every pull request a maintainer accepted for review with the label `triage:accepted`. It reviews no other pull request: a maintainer's own, and an outside contributor's that no maintainer accepted, are reviewed by a maintainer directly. Where the reviewer reviews, its verdict is posted on the pull request before a maintainer or committer merges it.
 
 ## Integrator
 
@@ -102,10 +102,11 @@ The security engineer watches for vulnerabilities in what ChronitonDB ships. See
 2. Works out whether ChronitonDB is affected, by whether the vulnerable code is shipped and reachable, and writes the VEX statement in [chronitonlabs/chronitondb-security-tracker](https://github.com/chronitonlabs/chronitondb-security-tracker).
 3. Opens a corrective item for a patch-version update, or an emergency item when the vulnerability is serious. Anything else goes to the maintainers as a decision.
 4. Handles every library update, including one a maintainer asks for that is not a security fix: checks the new version, names the notice and licence text it needs and the tests covering every use of the library, and hands it to the developer.
-5. Opens an item to remove a library that ChronitonDB does not use at all.
+5. Opens an item to remove a library that ChronitonDB does not use at all, directly or through another shipped library.
 6. Triages each private vulnerability report in private for the maintainers: reproduction, affected lines, a proposed CVSS severity, and whether Apache Cassandra is affected, in the release the line is based on and upstream now.
 7. Watches Apache Cassandra security announcements with the integrator.
-8. Never decides severity, the CVE, the disclosure date or publication.
+8. Reviews every code pull request of Critical risk work. See [classification.md](classification.md#stages-and-approvals).
+9. Never decides severity, the CVE, the disclosure date or publication.
 
 ## Release engineer
 

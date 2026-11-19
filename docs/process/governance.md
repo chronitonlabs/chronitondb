@@ -29,7 +29,7 @@ Governance is separate from the contributor agreements. Every contributor signs 
 | Maintainer | Merges across the project, approves releases, decides security disclosures, commit rights and changes to the process | AxonOps Limited, as copyright owner |
 
 1. The maintainers decide scope, priority, releases and security disclosure. They approve every step of the process by merging its pull request. See [roles.md](roles.md#maintainer).
-2. Only maintainers and committers merge into the lines, each within their rights, and only after the reviewer's review is posted.
+2. Only maintainers and committers merge into the lines, each within their rights. A pull request the project's review roles review merges only after the reviewer's verdict on it is clean, and a maintainer reviews any other directly: [branching-and-review.md](branching-and-review.md#reviews).
 
 ## Becoming a committer
 

@@ -267,6 +267,25 @@ run_cpd()
   done < "$parsed"
 }
 
+# A marker that hides code from PMD or CPD is a finding in each file
+# listed in $1: PMD and CPD obey such markers, and a suppression in the
+# code is not a waiver.
+run_suppressions()
+{
+  local list="$1" file line parsed="$work/suppressions-parsed.txt"
+  [ -s "$list" ] || return 0
+  while IFS= read -r file
+  do
+    [ -f "$file" ] || continue
+    LC_ALL=C grep -n -E 'NOPMD|CPD-(OFF|ON|START|END)|SuppressWarnings[^)]*PMD' "$file" | cut -d: -f1 > "$parsed"
+    while IFS= read -r line
+    do
+      emit "$file" "$line" "Suppression" \
+        "a marker that hides code from PMD or CPD (NOPMD, CPD-OFF, CPD-START or a SuppressWarnings of a PMD rule). A suppression in the code is not a waiver, see the Waivers section of the README"
+    done < "$parsed"
+  done < "$list"
+}
+
 # Reads the selected files from stdin, runs every tool, prints the findings.
 check_files()
 {
@@ -305,6 +324,7 @@ check_files()
   run_checkstyle "$test_config" "$test_list"
   run_pmd "$all_list"
   run_cpd "$all_list"
+  run_suppressions "$all_list"
   sort -u "$findings"
   n_err="$(grep -c '^ERROR ' "$findings")"
   n_warn="$(grep -c '^WARN ' "$findings")"

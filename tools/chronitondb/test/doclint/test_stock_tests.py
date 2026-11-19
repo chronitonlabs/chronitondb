@@ -322,6 +322,16 @@ class StockTests(unittest.TestCase):
                      # A placeholder of a template left in the explanation.
                      decision(APPROVAL + " <explanation>"),
                      decision(APPROVAL + " {why the change to the test is needed}"),
+                     # A placeholder word, in any case of letters, and an explanation that trails off.
+                     decision(APPROVAL + " TBD"),
+                     decision(APPROVAL.replace("because the", "because todo: the")),
+                     decision(APPROVAL + " ..."),
+                     # The explanation is a placeholder word and nothing more.
+                     decision("Approved stock test change: %s for #142, because n/a" % STOCK_TEST),
+                     decision("Approved stock test change: %s for #142, because none" % STOCK_TEST),
+                     # Eight different words only when single letters and numbers are counted.
+                     decision("Approved stock test change: %s for #142, because a b c d e f the test changes" % STOCK_TEST),
+                     decision("Approved stock test change: %s for #142, because 1 2 3 4 5 the test changes" % STOCK_TEST),
                      # Any other opening of the line.
                      decision(APPROVAL.replace("Approved stock", "Stock")),
                      decision(APPROVAL.replace("Approved stock", "approved stock")),
@@ -344,6 +354,26 @@ class StockTests(unittest.TestCase):
         self.assertFalse(doclint.is_explained("One one two three four five six seven"))
         self.assertFalse(doclint.is_explained("one two three four five six seven eight <explanation>"))
         self.assertFalse(doclint.is_explained("one two three four five six seven eight {reason}"))
+        # A placeholder word explains nothing, alone or inside other words, in any case of letters.
+        for word in ("TBD", "tbd", "Tbd", "todo", "TODO", "FIXME", "fixme", "xxx", "XXX", "lorem", "Lorem"):
+            self.assertFalse(doclint.is_explained(word), word)
+            self.assertFalse(doclint.is_explained("one two three four five six seven eight " + word), word)
+            self.assertFalse(doclint.is_explained(word + ": one two three four five six seven eight"), word)
+        for word in ("n/a", "N/A", "none", "None", "-", ""):
+            self.assertFalse(doclint.is_explained(word), word)
+        self.assertFalse(doclint.is_explained("one two three four five six seven eight ..."))
+        self.assertFalse(doclint.is_explained("one two three four five six seven eight\u2026"))
+        # A word that only holds such letters is a word.
+        self.assertTrue(doclint.is_explained("the method todoList of the stock test prints one line more"))
+        self.assertTrue(doclint.is_explained("none of the lines the stock test compares stays as printed"))
+        # A word has two letters or more, and a number is no word.
+        self.assertFalse(doclint.is_explained("a b c d e f g h i j k l"))
+        self.assertFalse(doclint.is_explained("1 2 3 4 5 6 7 8 9 10 11 12"))
+        self.assertFalse(doclint.is_explained("x y one two three four five six seven"))
+        self.assertFalse(doclint.is_explained("one two three four five six seven 8"))
+        self.assertFalse(doclint.is_explained("n/a n/a one two three four five six"))
+        self.assertTrue(doclint.is_explained("to be or not as it is on up"))
+        self.assertTrue(doclint.is_explained("x y one two three four five six seven eight"))
 
     def test_a_decision_record_the_change_brings_is_no_permit(self):
         self.put(DECISION, decision(APPROVAL))

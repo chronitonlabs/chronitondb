@@ -341,8 +341,8 @@ file passes by one of:
   4. a decision record at REF with the Status Accepted has a line
      "Approved stock test change: <path> for #<issue>, because
      <explanation>" with the file's path, the pull request's issue and a
-     written explanation: eight different words or more, with no
-     placeholder of a template left in it
+     written explanation: eight different words or more, each of two
+     letters or more, with no placeholder in it, such as TBD or todo
 
 A record permits the change of its own issue only. The pull request's
 issue is the issue of NAME when NAME is given: NAME is then a work branch,
@@ -1652,13 +1652,13 @@ PLANNED = re.compile(r"^(\S+) (new|edit|test|stock)$")
 PINNED = re.compile(r"^Pinned listing: ([^\s{}`]+)$")
 TEST_CHANGE = re.compile(r"^Approved stock test change: ([^\s{}`]+) for #([0-9]+), because (\S.*)$")
 EXPLANATION_WORDS = 8
-PLACEHOLDER = re.compile(r"<[a-z][a-z ,.'-]*>|\{[^{}]*\}")
+PLACEHOLDER = re.compile(r"(?i:\b(?:tbd|todo|fixme|xxx|lorem)\b)|\.\.\.|\u2026|<[a-z][a-z ,.'-]*>|\{[^{}]*\}")
 APACHE_IMPORT = re.compile(r"^import/(?:cassandra-[0-9]|CASSANDRA-[1-9])")
 SYMLINK = "120000"
 FOUR_WAYS = ("A pre-existing test file of Apache Cassandra changes in four ways only (docs/process/principles.md, PRINCIPLE-013): "
              "in an import from Apache Cassandra, in a fix to stock whose merged fix record lists the file as 'test' in its Planned file list, "
              "by lines added to a listing that the merged design record or fix record names on a line 'Pinned listing: <path>', "
-             "or with an accepted decision record that has the line 'Approved stock test change: <path> for #<issue>, because <explanation>', the explanation in eight different words or more. "
+             "or with an accepted decision record that has the line 'Approved stock test change: <path> for #<issue>, because <explanation>', the explanation in eight different words of two letters or more, with no placeholder such as TBD. "
              "The record merges first, in its own pull request, and this pull request names its issue on a line 'Fixes #<issue>' "
              "or 'Part of #<issue>'. A record permits the change of its own issue only: the issue of the work branch, "
              "<name>/<issue>-<slug>/<line>, for a branch of this repository, and the one issue the description names for a fork. "
@@ -1668,9 +1668,12 @@ FOUR_WAYS = ("A pre-existing test file of Apache Cassandra changes in four ways 
 
 def is_explained(text):
     """Whether the explanation of an approval is written: eight different
-    words or more, and no placeholder of a template left in it, a text in
-    braces or lower case words in angle brackets."""
-    words = set(word.lower() for word in re.findall(r"[A-Za-z0-9']+", text))
+    words or more, each of two letters or more with the case of letters
+    ignored, and no placeholder in it. A placeholder is one of the words
+    TBD, TODO, FIXME, XXX and lorem in any case of letters, three full
+    stops or an ellipsis, a text in braces or lower case words in angle
+    brackets."""
+    words = set(word.lower() for word in re.findall(r"[^\W\d_]{2,}", text))
     return len(words) >= EXPLANATION_WORDS and not PLACEHOLDER.search(text)
 
 

@@ -122,12 +122,13 @@ AI_NAMED = re.compile(
 AI_UPPER = re.compile(r"\b(?:AI|LLM)\b")
 AI_ADDRESS = re.compile(r"noreply@anthropic\.com|(?:[0-9]+\+)?copilot@(?:users\.noreply\.)?github\.com|cursoragent@cursor\.com", re.I)
 SESSION_TRAILER = re.compile(r"^\s*[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-session\s*:\s*\S", re.I)
-SESSION_LINK = re.compile(
-    r"https?://(?:(?:[\w-]+\.)*(?:claude\.ai|chatgpt\.com|chat\.openai\.com|gemini\.google\.com|copilot\.microsoft\.com|"
-    r"devin\.ai|chat\.mistral\.ai|chat\.deepseek\.com|grok\.com|perplexity\.ai|poe\.com)|"
-    r"(?:www\.)?(?:github\.com/copilot|cursor\.com/agents|g\.co/gemini))(?![\w.-])", re.I)
+SESSION_HOSTS = (r"(?:(?:[\w-]+\.)*(?:claude\.ai|chatgpt\.com|chat\.openai\.com|gemini\.google\.com|copilot\.microsoft\.com|"
+                 r"devin\.ai|chat\.mistral\.ai|chat\.deepseek\.com|grok\.com|perplexity\.ai|poe\.com)|"
+                 r"(?:www\.)?(?:github\.com/copilot|cursor\.com/agents|g\.co/gemini))")
+# An address with its scheme, or without one when a path follows the site.
+SESSION_LINK = re.compile(r"https?://%s(?![\w.-])|(?<![\w./@-])%s/\w" % (SESSION_HOSTS, SESSION_HOSTS), re.I)
 BANNER_OPENS = re.compile(r"^[^A-Za-z0-9]*(?:co-?)?generated\s+(?:with|by)\b", re.I)
-BANNER_WITHIN = re.compile(r"\bgenerated\s+(?:with|by)\s+(?:the\s+|an?\s+)?\W*(\S.*)$", re.I)
+BANNER_WITHIN = re.compile(r"\b(generated|written|created|authored|produced)\s+(?:with|by|using)\s+(?:the\s+|an?\s+)?\W*(\S.*)$", re.I)
 SHOWN = 100
 
 
@@ -278,7 +279,8 @@ def check_subject(subject, messages, types, limit, pr_body=None, branch=None):
 def names_ai(value):
     """Whether the value of a "Co-authored-by:" line, a name and an
     address, names an AI tool or model."""
-    name = value.split("<", 1)[0].strip().strip("\"'")
+    # Punctuation and symbols round the name do not make another name.
+    name = " ".join(re.sub(r"[^\w .+-]|_", " ", value.split("<", 1)[0]).split()).strip(" .+-")
     return bool(name.lower() in AI_ALONE or AI_NAMED.search(name) or AI_UPPER.search(name) or AI_ADDRESS.search(value))
 
 
@@ -288,9 +290,14 @@ def says_generated(line):
     match = BANNER_WITHIN.search(line)
     if not match:
         return False
-    rest = match.group(1)
+    rest = match.group(2)
     first = re.split(r"[^A-Za-z0-9]+", rest.strip("[*_`"), maxsplit=1)[0].lower()
-    return bool(first in AI_ALONE or AI_NAMED.match(rest.lstrip("[*_`")) or AI_UPPER.match(rest.lstrip("[*_`")))
+    # The name of the tool may follow its maker's, as in "GitHub Copilot".
+    opening = " ".join(rest.lstrip("[*_`").split()[:3])
+    # After "written by" a first name may be a person's, so there a tool's
+    # bare name counts only when it stands alone.
+    alone = first in AI_ALONE and (match.group(1).lower() == "generated" or len(rest.split()) == 1)
+    return bool(alone or AI_NAMED.search(opening) or AI_UPPER.match(rest.lstrip("[*_`")))
 
 
 def check_attribution(text):
@@ -298,7 +305,8 @@ def check_attribution(text):
     description: each line that names an AI tool or model as a co-author,
     links a session of an AI tool or says a tool generated the text."""
     errors = []
-    for line in (text or "").splitlines():
+    lines = (text or "").splitlines()
+    for index, line in enumerate(lines):
         shown = line.strip()
         if len(shown) > SHOWN:
             shown = shown[:SHOWN] + "..."
@@ -310,7 +318,10 @@ def check_attribution(text):
         if SESSION_TRAILER.match(line) or SESSION_LINK.search(line):
             found.append("the line '%s' links a session of an AI tool. Remove the line. The text says what the change does, "
                          "never where it was written" % shown)
-        if says_generated(line):
+        # A banner broken over two lines says the same as on one.
+        following = lines[index + 1].strip() if index + 1 < len(lines) else ""
+        if says_generated(line) or (following and not BANNER_WITHIN.search(following) and BANNER_WITHIN.search(line + " " + following)
+                                    and says_generated(line.rstrip() + " " + following)):
             found.append("the line '%s' says a tool generated the text. Remove the line, or say it in other words when it is "
                          "about a file a tool of the build writes. AI assistance is noted with the trailer "
                          "'Assisted-by: <tool>:<model>'" % shown)

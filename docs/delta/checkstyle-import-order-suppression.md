@@ -21,13 +21,19 @@ limitations under the License.
 |---|---|
 | Title | Import order check suppressed for ChronitonDB code |
 | Document type | Record (ISO/IEC/IEEE 15289) |
-| Status | Current |
-| Version | 4 |
+| Status | Dropped |
+| Version | 5 |
 | Author | The maintainers |
 | Approver | The maintainer who merges the pull request |
 | References | The Origin, Bug, Bug-ChronitonDB and Pull requests fields below. |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 5 | 2026-11-19 | The suppression is removed and the entry is Dropped, since the project's own code follows Apache Cassandra's code style | None |
+
+Full history in git: [commits of this file](https://github.com/chronitonlabs/chronitondb/commits/chronitondb-5.0/docs/delta/checkstyle-import-order-suppression.md)
 
 ## Contents
 
@@ -49,16 +55,16 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Bug-ChronitonDB | none |
 | Forwarded | Not needed. It applies to ChronitonDB code only. |
 | Added | 2026-10-30 |
-| Last-Update | 2026-11-15 |
-| Pull requests | `chronitondb-6.0`: [#36](https://github.com/chronitonlabs/chronitondb/pull/36) and [#66](https://github.com/chronitonlabs/chronitondb/pull/66), commits `bd0a4f3a85` and `9f9b4f94b4`. |
+| Last-Update | 2026-11-19 |
+| Pull requests | `chronitondb-6.0`: [#36](https://github.com/chronitonlabs/chronitondb/pull/36) and [#66](https://github.com/chronitonlabs/chronitondb/pull/66), commits `bd0a4f3a85` and `9f9b4f94b4`. The suppression is removed by [#147](https://github.com/chronitonlabs/chronitondb/pull/147), commit `60f73fcbc1`. |
 
 ## What
 
-Apache's checkstyle suppressions skip the `ImportOrder` check for files under `org/chronitondb`. The suppression carries a comment saying why. #66 reworded that comment only.
+Apache's checkstyle suppressions skipped the `ImportOrder` check for files under `org/chronitondb`. Pull request [#147](https://github.com/chronitonlabs/chronitondb/pull/147), commit `60f73fcbc1`, removed the suppression.
 
 ## Why
 
-ChronitonDB code follows Google Java Style, whose import order differs from Apache Cassandra's. The 6.0 line enforces Apache's import order. The 5.0 line has no import order rule, so it needs no suppression.
+The suppression was carried while ChronitonDB code followed another import order. ChronitonDB code now follows Apache Cassandra's code style on each line, its import order included, so the suppression is removed and this entry is Dropped.
 
 ## Area
 

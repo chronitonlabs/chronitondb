@@ -16,8 +16,8 @@
 # limitations under the License.
 """Checks the review verdict of a pull request against
 docs/process/branching-and-review.md, The review record: the newest review
-of the project's review App on the pull request that carries a verdict is
-a clean verdict, and it names the commit the pull request is at now. The CI workflow
+of the project's review App on the pull request is a clean verdict, and it
+names the commit the pull request is at now. The CI workflow
 chronitondb-review-verdict.yml runs it on every pull request into a line.
 The check only reads. It starts no review and asks for none.
 
@@ -50,14 +50,19 @@ only, so a verdict is due on those and on no other:
 
   a. the author of the pull request is one of automation_user_ids, by its
      id, never by a name
-  b. the pull request carries the label triage:accepted, and the event
-     that last set the label names a maintainer of the table Maintainers
-     as its actor. A label set by anyone else accepts nothing
+  b. a maintainer of the table Maintainers set the label triage:accepted
+     on the pull request, and no maintainer has taken it off since: of the
+     events of the label whose actor is a maintainer, the newest set it.
+     The events of anyone else count for nothing, so a label set by anyone
+     else accepts nothing, and a label taken off by anyone else leaves the
+     maintainer's acceptance as it was
 
 Any other pull request passes, with the line "no review verdict is due".
 A maintainer's own review and the other checks still hold it. A pull
 request that carries the label while no event says who set it fails: the
-check cannot tell.
+check cannot tell. So does one that carries the label or has an event of
+it while the table Maintainers on the line names nobody: the check cannot
+tell who is a maintainer.
 
 A review is the App's when its user has the type Bot, the login
 <app_slug>[bot] and the id bot_user_id, all three. A login can be given up
@@ -66,20 +71,16 @@ counts for nothing, whatever its text says. GitHub's answers do not carry
 the id of the App that posted a review, so the check holds a review to
 the App's user, and app_id says which App that user belongs to.
 
-A review of the App whose text holds no verdict block, no fenced json
-block that names "lenses", is no verdict and is passed over: the App may
-post a review that is not a verdict, and such a review neither hides a
-verdict nor stands in for one. Where a verdict is due and no review of the
-App holds a verdict block, the check fails and says that no verdict has
-been posted. Otherwise the newest review of the App that holds a verdict
-block, by the time it was submitted, is held to:
+Where a verdict is due, the newest review of the App, by the time it was
+submitted, is held to:
 
   1. its state is COMMENTED: the App never approves and never asks for
      changes, a maintainer does
   2. its commit_id is the head commit of the pull request
-  3. its verdict block, the last fenced json block that names "lenses",
-     is one JSON object, and its "head" is the same commit. A block that
-     cannot be read fails, it is not passed over
+  3. its text holds a verdict block, the last fenced json block that names
+     "lenses". The block is one JSON object, and its "head" is the same
+     commit. A fence stands at the margin of its line, with nothing after
+     it but spaces or tabs
   4. nobody edited it after it was posted: --edits knows the review, and
      shows no edit and no editor
   5. the verdict is clean: the block's "ready" is true, its "approve" is
@@ -87,10 +88,15 @@ block, by the time it was submitted, is held to:
      each with the result true, and "blockers" and "majors", where the
      block carries them, are the number 0
 
-A verdict with an open blocker or major finding fails the check, and the
-check stays failed until a later verdict on the head is clean. The check
-reads no waiver. When a maintainer waives a finding, the reviewer posts a
-new verdict that records the waiver, and that verdict is the one read.
+The newest review of the App decides, and nothing passes it over. The App
+posts nothing but verdicts, so a review of the App whose text holds no
+verdict block is a verdict whose block was taken out, and it fails as
+holding no verdict. An older clean verdict never counts again in its
+place. A verdict with an open blocker or major finding fails the check,
+and the check stays failed until a later verdict on the head is clean.
+The check reads no waiver. When a maintainer waives a finding, the
+reviewer posts a new verdict that records the waiver, and that verdict is
+the one read.
 
 A pull request whose author is the App's user fails: the reviewer is never
 the author. So does a pull request from a checkpoint branch of this
@@ -116,8 +122,10 @@ APP_FILE = "tools/chronitondb/review-app.json"
 SLUG = re.compile(r"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
 COMMIT = re.compile(r"^[0-9a-f]{40}$")
 CHECKPOINT = re.compile(r"^agent/[^/]+/checkpoint/[^/]+$")
-FENCE_OPEN = re.compile(r"^ {0,3}```json\s*$")
-FENCE_CLOSE = re.compile(r"^ {0,3}```\s*$")
+# A fence of the verdict block stands at the margin, with nothing after it
+# but spaces or tabs, as the review App's helper writes it.
+FENCE_OPEN = re.compile(r"^```json[ \t]*$")
+FENCE_CLOSE = re.compile(r"^```[ \t]*$")
 RULE = "docs/process/branching-and-review.md, The review record"
 # The findings that keep a verdict from being clean, as the block counts them.
 COUNTED = ("blockers", "majors")
@@ -161,23 +169,49 @@ def maintainers_of(text):
     return found
 
 
-def accepted_by(pull, events):
-    """Who last set the label triage:accepted on the pull request: the
-    login of the actor in lower case, "" when the pull request carries
-    the label and no event says who set it, None when it does not carry
-    the label."""
+def actor_of(event):
+    """The login of the actor of an event, in lower case, "" when the
+    event names none."""
+    actor = event.get("actor")
+    return str(actor.get("login") or "").lower() if isinstance(actor, dict) else ""
+
+
+def label_events(events):
+    """The events that set the label triage:accepted or took it off, oldest
+    first by the time they were made."""
+    found = [event for event in events
+             if isinstance(event, dict) and event.get("event") in ("labeled", "unlabeled") and isinstance(event.get("label"), dict)
+             and event["label"].get("name") == LABEL and isinstance(event.get("created_at"), str) and is_id(event.get("id"))]
+    return sorted(found, key=lambda event: (event["created_at"], event["id"]))
+
+
+def acceptance(pull, events, maintainers):
+    """Whether a maintainer accepted the pull request for review, as
+    (finding, note, maintainer): a finding when the check cannot tell, a
+    note when no verdict is due, and otherwise the login of the
+    maintainer who accepted it. Only the events of the label whose actor
+    is a maintainer count."""
     labels = pull.get("labels") if isinstance(pull.get("labels"), list) else []
-    if not any(isinstance(label, dict) and label.get("name") == LABEL for label in labels):
-        return None
-    last = None
-    for event in events:
-        if (isinstance(event, dict) and event.get("event") in ("labeled", "unlabeled") and isinstance(event.get("label"), dict)
-                and event["label"].get("name") == LABEL and isinstance(event.get("created_at"), str) and is_id(event.get("id"))):
-            if last is None or (event["created_at"], event["id"]) > (last["created_at"], last["id"]):
-                last = event
-    if last is None or last["event"] != "labeled" or not isinstance(last.get("actor"), dict):
-        return ""
-    return str(last["actor"].get("login") or "").lower()
+    carried = any(isinstance(label, dict) and label.get("name") == LABEL for label in labels)
+    found = label_events(events)
+    if not carried and not found:
+        return None, ("no review verdict is due: the project's automation did not write this pull request and no maintainer has "
+                      "accepted it for review with the label %s" % LABEL), None
+    if carried and (not found or found[-1]["event"] != "labeled" or not actor_of(found[-1])):
+        return ("the pull request carries the label %s and no event of the pull request says who set it, so the check cannot "
+                "tell whether a maintainer accepted it for review" % LABEL), None, None
+    if not maintainers:
+        return ("the table Maintainers of docs/governance/committers.md on the line cannot be read, so the check cannot tell whether "
+                "a maintainer set the label %s. It names a maintainer by a GitHub username in backticks on each row" % LABEL), None, None
+    theirs = [event for event in found if actor_of(event) in maintainers]
+    if not theirs:
+        who = next((actor_of(event) for event in reversed(found) if event["event"] == "labeled"), "")
+        return None, ("no review verdict is due: the label %s was set by %s, who is no maintainer of docs/governance/committers.md on "
+                      "the line, so no maintainer has accepted this pull request for review" % (LABEL, who or "nobody named")), None
+    if theirs[-1]["event"] != "labeled":
+        return None, ("no review verdict is due: a maintainer, %s, took the label %s off last, so no maintainer has accepted this "
+                      "pull request for review" % (actor_of(theirs[-1]), LABEL)), None
+    return None, None, actor_of(theirs[-1])
 
 
 def pages_of(text):
@@ -283,16 +317,11 @@ def check_verdict(app, maintainers, pull, events, reviews, edits):
     elif author["id"] not in authors:
         # Not the automation's own work: a verdict is due only once a
         # maintainer accepted the pull request for review.
-        accepted = accepted_by(pull, events)
-        if accepted is None:
-            return [], ("no review verdict is due: the project's automation did not write this pull request and no maintainer has "
-                        "accepted it for review with the label %s" % LABEL)
-        if accepted == "":
-            return ["the pull request carries the label %s and no event of the pull request says who set it, so the check cannot "
-                    "tell whether a maintainer accepted it for review" % LABEL], None
-        if accepted not in maintainers:
-            return [], ("no review verdict is due: the label %s was set by %s, who is no maintainer of docs/governance/committers.md "
-                        "on the line, so no maintainer has accepted this pull request for review" % (LABEL, accepted))
+        finding, note, _ = acceptance(pull, events, maintainers)
+        if finding:
+            return [finding], None
+        if note:
+            return [], note
     here = (pull.get("base") or {}).get("repo") if isinstance(pull.get("base"), dict) else None
     there = head.get("repo")
     if (isinstance(here, dict) and isinstance(there, dict) and here.get("full_name") and here.get("full_name") == there.get("full_name")
@@ -306,16 +335,11 @@ def check_verdict(app, maintainers, pull, events, reviews, edits):
         errors.append("the pull request has no review of %s, the review App, so it has no review verdict. A review of any other "
                       "account is no verdict. The check passes when it is run again after the verdict is posted (%s)" % (login, RULE))
         return errors, None
-    # A review of the App that holds no verdict block is no verdict, so it
-    # neither hides a verdict nor stands in for one.
-    verdicts = [review for review in ours if verdict_block(review.get("body") if isinstance(review.get("body"), str) else "") is not None]
-    if not verdicts:
-        errors.append("no review of %s, the review App, holds a verdict block, a fenced json block that names \"lenses\", so no "
-                      "verdict has been posted. A review of the App with no verdict block is passed over. The check passes when it "
-                      "is run again after the verdict is posted (%s)" % (login, RULE))
-        return errors, None
-    newest = max(verdicts, key=lambda review: (review["submitted_at"], review["id"]))
-    what = "the newest review of %s that holds a verdict block, %d" % (login, newest["id"])
+    # The newest review of the App decides. The App posts nothing but
+    # verdicts, so a review of it with no verdict block is a verdict whose
+    # block was taken out: passing over it would bring back an older one.
+    newest = max(ours, key=lambda review: (review["submitted_at"], review["id"]))
+    what = "the newest review of %s, %d" % (login, newest["id"])
     if newest.get("state") != "COMMENTED":
         errors.append("%s, has the state %s. A verdict is a review that comments: the App never approves and never asks for changes"
                       % (what, newest.get("state")))
@@ -323,11 +347,16 @@ def check_verdict(app, maintainers, pull, events, reviews, edits):
     if commit != sha:
         errors.append("%s, is a review of the commit %s, and the pull request is at %s now. The verdict names the commit it read, "
                       "so a later commit needs a new verdict" % (what, commit, sha))
+    text = verdict_block(newest.get("body") if isinstance(newest.get("body"), str) else "")
     try:
-        block = json.loads(verdict_block(newest["body"]))
+        block = json.loads(text) if text is not None else None
     except ValueError:
         block = []
-    if not isinstance(block, dict):
+    if text is None:
+        errors.append("%s, holds no verdict: its text has no verdict block, a fenced json block at the margin that names \"lenses\". "
+                      "The App posts nothing but verdicts, so the newest review of the App decides and an older verdict does not "
+                      "count in its place (%s)" % (what, RULE))
+    elif not isinstance(block, dict):
         errors.append("%s, has a verdict block that cannot be read: the last fenced json block that names \"lenses\" is one JSON "
                       "object, and this one is not" % what)
     else:

@@ -115,7 +115,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Generated indexes of the documents | `docs/index/documents.md`, `docs/index/decisions.md`, `docs/index/areas.md`, and `INDEX.md` in each feature directory `docs/design/<KEY>-<slug>/` |
 | Generated graph of the documents and its context | `docs/index/graph.json`, `docs/index/context.json` |
 | Research reports of spikes | `docs/research/<issue>-<slug>.md` |
-| Review record of a pull request | `docs/reviews/<work>.md`, named after the pull request's branch without its first part and without the line |
+| Review record of a pull request the project's own automation wrote | `docs/reviews/<work>.md`, named after the pull request's branch without its first part and without the line |
 | Import records | `docs/imports/<apache-version-or-range>.md`, or `docs/imports/<owner>-<repo>-<12 character hash>.md` for a commit from another project |
 | Release proposals and their verification results | `docs/releases/<version>.md` |
 | Line plan: first release date, feature freeze and LTS designation | `docs/releases/<line>-plan.md` |

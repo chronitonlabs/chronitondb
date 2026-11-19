@@ -21,9 +21,4 @@
         "https://checkstyle.org/dtds/suppressions_1_1.dtd">
 
 <suppressions>
-  <!--
-    ChronitonDB code under org/chronitondb follows Google Java Style, whose
-    import order differs from Cassandra's ImportOrder.
-  -->
-  <suppress checks="ImportOrder" files="[\\/]org[\\/]chronitondb[\\/]"/>
 </suppressions>

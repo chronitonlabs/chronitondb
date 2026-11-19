@@ -25,7 +25,7 @@ Every document under `docs/` that carries the common header, by kind. The decisi
 
 | Document | Status | Version | Areas |
 |---|---|---|---|
-| [Import order check suppressed for ChronitonDB code](../delta/checkstyle-import-order-suppression.md) | Current | 4 |  |
+| [Import order check suppressed for ChronitonDB code](../delta/checkstyle-import-order-suppression.md) | Dropped | 5 |  |
 | [Apache workflow actions pinned to commits](../delta/github-actions-pinned.md) | Current | 3 |  |
 | [Apache GitHub checks run on pull requests to the lines](../delta/github-checks-on-pull-requests.md) | Current | 4 |  |
 | [Apache's pull request template removed](../delta/github-pull-request-template-removed.md) | Current | 1 |  |

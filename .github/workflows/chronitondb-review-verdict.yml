@@ -1,0 +1,121 @@
+# Copyright 2026 AxonOps Limited
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The review verdict check (docs/process/branching-and-review.md, The
+# review record), with tools/chronitondb/reviewlint.py: the newest review
+# of the project's review App on the pull request is a verdict, and it
+# names the commit the pull request is at now. The job only reads: it
+# starts no review and asks for none. A review by the project's review
+# roles runs on a pull request the project's automation wrote, and on one
+# a maintainer accepted for review with the label triage:accepted, so a
+# verdict is due on those and on no other. The automation is told by the
+# id of the pull request's author, and the label counts only when the
+# event that set it names a maintainer of docs/governance/committers.md.
+# Any other pull request passes with the line "no review verdict is due".
+# The reviewer's verdict is posted by the review App, an account no author
+# of a pull request can act as, so an author cannot post a verdict on its
+# own work. The checker, the file that names the App and the automation,
+# tools/chronitondb/review-app.json, and the list of maintainers come from the base
+# branch, never from the pull request. The pull request, its events, its
+# reviews and their edits are read from the API when the job runs, and
+# nothing of the pull request is run. A review of any other account counts for nothing, and so does a
+# verdict that was edited after it was posted. Before the checker and the
+# file are on the line the job says so and passes. While the file holds its
+# placeholders the job fails, with a message that says which file to fill.
+# The job runs again when a review is posted, edited or dismissed, so a
+# verdict posted after the last push is seen, and when a label is set or
+# taken off. A separate job runs the
+# checker's unit tests from the pull request. Every action is pinned to a
+# commit.
+name: Review verdict
+
+on:
+  pull_request:
+    branches:
+      - 'chronitondb-*'
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  review-verdict:
+    if: startsWith(github.event.pull_request.base.ref, 'chronitondb-')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: The checker from the base branch
+        id: checker
+        env:
+          BASE: ${{ github.event.pull_request.base.ref }}
+        run: |
+          dir="$RUNNER_TEMP/reviewlint"
+          mkdir -p "$dir"
+          for file in tools/chronitondb/reviewlint.py tools/chronitondb/markdown.py tools/chronitondb/review-app.json docs/governance/committers.md
+          do
+            if ! git show "origin/$BASE:$file" > "$dir/${file##*/}" 2>/dev/null
+            then
+              echo "$file is not on $BASE yet, so there is no checker to run. The check starts once it is merged."
+              echo "present=no" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "present=yes" >> "$GITHUB_OUTPUT"
+
+      - name: Review verdict
+        if: steps.checker.outputs.present == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          dir="$RUNNER_TEMP/reviewlint"
+          # The pull request, its events, its reviews and their edits as they are now,
+          # not as the event that started this run saw them. An answer
+          # that cannot be read is left empty, and an empty answer fails.
+          gh api "repos/$REPO/pulls/$NUMBER" > "$dir/pull.json" || : > "$dir/pull.json"
+          gh api --paginate "repos/$REPO/issues/$NUMBER/events?per_page=100" > "$dir/events.json" || : > "$dir/events.json"
+          gh api --paginate "repos/$REPO/pulls/$NUMBER/reviews?per_page=100" > "$dir/reviews.json" || : > "$dir/reviews.json"
+          gh api graphql -f owner="${REPO%%/*}" -f name="${REPO#*/}" -F number="$NUMBER" -f query='
+            query($owner: String!, $name: String!, $number: Int!) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) {
+                  reviews(last: 100) {
+                    nodes { fullDatabaseId lastEditedAt editor { login } }
+                  }
+                }
+              }
+            }' > "$dir/edits.json" || : > "$dir/edits.json"
+          python3 "$dir/reviewlint.py" verdict --app "$dir/review-app.json" --maintainers "$dir/committers.md" --pull "$dir/pull.json" --events "$dir/events.json" --reviews "$dir/reviews.json" --edits "$dir/edits.json"
+
+  reviewlint-tests:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Unit tests of the checker
+        run: python3 -m unittest discover -s tools/chronitondb/test/reviewlint -v

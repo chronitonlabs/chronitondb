@@ -16,8 +16,8 @@
 # limitations under the License.
 """Checks the review verdict of a pull request against
 docs/process/branching-and-review.md, The review record: the newest review
-of the project's review App on the pull request is a clean verdict, and it
-names the commit the pull request is at now. The CI workflow
+of the project's review App on the pull request that carries a verdict is
+a clean verdict, and it names the commit the pull request is at now. The CI workflow
 chronitondb-review-verdict.yml runs it on every pull request into a line.
 The check only reads. It starts no review and asks for none.
 
@@ -66,15 +66,20 @@ counts for nothing, whatever its text says. GitHub's answers do not carry
 the id of the App that posted a review, so the check holds a review to
 the App's user, and app_id says which App that user belongs to.
 
-Where a verdict is due, the newest review of the App, by the time it was
-submitted, is held to:
+A review of the App whose text holds no verdict block, no fenced json
+block that names "lenses", is no verdict and is passed over: the App may
+post a review that is not a verdict, and such a review neither hides a
+verdict nor stands in for one. Where a verdict is due and no review of the
+App holds a verdict block, the check fails and says that no verdict has
+been posted. Otherwise the newest review of the App that holds a verdict
+block, by the time it was submitted, is held to:
 
   1. its state is COMMENTED: the App never approves and never asks for
      changes, a maintainer does
   2. its commit_id is the head commit of the pull request
-  3. its text holds a verdict block, the last fenced json block that names
-     "lenses". The block is one JSON object, and its "head" is the same
-     commit
+  3. its verdict block, the last fenced json block that names "lenses",
+     is one JSON object, and its "head" is the same commit. A block that
+     cannot be read fails, it is not passed over
   4. nobody edited it after it was posted: --edits knows the review, and
      shows no edit and no editor
   5. the verdict is clean: the block's "ready" is true, its "approve" is
@@ -301,8 +306,16 @@ def check_verdict(app, maintainers, pull, events, reviews, edits):
         errors.append("the pull request has no review of %s, the review App, so it has no review verdict. A review of any other "
                       "account is no verdict. The check passes when it is run again after the verdict is posted (%s)" % (login, RULE))
         return errors, None
-    newest = max(ours, key=lambda review: (review["submitted_at"], review["id"]))
-    what = "the newest review of %s, %d" % (login, newest["id"])
+    # A review of the App that holds no verdict block is no verdict, so it
+    # neither hides a verdict nor stands in for one.
+    verdicts = [review for review in ours if verdict_block(review.get("body") if isinstance(review.get("body"), str) else "") is not None]
+    if not verdicts:
+        errors.append("no review of %s, the review App, holds a verdict block, a fenced json block that names \"lenses\", so no "
+                      "verdict has been posted. A review of the App with no verdict block is passed over. The check passes when it "
+                      "is run again after the verdict is posted (%s)" % (login, RULE))
+        return errors, None
+    newest = max(verdicts, key=lambda review: (review["submitted_at"], review["id"]))
+    what = "the newest review of %s that holds a verdict block, %d" % (login, newest["id"])
     if newest.get("state") != "COMMENTED":
         errors.append("%s, has the state %s. A verdict is a review that comments: the App never approves and never asks for changes"
                       % (what, newest.get("state")))
@@ -310,14 +323,11 @@ def check_verdict(app, maintainers, pull, events, reviews, edits):
     if commit != sha:
         errors.append("%s, is a review of the commit %s, and the pull request is at %s now. The verdict names the commit it read, "
                       "so a later commit needs a new verdict" % (what, commit, sha))
-    text = verdict_block(newest.get("body") if isinstance(newest.get("body"), str) else "")
     try:
-        block = json.loads(text) if text is not None else None
+        block = json.loads(verdict_block(newest["body"]))
     except ValueError:
         block = []
-    if text is None:
-        errors.append("%s, holds no verdict block: a fenced json block that names \"lenses\"" % what)
-    elif not isinstance(block, dict):
+    if not isinstance(block, dict):
         errors.append("%s, has a verdict block that cannot be read: the last fenced json block that names \"lenses\" is one JSON "
                       "object, and this one is not" % what)
     else:

@@ -15,8 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """The review verdict check, docs/process/branching-and-review.md, The
-review record: the newest review of the project's review App is a clean
-verdict on the commit the pull request is at. The files under shapes/ are the
+review record: the newest review of the project's review App that carries
+a verdict is a clean verdict on the commit the pull request is at. The
+files under shapes/ are the
 answers of the GitHub API the check reads, recorded from a review that a
 GitHub App posted on a public pull request, with the names and ids
 replaced: reviews.json from GET /repos/{owner}/{repo}/pulls/{number}/reviews,
@@ -263,7 +264,7 @@ class Verdict(unittest.TestCase):
         errors, note = self.check()
         self.assertIsNone(note)
         self.assertEqual(len(errors), 1, errors)
-        self.assertTrue(errors[0].startswith("the newest review of example-review[bot], 5970525038, is no clean verdict: "), errors)
+        self.assertTrue(errors[0].startswith("the newest review of example-review[bot] that holds a verdict block, 5970525038, is no clean verdict: "), errors)
         self.assertIn(text, errors[0])
 
     def test_a_verdict_with_a_major_finding_fails(self):
@@ -316,7 +317,7 @@ class Verdict(unittest.TestCase):
         # An earlier clean verdict does not count once a later verdict has findings.
         self.reviews = shape("reviews.json")
         late = self.review(body=self.body(self.head, "Round 3.", ready=False, approve=False, majors=1))
-        self.refused("the newest review of example-review[bot], %d, is no clean verdict" % late["id"])
+        self.refused("the newest review of example-review[bot] that holds a verdict block, %d, is no clean verdict" % late["id"])
         # The reviewer's next verdict on the head is clean, for a fix or for a waiver it records.
         self.review(body=self.body(self.head, "Round 4. One finding waived by a maintainer."))
         self.passes()
@@ -409,7 +410,7 @@ class Verdict(unittest.TestCase):
     def test_the_newest_is_told_by_the_time_it_was_submitted(self):
         late = self.review(commit_id=OTHER, body=self.body(OTHER))
         self.reviews.reverse()
-        self.refused("the newest review of example-review[bot], %d, is a review of the commit %s" % (late["id"], OTHER))
+        self.refused("the newest review of example-review[bot] that holds a verdict block, %d, is a review of the commit %s" % (late["id"], OTHER))
         late["submitted_at"] = "2026-11-19T06:00:00Z"
         self.passes()
 
@@ -440,7 +441,26 @@ class Verdict(unittest.TestCase):
                      "```json\n%s\n" % json.dumps(clean),
                      "    ```json\n    %s\n    ```\n" % json.dumps(clean)):
             self.reviews[0]["body"] = body
-            self.refused("holds no verdict block: a fenced json block that names \"lenses\"")
+            self.refused("no review of example-review[bot], the review App, holds a verdict block, a fenced json block that names "
+                         "\"lenses\", so no verdict has been posted")
+
+    def test_a_review_of_the_app_with_no_verdict_block_is_passed_over(self):
+        # A newer review of the App that is no verdict, such as a security review's text, leaves the clean verdict green.
+        for body in ("Security review: no finding.", "", None, "```json\n{\"note\": \"no verdict\"}\n```\n"):
+            self.reviews = shape("reviews.json")
+            self.review(commit_id=OTHER, state="APPROVED", body=body)
+            self.assertEqual(self.passes(), "the review 5970525038 of example-review[bot] is the clean verdict on the commit " + self.head)
+        # Nor does it stand in for a verdict: an older verdict that is not clean still fails.
+        self.reviews[0]["body"] = self.body(self.head, ready=False, approve=False, majors=1)
+        self.refused("the newest review of example-review[bot] that holds a verdict block, 5970525038, is no clean verdict")
+        # Reviews of the App and none with a verdict block fail as no verdict posted.
+        self.reviews[0]["body"] = "Security review: no finding."
+        self.refused("so no verdict has been posted")
+
+    def test_a_newer_verdict_block_that_cannot_be_read_still_fails(self):
+        late = self.review(body="Round 4.\n\n```json\n{\"lenses\": \n```\n")
+        self.refused("the newest review of example-review[bot] that holds a verdict block, %d, has a verdict block that cannot be read"
+                     % late["id"])
 
     def test_the_block_names_the_commit_of_the_review(self):
         for head in (OTHER, self.head[:12], self.head.upper(), "", None, 7):
@@ -466,6 +486,11 @@ class Verdict(unittest.TestCase):
         self.refused("was edited after it was posted. An edited verdict does not count")
         self.edit().update(lastEditedAt=None, editor={"login": "example-review"})
         self.refused("was edited after it was posted, by example-review")
+        # An edited newer verdict is not passed over, so an older clean one does not count again.
+        self.edit().update(lastEditedAt=None, editor=None)
+        late = self.review()
+        self.edits["data"]["repository"]["pullRequest"]["reviews"]["nodes"][-1].update(lastEditedAt="2026-11-19T07:50:00Z")
+        self.refused("the newest review of example-review[bot] that holds a verdict block, %d, was edited after it was posted" % late["id"])
 
     def test_a_review_the_edits_do_not_know_is_refused(self):
         for edits in ({"data": {"repository": {"pullRequest": {"reviews": {"nodes": []}}}}}, {}, None, [], {"errors": [{"message": "x"}]},

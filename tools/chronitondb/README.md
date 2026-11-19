@@ -76,7 +76,7 @@ Pins:
 
 ## Waivers
 
-A production limit can be exceeded only with a waiver recorded in the design record of the change and approved with it, naming the method, the rule and why the shape is right there. A suppression comment in the code is not a waiver and the rules files have no suppression filter. The reviewer reads the check output next to the design record and treats a broken limit without a recorded waiver as a major finding.
+A production limit can be exceeded only with a waiver recorded in the design record of the change and approved with it, naming the method, the rule and why the shape is right there. A suppression comment in the code is not a waiver and the rules files have no suppression filter. PMD and CPD obey markers in the code, so the check reports each of them as a finding of the rule `Suppression`: `NOPMD`, `CPD-OFF`, `CPD-START` and a `SuppressWarnings` of a PMD rule. The reviewer reads the check output next to the design record and treats a broken limit without a recorded waiver as a major finding.
 
 ## Security checks
 
@@ -100,7 +100,7 @@ Semgrep CE from its container image, pinned by digest in the script, run with do
     tools/chronitondb/semgrep-check.sh --self-test      the fixtures under test/semgrep
     tools/chronitondb/semgrep-check.sh --tree DIR --imported --base origin/chronitondb-5.0   an import in DIR, another checkout
 
-`--imported` says the change is an import. A finding in a file outside `org/chronitondb` is then in imported code: it is printed as `REPORT`, not `ERROR`, and does not fail the check. It goes into the import's assessment, and the maintainers decide it before the import merges, as [upstream.md](../../docs/process/upstream.md#whole-apache-releases) says. A finding in an `org/chronitondb` file still fails. CI passes `--imported` only for a pull request whose head branch is an `import/` branch of this repository. The author of a pull request from a fork chooses its branch name, so a fork's branch never counts: an import that starts on a fork is pushed to an `import/` branch of this repository by a maintainer.
+`--imported` says the change is an import. A finding in a file outside `org/chronitondb` is then in imported code: it is printed as `REPORT`, not `ERROR`, and does not fail the check. It goes into the import's assessment, and the maintainers decide it before the import merges, as [upstream.md](../../docs/process/upstream.md#whole-apache-releases) says. A finding in an `org/chronitondb` file still fails. CI passes `--imported` only for a pull request whose head branch is an import from Apache Cassandra, a branch `import/cassandra-<...>` or `import/CASSANDRA-<n>` of this repository. A commit of another project is checked as the project's own change, since no check can read whether the maintainers approved its source. The author of a pull request from a fork chooses its branch name, so a fork's branch never counts: an import that starts on a fork is pushed to an `import/` branch of this repository by a maintainer.
 
 Semgrep runs with `--disable-nosem`, so a `nosemgrep` comment hides nothing, and a checkstyle `permit` comment does not hide a banned API from Semgrep. Needs docker and jq. `--self-test` runs `semgrep --test` on `test/semgrep` (each `ruleid` line must be reported, each `ok` line must not), then checks the path scoping, which `--test` ignores, then `--tree` and `--imported` on a staged tree, and last the changed files of a small repository, one of them with a name outside ASCII, which is scanned as any other. The bidi fixture is written at test time, so no committed file carries a bidi control character.
 
@@ -148,6 +148,34 @@ The checker fetches Apache Cassandra's tag or branches from `https://github.com/
 
     python3 -m unittest discover -s tools/chronitondb/test/importlint
 
+## Review verdict: `reviewlint.py`
+
+Checks the review verdict of a pull request against [branching-and-review.md](../../docs/process/branching-and-review.md#the-review-record). The CI workflow `.github/workflows/chronitondb-review-verdict.yml` runs it on every pull request into a line, and again when a review is posted, edited or dismissed and when a label is set or taken off. It only reads: it starts no review and asks for none. This file, `markdown.py`, `tools/chronitondb/review-app.json` and `docs/governance/committers.md` are taken from the base branch. Python 3 only, no other dependency.
+
+    tools/chronitondb/reviewlint.py verdict --app tools/chronitondb/review-app.json --maintainers docs/governance/committers.md --pull PULL-FILE --events EVENTS-FILE --reviews REVIEWS-FILE --edits EDITS-FILE
+
+The four last files are answers of the GitHub API: the pull request, its events as an issue, its reviews, and the GraphQL answer that gives `fullDatabaseId`, `lastEditedAt` and `editor` of each review.
+
+`tools/chronitondb/review-app.json` names the project's review App and the accounts the project's automation writes pull requests as:
+
+| Key | Value |
+|---|---|
+| `app_id` | The id of the GitHub App, from its settings page. No answer of GitHub carries it on a review, so no check compares it. It is kept for people |
+| `app_slug` | The App's name in addresses. Its reviews come from the user `<app_slug>[bot]` |
+| `bot_user_id` | The id of that user: `gh api 'users/<app_slug>[bot]' --jq .id` |
+| `automation_user_ids` | The ids of the accounts the project's automation writes pull requests as, a list of numbers |
+
+The file ships with placeholders, `0`, `""` and an empty list. While any value is a placeholder the check fails on every pull request and says which file to fill, so the check is made a required check only after the filled file is on every line.
+
+A verdict is due on a pull request whose author is one of `automation_user_ids`, and on one that carries the label `triage:accepted` when the event that last set the label names a maintainer of the table Maintainers. Any other pull request passes with the line `no review verdict is due`. Where a verdict is due, the newest review of the App's user (type `Bot`, login `<app_slug>[bot]`, id `bot_user_id`, all three) has the state `COMMENTED`, is a review of the head commit, holds a verdict block whose `"head"` is that commit (the last fenced `json` block that names `"lenses"`), and was never edited. A review of any other account counts for nothing.
+
+    the review 5970525038 of example-review[bot] is the verdict on the commit 34103ea892f7e67e8160e023504d565a8a16104f
+    review-verdict passed
+
+`test/reviewlint/` holds its unit tests, run by the same workflow, against recorded answers of the API under `test/reviewlint/shapes/`:
+
+    python3 -m unittest discover -s tools/chronitondb/test/reviewlint
+
 ## Process documents: `doclint.py`
 
 Checks the process documents under `docs/` against their templates on the line, and the rules [docs/process/](../../docs/process/README.md) sets for them: the document control table, every numbered section in order, the Contents index, the revision history and its link to the file's commits, no template placeholder and no `[NEEDS CLARIFICATION` marker left, and per document type the feature spec, plan, milestone report, decision record and delta entry rules. It also checks the feature keys and requirement ids of [additive.md](../../docs/process/additive.md#feature-keys-and-requirement-ids) across the lines. Two more commands check the library declarations of [compliance.md](../../docs/process/compliance.md) (`dependencies`) and that `conf/cassandra_chronitondb.yaml` holds every setting of Apache's two yaml files (`settings`, [release.md](../../docs/process/release.md#the-configuration-file)). No CI workflow runs these two yet. Both have unit tests, and `settings` has nothing to compare until the file exists. `markdown.py` beside it is its Markdown reader. Python 3 only, no other dependency.
@@ -172,16 +200,19 @@ Exit 0 when nothing is found, 1 on a finding, 2 on a usage error.
     tools/chronitondb/doclint.py delta --repo . --base origin/chronitondb-5.0 --source worktree
     tools/chronitondb/doclint.py delta --repo . --base origin/chronitondb-5.0 --source HEAD --branch BRANCH --body DESCRIPTION-FILE
 
-A file is ChronitonDB's own when it falls under a path of the table Where things live in [conventions.md](../../docs/process/conventions.md#where-things-live), read from the line. Every other file is a stock file. A change that adds, edits, deletes or renames a stock file adds or changes an entry under `docs/delta/`, unless its branch imports a whole Apache release or Apache's branch (`import/cassandra-<...>`), or its description has a line `No delta entry: <reason>`. The checker takes the branch name as given. CI gives it only when the head branch is in this repository, never for the branch of a fork, whose author chooses its name. An import that starts on a fork is pushed to an import branch of this repository by a maintainer, and its pull request is opened from there. Each entry it adds or changes passes the delta entry rules of `document`, with an Origin commit link, its index row with the same Area and Lines, and on an update a new Last-Update. No entry is renamed or deleted. It prints `stock PATH` for each stock file it finds.
+A file is ChronitonDB's own when it falls under a path of the table Where things live in [conventions.md](../../docs/process/conventions.md#where-things-live), read from the line. Every other file is a stock file. A change that adds, edits, deletes or renames a stock file adds or changes an entry under `docs/delta/`, unless its branch imports a whole Apache release or Apache's branch (`import/cassandra-<...>`), or its description has a line `No delta entry: <reason>`. That line is for a feature's change that touches only log lines Apache Cassandra writes. The checker reads only that it is there, the reviewer judges it against the change, and any other use of it is a decision of the maintainers at review. The checker takes the branch name as given. CI gives it only when the head branch is in this repository, never for the branch of a fork, whose author chooses its name. An import that starts on a fork is pushed to an import branch of this repository by a maintainer, and its pull request is opened from there. Each entry it adds or changes passes the delta entry rules of `document`, with an Origin commit link, its index row with the same Area and Lines, and on an update a new Last-Update. No entry is renamed or deleted. It prints `stock PATH` for each stock file it finds.
 
 ### Stock test files
 
 `doclint.py stock-tests` is the check of [testing.md](../../docs/process/testing.md#policy), Policy 4, run by the CI workflow `.github/workflows/chronitondb-stock-tests.yml` on every pull request into a `chronitondb-*` branch, with this file taken from the base branch.
 
     tools/chronitondb/doclint.py stock-tests --repo . --base origin/chronitondb-5.0 --source worktree --body DESCRIPTION-FILE
-    tools/chronitondb/doclint.py stock-tests --repo . --base origin/chronitondb-5.0 --source HEAD --branch BRANCH --body DESCRIPTION-FILE
+    tools/chronitondb/doclint.py stock-tests --repo . --base origin/chronitondb-5.0 --source HEAD --branch BRANCH --body DESCRIPTION-FILE --issue ISSUE-STATE-FILE
+    tools/chronitondb/doclint.py stock-tests-issue --branch BRANCH --body DESCRIPTION-FILE
 
-A stock test file is a file the line has, in a directory named `test`, that is not the project's own by the table Where things live. A change to one passes in an import from Apache Cassandra, by its branch name `import/cassandra-<...>` or `import/CASSANDRA-<n>`, which CI gives only for a branch of this repository. Otherwise the description names the issue on a line `Fixes #<issue>` or `Part of #<issue>`, and a record of that issue on the line permits the change: the fix record lists the file as `test` in its Planned file list, a design record or fix record names it on a line `Pinned listing: <path>` and the change only adds lines, or an accepted decision record has the line `Approved stock test change: <path> for #<issue>, because <explanation>`, with an explanation of eight different words or more and no placeholder left. The records are read at `--base`, never from the change, so a pull request cannot write its own permit. A stock test file that is deleted, renamed, binary or a symbolic link passes only in an import.
+A stock test file is a file the line has, in a directory named `test` or named `*Test.java`, `*Tests.java`, `test_*.py` or `*_test.py`, that is not the project's own by the table Where things live. A change to one passes in an import from Apache Cassandra, by its branch name `import/cassandra-<...>` or `import/CASSANDRA-<n>`, which CI gives only for a branch of this repository. Otherwise a record of the pull request's own issue on the line permits the change: the fix record lists the file as `test` in its Planned file list, a design record or fix record names it on a line `Pinned listing: <path>` and the change only adds lines of the listing, or an accepted decision record has the line `Approved stock test change: <path> for #<issue>, because <explanation>`, with an explanation of eight different words or more and no placeholder left. The records are read at `--base`, never from the change, so a pull request cannot write its own permit.
+
+The pull request's own issue is the issue of `--branch` when it is given, which is then a work branch `<name>/<issue>-<slug>/<line>`, and the description names it on a line `Fixes #<issue>` or `Part of #<issue>`. With no branch name it is the one issue the description names. `stock-tests-issue` prints that issue. CI reads its state from the GitHub API and gives the answer with `--issue`: a closed issue, a pull request's number and an answer that cannot be read permit nothing. A permit is used up once a change to the file has reached `--base`, on its first parent history, with the last change of the record or after it. Lines added to a pinned listing are any lines in a file of plain data (no extension, `.txt`, `.json`, `.csv`), and in any other file only lines that are one quoted string, alone on the line but for a `+` or a `,`. A permit line indented by four spaces or a tab is code and permits nothing. A stock test file that is deleted, renamed, binary or a symbolic link passes only in an import.
 
     test/unit/org/apache/cassandra/tools/nodetool/VersionTest.java: the file is a pre-existing test file of Apache Cassandra and no record on origin/chronitondb-5.0 of #142 permits the change
     stock-tests 1 checked 1 failed

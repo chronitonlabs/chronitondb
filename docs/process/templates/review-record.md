@@ -26,7 +26,7 @@ limitations under the License.
 | Pull request | #{n} |
 | Version reviewed | {the head commit the newest round read, by its short hash, or Not reviewed yet} |
 | Review type | {Inspection or Technical review} (ISO/IEC 20246) |
-| Reviewer | {the reviewer's GitHub username} |
+| Reviewer | {the GitHub account that posts the verdict: the project's review App. Never the author's account} |
 | Author | {role}: {GitHub username} |
 | Decision maker | The maintainer who merges the pull request |
 | References | Issue #{issue}. {The record, spec or plan the work product implements, by path.} |
@@ -64,12 +64,12 @@ One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A f
 
 1. **Fixed in `<hash>`**: the commit that fixes the finding, a commit of the pull request's branch. Several commits are joined with "and". A finding on the pull request's title or body is "Fixed in the pull request title" or "body".
 2. **Accepted: `<reason>`**: the work product stays as it is, for the reason given. The reviewer judges the reason in the next round.
-3. **Waived by `<the maintainers>`: `<reason>`**: the maintainers decided the finding needs no change, as "the maintainers" or "a maintainer, `<GitHub username>`". A waiver counts only with a maintainer's comment on the pull request that names the finding by its id, posted after the review of its round. Until then the disposition is Open.
+3. **Waived by `<the maintainers>`: `<reason>`**: the maintainers decided the finding needs no change, as "the maintainers" or "a maintainer, `<GitHub username>`". A waiver counts only as a review of the pull request by a maintainer listed in `docs/governance/committers.md`, which names the finding by its id and is posted after the review of its round. A comment does not count. Until then the disposition is Open.
 4. **Open: `<what settles it>`**: no disposition yet, while the maintainers decide. A clean review leaves none open from an earlier round.
 
 ## 3. Decisions
 
-{One subsection per decision the maintainers took during the review, in the form below, or the one line "No decisions.". A decision counts only with a maintainer's comment on the pull request that names it by its id.}
+{One subsection per decision the maintainers took during the review, in the form below, or the one line "No decisions.". A decision counts only as a review of the pull request by a maintainer listed in `docs/governance/committers.md`, which names it by its id and is posted after the review of its round. A comment does not count.}
 
 ### D{n}. {The question in one line}
 

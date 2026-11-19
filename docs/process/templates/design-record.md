@@ -138,7 +138,7 @@ These rules apply to every source:
 
 ## 5. Idiom and consistency
 
-{For each user visible choice: whether it matches Apache Cassandra, earlier decisions and the idiom it follows, and the reason for any deliberate difference.}
+{For each user visible choice: whether it matches Apache Cassandra, earlier decisions and the idiom it follows, and the reason for any deliberate difference. Then each detail of form this item settled because Apache Cassandra's convention leaves little choice, one line each, as [PRINCIPLE-057](../principles.md#principle-057) asks.}
 
 ## 6. Quality requirements
 
@@ -216,7 +216,7 @@ Scenario tags: {the tag expression for this item's scenarios}
 
 {Keep the names of these two lines and write each on one line, since a check may read them. The runner is `ant` or a script under `tools/chronitondb/`, and it runs as plain words, never through a shell. Without the tags line, the item's scenarios are those tagged with the requirement ids this record defines. An item with no scenarios leaves out both lines.}
 
-{For each stock test file or stock test data file that pins a complete listing this item extends, such as the stored help text of a command, the options a DESCRIBE prints, a golden file or a class list: one line in this form, and under it in words the lines the change adds. The file also stands in the Planned file list as `test`. The change only adds lines to the file. No existing line is removed or altered. Keep the line's name and write the path alone on it, since a check may read the line. An item that extends no such listing leaves the line out. See [PRINCIPLE-013](../principles.md#principle-013).}
+{For each stock test file or stock test data file that pins a complete listing this item extends, such as the stored help text of a command, the options a DESCRIBE prints, a golden file or a class list: one line in this form, and under it in words the lines the change adds. The file also stands in the Planned file list as `test`. The change only adds lines to the file. No existing line is removed or altered. In a file that is not plain data, such as a test class, each added line is one quoted string, as [testing.md](../testing.md#policy) says. Keep the line's name and write the path alone on it, since a check may read the line. An item that extends no such listing leaves the line out. See [PRINCIPLE-013](../principles.md#principle-013).}
 
 Pinned listing: {the file's path from the repository root}
 

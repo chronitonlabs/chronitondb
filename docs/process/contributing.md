@@ -76,7 +76,7 @@ Changes that need a design record follow [maintenance.md](maintenance.md) or [ad
 2. Your pull request runs the GitHub checks and the tests of the changed areas on GitHub's own runners. The required checks MUST pass. See [branching-and-review.md](branching-and-review.md#required-checks) and [testing.md](testing.md#full-test-suites).
 3. Changes to sensitive paths request a review from the code owners. See [branching-and-review.md](branching-and-review.md#sensitive-paths).
 4. A maintainer adds the label `triage:accepted` to your pull request before it is reviewed. No review starts without it. The same holds for every pull request the project's automated agents did not write, the maintainers' own included.
-5. The reviewer then reviews your pull request first and posts one short comment for each round on it, with its verdict. The findings are kept in the review record your pull request commits, see [branching-and-review.md](branching-and-review.md#the-review-record). Review follows [branching-and-review.md](branching-and-review.md#reviews). Answer each finding with its own commit.
+5. The reviewer then reviews your pull request first and posts one short review for each round on it, with its verdict. It gives you its findings on the pull request, as ordinary review comments. The findings are kept in the review record your pull request commits, see [branching-and-review.md](branching-and-review.md#the-review-record). Review follows [branching-and-review.md](branching-and-review.md#reviews). Answer each finding with its own commit.
 6. Only maintainers and committers merge, after the verdict is posted. See [governance.md](governance.md).
 
 ### AI assistance

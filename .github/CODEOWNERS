@@ -40,6 +40,8 @@
 # request runs the workflow files it brings. So the maintainers own them,
 # and a change there merges only with a maintainer's approving review once
 # the line rulesets require code owner review. /.github/ covers this file
-# too.
+# too. GitHub ignores an owner without write access to the repository, and
+# a path whose only owner is ignored needs no review, so the team named
+# here keeps write access.
 /tools/chronitondb/                                   @chronitonlabs/maintainers
 /.github/                                             @chronitonlabs/maintainers

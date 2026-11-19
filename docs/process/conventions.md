@@ -198,7 +198,7 @@ The rules of this section are stated in full in [principles.md](principles.md): 
 
 1. Fork logic lives in classes under `org.chronitondb`, in packages named for what they are, for example `org.chronitondb.startup` or `org.chronitondb.metrics`.
 2. Fork logic MUST NOT be added as a new class under `org.apache.cassandra`. A fork class that needs package private access to a stock package is a design decision, named in the design record and approved with it.
-3. An edit to a stock source file is the smallest that does the job. It is a hook that calls fork code, a fix to a defect in stock, or a refactor that lets fork code share stock logic in place of a copy. A refactor is named in the design record and reviewed with it.
+3. An edit to a stock source file is the smallest that does the job, of the kinds [PRINCIPLE-010](principles.md#principle-010) lists. A refactor is named in the design record and reviewed with it.
 4. Code defaults in stock classes, such as `Config.java`, stay exactly as Apache Cassandra has them.
 5. A test that existed before a change is not weakened, and a pre-existing stock test file changes in four ways only: [PRINCIPLE-065](principles.md#principle-065) and [PRINCIPLE-013](principles.md#principle-013). See [testing.md](testing.md#policy).
 6. In the project's own lookups, a name that a client supplies never picks code to load unless it is on an allow list, which the maintainers approve in a decision record. An option of Apache Cassandra that takes a class name keeps its behaviour: [PRINCIPLE-042](principles.md#principle-042).

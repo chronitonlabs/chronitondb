@@ -79,7 +79,7 @@ The reviewer owns verification of each pull request, as an ISO/IEC 20246 inspect
 
 1. Inspects the pull request against the approved design and the checklists in [branching-and-review.md](branching-and-review.md).
 2. Records each finding with a severity: blocker, major, minor or nit.
-3. Gives a verdict in one short comment for each round, with the count of findings at each severity, and gives the author the findings. A clean verdict marks the pull request ready for a maintainer.
+3. Gives a verdict in one short review for each round, posted by the project's review App, with the count of findings at each severity, and gives the author the findings. The reviewer is never the author of the pull request. A clean verdict marks the pull request ready for a maintainer.
 4. Checks that documentation, the delta entry and the decision records the change needs are present. In a library update it checks that the notice and licence text matches what the security engineer named.
 5. Reviews every pull request: our own, outside contributors', imports and dependency updates. A pull request that the project's automated agents did not write is reviewed only after a maintainer adds the label `triage:accepted`, the maintainers' own pull requests and outside contributors' alike. The verdict is posted on the pull request before a maintainer or committer merges it.
 

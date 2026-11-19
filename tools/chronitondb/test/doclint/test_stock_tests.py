@@ -475,14 +475,19 @@ class StockTests(unittest.TestCase):
                   "    \"org.apache.cassandra.config.Duration\",\n  }\n\n  @Test\n  public void testRefs() {\n    String help = \"NAME\\n\" +\n"
                   "                  \"OPTIONS\\n\"\n    check(classes, help)\n  }\n}\n")
 
-    def pinned_class(self):
+    PINNED_PY = "pylib/cqlshlib/test/test_listing.py"
+    PY_TEXT = ("KEYWORDS = [\n    'ADD',\n\n    # Since 4.0.\n    'ALLOW',\n]\n\nHELP = ('NAME'\n        'OPTIONS')\n\n\ndef test_keywords():\n"
+               "    assert words() == KEYWORDS\n")
+
+    def pinned_class(self, path=None, text=None):
+        path, text = path or self.PINNED_CLASS, text or self.CLASS_TEXT
         self.git("checkout", "-q", "line")
         self.git("reset", "-q", "--hard", "HEAD~1")
-        self.put(self.PINNED_CLASS, self.CLASS_TEXT)
+        self.put(path, text)
         self.git("add", "-A")
         self.git("commit", "-q", "-m", "files")
         self.put(FIX_RECORD, record("Fix: #142 Keep the level of a moved sstable"))
-        self.put(DESIGN_RECORD, record("Design: #150 Print the release version", lines=["Pinned listing: " + self.PINNED_CLASS]))
+        self.put(DESIGN_RECORD, record("Design: #150 Print the release version", lines=["Pinned listing: " + path]))
         self.git("add", "-A")
         self.git("commit", "-q", "-m", "records")
         self.git("checkout", "-q", "change")
@@ -491,13 +496,48 @@ class StockTests(unittest.TestCase):
     def test_quoted_strings_added_to_a_listing_in_a_test_class_pass(self):
         self.pinned_class()
         text = self.CLASS_TEXT.replace("    \"org.apache.cassandra.config.Duration\",\n",
-                                       "    \"org.apache.cassandra.config.Duration\",\n    \"org.chronitondb.startup.DiskCheck\",\n    'c',\n")
-        text = text.replace("                  \"OPTIONS\\n\"\n", "                  \"  --release \\\"x\\\"\\n\" +\n                  + \"more\" +\n                  \"OPTIONS\\n\"\n")
+                                       "    \"org.apache.cassandra.config.Duration\",\n    \"org.chronitondb.startup.DiskCheck\",\n    'c',\n"
+                                       "    \"org.chronitondb.startup.Release \\\"x\\\"\",\n")
+        # The first element of the listing, below the line that opens it.
+        text = text.replace("  static final String[] classes = {\n", "  static final String[] classes = {\n    \"org.apache.cassandra.Aa\",\n")
         self.put(self.PINNED_CLASS, text)
         self.commit()
         rc, out, err = self.check("Fixes #150\n")
         self.assertEqual((rc, err), (0, ""))
         self.assertIn("names it as a pinned listing and the change only adds lines of the listing\n", out)
+
+    def test_an_added_line_that_joins_an_existing_string_is_refused(self):
+        # A Java listing: a string with a "+" before or after it joins the
+        # element next to it, and so does an element below a line with no comma.
+        self.pinned_class()
+        for old, new in (("    \"org.apache.cassandra.config.Duration\",\n", "    \"evil\" +\n    \"org.apache.cassandra.config.Duration\",\n"),
+                         ("    \"org.apache.cassandra.config.Duration\",\n", "    \"org.apache.cassandra.config.Duration\",\n    + \"suffix\",\n"),
+                         ("                  \"OPTIONS\\n\"\n", "                  \"  --release\\n\" +\n                  \"OPTIONS\\n\"\n"),
+                         ("                  \"OPTIONS\\n\"\n", "                  \"OPTIONS\\n\"\n    \"x\",\n"),
+                         # A line of the hunk whose text opens with "++ " is an added line too.
+                         ("    check(classes, help)\n", "++ count\n    check(classes, help)\n")):
+            self.assertIn(old, self.CLASS_TEXT)
+            self.put(self.PINNED_CLASS, self.CLASS_TEXT.replace(old, new))
+            self.commit()
+            self.refused(self.check("Fixes #150\n"), "names the file as a pinned listing, and the change adds 1 line(s) that no listing holds",
+                         self.PINNED_CLASS)
+
+    def test_an_added_string_python_joins_to_its_neighbour_is_refused(self):
+        self.pinned_class(self.PINNED_PY, self.PY_TEXT)
+        # Below a comment and a blank line, the line above is the element before them.
+        self.put(self.PINNED_PY, self.PY_TEXT.replace("    'ALLOW',\n", "    'ALLOW',\n    'ALTER',\n").replace("    # Since 4.0.\n", "    # Since 4.0.\n    'AGGREGATE',\n"))
+        self.commit()
+        rc, out, err = self.check("Fixes #150\n")
+        self.assertEqual((rc, err), (0, ""))
+        # A string with no comma joins the next one, and a string below one
+        # with no comma joins that one.
+        for old, new in (("    'ADD',\n", "    'x'\n    'ADD',\n"), ("        'OPTIONS')\n", "        'MORE',\n        'OPTIONS')\n"),
+                         ("HELP = ('NAME'\n", "HELP = ('NAME'\n        'X',\n")):
+            self.assertIn(old, self.PY_TEXT)
+            self.put(self.PINNED_PY, self.PY_TEXT.replace(old, new))
+            self.commit()
+            self.refused(self.check("Fixes #150\n"), "names the file as a pinned listing, and the change adds 1 line(s) that no listing holds",
+                         self.PINNED_PY)
 
     def test_a_line_that_is_no_quoted_string_in_a_test_class_is_refused(self):
         self.pinned_class()
@@ -529,6 +569,13 @@ class StockTests(unittest.TestCase):
             self.refused(self.check("Fixes #150\n"), "the change adds lines that cannot be read that no listing holds", self.PINNED_CLASS)
         finally:
             doclint.added_lines = kept
+        # The file after the change, which gives the line above each added line, cannot be read.
+        kept = doclint.Source.read
+        doclint.Source.read = lambda source, path: None if path == self.PINNED_CLASS else kept(source, path)
+        try:
+            self.refused(self.check("Fixes #150\n"), "the change adds lines that cannot be read that no listing holds", self.PINNED_CLASS)
+        finally:
+            doclint.Source.read = kept
 
     def test_a_history_that_cannot_be_read_leaves_no_permit_unused(self):
         import doclint

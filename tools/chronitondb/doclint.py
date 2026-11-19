@@ -336,8 +336,11 @@ file passes by one of:
      has a line "Pinned listing: <path>" with the file's path, and the
      change only adds lines of the listing to the file: any line in a
      file of plain data, one with no extension or a .txt, .json or .csv
-     file, and in any other file only lines that are one quoted string,
-     alone on the line but for a "+" or a ","
+     file, and in any other file only whole elements of a listing: each
+     added line is one quoted string and a comma, alone on the line, and
+     the line above it, blank lines and comments aside, ends in a comma
+     or opens the listing with "(", "[" or "{". So no added line joins an
+     existing string, by a "+" or by strings that stand side by side
   4. a decision record at REF with the Status Accepted has a line
      "Approved stock test change: <path> for #<issue>, because
      <explanation>" with the file's path, the pull request's issue and a
@@ -1645,7 +1648,13 @@ TEST_DIR = re.compile(r"(?:^|/)test/")
 TEST_NAME = re.compile(r"(?:^|/)(?:[^/]*Tests?\.java|test_[^/]*\.py|[^/]*_test\.py)$")
 WORK_BRANCH = re.compile(r"^[^/]+/([0-9]+)-[^/]+/[^/]+$")
 LISTING_DATA = re.compile(r"(?:^|/)(?:[^/.]+|[^/]+\.(?:txt|json|csv))$")
-LISTING_STRING = re.compile(r"""^\s*(?:\+\s*)?(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\s*[,+]?\s*$""")
+# A whole element of a listing: one quoted string and a comma. The line
+# above it, blank lines and comments aside, ends one element or opens the
+# listing.
+LISTING_STRING = re.compile(r"""^\s*(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\s*,\s*$""")
+LISTING_ABOVE = re.compile(r"[,(\[{]\s*$")
+LISTING_COMMENT = ("#", "//", "/*", "*")
+HUNK = re.compile(r"^@@ -[0-9]+(?:,[0-9]+)? \+([0-9]+)(?:,[0-9]+)? @@")
 ISSUE_LINE = re.compile(r"^(?:Fixes|Part of) #([0-9]+)\.?$")
 RECORD_OF = re.compile(r"^(Fix|Design): #([0-9]+)(?![0-9])")
 PLANNED = re.compile(r"^(\S+) (new|edit|test|stock)$")
@@ -1799,7 +1808,9 @@ def is_unused(repo, base, line, record, path):
 
 
 def added_lines(repo, merge_base, where, path):
-    """The lines a change adds to a file, None when they cannot be read."""
+    """The lines a change adds to a file, each with the nearest line above
+    it in the file after the change that is neither blank nor a comment,
+    "" at the top of the file. None when they cannot be read."""
     args = ["diff", "-U0", "--no-color", "--no-ext-diff", "--no-textconv", "--no-renames"]
     if where == "index":
         args.append("--cached")
@@ -1807,9 +1818,23 @@ def added_lines(repo, merge_base, where, path):
     if where not in ("index", "worktree"):
         args.append(where)
     out = git(repo, *(args + ["--", path]))
-    if out is None:
+    after = Source(repo, where).read(path)
+    if out is None or after is None:
         return None
-    return [line[1:] for line in out.split("\n") if line.startswith("+") and not line.startswith("+++ ")]
+    after = after.split("\n")
+    found, number = [], None
+    for line in out.split("\n"):
+        hunk = HUNK.match(line)
+        if hunk:
+            number = int(hunk.group(1))
+        elif number is not None and line.startswith("+"):
+            # In a hunk every line that opens with "+" is an added line,
+            # also one whose text opens with "++".
+            above = next((after[index] for index in range(number - 2, -1, -1)
+                          if after[index].strip() and not after[index].strip().startswith(LISTING_COMMENT)), "")
+            found.append((line[1:], above))
+            number += 1
+    return found
 
 
 def test_permits(repo, base):
@@ -1925,7 +1950,7 @@ def check_stock_tests(repo, base, where, branch, body, state=None):
         record, spent = permit(pinned, old)
         if record and not spent:
             lines = [] if LISTING_DATA.search(old) else added_lines(repo, merge_base, where, old)
-            other = None if lines is None else [text for text in lines if not LISTING_STRING.match(text)]
+            other = None if lines is None else [text for text, above in lines if not LISTING_STRING.match(text) or not LISTING_ABOVE.search(above)]
             if removed:
                 errors.append("%s: %s names the file as a pinned listing, and the change removes or alters %d line(s) of it. "
                               "A pinned listing only gains lines. A change to an existing line needs an accepted decision record with the line "
@@ -1933,8 +1958,9 @@ def check_stock_tests(repo, base, where, branch, body, state=None):
             elif other is None or other:
                 errors.append("%s: %s names the file as a pinned listing, and the change adds %s that no listing holds. "
                               "A file of plain data, one with no extension or a .txt, .json or .csv file, gains any line. In any other file, "
-                              "such as a test class, a pinned listing gains only lines that are one quoted string, alone on the line but for a "
-                              "'+' or a ','. Any other added line needs an accepted decision record with the line "
+                              "such as a test class, a pinned listing gains only whole elements: each added line is one quoted string and a comma, "
+                              "alone on the line, below a line that ends in a comma or opens the listing with '(', '[' or '{'. "
+                              "Any other added line needs an accepted decision record with the line "
                               "'Approved stock test change: %s for #<issue>, because <explanation>'"
                               % (old, record, "lines that cannot be read" if other is None else "%d line(s)" % len(other), old))
             else:

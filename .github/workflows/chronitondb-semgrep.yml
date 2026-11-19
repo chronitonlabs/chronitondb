@@ -25,7 +25,9 @@
 # in imported code. It is reported for the import's assessment and does not
 # fail the check, since the maintainers decide each such finding before the
 # import merges (docs/process/upstream.md). A pull request is an import
-# only when its head branch is an import/ branch of this repository. The
+# only when its head branch is an import from Apache Cassandra, a branch
+# import/cassandra-<...> or import/CASSANDRA-<n> of this repository. A
+# commit of another project is checked as the project's own change. The
 # author of a pull request from a fork chooses its branch name, so a fork's
 # branch never counts. Before the check is on the line it says so and
 # passes. A separate job runs the self-test of the rules the pull request
@@ -79,13 +81,16 @@ jobs:
           HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           REPO: ${{ github.repository }}
         run: |
-          # An import is an import/ branch of this repository. A fork's
-          # branch has any name its author likes.
+          # An import is an import from Apache Cassandra, a branch
+          # import/cassandra-<...> or import/CASSANDRA-<n> of this
+          # repository. A fork's branch has any name its author likes. A
+          # commit of another project is checked as the project's own
+          # change: no check can read whether its source was approved.
           imported=()
           if [ "$HEAD_REPO" = "$REPO" ]
           then
             case "$HEAD_REF" in
-              import/*) imported=(--imported) ;;
+              import/cassandra-[0-9]*|import/CASSANDRA-[1-9]*) imported=(--imported) ;;
             esac
           fi
           "$RUNNER_TEMP/line/tools/chronitondb/semgrep-check.sh" --tree "$GITHUB_WORKSPACE" "${imported[@]}" --base "origin/$BASE"

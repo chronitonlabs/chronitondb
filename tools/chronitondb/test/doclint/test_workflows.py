@@ -110,8 +110,12 @@ class CodeChecks(Steps):
         step = "Semgrep on the changed files"
         rc, out, _ = self.step("chronitondb-semgrep.yml", step, head_ref=IMPORT)
         self.assertEqual((rc, out), (0, "line --tree %s --imported --base origin/line\n" % self.workspace))
-        for head_ref in ("import/CASSANDRA-21319/chronitondb-5.0", "import/rustyrazorblade-cassandra-579e35ae6c12/chronitondb-5.0"):
+        for head_ref in ("import/CASSANDRA-21319/chronitondb-5.0", "import/cassandra-6.0-1a2b3c4d5e/chronitondb-6.0"):
             self.assertIn(" --imported ", self.step("chronitondb-semgrep.yml", step, head_ref=head_ref)[1], head_ref)
+        # A commit of another project, and a name of no import form, are checked as the project's own change.
+        for head_ref in ("import/rustyrazorblade-cassandra-579e35ae6c12/chronitondb-5.0", "import/cassandra-fork-579e35ae6c12/chronitondb-5.0",
+                         "import/someone-product-579e35ae6c12/chronitondb-5.0", "import/anything/chronitondb-5.0", "import/CASSANDRA-x/chronitondb-5.0"):
+            self.assertNotIn("--imported", self.step("chronitondb-semgrep.yml", step, head_ref=head_ref)[1], head_ref)
         # A fork's branch has any name its author likes, so it never counts.
         for head_repo in ("someone/product", REPO + "-fork", ""):
             rc, out, _ = self.step("chronitondb-semgrep.yml", step, head_repo=head_repo, head_ref=IMPORT)

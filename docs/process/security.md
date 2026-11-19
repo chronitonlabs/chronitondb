@@ -30,11 +30,11 @@ A report that arrives in public is handled privately. Nobody repeats its details
 
 ## Private until disclosure
 
-1. All work on a vulnerability happens in private until disclosure: in the GitHub security advisory and its temporary private fork.
+1. All work on a vulnerability happens in private until disclosure: in the GitHub security advisory and its temporary private fork. The rule is [PRINCIPLE-048](principles.md#principle-048).
 2. Before disclosure, no public text names the vulnerability. Public text means issues, pull requests, review comments, commit messages, branch names, code comments, design and decision records, change logs, documentation and release notes.
 3. Before disclosure, no public text carries a CVE id, an advisory id, exploit detail or the reporter's name.
-4. A fix is described by its mechanics, for example "Bound the regex length before compile". A security fix uses the commit type `fix` until the advisory is public. The `security` type is used only after that.
-5. The design or fix record of a vulnerability stays in the advisory until disclosure. The maintainers decide where it is published afterwards.
+4. A fix is described by its mechanics, for example "Bound the regex length before compile" or "Check the permission before the schema change". A security fix uses the commit type `fix` until the advisory is public. The `security` type is used only after that.
+5. The design or fix record of a security defect, its reviews and its code stay in the advisory's private fork until disclosure. No public pull request is opened before then. At disclosure the record lands on the public line, with the fix: a maintainer merges the advisory, which brings both from its private fork. The review record of the fix stays private, in the advisory, after disclosure too. It is kept there and is no file of the branch that merges. The fix record says in one line, in its section Order of pull requests, that the fix was reviewed under the private process. The record merged first there, and the fix was reviewed against it there. GitHub runs no check of a pull request on that merge, so the maintainer who merges holds it to the reviews in the advisory. GitHub lets only an administrator of the advisory merge it, and the maintainers are its administrators. A public pull request is held by every required check, and a record it brings permits nothing.
 6. Anyone who finds a possible vulnerability during other work stops the public part of that work and tells the maintainers privately.
 
 ## The process
@@ -109,5 +109,5 @@ ChronitonDB inherits every Apache Cassandra vulnerability on its base and every 
 2. For each match it works out whether ChronitonDB is affected: whether the vulnerable code is shipped and reachable. It writes the VEX statement.
 3. When a patch-version update of the library fixes it, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. The item goes straight to the developer with no fix record, as [maintenance.md](maintenance.md#dependency-patch-version-updates) describes. The security engineer names in the item the test classes that cover every use of the library in ChronitonDB, and those tests run before the update merges. Anything else goes to the maintainers as a decision.
 4. Every library update goes through the security engineer, including one a maintainer asks for that is not a security fix. The security engineer checks the new version's licence, the new dependencies it brings in and its known vulnerabilities. It names the exact `NOTICE.txt` and `LICENSE.txt` text the update needs, which the developer writes and the reviewer checks, updates the VEX statements, and names the tests that cover every use of the library. See [maintenance.md](maintenance.md#dependency-patch-version-updates).
-5. A library ChronitonDB ships but does not use at all is not updated. The security engineer opens an item to remove it.
+5. A library ChronitonDB ships but does not use at all, directly or through another shipped library, gets no update but a security fix, which is applied as a patch-version update until the library is removed. The security engineer opens an item to remove it.
 6. The security engineer watches Apache Cassandra security announcements with the integrator. See [upstream.md](upstream.md).

@@ -16,9 +16,23 @@
 # Semgrep CE with the house rules in tools/chronitondb/semgrep on the files a
 # pull request changes, without the findings already on the merge base.
 # Semgrep runs from its container image pinned by digest in
-# tools/chronitondb/semgrep-check.sh, without network. A finding fails this
-# check, and the check is required on every line, so a finding blocks the
-# merge. Every action is pinned to a commit.
+# tools/chronitondb/semgrep-check.sh, without network. The script and the
+# rules come from the base branch, in a tree of their own, never from the
+# pull request, so a pull request cannot bring its own rules. The pull
+# request's files are only read as data. A finding fails this check, and
+# the check is required on every line, so a finding blocks the merge. One
+# case differs: on an import, a finding in a file outside org/chronitondb is
+# in imported code. It is reported for the import's assessment and does not
+# fail the check, since the maintainers decide each such finding before the
+# import merges (docs/process/upstream.md). A pull request is an import
+# only when its head branch is an import from Apache Cassandra, a branch
+# import/cassandra-<...> or import/CASSANDRA-<n> of this repository. A
+# commit of another project is checked as the project's own change. The
+# author of a pull request from a fork chooses its branch name, so a fork's
+# branch never counts. Before the check is on the line it says so and
+# passes. A separate job runs the self-test of the rules the pull request
+# brings, when it changes tools/chronitondb. Every action is pinned to a
+# commit.
 name: ChronitonDB Semgrep
 
 on:
@@ -39,10 +53,64 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Self-test the rules
-        run: tools/chronitondb/semgrep-check.sh --self-test
-
-      - name: Semgrep on the changed files
+      - name: The check from the base branch
+        id: line
         env:
           BASE: ${{ github.base_ref }}
-        run: tools/chronitondb/semgrep-check.sh --base "origin/$BASE"
+        run: |
+          line="$RUNNER_TEMP/line"
+          git worktree add --detach "$line" "origin/$BASE" > /dev/null
+          if [ ! -f "$line/tools/chronitondb/semgrep-check.sh" ] || ! grep -q -- '--tree DIR' "$line/tools/chronitondb/semgrep-check.sh"
+          then
+            echo "The Semgrep check on $BASE cannot read the files of another tree yet, so there is no check to run. The check starts once it is merged."
+            echo "present=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "present=yes" >> "$GITHUB_OUTPUT"
+
+      - name: Self-test the rules of the line
+        if: steps.line.outputs.present == 'yes'
+        run: |
+          "$RUNNER_TEMP/line/tools/chronitondb/semgrep-check.sh" --self-test
+
+      - name: Semgrep on the changed files
+        if: steps.line.outputs.present == 'yes'
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          # An import is an import from Apache Cassandra, a branch
+          # import/cassandra-<...> or import/CASSANDRA-<n> of this
+          # repository. A fork's branch has any name its author likes. A
+          # commit of another project is checked as the project's own
+          # change: no check can read whether its source was approved.
+          imported=()
+          if [ "$HEAD_REPO" = "$REPO" ]
+          then
+            case "$HEAD_REF" in
+              import/cassandra-[0-9]*|import/CASSANDRA-[1-9]*) imported=(--imported) ;;
+            esac
+          fi
+          "$RUNNER_TEMP/line/tools/chronitondb/semgrep-check.sh" --tree "$GITHUB_WORKSPACE" "${imported[@]}" --base "origin/$BASE"
+
+  semgrep-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Self-test the rules the pull request brings
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          if [ -z "$(git diff --name-only "origin/$BASE...HEAD" -- tools/chronitondb)" ]
+          then
+            echo "The pull request changes nothing under tools/chronitondb, so it brings no rules to test."
+            exit 0
+          fi
+          tools/chronitondb/semgrep-check.sh --self-test

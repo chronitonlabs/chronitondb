@@ -58,6 +58,8 @@ def filled_report(issue="42"):
     text = template("research-report.md").replace("{issue}", issue)
     text = text.replace("| Status | Draft, Approved or Superseded |", "| Status | Draft |")
     text = text.replace("| Version | {n} |", "| Version | 1 |")
+    text = text.replace("{RFC 3339 date}", "2026-11-17").replace("{the id of the decision record behind this version, or None}", "None")
+    text = text.replace("{the address `tools/chronitondb/doclint.py history --write` puts here}", "https://github.com/example/product/commits/line/" + "docs/research/%s-compaction-throttle.md" % issue)
     text = text.replace("| Author | Architect: {GitHub username} |", "| Author | Architect: millerjp |")
     return re.sub(r"\{[^{}]*\}", "answered", text)
 

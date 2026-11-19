@@ -27,7 +27,13 @@ limitations under the License.
 | Approver | The maintainer who merges the pull request, once for the proposal and once for the promotion |
 | References | {line, the previous release, milestone reports, published security advisories by their CVE} |
 
-Change history: the git history of this file.
+Revision history, one row for each version:
+
+| Version | Date | Change | Decision record |
+|---|---|---|---|
+| 1 | {RFC 3339 date} | First version | {the id of the decision record behind this version, or None} |
+
+Full history in git: [commits of this file]({the address `tools/chronitondb/doclint.py history --write` puts here})
 
 Location: `docs/releases/<version>.md`. Process: [release.md](../release.md).
 
@@ -36,9 +42,10 @@ Location: `docs/releases/<version>.md`. Process: [release.md](../release.md).
 - [1. Version](#1-version)
 - [2. Commit](#2-commit)
 - [3. What goes in](#3-what-goes-in)
-- [4. Milestone gates passed](#4-milestone-gates-passed)
-- [5. Security fixes due](#5-security-fixes-due)
-- [6. Verification results](#6-verification-results)
+- [4. Defaults](#4-defaults)
+- [5. Milestone gates passed](#5-milestone-gates-passed)
+- [6. Security fixes due](#6-security-fixes-due)
+- [7. Verification results](#7-verification-results)
 
 ## 1. Version
 
@@ -50,17 +57,21 @@ Location: `docs/releases/<version>.md`. Process: [release.md](../release.md).
 
 ## 3. What goes in
 
-{First the Apache content, as [release.md](../release.md#what-a-release-contains) says, one list item each: `- Apache release: <version>`, the newest Apache Cassandra release the line fully contains, `- Apache commit: <full hash>`, the last Apache commit merged when the line carries Apache branch commits after that release, for each change cherry-picked on top of that release `- CASSANDRA-<n> <full Apache commit hash> <Apache subject>`, and for each commit taken unchanged from another project `- <owner>/<repo> <full commit hash> <original subject>`. Then the commits on the line since the previous release, grouped as features, fixes, performance, security and imports. One line each, with its pull request.}
+{First the Apache content, as [release.md](../release.md#what-a-release-contains) says, one list item each: `- Apache release: <version>`, the newest Apache Cassandra release the line fully contains, `- Apache commit: <full hash>`, the last Apache commit merged when the line carries Apache branch commits after that release, for each change cherry-picked on top of that release `- CASSANDRA-<n> <full Apache commit hash> <Apache subject>`, and for each commit taken unchanged from another project `- <owner>/<repo> <full commit hash> <original subject>`. Then the commits on the line since the previous release, grouped as features, fixes, performance, security and imports. One line each, with its pull request. Last the way in and the way back, one list item each: `- Way in: <the Apache Cassandra release a cluster moves onto this release from, or none yet>` and `- Way back: <the Apache Cassandra release, or releases, a cluster on this release can move back to, or none yet and the cause>`. There is no way back yet only while the line writes a stored or sent form that no Apache Cassandra release reads yet, and that form came with Apache Cassandra code no Apache Cassandra release has yet. A line whose major version Apache Cassandra has not released yet has no way in from Apache Cassandra, see [PRINCIPLE-003](../principles.md#principle-003). See [release.md](../release.md#moving-back-to-apache-cassandra).}
 
-## 4. Milestone gates passed
+## 4. Defaults
+
+{Every default that changed since the previous release: a value of the shipped configuration file, a default in the code, or the default of a schema option. One line each, with the fix, security fix or import that changed it. A feature's default does not change within a line, see [PRINCIPLE-018](../principles.md#principle-018). Or "None".}
+
+## 5. Milestone gates passed
 
 {The features whose final milestone gate passed and become switchable in this release, each with its milestone report. Or "None".}
 
-## 5. Security fixes due
+## 6. Security fixes due
 
 {The security fixes this release ships. A public library vulnerability by its CVE and its VEX statement. A fix to ChronitonDB's own code is never named before disclosure: write only that the release carries security fixes, published with their advisories on the release date. Or "None".}
 
-## 6. Verification results
+## 7. Verification results
 
 Not verified yet. After the soak the promotion pull request replaces this line with the results: signatures, installs, upgrade and rollback from the previous ChronitonDB release and from Apache Cassandra, the parity suite, and the release outputs (SBOM, OpenVEX statements, release notes and provenance), each with its result and evidence in the table, and the problems reported during the soak with what was done about each.
 

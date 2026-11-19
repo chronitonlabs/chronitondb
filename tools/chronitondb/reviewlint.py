@@ -16,8 +16,8 @@
 # limitations under the License.
 """Checks the review verdict of a pull request against
 docs/process/branching-and-review.md, The review record: the newest review
-of the project's review App on the pull request is a verdict, and it names
-the commit the pull request is at now. The CI workflow
+of the project's review App on the pull request is a clean verdict, and it
+names the commit the pull request is at now. The CI workflow
 chronitondb-review-verdict.yml runs it on every pull request into a line.
 The check only reads. It starts no review and asks for none.
 
@@ -73,9 +73,19 @@ submitted, is held to:
      changes, a maintainer does
   2. its commit_id is the head commit of the pull request
   3. its text holds a verdict block, the last fenced json block that names
-     "lenses", and the "head" of that block is the same commit
+     "lenses". The block is one JSON object, and its "head" is the same
+     commit
   4. nobody edited it after it was posted: --edits knows the review, and
      shows no edit and no editor
+  5. the verdict is clean: the block's "ready" is true, its "approve" is
+     true, its "lenses" is an object that names one checklist or more,
+     each with the result true, and "blockers" and "majors", where the
+     block carries them, are the number 0
+
+A verdict with an open blocker or major finding fails the check, and the
+check stays failed until a later verdict on the head is clean. The check
+reads no waiver. When a maintainer waives a finding, the reviewer posts a
+new verdict that records the waiver, and that verdict is the one read.
 
 A pull request whose author is the App's user fails: the reviewer is never
 the author. So does a pull request from a checkpoint branch of this
@@ -104,10 +114,16 @@ CHECKPOINT = re.compile(r"^agent/[^/]+/checkpoint/[^/]+$")
 FENCE_OPEN = re.compile(r"^ {0,3}```json\s*$")
 FENCE_CLOSE = re.compile(r"^ {0,3}```\s*$")
 RULE = "docs/process/branching-and-review.md, The review record"
+# The findings that keep a verdict from being clean, as the block counts them.
+COUNTED = ("blockers", "majors")
 
 
 def is_id(value):
-    return isinstance(value, int) and not isinstance(value, bool) and value > 0
+    return is_count(value) and value > 0
+
+
+def is_count(value):
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
 
 
 def app_of(app):
@@ -178,7 +194,7 @@ def is_of_app(user, slug, bot):
 
 
 def verdict_block(body):
-    """The verdict block of a review text: the object of its last fenced
+    """The verdict block of a review text: the text of its last fenced
     json block that names "lenses", None when there is none."""
     found, block = None, None
     for line in (body or "").split("\n"):
@@ -186,15 +202,40 @@ def verdict_block(body):
             if FENCE_OPEN.match(line):
                 block = []
         elif FENCE_CLOSE.match(line):
-            try:
-                value = json.loads("\n".join(block))
-            except ValueError:
-                value = None
-            if isinstance(value, dict) and "lenses" in value:
-                found = value
+            text = "\n".join(block)
+            if '"lenses"' in text:
+                found = text
             block = None
         else:
             block.append(line)
+    return found
+
+
+def shown(value):
+    """A value of the verdict block as one short piece of a finding."""
+    text = json.dumps(value, sort_keys=True)
+    return text if len(text) <= 60 else text[:57] + "..."
+
+
+def not_clean(block):
+    """What keeps a verdict block from being a clean verdict, one short
+    text each. A clean verdict says the pull request is ready, every
+    checklist it names passed, and it counts no blocker and no major
+    finding."""
+    found = []
+    for name in ("ready", "approve"):
+        if block.get(name) is not True:
+            found.append("its \"%s\" is %s" % (name, shown(block[name]) if name in block else "not given"))
+    lenses = block.get("lenses")
+    if not isinstance(lenses, dict) or not lenses:
+        found.append("its \"lenses\" is no object that names a checklist with its result")
+    else:
+        against = sorted(name for name, result in lenses.items() if result is not True)
+        if against:
+            found.append("%s did not pass in its \"lenses\"" % ", ".join(shown(name) for name in against))
+    for name in COUNTED:
+        if name in block and not (is_count(block[name]) and block[name] == 0):
+            found.append("its \"%s\" is %s" % (name, shown(block[name])))
     return found
 
 
@@ -269,12 +310,27 @@ def check_verdict(app, maintainers, pull, events, reviews, edits):
     if commit != sha:
         errors.append("%s, is a review of the commit %s, and the pull request is at %s now. The verdict names the commit it read, "
                       "so a later commit needs a new verdict" % (what, commit, sha))
-    block = verdict_block(newest.get("body") if isinstance(newest.get("body"), str) else "")
-    if block is None:
+    text = verdict_block(newest.get("body") if isinstance(newest.get("body"), str) else "")
+    try:
+        block = json.loads(text) if text is not None else None
+    except ValueError:
+        block = []
+    if text is None:
         errors.append("%s, holds no verdict block: a fenced json block that names \"lenses\"" % what)
-    elif block.get("head") != commit or not isinstance(commit, str) or not COMMIT.match(commit):
-        errors.append("%s, has a verdict block whose \"head\" is %s, and the review is of the commit %s. The two are the same commit"
-                      % (what, block.get("head"), commit))
+    elif not isinstance(block, dict):
+        errors.append("%s, has a verdict block that cannot be read: the last fenced json block that names \"lenses\" is one JSON "
+                      "object, and this one is not" % what)
+    else:
+        if block.get("head") != commit or not isinstance(commit, str) or not COMMIT.match(commit):
+            errors.append("%s, has a verdict block whose \"head\" is %s, and the review is of the commit %s. The two are the same "
+                          "commit" % (what, shown(block.get("head")), commit))
+        against = not_clean(block)
+        if against:
+            errors.append("%s, is no clean verdict: %s. The check passes on a verdict that says the pull request is ready, with "
+                          "\"ready\" and \"approve\" true, every checklist of \"lenses\" true and no blocker and no major finding "
+                          "counted. It stays failed until a later verdict on the head is clean. The check reads no waiver: when a "
+                          "maintainer waives a finding, the reviewer posts a new verdict that records it (%s)"
+                          % (what, ", ".join(against), RULE))
     edit = edits_of(edits).get(str(newest["id"]))
     if edit is None:
         errors.append("%s, is not in the answer of the GraphQL API, so the check cannot tell whether it was edited" % what)
@@ -284,7 +340,7 @@ def check_verdict(app, maintainers, pull, events, reviews, edits):
                       % (what, ", by %s" % editor.get("login") if editor.get("login") else ""))
     if errors:
         return errors, None
-    return [], "the review %d of %s is the verdict on the commit %s" % (newest["id"], login, sha)
+    return [], "the review %d of %s is the clean verdict on the commit %s" % (newest["id"], login, sha)
 
 
 def main(argv):

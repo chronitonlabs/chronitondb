@@ -15,8 +15,12 @@
 
 # The review verdict check (docs/process/branching-and-review.md, The
 # review record), with tools/chronitondb/reviewlint.py: the newest review
-# of the project's review App on the pull request is a verdict, and it
-# names the commit the pull request is at now. The job only reads: it
+# of the project's review App on the pull request is a clean verdict, and
+# it names the commit the pull request is at now. A clean verdict says
+# the pull request is ready, with no open blocker and no open major
+# finding. A verdict with such a finding open fails the job until a later
+# verdict on the head is clean. The job reads no waiver: the reviewer
+# records a waiver in a new verdict. The job only reads: it
 # starts no review and asks for none. A review by the project's review
 # roles runs on a pull request the project's automation wrote, and on one
 # a maintainer accepted for review with the label triage:accepted, so a

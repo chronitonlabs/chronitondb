@@ -15,8 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """The review verdict check, docs/process/branching-and-review.md, The
-review record: the newest review of the project's review App is a verdict
-on the commit the pull request is at. The files under shapes/ are the
+review record: the newest review of the project's review App is a clean
+verdict on the commit the pull request is at. The files under shapes/ are the
 answers of the GitHub API the check reads, recorded from a review that a
 GitHub App posted on a public pull request, with the names and ids
 replaced: reviews.json from GET /repos/{owner}/{repo}/pulls/{number}/reviews,
@@ -100,8 +100,8 @@ MAINTAINER = MAINTAINERS[0]
 
 class Verdict(unittest.TestCase):
     """A pull request the project's automation wrote, at one commit, with
-    one review of the App on that commit that carries a verdict block and
-    was never edited."""
+    one review of the App on that commit that carries a clean verdict
+    block and was never edited."""
 
     def setUp(self):
         self.app = dict(APP)
@@ -231,20 +231,107 @@ class Verdict(unittest.TestCase):
             {"fullDatabaseId": str(review["id"]), "lastEditedAt": None, "editor": None})
         return review
 
-    def body(self, head, text="Round 3.", lenses=True):
-        block = {"head": head, "approve": True, "ready": True}
-        if lenses:
-            block["lenses"] = ["correctness"]
+    def body(self, head, text="Round 3.", lenses=True, **changes):
+        """A review text with a clean verdict block, but for the changes.
+        A change to None takes the key out of the block."""
+        block = {"head": head, "round": 3, "approve": True, "ready": True, "lenses": {"correctness": True, "tests": True},
+                 "blockers": 0, "majors": 0, "minors": 0, "nits": 0}
+        if lenses is False:
+            del block["lenses"]
+        elif lenses is not True:
+            block["lenses"] = lenses
+        for key, value in changes.items():
+            if value is None:
+                del block[key]
+            else:
+                block[key] = value
         return "%s\n\n```json\n%s\n```\n" % (text, json.dumps(block))
 
-    def test_the_verdict_of_the_app_on_the_head_passes(self):
-        self.assertEqual(self.passes(), "the review 5970525038 of example-review[bot] is the verdict on the commit " + self.head)
+    def test_the_clean_verdict_of_the_app_on_the_head_passes(self):
+        self.assertEqual(self.passes(), "the review 5970525038 of example-review[bot] is the clean verdict on the commit " + self.head)
+        # Minor findings and nits leave a verdict clean.
+        self.reviews[0]["body"] = self.body(self.head, minors=4, nits=2)
+        self.passes()
+        # A block that carries no counts is held to its other fields.
+        self.reviews[0]["body"] = self.body(self.head, blockers=None, majors=None, minors=None, nits=None)
+        self.passes()
 
-    def test_a_verdict_with_findings_passes_too(self):
-        # The check holds who gave the verdict and on which commit. What a
-        # maintainer does with its findings is the maintainer's.
-        self.reviews[0]["body"] = "Round 1. 2 blocker.\n\n```json\n%s\n```\n" % json.dumps(
-            {"head": self.head, "approve": False, "ready": False, "lenses": ["security"]})
+    # Only a clean verdict passes.
+
+    def not_clean(self, text, **changes):
+        self.reviews[0]["body"] = self.body(self.head, **changes)
+        errors, note = self.check()
+        self.assertIsNone(note)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertTrue(errors[0].startswith("the newest review of example-review[bot], 5970525038, is no clean verdict: "), errors)
+        self.assertIn(text, errors[0])
+
+    def test_a_verdict_with_a_major_finding_fails(self):
+        self.not_clean('its "ready" is false, its "approve" is false, "tests" did not pass in its "lenses", its "majors" is 1. The check '
+                       "passes on a verdict that says the pull request is ready",
+                       ready=False, approve=False, lenses={"correctness": True, "tests": False}, majors=1)
+        self.not_clean('its "blockers" is 2', ready=False, approve=False, lenses={"correctness": False}, blockers=2)
+        # Each field is held alone, so a block that contradicts itself fails too.
+        self.not_clean('its "majors" is 1. The check', majors=1)
+        self.not_clean('its "blockers" is 1. The check', blockers=1)
+        self.not_clean('"tests" did not pass in its "lenses". The check', lenses={"correctness": True, "tests": False})
+        self.not_clean('"correctness", "tests" did not pass', lenses={"tests": None, "correctness": "true"})
+        for count in (True, False, "0", 0.5, -1, [], None):
+            for name in ("blockers", "majors"):
+                if count is None:
+                    self.reviews[0]["body"] = self.body(self.head).replace('"%s": 0' % name, '"%s": null' % name)
+                    self.refused('is no clean verdict: its "%s" is null. The check' % name)
+                else:
+                    self.not_clean('its "%s" is %s' % (name, json.dumps(count)), **{name: count})
+
+    def test_a_verdict_that_says_not_ready_fails(self):
+        self.not_clean('its "ready" is false. The check', ready=False)
+        self.not_clean('its "approve" is false. The check', approve=False)
+        self.not_clean('its "ready" is not given', ready=None)
+        self.not_clean('its "approve" is not given', approve=None)
+        # True is the JSON value true and nothing like it.
+        for value in ("true", 1, "yes", [True], {"ready": True}):
+            self.not_clean('its "ready" is %s' % json.dumps(value), ready=value)
+            self.not_clean('its "approve" is %s' % json.dumps(value), approve=value)
+
+    def test_a_verdict_names_each_checklist_with_its_result(self):
+        for lenses in ({}, ["correctness"], "correctness", 0, 7):
+            self.not_clean('its "lenses" is no object that names a checklist with its result', lenses=lenses)
+        for result in (False, "true", 1, "pass", [], {}):
+            self.not_clean('"tests" did not pass in its "lenses"', lenses={"correctness": True, "tests": result})
+
+    def test_a_malformed_verdict_block_fails(self):
+        clean = self.body(self.head)
+        for body in ("```json\n{\"lenses\": \n```\n", "```json\n[\"lenses\", \"%s\"]\n```\n" % self.head,
+                     "```json\n%s\n```\n" % json.dumps([{"head": self.head, "lenses": {"correctness": True}}]),
+                     "```json\n\"lenses\"\n```\n", clean.replace("{", "{,", 1), clean.replace("}\n```", "\n```"),
+                     # A clean block and then a later block that names lenses and cannot be read.
+                     clean + "\n```json\n{\"lenses\": \n```\n"):
+            self.reviews[0]["body"] = body
+            self.refused("has a verdict block that cannot be read: the last fenced json block that names \"lenses\" is one JSON object")
+
+    def test_a_verdict_with_findings_is_followed_by_a_clean_one(self):
+        self.reviews[0]["body"] = self.body(self.head, "Round 1.", ready=False, approve=False, lenses={"correctness": False}, majors=2)
+        self.refused("is no clean verdict")
+        # An earlier clean verdict does not count once a later verdict has findings.
+        self.reviews = shape("reviews.json")
+        late = self.review(body=self.body(self.head, "Round 3.", ready=False, approve=False, majors=1))
+        self.refused("the newest review of example-review[bot], %d, is no clean verdict" % late["id"])
+        # The reviewer's next verdict on the head is clean, for a fix or for a waiver it records.
+        self.review(body=self.body(self.head, "Round 4. One finding waived by a maintainer."))
+        self.passes()
+
+    def test_a_clean_verdict_on_an_older_head_fails(self):
+        # The pull request moved on after its clean verdict.
+        self.pull["head"]["sha"] = OTHER
+        errors, note = self.check()
+        self.assertIsNone(note)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("is a review of the commit %s, and the pull request is at %s now" % (self.head, OTHER), errors[0])
+        # A verdict with findings on the new head does not bring the old clean one back.
+        self.review(commit_id=OTHER, body=self.body(OTHER, ready=False, approve=False, majors=1))
+        self.refused("is no clean verdict")
+        self.review(commit_id=OTHER, body=self.body(OTHER))
         self.passes()
 
     # The App is named on the line.
@@ -347,25 +434,25 @@ class Verdict(unittest.TestCase):
     # The verdict block.
 
     def test_a_review_without_a_verdict_block_is_refused(self):
+        clean = json.loads(self.body(self.head).split("```")[1][4:])
         for body in ("Round 2. Clean.", "", None, self.body(self.head, lenses=False), "```json\nnot json\n```\n",
-                     "```\n%s\n```\n" % json.dumps({"head": self.head, "lenses": []}),
-                     "```json\n%s\n" % json.dumps({"head": self.head, "lenses": []}),
-                     "```json\n%s\n```\n" % json.dumps([{"head": self.head, "lenses": []}]),
-                     "    ```json\n    %s\n    ```\n" % json.dumps({"head": self.head, "lenses": []})):
+                     "```\n%s\n```\n" % json.dumps(clean),
+                     "```json\n%s\n" % json.dumps(clean),
+                     "    ```json\n    %s\n    ```\n" % json.dumps(clean)):
             self.reviews[0]["body"] = body
             self.refused("holds no verdict block: a fenced json block that names \"lenses\"")
 
     def test_the_block_names_the_commit_of_the_review(self):
         for head in (OTHER, self.head[:12], self.head.upper(), "", None, 7):
             self.reviews[0]["body"] = self.body(head)
-            self.refused("has a verdict block whose \"head\" is %s, and the review is of the commit %s" % (head, self.head))
+            self.refused("has a verdict block whose \"head\" is %s, and the review is of the commit %s" % (json.dumps(head), self.head))
 
     def test_the_last_block_that_names_lenses_is_the_verdict(self):
         earlier, last = self.body(OTHER, "The round before said:"), self.body(self.head, "Round 2.")
         self.reviews[0]["body"] = earlier + "\n" + last + "\n```json\n{\"note\": \"no verdict\"}\n```\n"
         self.passes()
         self.reviews[0]["body"] = last + "\n" + earlier
-        self.refused("has a verdict block whose \"head\" is %s" % OTHER)
+        self.refused("has a verdict block whose \"head\" is \"%s\"" % OTHER)
 
     # Nobody edited the verdict.
 
@@ -437,7 +524,7 @@ class Command(unittest.TestCase):
         rc, out, err = self.verdict()
         self.assertEqual((rc, err), (0, ""))
         self.assertTrue(out.endswith("review-verdict passed\n"))
-        self.assertIn("the review 5970525038 of example-review[bot] is the verdict on the commit", out)
+        self.assertIn("the review 5970525038 of example-review[bot] is the clean verdict on the commit", out)
 
     def test_the_command_fails_with_its_findings(self):
         self.put("app.json", read(APP_FILE) if reviewlint.app_of(json.loads(read(APP_FILE))) is None else '{"app_id": 0}')

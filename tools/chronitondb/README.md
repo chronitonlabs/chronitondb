@@ -167,9 +167,11 @@ The four last files are answers of the GitHub API: the pull request, its events 
 
 The file ships with placeholders, `0`, `""` and an empty list. While any value is a placeholder the check fails on every pull request and says which file to fill, so the check is made a required check only after the filled file is on every line.
 
-A verdict is due on a pull request whose author is one of `automation_user_ids`, and on one that carries the label `triage:accepted` when the event that last set the label names a maintainer of the table Maintainers. Any other pull request passes with the line `no review verdict is due`. Where a verdict is due, the newest review of the App's user (type `Bot`, login `<app_slug>[bot]`, id `bot_user_id`, all three) has the state `COMMENTED`, is a review of the head commit, holds a verdict block whose `"head"` is that commit (the last fenced `json` block that names `"lenses"`), and was never edited. A review of any other account counts for nothing.
+A verdict is due on a pull request whose author is one of `automation_user_ids`, and on one that carries the label `triage:accepted` when the event that last set the label names a maintainer of the table Maintainers. Any other pull request passes with the line `no review verdict is due`. Where a verdict is due, the newest review of the App's user (type `Bot`, login `<app_slug>[bot]`, id `bot_user_id`, all three) has the state `COMMENTED`, is a review of the head commit, holds a verdict block whose `"head"` is that commit (the last fenced `json` block that names `"lenses"`, one JSON object), and was never edited. A review of any other account counts for nothing.
 
-    the review 5970525038 of example-review[bot] is the verdict on the commit 34103ea892f7e67e8160e023504d565a8a16104f
+The verdict is also clean, or the check fails: in the block `"ready"` is `true`, `"approve"` is `true`, `"lenses"` is an object that names one checklist or more, each with the result `true`, and `"blockers"` and `"majors"`, where the block carries them, are the number `0`. A verdict with an open blocker or major finding leaves the check failed until a later verdict on the head is clean. The check reads no waiver: when a maintainer waives a finding, the reviewer posts a new verdict that records the waiver, and that verdict is the one read.
+
+    the review 5970525038 of example-review[bot] is the clean verdict on the commit 34103ea892f7e67e8160e023504d565a8a16104f
     review-verdict passed
 
 `test/reviewlint/` holds its unit tests, run by the same workflow, against recorded answers of the API under `test/reviewlint/shapes/`:

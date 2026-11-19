@@ -440,8 +440,8 @@ class StockTests(unittest.TestCase):
 
     PINNED_CLASS = "test/unit/org/apache/cassandra/config/RefTest.java"
     CLASS_TEXT = ("class RefTest {\n  static final String[] classes = {\n    \"org.apache.cassandra.config.Config\",\n"
-                  "    \"org.apache.cassandra.config.Duration\",\n  };\n\n  @Test\n  public void testRefs() {\n    String help = \"NAME\\n\" +\n"
-                  "                  \"OPTIONS\\n\";\n    check(classes, help);\n  }\n}\n")
+                  "    \"org.apache.cassandra.config.Duration\",\n  }\n\n  @Test\n  public void testRefs() {\n    String help = \"NAME\\n\" +\n"
+                  "                  \"OPTIONS\\n\"\n    check(classes, help)\n  }\n}\n")
 
     def pinned_class(self):
         self.git("checkout", "-q", "line")
@@ -460,7 +460,7 @@ class StockTests(unittest.TestCase):
         self.pinned_class()
         text = self.CLASS_TEXT.replace("    \"org.apache.cassandra.config.Duration\",\n",
                                        "    \"org.apache.cassandra.config.Duration\",\n    \"org.chronitondb.startup.DiskCheck\",\n    'c',\n")
-        text = text.replace("                  \"OPTIONS\\n\";", "                  \"  --release \\\"x\\\"\\n\" +\n                  + \"more\" +\n                  \"OPTIONS\\n\";")
+        text = text.replace("                  \"OPTIONS\\n\"\n", "                  \"  --release \\\"x\\\"\\n\" +\n                  + \"more\" +\n                  \"OPTIONS\\n\"\n")
         self.put(self.PINNED_CLASS, text)
         self.commit()
         rc, out, err = self.check("Fixes #150\n")
@@ -470,14 +470,14 @@ class StockTests(unittest.TestCase):
     def test_a_line_that_is_no_quoted_string_in_a_test_class_is_refused(self):
         self.pinned_class()
         for old, new in (("  @Test\n", "  @org.junit.Ignore\n  @Test\n"),
-                         ("  public void testRefs() {\n", "  public void testRefs() {\n    return;\n"),
-                         ("  public void testRefs() {\n", "  public void testRefs() {\n    org.junit.Assume.assumeTrue(false);\n"),
-                         ("  public void testRefs() {\n", "  public void testRefs() {\n    throw new org.junit.AssumptionViolatedException(\"skip\");\n"),
-                         ("    check(classes, help);\n", "    // check(classes, help);\n    check(classes, help);\n"),
-                         ("    check(classes, help);\n", "\n    check(classes, help);\n"),
-                         ("    check(classes, help);\n", "    \"a\"; return;\n    check(classes, help);\n"),
-                         ("    check(classes, help);\n", "    \"a\" + skip(),\n    check(classes, help);\n"),
-                         ("    check(classes, help);\n", "    \"\"\"\n    check(classes, help);\n"),
+                         ("  public void testRefs() {\n", "  public void testRefs() {\n    return\n"),
+                         ("  public void testRefs() {\n", "  public void testRefs() {\n    org.junit.Assume.assumeTrue(false)\n"),
+                         ("  public void testRefs() {\n", "  public void testRefs() {\n    throw new org.junit.AssumptionViolatedException(\"skip\")\n"),
+                         ("    check(classes, help)\n", "    // check(classes, help)\n    check(classes, help)\n"),
+                         ("    check(classes, help)\n", "\n    check(classes, help)\n"),
+                         ("    check(classes, help)\n", "    \"a\" return\n    check(classes, help)\n"),
+                         ("    check(classes, help)\n", "    \"a\" + skip(),\n    check(classes, help)\n"),
+                         ("    check(classes, help)\n", "    \"\"\"\n    check(classes, help)\n"),
                          ("    \"org.apache.cassandra.config.Duration\",\n", "    \"org.apache.cassandra.config.Duration\",\n    Other.class,\n")):
             self.assertIn(old, self.CLASS_TEXT)
             self.put(self.PINNED_CLASS, self.CLASS_TEXT.replace(old, new))

@@ -27,7 +27,7 @@ limitations under the License.
 | Approver | The maintainer who merges the pull request |
 | References | Issue #161. Line `chronitondb-sandbox`. Apache base commit `76550e931481e965ae3283d8cf4a59c320d74c55` (Apache Cassandra `cassandra-5.0`). Decision records [DEC-JVMEM-0001](decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md), [DEC-JVMEM-0002](decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md), [DEC-JVMEM-0003](decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md), [DEC-JVMEM-0004](decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md) and [DEC-JVMEM-0005](decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md). |
 | Areas | observability |
-| Risk | Normal: by the label the worst Bug Category is Availability, a response crash, which is a read of the view that fails. The floor of [classification.md](../../process/classification.md#the-floor) applies, because the feature adds a virtual table. The class table of that page rates two faults of this feature Critical: a wrong value in the view, and a node that does not start because of the view. Problems 1 and 2 of section 4 name them with their tests. Decision record [DEC-JVMEM-0003](decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) keeps the feature at Normal risk with both faults named. |
+| Risk | Normal: by the label the worst Bug Category is Availability, a response crash, which is a read of the view that fails. The floor of [classification.md](../../process/classification.md#the-floor), which keeps a change to a public interface at Normal risk at least, applies, because the feature adds a virtual table. The class table of that page rates two faults of this feature Critical: a wrong value in the view, and a node that does not start because of the view. Problems 1 and 2 of section 4 name them with their tests. Decision record [DEC-JVMEM-0003](decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) keeps the feature at Normal risk with both faults named. |
 | Size | Normal: one view class, one hook in a file of Apache Cassandra, names that are kept for the line once shipped, and a value the JVM leaves undefined. |
 | Reach | One area: virtual tables. Fork code in the new package `org.chronitondb.virtual`, with one hook in `org.apache.cassandra.db.virtual`. |
 | Touches | public interface (virtual tables), new feature or switch |
@@ -48,7 +48,7 @@ A rule of the project is cited by its id from [principles.md](../../process/prin
 
 The Risk, Size and Reach rows are the feature's class, as [classification.md](../../process/classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels.
 
-A code fact is cited by its number, as fact 1 to fact 13. Section 12 holds each one with its symbol, file, line and the tree it was read in.
+A code fact is cited by its number, as fact 1 to fact 14. Section 12 holds each one with its symbol, file, line and the tree it was read in.
 
 ## Contents
 
@@ -121,11 +121,13 @@ The feature is one class of the project and one line in a file of Apache Cassand
 |---|---|---|---|
 | `name` | `text` | partition key | The name of the pool as the JVM reports it, unchanged. For example `G1 Old Gen`, `Metaspace` or `CodeHeap 'non-nmethods'`. |
 | `type` | `text` | regular | `HEAP` for a pool of heap memory, `NON_HEAP` for any other pool. These are the names of the two values of `java.lang.management.MemoryType`, and the text JMX shows for the pool's `Type` attribute ([DEC-JVMEM-0005](decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md)). |
-| `used_bytes` | `bigint` | regular | The memory in use in the pool, in bytes. |
-| `committed_bytes` | `bigint` | regular | The memory the operating system has committed to the pool, in bytes. |
-| `max_bytes` | `bigint` | regular | The largest size the pool can have, in bytes, or -1 where the JVM defines no maximum ([DEC-JVMEM-0002](decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md)). |
+| `used_bytes` | `bigint` | regular | The memory the pool uses at the read, in bytes. |
+| `committed_bytes` | `bigint` | regular | The memory that is guaranteed to be available to the JVM for the pool, in bytes. It is never less than the used size, and it can grow or shrink over time. |
+| `max_bytes` | `bigint` | regular | The most memory the JVM can use for the pool, in bytes, or -1 where the JVM defines no maximum ([DEC-JVMEM-0002](decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md)). Where it is defined it can change over time. It is no promise that the memory can be had: the JVM can fail to get memory above the committed size while the used size is still below the maximum. |
 
-The table is `system_views.jvm_memory_pools`, and its name and the names of its columns are those of [DEC-JVMEM-0004](decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md). The size columns end in `_bytes` as the size columns of `system_views.caches` do (fact 5). The table is keyed by the name of the pool, and its rows come back in the order of that name, as the rows of `system_views.thread_pools` do (fact 4).
+The meanings of the three sizes are those the Java SE documentation of `java.lang.management.MemoryUsage` gives for used, committed and max, and the documentation of the view states them so.
+
+The table is `system_views.jvm_memory_pools`, and its name and the names of its columns are those of [DEC-JVMEM-0004](decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md). The size columns end in `_bytes` as the size columns of `system_views.caches` do (fact 5). The table is keyed by the name of the pool under the partitioner `system_views.thread_pools` has (fact 4). So its rows come back in the byte order of the UTF-8 text of the name, as the rows of that table do. In that order an upper case letter comes before every lower case letter.
 
 For one row the view calls `MemoryPoolMXBean.getUsage` once and takes the three sizes from the one `MemoryUsage` object it returns. So the three sizes of a row belong to one moment. The rows of one read are taken one after the other, so two rows of one read can be a few instructions apart.
 
@@ -218,7 +220,7 @@ FREQ-JVMEM-008 (state driven): While no statement reads the view, the feature MU
 
 FREQ-JVMEM-009 (ubiquitous): The node MUST apply to a statement on the view the permission check that Apache Cassandra applies to a statement on a table of `system_views` (fact 9), with no check of the feature's own. Source: stakeholder need, [PRINCIPLE-045](../../process/principles.md#principle-045).
 
-FREQ-JVMEM-010 (event driven): When a statement writes to the view or truncates it, the node MUST refuse the statement with the error Apache Cassandra returns for a read only virtual table (fact 8). Source: stakeholder need.
+FREQ-JVMEM-010 (event driven): When a statement writes to the view or truncates it, the node MUST refuse the statement with the error Apache Cassandra returns for that kind of statement on a read only virtual table (fact 8). Source: stakeholder need.
 
 FREQ-JVMEM-011 (ubiquitous): The feature MUST NOT change the definition or the rows of another table, a JMX MBean, a metric or the output of a nodetool command, apart from a surface of Apache Cassandra that lists what the node holds, such as the tables of `system_virtual_schema` and the `DESCRIBE` statements, which show the view as they show every virtual table. Source: stakeholder need, [PRINCIPLE-001](../../process/principles.md#principle-001), [PRINCIPLE-002](../../process/principles.md#principle-002).
 
@@ -288,7 +290,12 @@ Moving back to an earlier release of the line or to Apache Cassandra needs one s
 1. Before the last node that has the view moves back, an operator revokes every grant that was given on the view by name. After that no node accepts a `REVOKE` that names the view (fact 10). A grant on the keyspace `system_views` or on all keyspaces names no table of the feature and needs no step.
 2. Nothing else is removed: the feature leaves no file, no schema row and no setting.
 
-A grant row that is left behind names a table the node does not have. `DataResource.fromName` reads such a name without looking the table up (fact 10). What else Apache Cassandra does with such a row is not verified.
+A grant row that is left behind names a table the node does not have. Apache Cassandra reads grant rows in four places, and none of them looks the table up (fact 14):
+
+1. A permission check reads the row of the role for the resource the statement names. No statement on a node without the view can name the view, so the row is never read there.
+2. `LIST ALL PERMISSIONS` and `LIST ALL PERMISSIONS OF <role>` list the row. `LIST ALL PERMISSIONS ON system_views.jvm_memory_pools` is refused as `REVOKE` is, because it names the table.
+3. The warm-up of the permissions cache at the start of a node parses the name of the row and goes on.
+4. `DROP ROLE` removes every grant row of the role, this one with them.
 
 No schema object uses the feature, so nothing is removed when an object stops using it.
 
@@ -319,7 +326,10 @@ No new dependency. The feature uses `java.lang.management` of the JDK and classe
 
 1. **Milestone 1: the view.** The view class, the hook with its delta entry, the unit tests and the documentation, in one build item, and one validation item with the end to end tests. It makes every requirement of section 3 testable. The feature has no second milestone, for the reason of section 2.8.
 
-- For the design record: what the view shows for a memory pool whose usage the JVM does not report, which `MemoryPoolMXBean.getUsage` signals by returning null for a pool that is no longer valid.
+- For the design record: which item holds which test of section 4.1, so that the item that adds the hook leaves no unfinished work reachable.
+- For the design record: how an import from Apache Cassandra that brings a table of the same name is caught when it gives no text conflict in the hook file.
+- For the design record: what the view does if a JVM reports two memory pools under one name.
+- For the design record: which test runs hold the two tests that decision record DEC-JVMEM-0003 wants run on every build.
 
 ## 12. Prior art
 
@@ -344,7 +354,7 @@ What Apache Cassandra got right: the values are the JVM's own, under the JVM's o
 | 1 | The tables of `system_views` are one fixed list built in a constructor. No table of it is about JVM memory. The file imports `StorageAttachedIndexTables` from another package. The node registers the keyspace, and so builds the list, when it starts. | `SystemViewsKeyspace.SystemViewsKeyspace`, `src/java/org/apache/cassandra/db/virtual/SystemViewsKeyspace.java:30`, import at line 22. `CassandraDaemon.setupVirtualKeyspaces`, `src/java/org/apache/cassandra/service/CassandraDaemon.java:534`, the registration at line 537. Both ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The first at line 30 in cassandra-5.0 at `47227d98bf`, and at line 33 with the import at line 24 in cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b`. The second at lines 534 and 537 in cassandra-5.0 at `47227d98bf`, and at lines 641 and 644 in cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b` |
 | 2 | `AbstractVirtualTable` is a public class with a protected constructor. | `AbstractVirtualTable.AbstractVirtualTable`, `src/java/org/apache/cassandra/db/virtual/AbstractVirtualTable.java:50`, ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The same at line 50 in cassandra-5.0 at `47227d98bf`, and at line 52 in cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b` |
 | 3 | `SimpleDataSet` is a public class with a public constructor. | `SimpleDataSet.SimpleDataSet`, `src/java/org/apache/cassandra/db/virtual/SimpleDataSet.java:64`, ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The same at line 64 in cassandra-5.0 at `47227d98bf`, cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b` |
-| 4 | `system_views.thread_pools` is keyed by a `name` column of type text, under a local partitioner that orders by that text. | `ThreadPoolsTable.ThreadPoolsTable`, `src/java/org/apache/cassandra/db/virtual/ThreadPoolsTable.java:40`, ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The same at line 40 in cassandra-5.0 at `47227d98bf`. In cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b` the class is gone and the table is built in `SystemViewsKeyspace.SystemViewsKeyspace`, line 44. Its key there is not verified |
+| 4 | `system_views.thread_pools` is keyed by a `name` column of type text, under a `LocalPartitioner` over `UTF8Type`, which orders rows by the bytes of the UTF-8 text of the name. | `ThreadPoolsTable.ThreadPoolsTable`, `src/java/org/apache/cassandra/db/virtual/ThreadPoolsTable.java:40`, ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The same at line 40 in cassandra-5.0 at `47227d98bf`. In cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b` the class is gone and the table is built in `SystemViewsKeyspace.SystemViewsKeyspace`, line 44. Its key there is not verified |
 | 5 | `system_views.caches` names its size columns `capacity_bytes` and `size_bytes`, of type bigint. | `CachesTable.CAPACITY_BYTES` and `CachesTable.SIZE_BYTES`, `src/java/org/apache/cassandra/db/virtual/CachesTable.java:30` and line 31, with their type in `CachesTable.CachesTable`, line 39, ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The same lines in cassandra-5.0 at `47227d98bf`. In cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b` the names stand at lines 33 and 34 |
 | 6 | A virtual keyspace is kept in two maps of the node's own registry. | `VirtualKeyspaceRegistry.register`, `src/java/org/apache/cassandra/db/virtual/VirtualKeyspaceRegistry.java:41`, ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The same at line 41 in cassandra-5.0 at `47227d98bf`, and at line 42 in cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b` |
 | 7 | A read of all rows of a virtual table is executed on the node that receives it, in the calling thread, with no message to another node. | `PartitionRangeReadCommand.VirtualTablePartitionRangeReadCommand.execute`, `src/java/org/apache/cassandra/db/PartitionRangeReadCommand.java:547`, ChronitonDB chronitondb-sandbox at `ffa1bc742d`. A read of one row: `SinglePartitionReadCommand.VirtualTableSinglePartitionReadCommand.execute`, `src/java/org/apache/cassandra/db/SinglePartitionReadCommand.java:1407`, the same tree | The first at line 547 in cassandra-5.0 at `47227d98bf`, and at line 646 in cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b`. The second was not read there |
@@ -354,6 +364,7 @@ What Apache Cassandra got right: the values are the JVM's own, under the JVM's o
 | 11 | At startup the node logs, for each memory pool of the JVM, its name, its type and its peak usage. | `CassandraDaemon.logSystemInfo`, `src/java/org/apache/cassandra/service/CassandraDaemon.java:596`, the loop at line 614, ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The same lines in cassandra-5.0 at `47227d98bf`. In cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b` the method stands at line 706 and the loop at line 724 |
 | 12 | `nodetool info` prints one line `Heap Memory (MB)` with the used and the maximum heap, and no line for a pool. | `Info.execute`, `src/java/org/apache/cassandra/tools/nodetool/Info.java:48`, the line at 72, ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The line stands at 72 in cassandra-5.0 at `47227d98bf`, and at 68 in cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b` |
 | 13 | The metric tables of trunk are built from a list of metric groups, and the list names no group of JVM memory. | Our line and its base have no such keyspace | `CassandraMetricsRegistry.createMetricsKeyspaceTables`, `src/java/org/apache/cassandra/metrics/CassandraMetricsRegistry.java:210`, the list at line 116, Apache Cassandra trunk at `45c325a01b`, and the same in cassandra-6.0 at `a02931dea8` |
+| 14 | A grant row is read in four places, and none looks the table up: a permission check reads the row of one role for the resource the statement names, `LIST PERMISSIONS` and the warm-up of the permissions cache parse the resource name of each row with `Resources.fromName`, and `DROP ROLE` deletes the rows of the role by their text. `LIST PERMISSIONS ON` a resource that does not exist is refused with `%s doesn't exist`. | `CassandraAuthorizer.addPermissionsForRole`, `src/java/org/apache/cassandra/auth/CassandraAuthorizer.java:255`. `CassandraAuthorizer.listPermissionsForRole`, line 340, the parse at line 355. `CassandraAuthorizer.bulkLoader`, line 458, the parse at line 477. `CassandraAuthorizer.revokeAllFrom`, line 135, called by `DropRoleStatement.execute`, `src/java/org/apache/cassandra/cql3/statements/DropRoleStatement.java:67`, at line 75. `ListPermissionsStatement.execute`, `src/java/org/apache/cassandra/cql3/statements/ListPermissionsStatement.java:86`, the check at line 100. All ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The same lines in cassandra-5.0 at `47227d98bf`. In cassandra-6.0 at `a02931dea8` the five methods of `CassandraAuthorizer` and `DropRoleStatement` stand at lines 271, 356 with the parse at 371, 474 with the parse at 493, 151, and 74 with the call at 82, and the check of `ListPermissionsStatement` at line 111. In trunk at `45c325a01b` at lines 273, 358 with the parse at 373, 470 with the parse at 489, 153, and 74 with the call at 82, and the check at line 111 |
 
 These rules apply to every source:
 

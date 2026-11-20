@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# DEC-JVMEM-0008. Each page of a read of the view holds the values of its own moment
+# DEC-JVMEM-0008. The view is read afresh for each page of a statement
 
 | Field | Value |
 |---|---|
@@ -45,9 +45,11 @@ Apache Cassandra runs the read once for each page, and a virtual table builds it
 
 So the rows of two pages of one statement hold values of two moments, which can be seconds apart when the client waits between the pages. It had to be settled whether the view keeps to that or holds one moment for the whole statement.
 
+Apache Cassandra also fetches pages for itself. A statement that aggregates, such as `SELECT sum(used_bytes)`, is fetched in pages inside the node, by the page size the client set, or by 10000 rows where the client set none, and the client gets the value computed over all of them: `SelectStatement.getPager`, `src/java/org/apache/cassandra/cql3/statements/SelectStatement.java:625`, and `AggregationQueryPager.GroupByPartitionIterator.fetchSubPage`, `src/java/org/apache/cassandra/service/pager/AggregationQueryPager.java:295`, ChronitonDB chronitondb-sandbox at `ffa1bc742d`, unchanged against the base. Each of those pages runs the read again too. So the same question holds for a sum or a count that a client asks for with a page size below the number of pools.
+
 ## Considered options
 
-1. Each page is its own read, with the values of its own moment. The documentation of the view says so.
+1. Each page is its own read, with the values of its own moment, whether a client fetches the page or the node fetches it for a statement that aggregates. The documentation of the view says so.
 2. One moment for the whole statement. The node keeps the rows of the first page until the client has fetched the last one.
 
 ## Decision outcome
@@ -55,13 +57,13 @@ So the rows of two pages of one statement hold values of two moments, which can 
 Chosen option: "Each page is its own read", because it is what every virtual table of Apache Cassandra does, it needs no code and it keeps no memory between two reads. Option 2 needs memory that the node holds between the pages of a statement, with a rule for when to free it. The view gets no sign from Apache Cassandra of which pages belong to one statement, so its paging code would have to change. That is more than the need asks for ([PRINCIPLE-054](../../../process/principles.md#principle-054)), and it goes against [DEC-JVMEM-0001](DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md), which rests on a view that keeps no memory.
 
 1. The node MUST take the values of the rows of each page from its JVM when it reads that page.
-2. The documentation of the view MUST say that the pages of one statement can hold values of different moments.
+2. The documentation of the view MUST say that one statement can be answered from more than one read, in which two cases, and what that means for its rows.
 
 ### Consequences
 
 - Good: the view behaves as every table of `system_views` does, and the paging code stays as Apache Cassandra has it.
 - Good: nothing is kept between two pages, so a client that never fetches the next page costs the node nothing.
-- Bad: the sizes of two pages of one statement do not belong to one moment, so sums across pages can be off.
+- Bad: the sizes of two pages of one statement do not belong to one moment, so sums across pages can be off. That holds for a sum the node computes too, where the client set a page size below the number of pools.
 - Bad: if the JVM changes its list of pools between two pages, a pool can be missing from the statement's rows.
 - Neutral: a statement whose rows fit in one page is one read, and all its rows are taken in that read.
 

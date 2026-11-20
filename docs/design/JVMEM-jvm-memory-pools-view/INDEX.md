@@ -36,4 +36,4 @@ The documents of the feature `JVMEM`: those of this directory, and the design re
 | [DEC-JVMEM-0005](decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md) | The type column shows HEAP and NON_HEAP, as JMX does | Accepted | 2026-11-20 | `observability` | None |
 | [DEC-JVMEM-0006](decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md) | A grant left on the view after moving back is documented, and permission code is unchanged | Accepted | 2026-11-20 | `observability` | None |
 | [DEC-JVMEM-0007](decisions/DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md) | A memory pool whose usage the JVM does not report shows null in its three sizes | Accepted | 2026-11-20 | `observability` | None |
-| [DEC-JVMEM-0008](decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md) | Each page of a read of the view holds the values of its own moment | Accepted | 2026-11-20 | `observability` | None |
+| [DEC-JVMEM-0008](decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md) | The view is read afresh for each page of a statement | Accepted | 2026-11-20 | `observability` | None |

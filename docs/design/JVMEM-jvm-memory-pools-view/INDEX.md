@@ -31,3 +31,6 @@ The documents of the feature `JVMEM`: those of this directory, and the design re
 |---|---|---|---|---|---|
 | [DEC-JVMEM-0001](decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md) | The JVM memory pools view has no switch and is not held back | Accepted | 2026-11-20 | `observability` | None |
 | [DEC-JVMEM-0002](decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md) | A memory pool with no maximum shows -1 as its maximum | Accepted | 2026-11-20 | `observability` | None |
+| [DEC-JVMEM-0003](decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) | The JVM memory pools view stays at Normal risk with two faults named | Accepted | 2026-11-20 | `observability` | None |
+| [DEC-JVMEM-0004](decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md) | The view is named jvm_memory_pools and its size columns end in _bytes | Accepted | 2026-11-20 | `observability` | None |
+| [DEC-JVMEM-0005](decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md) | The type column shows HEAP and NON_HEAP, as JMX does | Accepted | 2026-11-20 | `observability` | None |

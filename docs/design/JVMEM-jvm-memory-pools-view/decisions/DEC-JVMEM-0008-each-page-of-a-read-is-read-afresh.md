@@ -39,13 +39,13 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Context and problem statement
 
-A client can fetch the rows of a statement in pages. For the view that happens when the page size is below the number of memory pools, for example with `PAGING 3` in `cqlsh` on a node with 8 pools.
+A client can fetch the rows of a statement in pages. For the view that happens when the page size is not above the number of memory pools, for example with `PAGING 3` in `cqlsh` on a node with 8 pools.
 
 Apache Cassandra runs the read once for each page, and a virtual table builds its rows again each time the read runs. `AbstractQueryPager.fetchPage`, `src/java/org/apache/cassandra/service/pager/AbstractQueryPager.java:63`, runs the read of the next page at line 76. `AbstractVirtualTable.select`, `src/java/org/apache/cassandra/db/virtual/AbstractVirtualTable.java:91`, asks the table for its rows at line 93. Both are ChronitonDB chronitondb-sandbox at `ffa1bc742d`, unchanged against the base of the line, Apache Cassandra cassandra-5.0 at `76550e9314`. Section 12 of the feature spec has the lines in Apache Cassandra cassandra-5.0 at `47227d98bf`, cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b`, where the code does the same.
 
 So the rows of two pages of one statement hold values of two moments, which can be seconds apart when the client waits between the pages. It had to be settled whether the view keeps to that or holds one moment for the whole statement.
 
-Apache Cassandra also fetches pages for itself. A statement that aggregates, such as `SELECT sum(used_bytes)`, is fetched in pages inside the node, by the page size the client set, or by 10000 rows where the client set none, and the client gets the value computed over all of them: `SelectStatement.getPager`, `src/java/org/apache/cassandra/cql3/statements/SelectStatement.java:625`, and `AggregationQueryPager.GroupByPartitionIterator.fetchSubPage`, `src/java/org/apache/cassandra/service/pager/AggregationQueryPager.java:295`, ChronitonDB chronitondb-sandbox at `ffa1bc742d`, unchanged against the base. Each of those pages runs the read again too. So the same question holds for a sum or a count that a client asks for with a page size below the number of pools.
+Apache Cassandra also fetches pages for itself. A statement that aggregates, such as `SELECT sum(used_bytes)`, is fetched in pages inside the node, by the page size the client set, or by 10000 rows where the client set none, and the client gets the value computed over all of them: `SelectStatement.getPager`, `src/java/org/apache/cassandra/cql3/statements/SelectStatement.java:625`, and `AggregationQueryPager.GroupByPartitionIterator.fetchSubPage`, `src/java/org/apache/cassandra/service/pager/AggregationQueryPager.java:295`, ChronitonDB chronitondb-sandbox at `ffa1bc742d`, unchanged against the base. Each of those pages runs the read again too. So the same question holds for a sum or a count that a client asks for with a page size that is not above the number of pools.
 
 ## Considered options
 
@@ -63,9 +63,9 @@ Chosen option: "Each page is its own read", because it is what every virtual tab
 
 - Good: the view behaves as every table of `system_views` does, and the paging code stays as Apache Cassandra has it.
 - Good: nothing is kept between two pages, so a client that never fetches the next page costs the node nothing.
-- Bad: the sizes of two pages of one statement do not belong to one moment, so sums across pages can be off. That holds for a sum the node computes too, where the client set a page size below the number of pools.
+- Bad: the sizes of two pages of one statement do not belong to one moment, so sums across pages can be off. That holds for a sum the node computes too, where the client set a page size that is not above the number of pools.
 - Bad: if the JVM changes its list of pools between two pages, a pool can be missing from the statement's rows.
-- Neutral: a statement whose rows fit in one page is one read, and all its rows are taken in that read.
+- Neutral: a statement that reads the whole view, with a page size above the number of pools or with none, is one read, and all its rows are taken in that read.
 
 ## More information
 

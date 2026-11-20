@@ -55,7 +55,7 @@ Two idioms give two answers for what the view shows then.
 
 Chosen option: "-1, as the JVM reports it", because the view then holds the number an operator reads for the same pool over JMX. One value has one meaning on both surfaces, as [PRINCIPLE-059](../../../process/principles.md#principle-059) asks. The feature's requirement is that the view shows the values as the JVM reports them, and -1 is what the JVM reports.
 
-1. Where the JVM defines no maximum for a memory pool, the maximum column of the view MUST hold -1 for that pool.
+1. Where the JVM reports a usage with no maximum defined for a memory pool, the maximum column of the view MUST hold -1 for that pool.
 2. The documentation of the view MUST say that -1 in that column means the JVM defines no maximum for the pool.
 
 ### Consequences

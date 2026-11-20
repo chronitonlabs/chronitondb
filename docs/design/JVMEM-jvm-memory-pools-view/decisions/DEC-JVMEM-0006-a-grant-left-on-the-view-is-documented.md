@@ -62,7 +62,7 @@ The line changes none of these files against its base, Apache Cassandra cassandr
 Chosen option: "Document the row", because a row left behind does no harm that the code shows, and the operator has a stated step for moving back, as [PRINCIPLE-003](../../../process/principles.md#principle-003) asks. Option 2 puts a check of the project into the permission code of Apache Cassandra. Authorisation is an area that [classification.md](../../../process/classification.md#the-critical-floor) keeps at Critical risk, and the view would be the only table of `system_views` that takes no grant by name. That is more to build, test and review than the row needs ([PRINCIPLE-054](../../../process/principles.md#principle-054)).
 
 1. The feature MUST NOT change the permission code of Apache Cassandra. A `GRANT` and a `REVOKE` on the view by name work as they do on every table of `system_views`.
-2. The documentation of the view MUST say how an operator lists the grants that name the view and which roles can list them, and that the operator revokes every permission of each before the last node that has the view moves back.
+2. The documentation of the view MUST say how an operator lists the grants that name the view, that the operator revokes every permission of each before the last node that has the view moves back, and as which role the operator does both.
 3. The documentation of the view MUST say what a grant left behind does and how it is removed.
 4. A test MUST show that a node handles a grant row that names a table the node does not have as the context above says.
 

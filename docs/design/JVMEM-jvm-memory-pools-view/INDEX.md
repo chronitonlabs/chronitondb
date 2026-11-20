@@ -34,3 +34,6 @@ The documents of the feature `JVMEM`: those of this directory, and the design re
 | [DEC-JVMEM-0003](decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) | The JVM memory pools view stays at Normal risk with two faults named | Accepted | 2026-11-20 | `observability` | None |
 | [DEC-JVMEM-0004](decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md) | The view is named jvm_memory_pools and its size columns end in _bytes | Accepted | 2026-11-20 | `observability` | None |
 | [DEC-JVMEM-0005](decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md) | The type column shows HEAP and NON_HEAP, as JMX does | Accepted | 2026-11-20 | `observability` | None |
+| [DEC-JVMEM-0006](decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md) | A grant left on the view after moving back is documented, and permission code is unchanged | Accepted | 2026-11-20 | `observability` | None |
+| [DEC-JVMEM-0007](decisions/DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md) | A memory pool whose usage the JVM does not report shows null in its three sizes | Accepted | 2026-11-20 | `observability` | None |
+| [DEC-JVMEM-0008](decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md) | Each page of a read of the view holds the values of its own moment | Accepted | 2026-11-20 | `observability` | None |

@@ -25,7 +25,7 @@ limitations under the License.
 | Version | 1 |
 | Author | Architect: chronitondb-agent |
 | Approver | The maintainer who merges the pull request |
-| References | Issue #161. Line `chronitondb-sandbox`. Apache base commit `76550e931481e965ae3283d8cf4a59c320d74c55` (Apache Cassandra `cassandra-5.0`). Decision records [DEC-JVMEM-0001](decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md), [DEC-JVMEM-0002](decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md), [DEC-JVMEM-0003](decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md), [DEC-JVMEM-0004](decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md) and [DEC-JVMEM-0005](decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md). |
+| References | Issue #161. Line `chronitondb-sandbox`. Apache base commit `76550e931481e965ae3283d8cf4a59c320d74c55` (Apache Cassandra `cassandra-5.0`). Decision records [DEC-JVMEM-0001](decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md), [DEC-JVMEM-0002](decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md), [DEC-JVMEM-0003](decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md), [DEC-JVMEM-0004](decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md), [DEC-JVMEM-0005](decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md), [DEC-JVMEM-0006](decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md), [DEC-JVMEM-0007](decisions/DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md) and [DEC-JVMEM-0008](decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md). |
 | Areas | observability |
 | Risk | Normal: by the label the worst Bug Category is Availability, a response crash, which is a read of the view that fails. The floor of [classification.md](../../process/classification.md#the-floor), which keeps a change to a public interface at Normal risk at least, applies, because the feature adds a virtual table. The class table of that page rates two faults of this feature Critical: a wrong value in the view, and a node that does not start because of the view. Problems 1 and 2 of section 4 name them with their tests. Decision record [DEC-JVMEM-0003](decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) keeps the feature at Normal risk with both faults named. |
 | Size | Normal: one view class, one hook in a file of Apache Cassandra, names that are kept for the line once shipped, and a value the JVM leaves undefined. |
@@ -48,7 +48,7 @@ A rule of the project is cited by its id from [principles.md](../../process/prin
 
 The Risk, Size and Reach rows are the feature's class, as [classification.md](../../process/classification.md) defines it, and match the issue's `risk:`, `size:` and `reach:` labels.
 
-A code fact is cited by its number, as fact 1 to fact 14. Section 12 holds each one with its symbol, file, line and the tree it was read in.
+A code fact is cited by its number, as fact 1 to fact 16. Section 12 holds each one with its symbol, file, line and the tree it was read in.
 
 ## Contents
 
@@ -110,8 +110,8 @@ The feature is one class of the project and one line in a file of Apache Cassand
 
 1. **Clients.** An operator sends a `SELECT` on the view with `cqlsh` or a driver, to the node whose JVM is of interest. The node that receives the statement answers it by itself, with no message to another node (fact 7).
 2. **The JVM.** The view reads the memory pools through `java.lang.management.ManagementFactory.getMemoryPoolMXBeans`, the JDK's own interface. The same beans stand behind the MBeans `java.lang:type=MemoryPool,name=<pool>` that JMX shows.
-3. **Apache Cassandra.** The view is a virtual table like the other tables of `system_views`. Apache Cassandra's own code parses the statement, checks the permission (fact 9), filters and limits the rows and lists the view in `system_virtual_schema`. The feature changes none of that code.
-4. **Not touched.** The schema tables, the data files, the commit log, gossip, the messages between nodes, the settings, nodetool and JMX.
+3. **Apache Cassandra.** The view is a virtual table like the other tables of `system_views`. Apache Cassandra's own code parses the statement, checks the permission (fact 9), filters, limits and pages the rows and lists the view in `system_virtual_schema`. The feature changes none of that code.
+4. **Not touched.** The schema tables, the data files, the commit log, gossip, the messages between nodes, the settings, the permission code, nodetool and JMX.
 
 ### 2.2 Building blocks
 
@@ -130,6 +130,10 @@ The meanings of the three sizes are those the Java SE documentation of `java.lan
 The table is `system_views.jvm_memory_pools`, and its name and the names of its columns are those of [DEC-JVMEM-0004](decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md). The size columns end in `_bytes` as the size columns of `system_views.caches` do (fact 5). The table is keyed by the name of the pool under the partitioner `system_views.thread_pools` has (fact 4). So its rows come back in the byte order of the UTF-8 text of the name, as the rows of that table do. In that order an upper case letter comes before every lower case letter.
 
 For one row the view calls `MemoryPoolMXBean.getUsage` once and takes the three sizes from the one `MemoryUsage` object it returns. So the three sizes of a row belong to one moment. The rows of one read are taken one after the other, so two rows of one read can be a few instructions apart.
+
+The JVM can list a memory pool whose usage it does not report. `MemoryPoolMXBean.getUsage` then returns null, and the Java SE documentation calls such a pool not valid. Its row holds the name and the type of the pool and null in the three sizes ([DEC-JVMEM-0007](decisions/DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md)). So null in `max_bytes` means that the JVM reports no usage for the pool, and -1 means that it reports a usage with no maximum defined.
+
+One read is one run of the read of the view on the node. Apache Cassandra runs the read once for each page of a statement that a client fetches in pages, and a virtual table builds its rows again at each run (fact 15). So each page holds the values of its own moment, and two pages of one statement can be as far apart as the client waits between them ([DEC-JVMEM-0008](decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md)). The view keeps nothing from one page to the next.
 
 A read on a node of this line, on OpenJDK 17.0.21 with the G1 collector and a 512 MiB heap, would show:
 
@@ -167,7 +171,7 @@ Not applicable: the feature stores nothing on disk, writes nothing to the schema
 1. **Isolation.** The feature adds no work to a path that Apache Cassandra already has, so it needs no pool, limit or budget of its own ([PRINCIPLE-051](../../process/principles.md#principle-051)). A read of the view is a new statement, and it costs one call to the JVM for the list of pools and one call for each pool. The number of pools is the JVM's, 8 in the example of section 2.2, and does not grow with data or traffic. The read runs where a read of every table of `system_views` runs.
 2. **Performance.** The feature touches no request path of Apache Cassandra and no background path that competes with requests, so no benchmark is planned ([PRINCIPLE-050](../../process/principles.md#principle-050)).
 3. **Observability.** The feature adds no setting, no pool, no limit, no background work and no fallback, so it adds no metric, no trace line and no log line of its own ([PRINCIPLE-033](../../process/principles.md#principle-033)). An operator sees the view work by reading it, and sees it fail by the error of the read.
-4. **Errors.** The view catches no error. An error that the JVM raises while the view reads a pool fails that statement and no other, and leaves nothing behind, since the view keeps no state.
+4. **Errors.** A memory pool whose usage the JVM does not report is no error: its row holds null sizes, as section 2.2 says. An error that the JVM raises while the view reads its pools fails that statement and no other, and leaves nothing behind, since the view keeps no state.
 5. **Security.** Who may read the view is decided by Apache Cassandra's permission check for a table of `system_views` (fact 9). The view shows sizes of the node's JVM and no user data.
 
 ### 2.6 Deployment
@@ -200,7 +204,7 @@ The feature has no switch, because nothing needs it turned off: it does no work 
 
 ## 3. Feature requirements
 
-"The node" is the node that executes the statement. "The view" is the table `system_views.jvm_memory_pools`. "A memory pool" is one element of the list that `ManagementFactory.getMemoryPoolMXBeans` returns in the node's JVM.
+"The node" is the node that executes the statement. "The view" is the table `system_views.jvm_memory_pools`. "A memory pool" is one element of the list that `ManagementFactory.getMemoryPoolMXBeans` returns in the node's JVM. "A read" is one run of the read of the view on the node, so a statement that a client fetches in pages is one read for each page (section 2.2).
 
 FREQ-JVMEM-001 (ubiquitous): The node MUST hold the view, with the columns and types of section 2.2, from its startup and whatever its configuration. Source: stakeholder need, decision records [DEC-JVMEM-0001](decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md) and [DEC-JVMEM-0004](decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md).
 
@@ -210,11 +214,11 @@ FREQ-JVMEM-003 (ubiquitous): The `name` column MUST hold the name of the memory 
 
 FREQ-JVMEM-004 (ubiquitous): The `type` column MUST hold `HEAP` for a memory pool whose `MemoryPoolMXBean.getType` is heap memory, and `NON_HEAP` for every other memory pool. Source: stakeholder need, decision record [DEC-JVMEM-0005](decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md).
 
-FREQ-JVMEM-005 (ubiquitous): The `used_bytes`, `committed_bytes` and `max_bytes` columns of a row MUST hold the used, the committed and the maximum size in bytes of one `MemoryUsage` object, which the node takes from `MemoryPoolMXBean.getUsage` of that memory pool during the read. Source: stakeholder need.
+FREQ-JVMEM-005 (event driven): When `MemoryPoolMXBean.getUsage` returns a `MemoryUsage` object for a memory pool during the read, the `used_bytes`, `committed_bytes` and `max_bytes` columns of the row of that memory pool MUST hold the used, the committed and the maximum size in bytes of that one object. Source: stakeholder need.
 
 FREQ-JVMEM-006 (unwanted behaviour): If the JVM defines no maximum for a memory pool, then the `max_bytes` column of its row MUST hold -1. Source: decision record [DEC-JVMEM-0002](decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md).
 
-FREQ-JVMEM-007 (ubiquitous): The node MUST take the values of every row from its own running JVM during the read, with no message to another node and no value kept from an earlier read. Source: stakeholder need.
+FREQ-JVMEM-007 (ubiquitous): The node MUST take the values of every row from its own running JVM during the read, with no message to another node and no value kept from an earlier read. Source: stakeholder need, decision record [DEC-JVMEM-0008](decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md).
 
 FREQ-JVMEM-008 (state driven): While no statement reads the view, the feature MUST do no work, which means that it runs no thread and no scheduled task and keeps no value of a memory pool. Source: stakeholder need.
 
@@ -224,9 +228,17 @@ FREQ-JVMEM-010 (event driven): When a statement writes to the view or truncates 
 
 FREQ-JVMEM-011 (ubiquitous): The feature MUST NOT change the definition or the rows of another table, a JMX MBean, a metric or the output of a nodetool command, apart from a surface of Apache Cassandra that lists what the node holds, such as the tables of `system_virtual_schema` and the `DESCRIBE` statements, which show the view as they show every virtual table. Source: stakeholder need, [PRINCIPLE-001](../../process/principles.md#principle-001), [PRINCIPLE-002](../../process/principles.md#principle-002).
 
-FREQ-JVMEM-012 (ubiquitous): The documentation MUST name the view and each of its columns, and give for each column its type and its meaning, the two values of `type` and the meaning of -1 in `max_bytes`. Source: stakeholder need, [PRINCIPLE-077](../../process/principles.md#principle-077).
+FREQ-JVMEM-012 (ubiquitous): The documentation MUST name the view and each of its columns, and give for each column its type and its meaning, the two values of `type`, the meaning of -1 in `max_bytes` and the meaning of null in the three size columns. Source: stakeholder need, [PRINCIPLE-077](../../process/principles.md#principle-077), decision record [DEC-JVMEM-0007](decisions/DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md).
 
 FREQ-JVMEM-013 (ubiquitous): The documentation MUST say what a read of the view answers on a node that does not have the view, and name the step of section 7.4 for moving back. Source: [PRINCIPLE-062](../../process/principles.md#principle-062), [PRINCIPLE-003](../../process/principles.md#principle-003).
+
+FREQ-JVMEM-014 (unwanted behaviour): If `MemoryPoolMXBean.getUsage` returns null for a memory pool during the read, then the row of that memory pool MUST hold null in `used_bytes`, `committed_bytes` and `max_bytes`. Source: decision record [DEC-JVMEM-0007](decisions/DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md).
+
+FREQ-JVMEM-015 (ubiquitous): The documentation MUST say that the pages of one statement that reads the view can hold values of different moments. Source: decision record [DEC-JVMEM-0008](decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md).
+
+FREQ-JVMEM-016 (ubiquitous): The documentation MUST say how an operator lists the grants that name the view, what a grant left behind after moving back does, and how it is removed. Source: decision record [DEC-JVMEM-0006](decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md), [PRINCIPLE-003](../../process/principles.md#principle-003).
+
+FREQ-JVMEM-017 (event driven): When a statement grants or revokes a permission on the view by name, the node MUST handle it as Apache Cassandra handles that statement on a table of `system_views` (fact 10), with no check of the feature's own. Source: decision record [DEC-JVMEM-0006](decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md).
 
 ## 4. Where problems could occur
 
@@ -234,27 +246,29 @@ Worst case first.
 
 1. **A node does not start.** An operator sees a node that exits during its start. It is every node that runs the release. It comes from the hook: Apache Cassandra builds the tables of `system_views` once, during the start of the node (fact 1), and a view class whose constructor or static initialiser throws stops that step.
 2. **The view shows a wrong value.** An operator reads a size that is not what the JVM reports: a wrong unit, two columns swapped, the three sizes of a row taken from two readings, a maximum shown as a size where the JVM defines none, a wrong type, a pool missing or a pool shown twice. The operator may then resize a heap that needs no change, or miss a pool that is full. It comes from the view class.
-3. **A read of the view fails.** An operator sees an error in place of the rows, on every read or on the reads that meet one pool. It comes from the view class, for example from a value that does not fit the type of its column, or from a pool for which the JVM returns no usage. Other statements are not affected.
+3. **A read of the view fails.** An operator sees an error in place of the rows. It comes from a fault of the view class, for example a pool whose usage the JVM does not report and that the view does not show as FREQ-JVMEM-014 says. Other statements are not affected.
 4. **Another table of `system_views` is missing or fails.** An operator or a monitoring tool sees a table such as `system_views.settings` missing, or a read of it failing. It comes from a wrong edit of the list in `SystemViewsKeyspace`, or from a later import in which Apache Cassandra adds a table of the same name.
 5. **The values reach a role that should not see them, or a client changes the view.** A role with no grant reads the rows, or a write to the view is accepted. It comes from a view class that is not built on Apache Cassandra's read only virtual table, or that is added to a keyspace every role may read.
 6. **A read is refused during a rolling upgrade.** A monitoring tool whose driver sends the read to a node that does not have the view yet sees `table jvm_memory_pools does not exist` (fact 8). The refusal is Apache Cassandra's own, for any table a node does not have. It ends when every node runs a release with the view.
-7. **A grant on the view cannot be revoked after moving back.** An operator gave a role `SELECT` on the view by name, then moved the cluster back. A node without the view refuses a `REVOKE` that names it (fact 10), so the row stays in the auth tables.
+7. **A grant on the view cannot be revoked after moving back.** An operator gave a role `SELECT` on the view by name, then moved the cluster back. A node without the view refuses a `REVOKE` that names it (fact 10), so the row stays in the auth tables. Section 7.4 says what the row does. If Apache Cassandra did not handle the row as that section says, a listing of permissions or the start of a node could fail after moving back.
 8. **The documentation names the view or a column wrongly.** An operator copies a statement from the page and it fails.
 9. **The view does work when nobody reads it, or a read costs more than section 2.5 says.** An operator sees a thread, a task or memory of the feature on a node where nobody reads the view, or request threads busy with reads of the view.
+10. **An operator takes the pages of one statement for one moment.** An operator or a script fetches the view in pages and adds up sizes of rows from two pages, which belong to two moments ([DEC-JVMEM-0008](decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md)). The sum is off by what the JVM did between the pages.
 
 ### 4.1 Test plan
 
 No scenario module exists on this line. Each requirement is proven by a unit test or an in-JVM distributed test, and each item's design record names them and says how each detects a breach.
 
 1. Problem 1: every test that starts a node fails when the view stops the start. A unit test of the feature starts a test node with the default configuration and reads the view (FREQ-JVMEM-001), and the validation item starts a cluster in an in-JVM distributed test.
-2. Problem 2: a unit test reads the view through CQL and compares it with the memory pools the test reads from the JVM in the same process. The set of names and the type and maximum of each pool do not move while the test runs, so they are compared exactly (FREQ-JVMEM-002, FREQ-JVMEM-003, FREQ-JVMEM-004, FREQ-JVMEM-006). A unit test builds a row from a `MemoryUsage` object of its own and expects its three sizes in the three columns, and -1 for an undefined maximum (FREQ-JVMEM-005, FREQ-JVMEM-006). The tests run on each JDK the line's build supports, since the pools differ from one JDK to another.
+2. Problem 2: a unit test reads the view through CQL and compares it with the memory pools the test reads from the JVM in the same process. The set of names and the type and maximum of each pool do not move while the test runs, so they are compared exactly (FREQ-JVMEM-002, FREQ-JVMEM-003, FREQ-JVMEM-004, FREQ-JVMEM-006). A unit test builds a row from a `MemoryUsage` object of its own and expects its three sizes in the three columns, and -1 for an undefined maximum (FREQ-JVMEM-005, FREQ-JVMEM-006). A unit test builds the row of a memory pool whose usage is null and expects the name, the type and null in the three sizes (FREQ-JVMEM-014). A test reads the view with a page size below the number of pools and expects every pool once over the pages (FREQ-JVMEM-002). The tests run on each JDK the line's build supports, since the pools differ from one JDK to another.
 3. Problem 3: the unit tests of problem 2 read every row, and each row by its name, and expect no error. A test reads the view twice and expects the second answer to hold values taken at the second read (FREQ-JVMEM-007).
 4. Problem 4: a test reads the names of the tables of `system_views` from `system_virtual_schema.tables` and expects every table of Apache Cassandra and the view, each once, and reads each table of Apache Cassandra that it can read on a test node (FREQ-JVMEM-011). An import that brings a table of the same name conflicts in the hook file, and the maintainers decide it before the import merges.
 5. Problem 5: a test with authentication and authorization on reads the view as a superuser, as a role granted `SELECT` on the view, as a role granted `SELECT` on the keyspace `system_views`, and as a role with no grant, and expects the last to be refused (FREQ-JVMEM-009). A test sends an `INSERT`, an `UPDATE`, a `DELETE` and a `TRUNCATE` on the view and expects Apache Cassandra's refusal (FREQ-JVMEM-010).
 6. Problem 6: no test of the feature covers it, because the answer of a node without the view is code of Apache Cassandra that the feature does not touch, and no test on this line starts a node of an earlier release. It is watched by the documentation, which states it (FREQ-JVMEM-013), and a documentation test checks that the page holds the statement.
-7. Problem 7: a test grants `SELECT` on the view by name and revokes it on a node that has the view, and expects both to succeed. The refusal on a node without the view is not tested, for the reason of problem 6. The documentation test of problem 6 checks that the page names the step (FREQ-JVMEM-013).
+7. Problem 7: a test grants `SELECT` on the view by name and revokes it on a node that has the view, and expects both to succeed (FREQ-JVMEM-017). The refusal on a node without the view is not tested, for the reason of problem 6. A test writes into the auth tables of a test node a grant row that names a table of `system_views` the node does not have. It expects `LIST ALL PERMISSIONS` to list the row, the warm-up of the permissions cache to pass and `DROP ROLE` to remove the row, as section 7.4 says ([DEC-JVMEM-0006](decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md)). The documentation test of problem 6 checks that the page names the step and says how to list the grants, what a grant left behind does and how it is removed (FREQ-JVMEM-013, FREQ-JVMEM-016).
 8. Problem 8: a documentation test reads the name of the view and of each column from the page and expects each in `system_virtual_schema.columns` of a test node, and the other way round (FREQ-JVMEM-012).
 9. Problem 9: a test starts a test node, reads no row of the view and expects no thread and no scheduled task of the feature. After a read it expects that the feature holds no value of a memory pool (FREQ-JVMEM-008). The cost of a read is not benchmarked, for the reason of section 2.5. It is watched by the review of the view class against that section.
+10. Problem 10: the paged test of problem 2 shows that a paged read works. That two pages hold two moments is the decided behaviour, so no test forbids it. It is watched by the documentation, which states it (FREQ-JVMEM-015), and the documentation test of problem 6 checks that the page holds the statement.
 
 ## 5. Quality requirements
 
@@ -287,8 +301,10 @@ The supported paths are those of the line: from Apache Cassandra of the same maj
 
 Moving back to an earlier release of the line or to Apache Cassandra needs one step for this feature, and only where a grant names the view.
 
-1. Before the last node that has the view moves back, an operator revokes every grant that was given on the view by name. After that no node accepts a `REVOKE` that names the view (fact 10). A grant on the keyspace `system_views` or on all keyspaces names no table of the feature and needs no step.
+1. Before the last node that has the view moves back, an operator lists the grants that name the view and revokes each. On a node that has the view, `LIST ALL PERMISSIONS ON system_views.jvm_memory_pools NORECURSIVE` lists them for every role (fact 16). Once no node has the view, no node accepts a `REVOKE` that names it (fact 10). A grant on the keyspace `system_views` or on all keyspaces names no table of the feature and needs no step.
 2. Nothing else is removed: the feature leaves no file, no schema row and no setting.
+
+The feature changes no permission code, so nothing refuses a grant on the view and nothing removes one ([DEC-JVMEM-0006](decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md)). A grant that the operator did not revoke is left behind, and so is one given on a node that still has the view after the operator revoked the others.
 
 A grant row that is left behind names a table the node does not have. Apache Cassandra reads grant rows in four places, and none of them looks the table up (fact 14):
 
@@ -297,11 +313,13 @@ A grant row that is left behind names a table the node does not have. Apache Cas
 3. The warm-up of the permissions cache at the start of a node parses the name of the row and goes on.
 4. `DROP ROLE` removes every grant row of the role, this one with them.
 
+So a row left behind does nothing on a node without the view. It gives its role the read of the view again when a node gets the view back. It is removed by `DROP ROLE` of its role, or by a `REVOKE` on a node that has the view.
+
 No schema object uses the feature, so nothing is removed when an object stops using it.
 
 ### 7.5 Runbook entries
 
-The line has no runbook pages yet. The reference page of the view carries the two entries: what a read answers on a node without the view, and the step of section 7.4 (FREQ-JVMEM-013).
+The line has no runbook pages yet. The reference page of the view carries the entries: what a read answers on a node without the view and the step of section 7.4 (FREQ-JVMEM-013), and how to list the grants that name the view, what a grant left behind does and how it is removed (FREQ-JVMEM-016).
 
 ## 8. Dependencies
 
@@ -321,6 +339,9 @@ No new dependency. The feature uses `java.lang.management` of the JDK and classe
 3. [DEC-JVMEM-0003. The JVM memory pools view stays at Normal risk with two faults named](decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md): a wrong value and a node that does not start are named with their tests, and the class stays Normal.
 4. [DEC-JVMEM-0004. The view is named jvm_memory_pools and its size columns end in _bytes](decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md): the name says whose pools the view shows, and each size column says that it holds bytes.
 5. [DEC-JVMEM-0005. The type column shows HEAP and NON_HEAP, as JMX does](decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md): the text JMX shows for the same pool, not lower case words and not the display text.
+6. [DEC-JVMEM-0006. A grant left on the view after moving back is documented, and permission code is unchanged](decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md): the documentation states the step and what a row left behind does, and no grant on the view is refused.
+7. [DEC-JVMEM-0007. A memory pool whose usage the JVM does not report shows null in its three sizes](decisions/DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md): the pool keeps its row and no read fails.
+8. [DEC-JVMEM-0008. Each page of a read of the view holds the values of its own moment](decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md): a paged statement is one read for each page, and nothing is kept between pages.
 
 ## 11. Milestones outline
 
@@ -365,6 +386,8 @@ What Apache Cassandra got right: the values are the JVM's own, under the JVM's o
 | 12 | `nodetool info` prints one line `Heap Memory (MB)` with the used and the maximum heap, and no line for a pool. | `Info.execute`, `src/java/org/apache/cassandra/tools/nodetool/Info.java:48`, the line at 72, ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The line stands at 72 in cassandra-5.0 at `47227d98bf`, and at 68 in cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b` |
 | 13 | The metric tables of trunk are built from a list of metric groups, and the list names no group of JVM memory. | Our line and its base have no such keyspace | `CassandraMetricsRegistry.createMetricsKeyspaceTables`, `src/java/org/apache/cassandra/metrics/CassandraMetricsRegistry.java:210`, the list at line 116, Apache Cassandra trunk at `45c325a01b`, and the same in cassandra-6.0 at `a02931dea8` |
 | 14 | A grant row is read in four places, and none looks the table up: a permission check reads the row of one role for the resource the statement names, `LIST PERMISSIONS` and the warm-up of the permissions cache parse the resource name of each row with `Resources.fromName`, and `DROP ROLE` deletes the rows of the role by their text. `LIST PERMISSIONS ON` a resource that does not exist is refused with `%s doesn't exist`. | `CassandraAuthorizer.addPermissionsForRole`, `src/java/org/apache/cassandra/auth/CassandraAuthorizer.java:255`. `CassandraAuthorizer.listPermissionsForRole`, line 340, the parse at line 355. `CassandraAuthorizer.bulkLoader`, line 458, the parse at line 477. `CassandraAuthorizer.revokeAllFrom`, line 135, called by `DropRoleStatement.execute`, `src/java/org/apache/cassandra/cql3/statements/DropRoleStatement.java:67`, at line 75. `ListPermissionsStatement.execute`, `src/java/org/apache/cassandra/cql3/statements/ListPermissionsStatement.java:86`, the check at line 100. All ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The same lines in cassandra-5.0 at `47227d98bf`. In cassandra-6.0 at `a02931dea8` the five methods of `CassandraAuthorizer` and `DropRoleStatement` stand at lines 271, 356 with the parse at 371, 474 with the parse at 493, 151, and 74 with the call at 82, and the check of `ListPermissionsStatement` at line 111. In trunk at `45c325a01b` at lines 273, 358 with the parse at 373, 470 with the parse at 489, 153, and 74 with the call at 82, and the check at line 111 |
+| 15 | A statement fetched in pages runs its read once for each page, from the key after the last one returned. A virtual table builds its rows again each time the read runs. | `AbstractQueryPager.fetchPage`, `src/java/org/apache/cassandra/service/pager/AbstractQueryPager.java:63`, the run of the read at line 76. `PartitionRangeQueryPager.nextPageReadQuery`, `src/java/org/apache/cassandra/service/pager/PartitionRangeQueryPager.java:77`. `AbstractVirtualTable.select`, `src/java/org/apache/cassandra/db/virtual/AbstractVirtualTable.java:91`, the call for the rows at line 93. All ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The same lines in cassandra-5.0 at `47227d98bf`. In cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b` `AbstractQueryPager.fetchPage` stands at line 123 with the run of the read at line 131, `PartitionRangeQueryPager.nextPageReadQuery` at line 89, and `AbstractVirtualTable.select` at line 93 with the call at line 95 |
+| 16 | `LIST ALL PERMISSIONS ON <resource>` with `NORECURSIVE` lists the grant rows of that resource alone, for every role when the statement names none. Without `NORECURSIVE` it also lists the rows of the resources above it. | `ListPermissionsStatement.execute`, `src/java/org/apache/cassandra/cql3/statements/ListPermissionsStatement.java:86`, the choice at line 90. `CassandraAuthorizer.buildListQuery`, `src/java/org/apache/cassandra/auth/CassandraAuthorizer.java:363`. Both ChronitonDB chronitondb-sandbox at `ffa1bc742d` | The same lines in cassandra-5.0 at `47227d98bf`. In cassandra-6.0 at `a02931dea8` at lines 97 with the choice at 101, and 379. In trunk at `45c325a01b` at lines 97 with the choice at 101, and 381 |
 
 These rules apply to every source:
 

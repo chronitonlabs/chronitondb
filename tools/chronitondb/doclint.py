@@ -301,8 +301,8 @@ branch of the repository itself and never for the branch of a fork, whose
 author chooses its name. It also passes without one when FILE, the pull
 request's description, has a line "No delta entry: <reason>" with a reason
 of three words or more. The line is for a feature's change that touches
-only log lines Apache Cassandra writes. The check reads only that it is
-there: the reviewer judges it against the change, and any other use of
+only stock log lines and the switch check round them. The check reads
+only that it is there: the reviewer judges it against the change, and any other use of
 it is a decision of the maintainers at review. Every entry the change adds or
 changes passes the document rules of a delta entry above, against the
 template at REF, and a changed entry has a Last-Update later than at REF,
@@ -336,11 +336,23 @@ file passes by one of:
      has a line "Pinned listing: <path>" with the file's path, and the
      change only adds lines of the listing to the file: any line in a
      file of plain data, one with no extension or a .txt, .json or .csv
-     file, and in any other file only whole elements of a listing: each
-     added line is one quoted string and a comma, alone on the line, and
-     the line above it, blank lines and comments aside, ends in a comma
-     or opens the listing with "(", "[" or "{". So no added line joins an
-     existing string, by a "+" or by strings that stand side by side
+     file. In a Java file each added line is one Java string literal and
+     then a comma or a "+", with nothing else on the line but white space
+     and at most a line comment that holds no backslash. The literal holds
+     no escape but those of Java, \\b, \\t, \\n, \\f, \\r, \\", \\', \\\\ and the
+     octal ones, so no quote ends it early and no Unicode escape ends it
+     or the comment. The line above it, blank lines and comments aside and
+     its line comment cut off, ends in the same mark, and a line with a
+     comma may also stand below a line that opens the listing with "(",
+     "[" or "{". In any other file each added line is one quoted string
+     and a comma, alone on the line, below a line that ends in a comma or
+     opens the listing. So no added line joins an existing string. The one
+     line a change may alter is the last line of a text joined by "+" in a
+     Java file, to add lines after it: a hunk that removes that one line,
+     one literal and the marks that close it, closing brackets and then at
+     most a semicolon or a comma, brings it back unchanged but for a "+" in
+     place of those marks, and its last added line is one literal that
+     closes with the same marks, with at most a line comment after them
   4. a decision record at REF with the Status Accepted has a line
      "Approved stock test change: <path> for #<issue>, because
      <explanation>" with the file's path, the pull request's issue and a
@@ -1636,7 +1648,7 @@ def check_register(repo, base, where, branch, body):
             note = "no delta entry, as the pull request says: %s" % waiver
         else:
             shown = ", ".join(stock[:10]) + (" and %d more" % (len(stock) - 10) if len(stock) > 10 else "")
-            errors.append("the change touches %d stock file(s), %s, and adds or updates no entry in docs/delta/. Add its entry from docs/process/templates/delta-entry.md with its row in the Index of docs/delta/README.md, or update the entry of the change it extends, with a new Last-Update. A feature's change that touches only log lines Apache Cassandra writes needs no entry and says so in the pull request description on a line 'No delta entry: <reason>'. Any other use of that line is a decision of the maintainers at review (docs/process/principles.md, PRINCIPLE-011)" % (len(stock), shown))
+            errors.append("the change touches %d stock file(s), %s, and adds or updates no entry in docs/delta/. Add its entry from docs/process/templates/delta-entry.md with its row in the Index of docs/delta/README.md, or update the entry of the change it extends, with a new Last-Update. A feature's change that touches only stock log lines and the switch check round them needs no entry and says so in the pull request description on a line 'No delta entry: <reason>'. Any other use of that line is a decision of the maintainers at review (docs/process/principles.md, PRINCIPLE-011)" % (len(stock), shown))
     return errors, stock, entries, note
 
 
@@ -1648,12 +1660,29 @@ TEST_DIR = re.compile(r"(?:^|/)test/")
 TEST_NAME = re.compile(r"(?:^|/)(?:[^/]*Tests?\.java|test_[^/]*\.py|[^/]*_test\.py)$")
 WORK_BRANCH = re.compile(r"^[^/]+/([0-9]+)-[^/]+/[^/]+$")
 LISTING_DATA = re.compile(r"(?:^|/)(?:[^/.]+|[^/]+\.(?:txt|json|csv))$")
-# A whole element of a listing: one quoted string and a comma. The line
-# above it, blank lines and comments aside, ends one element or opens the
-# listing.
+# A whole element of a listing outside Java: one quoted string and a comma.
+# The line above it, blank lines and comments aside, ends one element or
+# opens the listing.
 LISTING_STRING = re.compile(r"""^\s*(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\s*,\s*$""")
 LISTING_ABOVE = re.compile(r"[,(\[{]\s*$")
 LISTING_COMMENT = ("#", "//", "/*", "*")
+# A line of a listing in Java: one string literal with Java's escapes only,
+# so no quote ends it early and no Unicode escape turns into a quote or a
+# line end, then a comma or a "+", and at most a line comment with no
+# backslash. The line above it ends in the same mark, its line comment cut
+# off, and a comma line may also stand below a line that opens the listing.
+JAVA_STRING = r'"(?:[^"\\]|\\[btnfr"\'\\0-7])*"'
+LISTING_JAVA = re.compile(r"^\s*%s\s*([,+])\s*(?://[^\\]*)?$" % JAVA_STRING)
+LISTING_OPENS = ("(", "[", "{")
+# The last line of a text joined by "+": one literal and what ends the
+# statement or the argument after it, closing brackets, a semicolon or a
+# comma. A new last line ends the same way.
+JAVA_END = r"(?:[)\]}]+[;,]?|[;,])"
+LISTING_LAST = re.compile(r"^(\s*%s)\s*(%s)\s*$" % (JAVA_STRING, JAVA_END))
+LISTING_NEW_LAST = re.compile(r"^\s*%s\s*(%s)\s*(?://[^\\]*)?$" % (JAVA_STRING, JAVA_END))
+# The parts of a line of Java, to cut off its line comment: a "//" inside a
+# string or character literal opens no comment.
+JAVA_PARTS = re.compile(r'"(?:[^"\\]|\\.)*"?|\'(?:[^\'\\]|\\.)*\'?|//|.')
 HUNK = re.compile(r"^@@ -[0-9]+(?:,[0-9]+)? \+([0-9]+)(?:,[0-9]+)? @@")
 ISSUE_LINE = re.compile(r"^(?:Fixes|Part of) #([0-9]+)\.?$")
 RECORD_OF = re.compile(r"^(Fix|Design): #([0-9]+)(?![0-9])")
@@ -1808,9 +1837,10 @@ def is_unused(repo, base, line, record, path):
 
 
 def added_lines(repo, merge_base, where, path):
-    """The lines a change adds to a file, each with the nearest line above
-    it in the file after the change that is neither blank nor a comment,
-    "" at the top of the file. None when they cannot be read."""
+    """The hunks of a change to a file, each as the lines it removes and
+    the lines it adds, each added line with the nearest line above it in
+    the file after the change that is neither blank nor a comment, "" at
+    the top of the file. None when they cannot be read."""
     args = ["diff", "-U0", "--no-color", "--no-ext-diff", "--no-textconv", "--no-renames"]
     if where == "index":
         args.append("--cached")
@@ -1827,14 +1857,72 @@ def added_lines(repo, merge_base, where, path):
         hunk = HUNK.match(line)
         if hunk:
             number = int(hunk.group(1))
+            found.append(([], []))
         elif number is not None and line.startswith("+"):
             # In a hunk every line that opens with "+" is an added line,
             # also one whose text opens with "++".
             above = next((after[index] for index in range(number - 2, -1, -1)
                           if after[index].strip() and not after[index].strip().startswith(LISTING_COMMENT)), "")
-            found.append((line[1:], above))
+            found[-1][1].append((line[1:], above))
             number += 1
+        elif number is not None and line.startswith("-"):
+            found[-1][0].append(line[1:])
     return found
+
+
+def java_code(line):
+    """A line of Java without its line comment. A "//" inside a string or
+    character literal opens no comment."""
+    for part in JAVA_PARTS.finditer(line):
+        if part.group() == "//":
+            return line[:part.start()]
+    return line
+
+
+def is_listing_line(path, text, above):
+    """Whether an added line is a whole line of a listing, by the form of
+    its file: in a Java file one string literal and a comma or a "+", below
+    a line that ends in the same mark, or for a comma below a line that
+    opens the listing. In any other file one quoted string and a comma,
+    below a line that ends in a comma or opens the listing."""
+    if not path.endswith(".java"):
+        return bool(LISTING_STRING.match(text) and LISTING_ABOVE.search(above))
+    match = LISTING_JAVA.match(text)
+    if not match:
+        return False
+    above = java_code(above).rstrip()
+    return above.endswith(match.group(1)) or (match.group(1) == "," and above.endswith(LISTING_OPENS))
+
+
+def new_last_line(path, removed, added):
+    """For a hunk that adds lines after the last line of a text joined by
+    "+" in a Java file, the index of the new last line among the added
+    lines, else None. The hunk removes that one old last line, one literal
+    and the marks that close it, brings it back unchanged but for a "+" in
+    place of those marks, and its last added line is one literal that
+    closes with the same marks. Every other added line, the old last line
+    among them, is a line of the listing by itself."""
+    if not path.endswith(".java") or len(removed) != 1 or len(added) < 2:
+        return None
+    old, new = LISTING_LAST.match(removed[0]), LISTING_NEW_LAST.match(added[-1][0])
+    if not old or not new or re.sub(r"\s", "", new.group(1)) != re.sub(r"\s", "", old.group(2)):
+        return None
+    kept = [text for text, _ in added[:-1] if text.startswith(old.group(1)) and re.match(r"^\s*\+\s*$", text[len(old.group(1)):])]
+    return len(added) - 1 if kept else None
+
+
+def listing_refusals(path, hunks):
+    """What a change to a pinned listing in a file that is not plain data
+    does that the listing does not allow: the number of lines it removes
+    or alters, and the number of lines it adds that are no lines of the
+    listing."""
+    removes, adds = 0, 0
+    for removed, added in hunks:
+        last = new_last_line(path, removed, added)
+        if last is None:
+            removes += len(removed)
+        adds += sum(1 for index, (text, above) in enumerate(added) if index != last and not is_listing_line(path, text, above))
+    return removes, adds
 
 
 def test_permits(repo, base):
@@ -1949,20 +2037,26 @@ def check_stock_tests(repo, base, where, branch, body, state=None):
         used = record or used
         record, spent = permit(pinned, old)
         if record and not spent:
-            lines = [] if LISTING_DATA.search(old) else added_lines(repo, merge_base, where, old)
-            other = None if lines is None else [text for text, above in lines if not LISTING_STRING.match(text) or not LISTING_ABOVE.search(above)]
-            if removed:
+            hunks = [] if LISTING_DATA.search(old) else added_lines(repo, merge_base, where, old)
+            gone, other = (removed, 0) if hunks == [] else (None, None) if hunks is None else listing_refusals(old, hunks)
+            if gone:
                 errors.append("%s: %s names the file as a pinned listing, and the change removes or alters %d line(s) of it. "
-                              "A pinned listing only gains lines. A change to an existing line needs an accepted decision record with the line "
-                              "'Approved stock test change: %s for #<issue>, because <explanation>'" % (old, record, removed, old))
+                              "A pinned listing only gains lines. The one line a change may alter is the last line of a text joined by '+' "
+                              "in a Java file, to add lines after it: the old last line, one literal and the marks that close it, comes back unchanged "
+                              "but for a '+' in place of those marks, and the new last line is one literal that closes with the same marks. "
+                              "A change to an existing line needs an accepted decision record with the line "
+                              "'Approved stock test change: %s for #<issue>, because <explanation>'" % (old, record, gone, old))
             elif other is None or other:
                 errors.append("%s: %s names the file as a pinned listing, and the change adds %s that no listing holds. "
-                              "A file of plain data, one with no extension or a .txt, .json or .csv file, gains any line. In any other file, "
-                              "such as a test class, a pinned listing gains only whole elements: each added line is one quoted string and a comma, "
-                              "alone on the line, below a line that ends in a comma or opens the listing with '(', '[' or '{'. "
-                              "Any other added line needs an accepted decision record with the line "
+                              "A file of plain data, one with no extension or a .txt, .json or .csv file, gains any line. In a Java file, "
+                              "such as a test class, each added line is one Java string literal and then a comma or a '+', with nothing else "
+                              "on the line but white space and at most a line comment with no backslash, and the literal holds no escape but "
+                              "those of Java, no Unicode escape among them. The line above it, blank lines and comments aside and its line comment "
+                              "cut off, ends in the same mark, and a line with a comma may also stand below a line that opens the listing with "
+                              "'(', '[' or '{'. In any other file each added line is one quoted string and a comma, alone on the line, below a "
+                              "line that ends in a comma or opens the listing. Any other added line needs an accepted decision record with the line "
                               "'Approved stock test change: %s for #<issue>, because <explanation>'"
-                              % (old, record, "lines that cannot be read" if other is None else "%d line(s)" % len(other), old))
+                              % (old, record, "lines that cannot be read" if other is None else "%d line(s)" % other, old))
             else:
                 passed.append((old, "%s names it as a pinned listing and the change only adds lines of the listing" % record))
             continue

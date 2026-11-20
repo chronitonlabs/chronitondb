@@ -23,7 +23,7 @@ limitations under the License.
 | Status | Accepted |
 | Date | 2026-11-20 |
 | Deciders | The maintainers |
-| References | Issue #161, the [feature spec](../feature-spec.md), [PRINCIPLE-003](../../../process/principles.md#principle-003), [PRINCIPLE-054](../../../process/principles.md#principle-054) |
+| References | Issue #161, the [feature spec](../feature-spec.md), [PRINCIPLE-003](../../../process/principles.md#principle-003), [PRINCIPLE-054](../../../process/principles.md#principle-054), [PRINCIPLE-078](../../../process/principles.md#principle-078) |
 | Areas | observability |
 | Supersedes | None |
 
@@ -43,19 +43,23 @@ A role gets the read of the view by a grant on all keyspaces, on the keyspace `s
 
 A cluster can move back to a release of the line without the view, or to Apache Cassandra. After the last node that has the view has moved back, no node accepts a `REVOKE` that names the view, because Apache Cassandra refuses a `GRANT` or a `REVOKE` on a table the node does not have: `PermissionsManagementStatement.validate`, `src/java/org/apache/cassandra/cql3/statements/PermissionsManagementStatement.java:57`, ChronitonDB chronitondb-sandbox at `ffa1bc742d`. A grant that was not revoked before that stays in the auth tables. It had to be settled what the feature does about such a row.
 
-What Apache Cassandra does with a grant row that names a table the node does not have was read in the code. The row is read in four places, and none of them looks the table up. All are ChronitonDB chronitondb-sandbox at `ffa1bc742d`.
+What Apache Cassandra does with a grant row that names a table the node does not have was read in the code. Four places that read the row were read, and none of them looks the table up. All are ChronitonDB chronitondb-sandbox at `ffa1bc742d`.
 
 1. A permission check reads the row of one role for the resource the statement names: `CassandraAuthorizer.addPermissionsForRole`, `src/java/org/apache/cassandra/auth/CassandraAuthorizer.java:255`. No statement on a node without the view can name the view, so the row is not read there.
 2. `LIST ALL PERMISSIONS` lists the row: `CassandraAuthorizer.listPermissionsForRole`, the same file, line 340.
 3. The warm-up of the permissions cache at the start of a node parses the name of the row and goes on: `CassandraAuthorizer.bulkLoader`, the same file, line 458. The warm-up runs only where the setting `auth_cache_warming_enabled` is on: `CassandraDaemon.setup`, `src/java/org/apache/cassandra/service/CassandraDaemon.java:229`, at line 447.
 4. `DROP ROLE` removes every grant row of the role: `CassandraAuthorizer.revokeAllFrom`, the same file, line 135.
 
-The line changes none of these files against its base, Apache Cassandra cassandra-5.0 at `76550e9314`. Section 12 of the feature spec has the lines in Apache Cassandra cassandra-5.0 at `47227d98bf`, cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b`, where the code does the same. `CassandraAuthorizer.java` and `DropRoleStatement.java` are unchanged from the tag `cassandra-5.0.0` at `186272edca` to that base, so the four places do the same in every Apache Cassandra 5.0 release up to the base.
+The line changes none of these files against its base, Apache Cassandra cassandra-5.0 at `76550e9314`. Section 12 of the feature spec has the lines in Apache Cassandra cassandra-5.0 at `47227d98bf`, cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b`, where the code does the same.
+
+It also had to be settled for which releases the feature spec and the documentation say what a row left behind does. The four places were read in three trees: the line, its base and the head of the `cassandra-5.0` branch of Apache Cassandra. A statement for every Apache Cassandra 5.0 release would rest on the history of each file a grant row passes through, with no test that starts such a release.
 
 ## Considered options
 
 1. Document the row. The documentation of the view says how to list the grants that name the view, to revoke every permission of each before the last node that has the view moves back, what a row left behind does and how it is removed. Permission code stays as Apache Cassandra has it.
 2. Refuse a `GRANT` that names the view. A role then gets the read only by a grant on the keyspace or on all keyspaces, so no row can name the view.
+
+For the releases the statement on a row left behind covers, two options were considered: the code that was read, or every Apache Cassandra 5.0 release.
 
 ## Decision outcome
 
@@ -65,6 +69,9 @@ Chosen option: "Document the row", because a row left behind does no harm that t
 2. The documentation of the view MUST say how an operator lists the grants that name the view, that the operator revokes every permission of each before the last node that has the view moves back, and as which role the operator does both.
 3. The documentation of the view MUST say what a grant left behind does and how it is removed.
 4. A test MUST show that a node handles a grant row that names a table the node does not have as the context above says.
+5. The feature spec and the documentation MUST say what a grant left behind does for the code that was read, which is the line, its base and the head of the `cassandra-5.0` branch of Apache Cassandra, and for no other release of Apache Cassandra.
+
+Item 5 is chosen because a claim about code names the code it was read in ([PRINCIPLE-078](../../../process/principles.md#principle-078)), and each release of the line states which Apache Cassandra releases a cluster on it can move back to ([PRINCIPLE-003](../../../process/principles.md#principle-003)). The step is done on nodes that have the view, so it is the same for every release.
 
 ### Consequences
 
@@ -72,6 +79,7 @@ Chosen option: "Document the row", because a row left behind does no harm that t
 - Good: the feature stays off the areas that are always Critical risk.
 - Bad: an operator who skips the step leaves a row in the auth tables. `LIST ALL PERMISSIONS` shows it, and no statement that names the view can remove it while no node has the view.
 - Bad: a grant given on a node that still has the view, after the operator revoked the others, is left behind in the same way. Nothing stops it.
+- Bad: an operator who moves back to another release of Apache Cassandra has the step and no statement on a row left behind.
 - Neutral: a row left behind gives its role its permissions on the view again when a node gets the view back. It goes with `DROP ROLE` of its role, or with a `REVOKE` on a node that has the view.
 
 ## More information

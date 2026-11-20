@@ -51,7 +51,18 @@ None.
 
 ## `observability`
 
-None.
+| Document | Kind | Status | Version |
+|---|---|---|---|
+| [JVM memory pools view in CQL](../design/JVMEM-jvm-memory-pools-view/feature-spec.md) | Feature spec | Draft | 1 |
+| [DEC-JVMEM-0001. The JVM memory pools view has no switch and is not held back](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0002. A memory pool with no maximum shows -1 as its maximum](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0003. The JVM memory pools view stays at Normal risk with two faults named](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0004. The view is named jvm_memory_pools and its size columns end in _bytes](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0005. The type column shows HEAP and NON_HEAP, as JMX does](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0006. A grant left on the view after moving back is documented, and permission code is unchanged](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0007. A memory pool whose usage the JVM does not report shows null in its three sizes](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0008. The view is read afresh at every read of a statement](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0009. Every read builds the row of every pool, and a JVM error for one pool fails every read](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0009-an-error-for-one-pool-fails-every-read.md) | Decision record | Accepted |  |
 
 ## `configuration`
 

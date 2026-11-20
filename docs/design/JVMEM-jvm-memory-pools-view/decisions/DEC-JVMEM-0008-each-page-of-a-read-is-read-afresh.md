@@ -67,7 +67,7 @@ Chosen option: "Every read is afresh", because it needs no code and it keeps no 
 - Good: nothing is kept between two pages, so a client that never fetches the next page costs the node nothing.
 - Bad: the sizes of two pages of one statement do not belong to one moment, so sums across pages can be off. That holds for a sum the node computes too, where the client set a page size that is not above the number of pools.
 - Bad: the sizes of two pools that one statement names with `IN` do not belong to one moment either.
-- Bad: if the JVM changes its list of pools between two pages, a pool can be missing from the statement's rows.
+- Bad: if the JVM changes its list of pools between two reads, a pool can be missing from the statement's rows, or from the value the node computes over them.
 - Neutral: a statement that reads the whole view with no restriction on the name, with a page size above the number of pools or with none, is one read, and all its rows are taken in that read.
 
 ## More information

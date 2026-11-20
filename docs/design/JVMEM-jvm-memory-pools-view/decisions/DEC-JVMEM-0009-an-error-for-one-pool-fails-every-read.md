@@ -57,6 +57,7 @@ Chosen option: "Every read builds the row of every pool", because the view then 
 1. Every read of the view MUST build the row of every memory pool that the JVM lists, whichever rows the statement asks for.
 2. If a call to the JVM's memory pool beans throws while a read builds its rows, then the read MUST fail, also where the statement names another pool.
 3. A memory pool whose usage the JVM does not report MUST stay a row with null sizes, as [DEC-JVMEM-0007](DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md) says. It is no error.
+4. The documentation of the view MUST say that an error the JVM raises for one memory pool fails every read of the view while it lasts.
 
 ### Consequences
 

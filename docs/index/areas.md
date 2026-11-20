@@ -107,6 +107,7 @@ Documents of a kind that has no `Areas` row, and documents merged before the row
 | [run-ci routes 6.0 versions on the 5.0 line](../delta/run-ci-6.0-version-routing.md) | Delta entry | Current | 3 |
 | [run-ci accepts this repository](../delta/run-ci-accepts-chronitondb.md) | Delta entry | Current | 3 |
 | [design record of #112 Warn at startup when the commit log shares a disk with the data directories](../reviews/112-warn-at-startup-when-the-commit-log-design.md) | Review record | Closed |  |
+| [feature spec of #161 Let operators see a node's JVM memory pools from CQL](../reviews/161-let-operators-see-a-node-s-jvm-memory-spec.md) | Review record | Open |  |
 | [0001. The first maintainers](../decisions/0001-initial-maintainers.md) | Decision record | Accepted |  |
 | [0002. What nodetool version prints on a ChronitonDB node](../decisions/0002-nodetool-version-output-on-a-chronitondb-node.md) | Decision record | Accepted |  |
 | [0003. Where the tests prove the release version before a package exists](../decisions/0003-release-version-tests-before-a-package-exists.md) | Decision record | Accepted |  |

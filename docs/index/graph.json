@@ -423,6 +423,16 @@
    "status": "Closed",
    "title": "design record of #112 Warn at startup when the commit log shares a disk with the data directories",
    "type": "Review record"
+  },
+  {
+   "@id": "../reviews/161-let-operators-see-a-node-s-jvm-memory-spec.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/reviews/161-let-operators-see-a-node-s-jvm-memory-spec.md",
+   "status": "Open",
+   "title": "feature spec of #161 Let operators see a node's JVM memory pools from CQL",
+   "type": "Review record"
   }
  ],
  "@id": "graph.json",

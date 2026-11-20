@@ -301,8 +301,8 @@ branch of the repository itself and never for the branch of a fork, whose
 author chooses its name. It also passes without one when FILE, the pull
 request's description, has a line "No delta entry: <reason>" with a reason
 of three words or more. The line is for a feature's change that touches
-only log lines Apache Cassandra writes. The check reads only that it is
-there: the reviewer judges it against the change, and any other use of
+only stock log lines and the switch check round them. The check reads
+only that it is there: the reviewer judges it against the change, and any other use of
 it is a decision of the maintainers at review. Every entry the change adds or
 changes passes the document rules of a delta entry above, against the
 template at REF, and a changed entry has a Last-Update later than at REF,
@@ -1648,7 +1648,7 @@ def check_register(repo, base, where, branch, body):
             note = "no delta entry, as the pull request says: %s" % waiver
         else:
             shown = ", ".join(stock[:10]) + (" and %d more" % (len(stock) - 10) if len(stock) > 10 else "")
-            errors.append("the change touches %d stock file(s), %s, and adds or updates no entry in docs/delta/. Add its entry from docs/process/templates/delta-entry.md with its row in the Index of docs/delta/README.md, or update the entry of the change it extends, with a new Last-Update. A feature's change that touches only log lines Apache Cassandra writes needs no entry and says so in the pull request description on a line 'No delta entry: <reason>'. Any other use of that line is a decision of the maintainers at review (docs/process/principles.md, PRINCIPLE-011)" % (len(stock), shown))
+            errors.append("the change touches %d stock file(s), %s, and adds or updates no entry in docs/delta/. Add its entry from docs/process/templates/delta-entry.md with its row in the Index of docs/delta/README.md, or update the entry of the change it extends, with a new Last-Update. A feature's change that touches only stock log lines and the switch check round them needs no entry and says so in the pull request description on a line 'No delta entry: <reason>'. Any other use of that line is a decision of the maintainers at review (docs/process/principles.md, PRINCIPLE-011)" % (len(stock), shown))
     return errors, stock, entries, note
 
 

@@ -260,6 +260,25 @@ class Delta(unittest.TestCase):
         self.assertEqual((rc, err), (0, ""))
         self.assertIn("no delta entry, as the pull request says: the line restores Apache's own text.", out)
 
+    def test_the_waiver_line_passes_a_switch_check_round_stock_log_lines(self):
+        # A feature that changes what Apache Cassandra logs works behind a
+        # switch, so its change holds the switch check round the stock log
+        # lines. The check reads only the line, not the change, so the switch
+        # check passes as the log lines do.
+        self.git("checkout", "-q", "line")
+        self.put(STOCK, "class StorageService {\n    void drain() {\n        logger.info(\"Draining {}\", keyspace);\n    }\n}\n")
+        self.commit()
+        self.git("checkout", "-q", "change")
+        self.git("reset", "-q", "--hard", "line")
+        self.put(STOCK, "class StorageService {\n    void drain() {\n        if (Switches.REDACT_LOGS.get())\n"
+                        "            logger.info(\"Draining a keyspace\");\n        else\n"
+                        "            logger.info(\"Draining {}\", keyspace);\n    }\n}\n")
+        self.commit()
+        self.assertEqual(self.delta()[0], 1)
+        rc, out, err = self.delta(body="No delta entry: the redaction feature changes only stock log lines behind its switch.\n")
+        self.assertEqual((rc, err), (0, ""))
+        self.assertIn("no delta entry, as the pull request says: the redaction feature changes only stock log lines behind its switch.", out)
+
     def test_the_waiver_line_without_a_reason_fails(self):
         self.put(STOCK, "class StorageService { void hook() {} }\n")
         self.commit()

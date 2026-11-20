@@ -52,14 +52,14 @@ What Apache Cassandra does with a grant row that names a table the node does not
 
 The line changes none of these files against its base, Apache Cassandra cassandra-5.0 at `76550e9314`. Section 12 of the feature spec has the lines in Apache Cassandra cassandra-5.0 at `47227d98bf`, cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b`, where the code does the same.
 
-It also had to be settled for which releases the feature spec and the documentation say what a row left behind does. The four places were read in three trees: the line, its base and the head of the `cassandra-5.0` branch of Apache Cassandra. A statement for every Apache Cassandra 5.0 release would rest on the history of each file a grant row passes through, with no test that starts such a release.
+It also had to be settled for which code the feature spec and the documentation say what a row left behind does, and how they name that code. The four places were read in three trees: ChronitonDB chronitondb-sandbox at `ffa1bc742d`, its base, Apache Cassandra cassandra-5.0 at `76550e9314`, and Apache Cassandra cassandra-5.0 at `47227d98bf`. None of the three commits is a release. A statement for every Apache Cassandra 5.0 release would rest on the history of each file a grant row passes through, with no test that starts such a release. A statement for "the line and Apache Cassandra 5.0" would read as covering earlier releases of the line and later 5.0 releases, whose code was not read.
 
 ## Considered options
 
 1. Document the row. The documentation of the view says how to list the grants that name the view, to revoke every permission of each before the last node that has the view moves back, what a row left behind does and how it is removed. Permission code stays as Apache Cassandra has it.
 2. Refuse a `GRANT` that names the view. A role then gets the read only by a grant on the keyspace or on all keyspaces, so no row can name the view.
 
-For the releases the statement on a row left behind covers, two options were considered: the code that was read, or every Apache Cassandra 5.0 release.
+For the code the statement on a row left behind covers, two options were considered: the code that was read, or every Apache Cassandra 5.0 release. For how the text names the code that was read, two options were considered: by its three commits, or as the line and Apache Cassandra 5.0.
 
 ## Decision outcome
 
@@ -69,9 +69,10 @@ Chosen option: "Document the row", because a row left behind does no harm that t
 2. The documentation of the view MUST say how an operator lists the grants that name the view, that the operator revokes every permission of each before the last node that has the view moves back, and as which role the operator does both.
 3. The documentation of the view MUST say what a grant left behind does and how it is removed.
 4. A test MUST show that a node handles a grant row that names a table the node does not have as the context above says.
-5. The feature spec and the documentation MUST say what a grant left behind does for the code that was read, which is the line, its base and the head of the `cassandra-5.0` branch of Apache Cassandra, and for no other release of Apache Cassandra.
+5. The feature spec and the documentation MUST say what a grant left behind does for the code that was read, and name that code by its three commits: ChronitonDB chronitondb-sandbox at `ffa1bc742d`, Apache Cassandra cassandra-5.0 at `76550e9314` and Apache Cassandra cassandra-5.0 at `47227d98bf`.
+6. The feature spec and the documentation MUST say that they make that statement for no other code. An earlier release of the line and another release of Apache Cassandra are other code.
 
-Item 5 is chosen because a claim about code names the code it was read in ([PRINCIPLE-078](../../../process/principles.md#principle-078)), and each release of the line states which Apache Cassandra releases a cluster on it can move back to ([PRINCIPLE-003](../../../process/principles.md#principle-003)). The step is done on nodes that have the view, so it is the same for every release.
+Items 5 and 6 are chosen because a claim about code names the code it was read in ([PRINCIPLE-078](../../../process/principles.md#principle-078)), and each release of the line states which Apache Cassandra releases a cluster on it can move back to ([PRINCIPLE-003](../../../process/principles.md#principle-003)). The step is done on nodes that have the view, so it is the same for every release.
 
 ### Consequences
 
@@ -79,7 +80,8 @@ Item 5 is chosen because a claim about code names the code it was read in ([PRIN
 - Good: the feature stays off the areas that are always Critical risk.
 - Bad: an operator who skips the step leaves a row in the auth tables. `LIST ALL PERMISSIONS` shows it, and no statement that names the view can remove it while no node has the view.
 - Bad: a grant given on a node that still has the view, after the operator revoked the others, is left behind in the same way. Nothing stops it.
-- Bad: an operator who moves back to another release of Apache Cassandra has the step and no statement on a row left behind.
+- Bad: an operator who moves back to an earlier release of the line or to another release of Apache Cassandra has the step and no statement on a row left behind.
+- Bad: the documentation names commits and no release, so an operator cannot match its statement to a release by name.
 - Neutral: a row left behind gives its role its permissions on the view again when a node gets the view back. It goes with `DROP ROLE` of its role, or with a `REVOKE` on a node that has the view.
 
 ## More information

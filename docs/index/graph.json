@@ -341,6 +341,23 @@
    "type": "Decision record"
   },
   {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-20",
+   "identifier": "DEC-JVMEM-0010",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "The view catches nothing that a call to the JVM throws",
+   "type": "Decision record"
+  },
+  {
    "@id": "../design/JVMEM-jvm-memory-pools-view/feature-spec.md",
    "@type": [
     "oslc_rm:RequirementCollection",

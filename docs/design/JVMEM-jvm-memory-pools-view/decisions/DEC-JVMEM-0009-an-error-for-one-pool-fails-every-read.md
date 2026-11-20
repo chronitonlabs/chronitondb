@@ -69,3 +69,4 @@ Chosen option: "Every read builds the row of every pool", because the view then 
 ## More information
 
 - The [feature spec](../feature-spec.md), section 2.2 for what one read is, section 2.5 for errors and section 3 for the requirements.
+- [DEC-JVMEM-0010](DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md) for what the view does with what a call to the JVM throws.

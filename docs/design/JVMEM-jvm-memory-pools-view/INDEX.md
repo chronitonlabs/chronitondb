@@ -38,3 +38,4 @@ The documents of the feature `JVMEM`: those of this directory, and the design re
 | [DEC-JVMEM-0007](decisions/DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md) | A memory pool whose usage the JVM does not report shows null in its three sizes | Accepted | 2026-11-20 | `observability` | None |
 | [DEC-JVMEM-0008](decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md) | The view is read afresh at every read of a statement | Accepted | 2026-11-20 | `observability` | None |
 | [DEC-JVMEM-0009](decisions/DEC-JVMEM-0009-an-error-for-one-pool-fails-every-read.md) | Every read builds the row of every pool, and a JVM error for one pool fails every read | Accepted | 2026-11-20 | `observability` | None |
+| [DEC-JVMEM-0010](decisions/DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md) | The view catches nothing that a call to the JVM throws | Accepted | 2026-11-20 | `observability` | None |

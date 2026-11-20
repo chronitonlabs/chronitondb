@@ -23,7 +23,7 @@ limitations under the License.
 | Status | Accepted |
 | Date | 2026-11-20 |
 | Deciders | The maintainers |
-| References | Issue #161, the [feature spec](../feature-spec.md), [DEC-JVMEM-0001](DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md), [PRINCIPLE-054](../../../process/principles.md#principle-054) |
+| References | Issue #161, the [feature spec](../feature-spec.md), [DEC-JVMEM-0001](DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md), [PRINCIPLE-054](../../../process/principles.md#principle-054), [PRINCIPLE-078](../../../process/principles.md#principle-078) |
 | Areas | observability |
 | Supersedes | None |
 
@@ -49,10 +49,14 @@ Apache Cassandra also fetches pages for itself. A statement that aggregates, suc
 
 A statement that names more than one pool, such as one with `WHERE name IN ('G1 Eden Space', 'G1 Old Gen')`, is one read command for each name, and Apache Cassandra runs each of them: `SelectStatement.getSliceCommands`, `src/java/org/apache/cassandra/cql3/statements/SelectStatement.java:713`, and `SinglePartitionReadCommand.VirtualTableGroup.execute`, `src/java/org/apache/cassandra/db/SinglePartitionReadCommand.java:1326`, ChronitonDB chronitondb-sandbox at `ffa1bc742d`, unchanged against the base. Section 12 of the feature spec has the lines in Apache Cassandra now. So the same question holds for such a statement, whatever its page size.
 
+These three cases are the ones that were read in the code. No other kind of statement was read, so it also had to be settled whether the documentation gives the three cases as the whole list. One statement was read as exactly one read: `SELECT * FROM system_views.jvm_memory_pools`, sent with no page size or with a page size above the number of pools. `SelectStatement.execute`, `src/java/org/apache/cassandra/cql3/statements/SelectStatement.java:280`, runs the read once with no pager at line 427 where the statement has no page size, and with a page size a page that comes back short ends the statement: `DataLimits.isExhausted`, `src/java/org/apache/cassandra/db/filter/DataLimits.java:139`. Both are ChronitonDB chronitondb-sandbox at `ffa1bc742d`, unchanged against the base.
+
 ## Considered options
 
 1. Every read is afresh, with the values of its own moment, whatever makes a statement take more than one read: a page a client fetches, a page the node fetches for a statement that aggregates, or one of several names. The documentation of the view says so.
 2. One moment for the whole statement. The node keeps the rows of the first read until the statement is answered.
+
+For the documentation, two options were considered: it gives the three cases as the cases that were read, or as the whole list.
 
 ## Decision outcome
 
@@ -60,6 +64,10 @@ Chosen option: "Every read is afresh", because it needs no code and it keeps no 
 
 1. The node MUST take the values of the rows of each read from its JVM during that read.
 2. The documentation of the view MUST say that one statement can be answered from more than one read, in which cases, and what that means for its rows.
+3. The documentation MUST give those cases as the cases that were read in the code and not as the whole list.
+4. The documentation MUST name the one statement that was read as exactly one read.
+
+Item 3 is chosen because a claim about code names the code it was read in ([PRINCIPLE-078](../../../process/principles.md#principle-078)): a fourth case found later would make a list given as whole wrong.
 
 ### Consequences
 
@@ -68,7 +76,8 @@ Chosen option: "Every read is afresh", because it needs no code and it keeps no 
 - Bad: the sizes of two pages of one statement do not belong to one moment, so sums across pages can be off. That holds for a sum the node computes too, where the client set a page size that is not above the number of pools.
 - Bad: the sizes of two pools that one statement names with `IN` do not belong to one moment either.
 - Bad: if the JVM changes its list of pools between two reads, a pool can be missing from the statement's rows, or from the value the node computes over them.
-- Neutral: a statement that reads the whole view with no restriction on the name, with a page size above the number of pools or with none, is one read, and all its rows are taken in that read.
+- Bad: for a statement that is neither one of the three cases nor the one statement of exactly one read, an operator cannot tell from the documentation whether it is one read.
+- Neutral: `SELECT * FROM system_views.jvm_memory_pools`, with a page size above the number of pools or with none, is one read, and all its rows are taken in that read.
 
 ## More information
 

@@ -63,6 +63,7 @@ None.
 | [DEC-JVMEM-0007. A memory pool whose usage the JVM does not report shows null in its three sizes](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0008. The view is read afresh at every read of a statement](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0009. Every read builds the row of every pool, and a JVM error for one pool fails every read](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0009-an-error-for-one-pool-fails-every-read.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0010. The view catches nothing that a call to the JVM throws](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md) | Decision record | Accepted |  |
 
 ## `configuration`
 

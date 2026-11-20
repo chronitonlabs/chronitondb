@@ -496,10 +496,12 @@ class StockTests(unittest.TestCase):
     def test_quoted_strings_added_to_a_listing_in_a_test_class_pass(self):
         self.pinned_class()
         text = self.CLASS_TEXT.replace("    \"org.apache.cassandra.config.Duration\",\n",
-                                       "    \"org.apache.cassandra.config.Duration\",\n    \"org.chronitondb.startup.DiskCheck\",\n    'c',\n"
-                                       "    \"org.chronitondb.startup.Release \\\"x\\\"\",\n")
+                                       "    \"org.apache.cassandra.config.Duration\",\n    \"org.chronitondb.startup.DiskCheck\",\n"
+                                       "    \"org.chronitondb.startup.Release \\\"x\\\" \\t\\\\ \\0 \\377 //\",\n")
         # The first element of the listing, below the line that opens it.
         text = text.replace("  static final String[] classes = {\n", "  static final String[] classes = {\n    \"org.apache.cassandra.Aa\",\n")
+        # A line of a text joined by "+", below a line that ends in a "+".
+        text = text.replace("                  \"OPTIONS\\n\"\n", "                  \"  --release\\n\" +\n                  \"OPTIONS\\n\"\n")
         self.put(self.PINNED_CLASS, text)
         self.commit()
         rc, out, err = self.check("Fixes #150\n")
@@ -512,8 +514,11 @@ class StockTests(unittest.TestCase):
         self.pinned_class()
         for old, new in (("    \"org.apache.cassandra.config.Duration\",\n", "    \"evil\" +\n    \"org.apache.cassandra.config.Duration\",\n"),
                          ("    \"org.apache.cassandra.config.Duration\",\n", "    \"org.apache.cassandra.config.Duration\",\n    + \"suffix\",\n"),
-                         ("                  \"OPTIONS\\n\"\n", "                  \"  --release\\n\" +\n                  \"OPTIONS\\n\"\n"),
                          ("                  \"OPTIONS\\n\"\n", "                  \"OPTIONS\\n\"\n    \"x\",\n"),
+                         # A comma line in a text joined by "+", and a "+" line
+                         # below the line that opens a listing of elements.
+                         ("                  \"OPTIONS\\n\"\n", "                  \"  --release\\n\",\n                  \"OPTIONS\\n\"\n"),
+                         ("  static final String[] classes = {\n", "  static final String[] classes = {\n    \"org.apache.\" +\n"),
                          # A line of the hunk whose text opens with "++ " is an added line too.
                          ("    check(classes, help)\n", "++ count\n    check(classes, help)\n")):
             self.assertIn(old, self.CLASS_TEXT)
@@ -539,6 +544,157 @@ class StockTests(unittest.TestCase):
             self.refused(self.check("Fixes #150\n"), "names the file as a pinned listing, and the change adds 1 line(s) that no listing holds",
                          self.PINNED_PY)
 
+    # The forms of real pinned listings in Apache Cassandra's tests: the
+    # expected text of a DESCRIBE (DescribeStatementTest), a list of thread
+    # names with line comments (OfflineToolUtils), the expected output of a
+    # nodetool command (GuardrailsConfigCommandsTest, TableStatsTest).
+    PINNED_JAVA = "test/unit/org/apache/cassandra/cql3/statements/DescribeStatementTest.java"
+    JAVA_TEXT = "\n".join([
+        r'class DescribeStatementTest {',
+        r'    private static String tableParametersCql()',
+        r'    {',
+        r'        return "additional_write_policy = ' + "'99p'" + r'\n" +',
+        r'               "    AND allow_auto_snapshot = true\n" +',
+        r'               "    AND compaction = " + cqlQuoted(CompactionParams.DEFAULT.asMap()) + "\n" +',
+        r'               "    AND read_repair = ' + "'BLOCKING'" + r'\n" +',
+        r'               "    AND speculative_retry = ' + "'99p'" + r';";',
+        r'    }',
+        r'',
+        r'    static final String[] OPTIONAL_THREADS_WITH_SCHEMA = {',
+        r'    "Sampler:[1-9]",',
+        r'    "process reaper",  // spawned by the jvm when executing external processes',
+        r'                       // and may still be active when we check',
+        r'    "Attach Listener", // spawned in intellij IDEA',
+        r'    "http://localhost",',
+        r'    };',
+        r'',
+        r'    static final List<String> NAMES = Arrays.asList("a",',
+        r'                                                    "b");',
+        r'',
+        r'    private static final String ALL_THRESHOLDS_GETTER_OUTPUT =',
+        r'    "tables_threshold                [-1, -1]      \n" +',
+        r'    "vector_dimensions_threshold     [-1, -1]      \n";',
+        r'',
+        r'    static final String FOOTER = "end\n" +',
+        r'                                 "done\n"; // the last line',
+        r'',
+        r'    @Test',
+        r'    public void testHelp() {',
+        r'        String table = "CREATE TABLE %s (" +',
+        r'                       "k int, " + // the key, then the values,',
+        r'                       "v int)";',
+        r'        assertThat(tool.getStdout()).isEqualTo("NAME\n" +',
+        r'                                               "        nodetool tablestats\n" +',
+        r'                                               "\n");',
+        r'    }',
+        r'}',
+        r''])
+
+    def java_change(self, *pairs):
+        """The Java listing with each old text replaced by its new one."""
+        text = self.JAVA_TEXT
+        for old, new in pairs:
+            self.assertIn(old, text)
+            text = text.replace(old, new)
+        self.put(self.PINNED_JAVA, text)
+        self.commit()
+
+    def test_lines_added_in_the_forms_of_real_listings_pass(self):
+        self.pinned_class(self.PINNED_JAVA, self.JAVA_TEXT)
+        for old, new in (
+                # A line of a text joined by "+", below a literal and below an expression.
+                ("true\\n\" +\n", "true\\n\" +\n               \"    AND chronitondb_level = 'off'\\n\" +\n"),
+                (" + \"\\n\" +\n", " + \"\\n\" +\n               \"    AND compression = {}\\n\" +\n"),
+                # An element below a line comment and its next line, and with a line comment of its own.
+                ("    // and may still be active when we check\n",
+                 "    // and may still be active when we check\n    \"DiskCheck:[1-9]\",\n"),
+                ("    \"Attach Listener\", // spawned in intellij IDEA\n",
+                 "    \"Attach Listener\", // spawned in intellij IDEA\n    \"Release\", // spawned by the release check\n"),
+                # Below a line whose literal holds "//".
+                ("    \"http://localhost\",\n", "    \"http://localhost\",\n    \"ReleaseCheck\",\n"),
+                # Below a line whose comment ends in a comma, the line ends in its "+".
+                ("the values,\n", "the values,\n                       \"w int, \" +\n")):
+            self.java_change((old, new))
+            rc, out, err = self.check("Fixes #150\n")
+            self.assertEqual((rc, err), (0, ""), new)
+            self.assertIn("names it as a pinned listing and the change only adds lines of the listing\n", out)
+
+    def test_a_line_whose_mark_differs_from_the_line_above_is_refused(self):
+        self.pinned_class(self.PINNED_JAVA, self.JAVA_TEXT)
+        for old, new in (
+                # A comma line in a text joined by "+" splits the text in two.
+                ("true\\n\" +\n", "true\\n\" +\n               \"    AND chronitondb_level = 'off'\\n\",\n"),
+                # A "+" line among elements joins the element below it.
+                ("    \"Sampler:[1-9]\",\n", "    \"Sampler:[1-9]\",\n    \"Disk\" +\n"),
+                ("    static final String[] OPTIONAL_THREADS_WITH_SCHEMA = {\n",
+                 "    static final String[] OPTIONAL_THREADS_WITH_SCHEMA = {\n    \"Disk\" +\n"),
+                # The comma at the end of a comment is no mark: the line above ends in a "+".
+                ("the values,\n", "the values,\n                       \"w int, \",\n")):
+            self.java_change((old, new))
+            self.refused(self.check("Fixes #150\n"), "names the file as a pinned listing, and the change adds 1 line(s) that no listing holds",
+                         self.PINNED_JAVA)
+
+    def test_a_new_last_line_of_a_text_joined_by_plus_passes(self):
+        # The old last line comes back unchanged but for a "+" in place of
+        # what ended the statement, and the new last line ends it the same way.
+        self.pinned_class(self.PINNED_JAVA, self.JAVA_TEXT)
+        last = "    \"vector_dimensions_threshold     [-1, -1]      \\n\";\n"
+        kept = "    \"vector_dimensions_threshold     [-1, -1]      \\n\"  +\n"
+        for pairs in (
+                [(last, kept + "    \"zstd_compression_level_threshold [-1, -1]  \\n\";\n")],
+                [(last, kept + "    \"write_threshold                 [-1, -1]      \\n\" +\n"
+                            "    \"zstd_compression_level_threshold [-1, -1]  \\n\" ; // since 5.0\n")],
+                # Two texts in one change, one of them ending a call.
+                [(last, kept + "    \"zstd_compression_level_threshold [-1, -1]  \\n\";\n"),
+                 ("                                               \"\\n\");\n",
+                  "                                               \"\\n\" +\n                                               \"Release\\n\");\n")]):
+            self.java_change(*pairs)
+            rc, out, err = self.check("Fixes #150\n")
+            self.assertEqual((rc, err), (0, ""), pairs)
+            self.assertIn("names it as a pinned listing and the change only adds lines of the listing\n", out)
+
+    def test_a_last_line_altered_in_any_other_way_is_refused(self):
+        self.pinned_class(self.PINNED_JAVA, self.JAVA_TEXT)
+        last = "    \"vector_dimensions_threshold     [-1, -1]      \\n\";\n"
+        new = "    \"zstd_compression_level_threshold [-1, -1]  \\n\";\n"
+        for old, text, removed in (
+                # The old literal changes.
+                (last, "    \"vector_dimensions_threshold     [-2, -2]      \\n\" +\n" + new, 1),
+                (last, "    \"vector_dimensions_threshold     [-1, -1]      \" +\n" + new, 1),
+                # The old line loses its end with no new last line.
+                (last, "    \"vector_dimensions_threshold     [-1, -1]      \\n\" +\n", 1),
+                # The new last line ends in another way, or is not one literal.
+                (last, "    \"vector_dimensions_threshold     [-1, -1]      \\n\" +\n    \"zstd\\n\");\n", 1),
+                (last, "    \"vector_dimensions_threshold     [-1, -1]      \\n\" +\n    \"zstd\\n\" + suffix();\n", 1),
+                (last, "    \"vector_dimensions_threshold     [-1, -1]      \\n\" +\n    \"zstd\\n\"; skip();\n", 1),
+                # The old last line has a line comment.
+                ("                                 \"done\\n\"; // the last line\n",
+                 "                                 \"done\\n\" +\n                                 \"more\\n\"; // the last line\n", 1),
+                # Two lines are removed: the old last line and the blank line below it.
+                (last + "\n", "    \"vector_dimensions_threshold     [-1, -1]      \\n\" +\n" + new, 2),
+                # Two lines are removed.
+                ("    \"tables_threshold                [-1, -1]      \\n\" +\n" + last,
+                 "    \"tables_threshold               [-1, -1]      \\n\" +\n"
+                 "    \"vector_dimensions_threshold     [-1, -1]      \\n\" +\n" + new, 2)):
+            self.java_change((old, text))
+            self.refused(self.check("Fixes #150\n"), "names the file as a pinned listing, and the change removes or alters %d line(s) of it" % removed,
+                         self.PINNED_JAVA)
+        # A line below the old last line, which keeps its end, joins no text.
+        self.java_change((last, last + new))
+        self.refused(self.check("Fixes #150\n"), "names the file as a pinned listing, and the change adds 1 line(s) that no listing holds",
+                     self.PINNED_JAVA)
+        # The last element of a listing of elements does not take a "+": it would join the new line.
+        self.java_change(("                                                    \"b\");\n",
+                          "                                                    \"b\" +\n                                                    \"c\");\n"))
+        self.refused(self.check("Fixes #150\n"), "names the file as a pinned listing, and the change adds 1 line(s) that no listing holds",
+                     self.PINNED_JAVA)
+        # Outside Java no line is altered.
+        self.pinned_class(self.PINNED_PY, self.PY_TEXT)
+        self.put(self.PINNED_PY, self.PY_TEXT.replace("        'OPTIONS')\n", "        'OPTIONS',\n        'MORE')\n"))
+        self.commit()
+        self.refused(self.check("Fixes #150\n"), "names the file as a pinned listing, and the change removes or alters 1 line(s) of it",
+                     self.PINNED_PY)
+
     def test_a_line_that_is_no_quoted_string_in_a_test_class_is_refused(self):
         self.pinned_class()
         for old, new in (("  @Test\n", "  @org.junit.Ignore\n  @Test\n"),
@@ -550,7 +706,21 @@ class StockTests(unittest.TestCase):
                          ("    check(classes, help)\n", "    \"a\" return\n    check(classes, help)\n"),
                          ("    check(classes, help)\n", "    \"a\" + skip(),\n    check(classes, help)\n"),
                          ("    check(classes, help)\n", "    \"\"\"\n    check(classes, help)\n"),
-                         ("    \"org.apache.cassandra.config.Duration\",\n", "    \"org.apache.cassandra.config.Duration\",\n    Other.class,\n")):
+                         ("    \"org.apache.cassandra.config.Duration\",\n", "    \"org.apache.cassandra.config.Duration\",\n    Other.class,\n"),
+                         # A character literal is no string in Java.
+                         ("    \"org.apache.cassandra.config.Duration\",\n", "    \"org.apache.cassandra.config.Duration\",\n    'c',\n"),
+                         # Java reads a Unicode escape before anything else, in a
+                         # literal and in a comment, so one could end either.
+                         ("    \"org.apache.cassandra.config.Duration\",\n",
+                          "    \"org.apache.cassandra.config.Duration\",\n    \"a\\u0022, Other.class, \\u0022b\",\n"),
+                         ("    \"org.apache.cassandra.config.Duration\",\n",
+                          "    \"org.apache.cassandra.config.Duration\",\n    \"a\\u005c\", skip(), \"\",\n"),
+                         ("    \"org.apache.cassandra.config.Duration\",\n",
+                          "    \"org.apache.cassandra.config.Duration\",\n    \"a\", // \\u000a skip(),\n"),
+                         # An escape Java does not have, and a block comment after the mark.
+                         ("    \"org.apache.cassandra.config.Duration\",\n", "    \"org.apache.cassandra.config.Duration\",\n    \"a\\s\",\n"),
+                         ("    \"org.apache.cassandra.config.Duration\",\n", "    \"org.apache.cassandra.config.Duration\",\n    \"a\", /* x */\n"),
+                         ("    \"org.apache.cassandra.config.Duration\",\n", "    \"org.apache.cassandra.config.Duration\",\n    \"a\" \"b\",\n")):
             self.assertIn(old, self.CLASS_TEXT)
             self.put(self.PINNED_CLASS, self.CLASS_TEXT.replace(old, new))
             self.commit()

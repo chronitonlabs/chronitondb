@@ -24,6 +24,8 @@ The documents of the feature `JVMEM`: those of this directory, and the design re
 | Document | Kind | Status | Version | Areas |
 |---|---|---|---|---|
 | [JVM memory pools view in CQL](feature-spec.md) | Feature spec | Draft | 1 | `observability` |
+| [JVM memory pools view in CQL](plan.md) | Plan | Draft | 1 | `observability` |
+| [JVM memory pools view in CQL](delivery-plan.md) | Delivery plan | Draft | 1 | `observability` |
 
 ## Decision records
 

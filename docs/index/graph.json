@@ -375,6 +375,24 @@
    "type": "Decision record"
   },
   {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/delivery-plan.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "identifier": "docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "line": "chronitondb-sandbox",
+   "status": "Draft",
+   "title": "JVM memory pools view in CQL",
+   "type": "Delivery plan",
+   "version": "1"
+  },
+  {
    "@id": "../design/JVMEM-jvm-memory-pools-view/feature-spec.md",
    "@type": [
     "oslc_rm:RequirementCollection",
@@ -391,6 +409,24 @@
    "status": "Draft",
    "title": "JVM memory pools view in CQL",
    "type": "Feature spec",
+   "version": "1"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/plan.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "identifier": "docs/design/JVMEM-jvm-memory-pools-view/plan.md",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "line": "chronitondb-sandbox",
+   "status": "Draft",
+   "title": "JVM memory pools view in CQL",
+   "type": "Plan",
    "version": "1"
   },
   {

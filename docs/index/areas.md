@@ -54,6 +54,8 @@ None.
 | Document | Kind | Status | Version |
 |---|---|---|---|
 | [JVM memory pools view in CQL](../design/JVMEM-jvm-memory-pools-view/feature-spec.md) | Feature spec | Draft | 1 |
+| [JVM memory pools view in CQL](../design/JVMEM-jvm-memory-pools-view/plan.md) | Plan | Draft | 1 |
+| [JVM memory pools view in CQL](../design/JVMEM-jvm-memory-pools-view/delivery-plan.md) | Delivery plan | Draft | 1 |
 | [DEC-JVMEM-0001. The JVM memory pools view has no switch and is not held back](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0002. A memory pool with no maximum shows -1 as its maximum](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0003. The JVM memory pools view stays at Normal risk with two faults named](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) | Decision record | Accepted |  |

@@ -60,7 +60,7 @@ For how the text states what Apache Cassandra answers and logs, two options were
 
 ## Decision outcome
 
-Chosen option: "The view catches nothing", because it adds no code and no error of the feature's own, and the operator still sees the failure, at the client and in the log. Option 2 adds an error to define, document and test, for a failure that no JVM is known to cause. That is more than the need asks for ([PRINCIPLE-054](../../../process/principles.md#principle-054)).
+Chosen option: "The view catches nothing", because it adds no code and no error of the feature's own, and the operator still sees the failure, at the client and in the log. Option 2 adds an error to define, document and test, for an exception that no JVM is known to make a call of the view throw. That is more than the need asks for ([PRINCIPLE-054](../../../process/principles.md#principle-054)).
 
 1. The view MUST NOT catch what a call it makes to the JVM throws while a read builds its rows. That holds for the call for the list of memory pools as for a call to the bean of one pool, and for an error of the JVM as for an exception.
 2. The feature MUST NOT change what Apache Cassandra does with what was thrown.

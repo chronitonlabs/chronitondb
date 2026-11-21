@@ -39,7 +39,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Context and problem statement
 
-The view builds its rows by calling the JVM's memory pool beans. A call to a bean can throw. No case is known in which a JVM raises such an error for a memory pool, and none was looked for.
+The view builds its rows by calling the JVM's memory pool beans. A call to a bean can throw. No case is known in which a JVM makes such a call throw an exception, and none was looked for. An out of memory error is another matter: any call that needs memory can throw one while the heap is full, and [DEC-JVMEM-0010](DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md) states what happens to it.
 
 When a statement names one pool, Apache Cassandra asks the virtual table for its rows for that key. `AbstractVirtualTable` then builds all its rows, unless the table overrides the method that is asked: `AbstractVirtualTable.select`, `src/java/org/apache/cassandra/db/virtual/AbstractVirtualTable.java:78`, calls `AbstractVirtualTable.data` with the key at line 80, and that method, line 72, returns all rows. Both are ChronitonDB chronitondb-sandbox at `ffa1bc742d`, unchanged against the base of the line, Apache Cassandra cassandra-5.0 at `76550e9314`. Section 12 of the feature spec has the lines in Apache Cassandra now, where the code does the same.
 
@@ -52,7 +52,7 @@ So it had to be settled whether a read of one pool by its name builds the row of
 
 ## Decision outcome
 
-Chosen option: "Every read builds the row of every pool", because the view then has one way to build its rows, so a read by name and a read of the whole view take their values in the same way and are proven by the same tests. Option 2 adds a second way to build a row, with tests of its own, for an error that no JVM is known to raise. That is more to build, test and review than the need asks for ([PRINCIPLE-054](../../../process/principles.md#principle-054)). The cost of option 1 is stated as what happens on a node ([PRINCIPLE-056](../../../process/principles.md#principle-056)): while the JVM raises an error for one pool, no pool can be read through the view.
+Chosen option: "Every read builds the row of every pool", because the view then has one way to build its rows, so a read by name and a read of the whole view take their values in the same way and are proven by the same tests. Option 2 adds a second way to build a row, with tests of its own, for an exception that no JVM is known to make such a call throw. That is more to build, test and review than the need asks for ([PRINCIPLE-054](../../../process/principles.md#principle-054)). The cost of option 1 is stated as what happens on a node ([PRINCIPLE-056](../../../process/principles.md#principle-056)): while the JVM raises an error for one pool, no pool can be read through the view.
 
 1. Every read of the view MUST build the row of every memory pool that the JVM lists, whichever rows the statement asks for.
 2. If a call to the JVM's memory pool beans throws while a read builds its rows, then the read MUST fail, also where the statement names another pool.

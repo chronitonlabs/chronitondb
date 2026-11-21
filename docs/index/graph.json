@@ -478,6 +478,16 @@
    "type": "Review record"
   },
   {
+   "@id": "../reviews/161-let-operators-see-a-node-s-jvm-memory-plan.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/reviews/161-let-operators-see-a-node-s-jvm-memory-plan.md",
+   "status": "Open",
+   "title": "plan and delivery plan of #161 Let operators see a node's JVM memory pools from CQL",
+   "type": "Review record"
+  },
+  {
    "@id": "../reviews/161-let-operators-see-a-node-s-jvm-memory-spec.md",
    "@type": [
     "schema:DigitalDocument"

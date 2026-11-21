@@ -39,7 +39,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Context and problem statement
 
-The view builds its rows by calling the JVM's memory pool beans. A call to a bean can throw. No case is known in which a JVM makes such a call throw an exception, and none was looked for. An out of memory error is another matter: any call that needs memory can throw one while the heap is full, and [DEC-JVMEM-0010](DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md) states what happens to it.
+The view builds its rows by calling the JVM's memory pool beans. A call to a bean can throw. No case is known in which a JVM makes such a call throw an exception, and none was looked for. An out of memory error is another matter: any call that needs memory can throw one while the heap is full, and [DEC-JVMEM-0010](DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md) says where it goes.
 
 When a statement names one pool, Apache Cassandra asks the virtual table for its rows for that key. `AbstractVirtualTable` then builds all its rows, unless the table overrides the method that is asked: `AbstractVirtualTable.select`, `src/java/org/apache/cassandra/db/virtual/AbstractVirtualTable.java:78`, calls `AbstractVirtualTable.data` with the key at line 80, and that method, line 72, returns all rows. Both are ChronitonDB chronitondb-sandbox at `ffa1bc742d`, unchanged against the base of the line, Apache Cassandra cassandra-5.0 at `76550e9314`. Section 12 of the feature spec has the lines in Apache Cassandra now, where the code does the same.
 

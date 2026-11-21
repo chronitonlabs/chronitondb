@@ -348,7 +348,7 @@
    "areas": [
     "../process/areas.md#observability"
    ],
-   "date": "2026-11-20",
+   "date": "2026-11-21",
    "identifier": "DEC-JVMEM-0010",
    "isPartOf": [
     "../design/JVMEM-jvm-memory-pools-view/"

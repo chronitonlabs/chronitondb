@@ -51,7 +51,20 @@ None.
 
 ## `observability`
 
-None.
+| Document | Kind | Status | Version |
+|---|---|---|---|
+| [JVM memory pools view in CQL](../design/JVMEM-jvm-memory-pools-view/feature-spec.md) | Feature spec | Draft | 1 |
+| [DEC-JVMEM-0001. The JVM memory pools view has no switch and is not held back](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0002. A memory pool with no maximum shows -1 as its maximum](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0003. The JVM memory pools view stays at Normal risk with two faults named](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0004. The view is named jvm_memory_pools and its size columns end in _bytes](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0005. The type column shows HEAP and NON_HEAP, as JMX does](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0006. A grant left on the view after moving back is documented, and permission code is unchanged](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0007. A memory pool whose usage the JVM does not report shows null in its three sizes](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0008. The view is read afresh at every read of a statement](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0009. Every read builds the row of every pool, and a JVM error for one pool fails every read](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0009-an-error-for-one-pool-fails-every-read.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0010. The view catches nothing that a call to the JVM throws](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0011. A read of the view is no request path in the feature's class](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0011-a-read-of-the-view-is-no-request-path.md) | Decision record | Accepted |  |
 
 ## `configuration`
 
@@ -95,6 +108,7 @@ Documents of a kind that has no `Areas` row, and documents merged before the row
 | [run-ci routes 6.0 versions on the 5.0 line](../delta/run-ci-6.0-version-routing.md) | Delta entry | Current | 3 |
 | [run-ci accepts this repository](../delta/run-ci-accepts-chronitondb.md) | Delta entry | Current | 3 |
 | [design record of #112 Warn at startup when the commit log shares a disk with the data directories](../reviews/112-warn-at-startup-when-the-commit-log-design.md) | Review record | Closed |  |
+| [feature spec of #161 Let operators see a node's JVM memory pools from CQL](../reviews/161-let-operators-see-a-node-s-jvm-memory-spec.md) | Review record | Closed |  |
 | [0001. The first maintainers](../decisions/0001-initial-maintainers.md) | Decision record | Accepted |  |
 | [0002. What nodetool version prints on a ChronitonDB node](../decisions/0002-nodetool-version-output-on-a-chronitondb-node.md) | Decision record | Accepted |  |
 | [0003. Where the tests prove the release version before a package exists](../decisions/0003-release-version-tests-before-a-package-exists.md) | Decision record | Accepted |  |

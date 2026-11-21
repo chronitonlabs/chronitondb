@@ -181,6 +181,219 @@
    "version": "1"
   },
   {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/",
+   "@type": [
+    "Feature"
+   ],
+   "identifier": "JVMEM"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-21",
+   "identifier": "DEC-JVMEM-0001",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "The JVM memory pools view has no switch and is not held back",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-20",
+   "identifier": "DEC-JVMEM-0002",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "A memory pool with no maximum shows -1 as its maximum",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-20",
+   "identifier": "DEC-JVMEM-0003",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "The JVM memory pools view stays at Normal risk with two faults named",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-20",
+   "identifier": "DEC-JVMEM-0004",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "The view is named jvm_memory_pools and its size columns end in _bytes",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-20",
+   "identifier": "DEC-JVMEM-0005",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "The type column shows HEAP and NON_HEAP, as JMX does",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-20",
+   "identifier": "DEC-JVMEM-0006",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "A grant left on the view after moving back is documented, and permission code is unchanged",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0007-a-pool-with-no-reported-usage-shows-null-sizes.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-20",
+   "identifier": "DEC-JVMEM-0007",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "A memory pool whose usage the JVM does not report shows null in its three sizes",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-20",
+   "identifier": "DEC-JVMEM-0008",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "The view is read afresh at every read of a statement",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0009-an-error-for-one-pool-fails-every-read.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-20",
+   "identifier": "DEC-JVMEM-0009",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "Every read builds the row of every pool, and a JVM error for one pool fails every read",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-21",
+   "identifier": "DEC-JVMEM-0010",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "The view catches nothing that a call to the JVM throws",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0011-a-read-of-the-view-is-no-request-path.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-21",
+   "identifier": "DEC-JVMEM-0011",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "A read of the view is no request path in the feature's class",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/feature-spec.md",
+   "@type": [
+    "oslc_rm:RequirementCollection",
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "identifier": "docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "line": "chronitondb-sandbox",
+   "status": "Draft",
+   "title": "JVM memory pools view in CQL",
+   "type": "Feature spec",
+   "version": "1"
+  },
+  {
    "@id": "../design/VER-release-version/",
    "@type": [
     "Feature"
@@ -203,6 +416,14 @@
    "version": "1"
   },
   {
+   "@id": "../process/areas.md#observability",
+   "@type": [
+    "skos:Concept"
+   ],
+   "inScheme": "../process/areas.md",
+   "prefLabel": "observability"
+  },
+  {
    "@id": "../process/areas.md#project",
    "@type": [
     "skos:Concept"
@@ -218,6 +439,16 @@
    "identifier": "docs/reviews/112-warn-at-startup-when-the-commit-log-design.md",
    "status": "Closed",
    "title": "design record of #112 Warn at startup when the commit log shares a disk with the data directories",
+   "type": "Review record"
+  },
+  {
+   "@id": "../reviews/161-let-operators-see-a-node-s-jvm-memory-spec.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/reviews/161-let-operators-see-a-node-s-jvm-memory-spec.md",
+   "status": "Closed",
+   "title": "feature spec of #161 Let operators see a node's JVM memory pools from CQL",
    "type": "Review record"
   }
  ],

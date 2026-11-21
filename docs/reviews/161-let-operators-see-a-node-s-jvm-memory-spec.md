@@ -21,10 +21,10 @@ limitations under the License.
 |---|---|
 | Title | Review record: feature spec of #161 Let operators see a node's JVM memory pools from CQL |
 | Document type | Record (ISO/IEC/IEEE 15289) |
-| Status | Open |
+| Status | Closed |
 | Work product | Feature spec: `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md` |
 | Pull request | #162 |
-| Version reviewed | `3db6b0aad9` |
+| Version reviewed | `3ad46f931a` |
 | Review type | Technical review (ISO/IEC 20246) |
 | Reviewer | The project's review App |
 | Author | Architect: chronitondb-agent |
@@ -53,6 +53,7 @@ Only the project's own automation keeps this record: it is the committed record 
 |---|---|---|---|---|---|---|---|---|
 | 1 | 2026-11-21 | `f83b59022b` | The whole change | Changes requested | 0 | 2 | 7 | 2 |
 | 2 | 2026-11-21 | `3db6b0aad9` | The changes since `f83b59022b` | Changes requested | 0 | 1 | 6 | 2 |
+| 3 | 2026-11-21 | `3ad46f931a` | The changes since `3db6b0aad9` | Clean | 0 | 0 | 5 | 2 |
 
 ## 2. Anomaly list
 
@@ -80,6 +81,13 @@ One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A f
 | R2-7 | The pull request body, Open points, the note on decision record 0001 | The note names the wrong merge. The merge of the item's design record decides the exception, as principles.md and item 4 of DEC-JVMEM-0001 say. | compatibility | Minor | Fixed in the pull request body |
 | R2-8 | The pull request body, Open points, the first sentences | Two sentences tell how the work went and not what stands open. | docs | Nit | Fixed in the pull request body |
 | R2-9 | Fact 23 of `12. Prior art`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:428` at `3db6b0aad9` | `SubnetGroups.contains`: line 64 is the header of the other overload. The match is at line 68, and at line 67 in cassandra-6.0 and trunk. | correctness | Nit | Fixed in `77b0ef3d4b` |
+| R3-1 | The Answered and Logged parts of item 4 of `2.5 Cross cutting concepts`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:188` at `3ad46f931a`, and line 189. Also fact 23, line 429, and item 3 of the context of DEC-JVMEM-0010 | An exception whose cause is an out of memory error is thrown on as that error. It gets no server error and none of the stated log entries. The statements are not scoped to throws with no such cause. | correctness | Minor | Fixed in `4dd619df16` |
+| R3-2 | FREQ-JVMEM-019 of `3. Feature requirements`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:264` at `3ad46f931a`. Also problem 3 of `4. Where problems could occur`, line 274, and item 4 of the outcome of DEC-JVMEM-0009 | Read widely, the three texts make the documentation say more of an out of memory error than item 6 of DEC-JVMEM-0010 allows. They are not scoped to exceptions and other errors of the JVM. | correctness | Minor | Fixed in `5c5be9a907` |
+| R3-3 | FREQ-JVMEM-020 of `3. Feature requirements`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:266` at `3ad46f931a`, and problem 3 of `4.1 Test plan`, line 289 | Item 6 of DEC-JVMEM-0010 is carried only by a pointer to item 4 of section 2.5, and no documentation test checks it. The requirement and the test do not name the one statement. | docs | Minor | Fixed in `39cced6964` |
+| R3-4 | `2.2 Building blocks`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:132` at `3ad46f931a` | "A few instructions apart" is not bounded. A garbage collection can run between the calls for two pools. Whether the documentation says so stays with the maintainers. | correctness | Minor | Fixed in `3a2e7db50d` |
+| R3-5 | `Decision outcome`, `docs/design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md:80` at `3ad46f931a`, and the Logged part of item 4 of `2.5 Cross cutting concepts` | The reason under PRINCIPLE-036 now covers other errors of the JVM. The context and DEC-JVMEM-0009 give it only for an exception. A stack overflow error can come from any call. | correctness | Minor | Fixed in `450e91f9db` |
+| R3-6 | The Logged part of item 4 of `2.5 Cross cutting concepts`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:189` at `3ad46f931a`. Also the outcome of DEC-JVMEM-0010, line 80, and of DEC-JVMEM-0009, line 55 | A sentence with two subjects has a singular verb. In DEC-JVMEM-0009 "such a call" names no call in its sentence. | docs | Nit | Fixed in `450e91f9db` and `a757254021` |
+| R3-7 | Item 4 of `Context and problem statement`, `docs/design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md:47` at `3ad46f931a` | The files of the enums `RepairParallelism` and `PreviewKind` are cited with no symbol directly before each path. | docs | Nit | Fixed in `bda81bb968` |
 
 1. **Fixed in `<hash>`**: the commit that fixes the finding, a commit of the pull request's branch. Several commits are joined with "and". A finding on the pull request's title or body is "Fixed in the pull request title" or "body".
 2. **Accepted: `<reason>`**: the work product stays as it is, for the reason given. The reviewer judges the reason in the next round.
@@ -110,4 +118,4 @@ None.
 
 ## 5. Exit decision
 
-Open.
+Accept: round 3 on `3ad46f931a` found no blocker and no major, and every finding has a disposition. The maintainers decide by merging.

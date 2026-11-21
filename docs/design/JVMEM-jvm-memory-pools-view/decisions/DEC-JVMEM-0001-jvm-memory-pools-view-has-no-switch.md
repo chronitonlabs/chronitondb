@@ -21,7 +21,7 @@ limitations under the License.
 |---|---|
 | Document type | Record (ISO/IEC/IEEE 15289), MADR |
 | Status | Accepted |
-| Date | 2026-11-20 |
+| Date | 2026-11-21 |
 | Deciders | The maintainers |
 | References | Issue #161, the [feature spec](../feature-spec.md), [PRINCIPLE-003](../../../process/principles.md#principle-003), [PRINCIPLE-016](../../../process/principles.md#principle-016), [PRINCIPLE-089](../../../process/principles.md#principle-089) |
 | Areas | observability |
@@ -45,7 +45,7 @@ The feature adds one read only virtual table to `system_views`, a keyspace that 
 
 [PRINCIPLE-016](../../../process/principles.md#principle-016) holds a feature back when it sends, gossips, streams or commits something a node without it cannot read. It gives any other purely additive feature a switch only when something needs the feature turned off. The view does none of the four, and nothing needs it turned off.
 
-The question was which of the two decides for this view.
+The question was which of the two decides for this view, and how the choice stands to the rule that does not decide.
 
 ## Considered options
 
@@ -54,7 +54,9 @@ The question was which of the two decides for this view.
 
 ## Decision outcome
 
-Chosen option: "No switch", because nodes share nothing of the view. A hold back protects a node from state it cannot read, and the view gives no node such state.
+Chosen option: "No switch", as an exception to [PRINCIPLE-003](../../../process/principles.md#principle-003) and to the edge of [PRINCIPLE-089](../../../process/principles.md#principle-089), because nodes share nothing of the view. A hold back protects a node from state it cannot read, and the view gives no node such state.
+
+Both principles apply to the view as they are written. A table of `system_views` is a definition that the project adds to a keyspace that Apache Cassandra defines in code, and the edge of PRINCIPLE-089 says that anything so added is schema state on every node. This record does not read the two principles as leaving a virtual table out. It departs from them for this view: a feature that is not held back adds the view. The three facts below are the reason.
 
 1. A virtual keyspace is kept in two maps of the node's own registry: `VirtualKeyspaceRegistry.register`, `src/java/org/apache/cassandra/db/virtual/VirtualKeyspaceRegistry.java:41`, ChronitonDB chronitondb-sandbox at `ffa1bc742d`. The same code stands at the same line in Apache Cassandra cassandra-5.0 at `76550e9314`, the base of the line, and at `47227d98bf`, and at line 42 in Apache Cassandra cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b`.
 2. The definition of the view is built in the memory of each node at startup. It is not written to the schema tables, to a data file or to the commit log, and no node sends it to another.
@@ -64,7 +66,8 @@ The decision binds as follows.
 
 1. The view MUST be present on every node that runs a release with the feature, from startup.
 2. The feature MUST NOT add a setting, a command or any other switch for the view.
-3. This record decides for this view only. It changes no principle, and another definition in a keyspace that Apache Cassandra defines in code is decided by its own record.
+3. The exception is for this view only. It changes no principle, and another definition in a keyspace that Apache Cassandra defines in code is decided by its own record.
+4. The design record of the item that adds the view MUST name PRINCIPLE-003 and PRINCIPLE-089 in the `Exceptions` row of its document control table and state the exception with its reason. That is where [principles.md](../../../process/principles.md#how-to-read-and-cite-a-principle) has an exception recorded, and the maintainers decide it by merging that record.
 
 ### Consequences
 
@@ -73,6 +76,7 @@ The decision binds as follows.
 - Bad: while some nodes do not have the view yet, a read sent to such a node is refused as a read of a table that does not exist. The feature spec states this in its compatibility section.
 - Bad: an operator cannot hide the view on one node. Who may read it is set by grants alone.
 - Bad: a grant an operator gives on the view by name is a row of the auth tables that names the view. Apache Cassandra writes that row in its own form, and the steps for moving back name its removal.
+- Bad: the two principles stay as written, so the next view the project adds with no hold back needs an exception of its own.
 
 ## More information
 

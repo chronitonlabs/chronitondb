@@ -214,6 +214,8 @@ Feature class: purely additive, because the feature is reachable only through a 
 
 The feature has no switch, because nothing needs it turned off: it does no work until the view is read, it keeps no memory, and nodes share nothing of it ([DEC-JVMEM-0001](decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md), [PRINCIPLE-016](../../process/principles.md#principle-016)).
 
+The feature is not held back either, and that is an exception to two principles. [PRINCIPLE-003](../../process/principles.md#principle-003) and the edge of [PRINCIPLE-089](../../process/principles.md#principle-089) let only a feature that is held back until every node has it add a definition to a keyspace that Apache Cassandra defines in code, and `system_views` is such a keyspace. Decision record DEC-JVMEM-0001 states the exception for this view only, with its reason. The design record of the item names both principles in its `Exceptions` row, where [principles.md](../../process/principles.md#how-to-read-and-cite-a-principle) has an exception recorded.
+
 1. **Default on each line.** The view is present on every node of the line `chronitondb-sandbox` that runs a release with the feature. The delivery plan proposes the line, and this spec names no other.
 2. **A feature finished after its line's first release.** The view is present on that line too. It does no work without being asked and adds nothing nodes share, so the edge of [PRINCIPLE-018](../../process/principles.md#principle-018) does not turn it off.
 3. **Built in one milestone.** A feature with no switch merges no item that makes unfinished work reachable ([PRINCIPLE-020](../../process/principles.md#principle-020)). So the item that adds the hook delivers the view whole, with its tests and its documentation. Section 11 has one milestone.
@@ -358,7 +360,7 @@ No new dependency. The feature uses `java.lang.management` of the JDK and classe
 
 ## 10. Decisions
 
-1. [DEC-JVMEM-0001. The JVM memory pools view has no switch and is not held back](decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md): the view is on every node from startup, because nodes share nothing of it.
+1. [DEC-JVMEM-0001. The JVM memory pools view has no switch and is not held back](decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md): the view is on every node from startup, because nodes share nothing of it, as an exception to PRINCIPLE-003 and the edge of PRINCIPLE-089 for this view only.
 2. [DEC-JVMEM-0002. A memory pool with no maximum shows -1 as its maximum](decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md): the number JMX shows, not null.
 3. [DEC-JVMEM-0003. The JVM memory pools view stays at Normal risk with two faults named](decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md): a wrong value and a node that does not start are named with their tests, and the class stays Normal.
 4. [DEC-JVMEM-0004. The view is named jvm_memory_pools and its size columns end in _bytes](decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md): the name says whose pools the view shows, and each size column says that it holds bytes.
@@ -378,7 +380,7 @@ No new dependency. The feature uses `java.lang.management` of the JDK and classe
 - For the design record: what the view does if a JVM reports two memory pools under one name.
 - For the design record: which test runs hold the two tests that decision record DEC-JVMEM-0003 wants run on every build.
 - For the design record: what Apache Cassandra does with a statement answered from more than one read when one of its reads fails, which the feature does not change.
-- For the design record: whether decision record DEC-JVMEM-0001 departs from PRINCIPLE-003 and the edge of PRINCIPLE-089 for this view, or reads those rules as not applying to it, which the record does not say.
+- For the design record: its `Exceptions` row names PRINCIPLE-003 and PRINCIPLE-089, and it states the exception of decision record DEC-JVMEM-0001 with its reason.
 
 ## 12. Prior art
 

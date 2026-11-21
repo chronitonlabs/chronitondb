@@ -375,6 +375,7 @@ No new dependency. The feature uses `java.lang.management` of the JDK and classe
 - For the design record: what the view does if a JVM reports two memory pools under one name.
 - For the design record: which test runs hold the two tests that decision record DEC-JVMEM-0003 wants run on every build.
 - For the design record: what Apache Cassandra does with a statement answered from more than one read when one of its reads fails, which the feature does not change.
+- For the design record: whether decision record DEC-JVMEM-0001 departs from PRINCIPLE-003 and the edge of PRINCIPLE-089 for this view, or reads those rules as not applying to it, which the record does not say.
 
 ## 12. Prior art
 

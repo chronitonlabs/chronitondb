@@ -306,7 +306,7 @@ This feature adds no new entry point. It adds no syntax, no setting, no command,
 
 ### 7.1 On-disk format changes
 
-This feature changes no format, schema or protocol. The definition of the view is built in the memory of each node at startup (fact 6). It is not written to the schema tables, no file is written and no message between nodes carries it.
+This feature changes no on-disk format and no protocol, and it writes nothing to the schema tables. The definition of the view is built in the memory of each node at startup (fact 6). No file is written and no message between nodes carries it. The definition is schema state on every node all the same, in the words of the edge of [PRINCIPLE-089](../../process/principles.md#principle-089), because the feature adds it to a keyspace that Apache Cassandra defines in code. The feature is not held back until every node has the view, and section 2.8 and [DEC-JVMEM-0001](decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md) state that exception.
 
 ### 7.2 Mixed-version cluster
 

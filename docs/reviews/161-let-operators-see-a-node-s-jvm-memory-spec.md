@@ -24,7 +24,7 @@ limitations under the License.
 | Status | Open |
 | Work product | Feature spec: `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md` |
 | Pull request | #162 |
-| Version reviewed | `f83b59022b` |
+| Version reviewed | `3db6b0aad9` |
 | Review type | Technical review (ISO/IEC 20246) |
 | Reviewer | The project's review App |
 | Author | Architect: chronitondb-agent |
@@ -52,6 +52,7 @@ Only the project's own automation keeps this record: it is the committed record 
 | Round | Date | Version reviewed | Scope | Verdict | Blockers | Majors | Minors | Nits |
 |---|---|---|---|---|---|---|---|---|
 | 1 | 2026-11-21 | `f83b59022b` | The whole change | Changes requested | 0 | 2 | 7 | 2 |
+| 2 | 2026-11-21 | `3db6b0aad9` | The changes since `f83b59022b` | Changes requested | 0 | 1 | 6 | 2 |
 
 ## 2. Anomaly list
 
@@ -70,6 +71,15 @@ One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A f
 | R1-9 | The pull request body, Open points | Two lines tell how the work went and not what stands open. The open points are to be stated as facts. | docs | Minor | Fixed in the pull request body |
 | R1-10 | Item 4 of `2.5 Cross cutting concepts`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:187` at `f83b59022b` | One list item of about 3,200 characters. It reads better split into answered, logged and not covered. | docs | Nit | Fixed in `0d4cfe5243` |
 | R1-11 | `ThreadPoolsTable.ThreadPoolsTable`, `docs/design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md:57` at `f83b59022b` | The citation names line 40, the header of the constructor. The key column is set at line 45. | docs | Nit | Fixed in `7d0ebe2eff` |
+| R2-1 | The Answered and Logged parts of item 4 of `2.5 Cross cutting concepts`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:188` at `3db6b0aad9`, and line 189. Also fact 23, line 428, and item 3 of the context of DEC-JVMEM-0010 | Out of memory handling is stated inexactly. The Answered part has no condition for the heap histogram property. The histogram lines are left out. So are the second ERROR entry and the forced heap space error for some messages. | docs, correctness | Major | Fixed in `bbe80cc01c` |
+| R2-2 | `Decision outcome`, `docs/design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md:73` at `3db6b0aad9`, and the Logged part of item 4 of `2.5 Cross cutting concepts` | The assessment under PRINCIPLE-036 says why an exception is unexpected. It gives no reason, bound or level for the entries of an out of memory error. With the property on, each later failing request logs at ERROR. | correctness | Minor | Fixed in `46ab5275a6` |
+| R2-3 | `Context and problem statement`, `docs/design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0009-an-error-for-one-pool-fails-every-read.md:42` at `3db6b0aad9`, and line 55 | The record says no JVM is known to raise such an error and gives that as a reason. DEC-JVMEM-0010 and the spec say any call can throw an out of memory error. The kind of error is not named. | docs, correctness | Minor | Fixed in `6105f1f50b` |
+| R2-4 | `2.3 Runtime view`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:176` at `3db6b0aad9` | "No other request path" reads the read of the view as a request path, against item 2 of section 2.5 and DEC-JVMEM-0011. | docs, correctness | Minor | Fixed in `aaa9460a16` |
+| R2-5 | `Consequences`, `docs/design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md:65` at `3db6b0aad9` | The record says that the other tables were not read. They were read: four write the text of an enum in lower case and one in upper case. The result belongs in the record, with its tree. | docs | Minor | Fixed in `9152440a09` |
+| R2-6 | `7.1 On-disk format changes`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:309` at `3db6b0aad9` | The section says that the feature changes no schema. DEC-JVMEM-0001 says that the view is schema state under the edge of PRINCIPLE-089. Section 7 does not point to the exception. | compatibility | Minor | Fixed in `448251f162` |
+| R2-7 | The pull request body, Open points, the note on decision record 0001 | The note names the wrong merge. The merge of the item's design record decides the exception, as principles.md and item 4 of DEC-JVMEM-0001 say. | compatibility | Minor | Fixed in the pull request body |
+| R2-8 | The pull request body, Open points, the first sentences | Two sentences tell how the work went and not what stands open. | docs | Nit | Fixed in the pull request body |
+| R2-9 | Fact 23 of `12. Prior art`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:428` at `3db6b0aad9` | `SubnetGroups.contains`: line 64 is the header of the other overload. The match is at line 68, and at line 67 in cassandra-6.0 and trunk. | correctness | Nit | Fixed in `77b0ef3d4b` |
 
 1. **Fixed in `<hash>`**: the commit that fixes the finding, a commit of the pull request's branch. Several commits are joined with "and". A finding on the pull request's title or body is "Fixed in the pull request title" or "body".
 2. **Accepted: `<reason>`**: the work product stays as it is, for the reason given. The reviewer judges the reason in the next round.

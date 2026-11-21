@@ -173,7 +173,7 @@ The interfaces between the blocks are those of Apache Cassandra: the hook passes
 
 ### 2.3 Runtime view
 
-A `SELECT` on the view runs on the node that receives it, in the thread that runs the statement (fact 7). The view asks the JVM for its memory pools, reads the usage of each and returns the rows. No other request path, no write path and no background path is touched.
+A `SELECT` on the view runs on the node that receives it, in the thread that runs the statement (fact 7). The view asks the JVM for its memory pools, reads the usage of each and returns the rows. No request path of Apache Cassandra, no write path and no background path is touched.
 
 ### 2.4 Data and formats
 

@@ -64,6 +64,7 @@ None.
 | [DEC-JVMEM-0008. The view is read afresh at every read of a statement](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0008-each-page-of-a-read-is-read-afresh.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0009. Every read builds the row of every pool, and a JVM error for one pool fails every read](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0009-an-error-for-one-pool-fails-every-read.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0010. The view catches nothing that a call to the JVM throws](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0011. A read of the view is no request path in the feature's class](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0011-a-read-of-the-view-is-no-request-path.md) | Decision record | Accepted |  |
 
 ## `configuration`
 

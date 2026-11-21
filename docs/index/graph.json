@@ -358,6 +358,23 @@
    "type": "Decision record"
   },
   {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0011-a-read-of-the-view-is-no-request-path.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-21",
+   "identifier": "DEC-JVMEM-0011",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "A read of the view is no request path in the feature's class",
+   "type": "Decision record"
+  },
+  {
    "@id": "../design/JVMEM-jvm-memory-pools-view/feature-spec.md",
    "@type": [
     "oslc_rm:RequirementCollection",

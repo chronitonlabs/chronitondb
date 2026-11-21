@@ -43,7 +43,7 @@ The view says for each memory pool whether it is a pool of heap memory or of oth
 
 1. The names of the two values are `HEAP` and `NON_HEAP`. The JVM's own MBean of a pool, `java.lang:type=MemoryPool,name=<pool>`, shows this text in its `Type` attribute over JMX. That was read on OpenJDK 11.0.33.1 and 17.0.21.1 with the G1 collector.
 2. The display text of the two values, which `MemoryType.toString` returns, is `Heap memory` and `Non-heap memory`. Apache Cassandra logs this text once for each pool at startup: `CassandraDaemon.logSystemInfo`, `src/java/org/apache/cassandra/service/CassandraDaemon.java:596`, the loop at line 614, ChronitonDB chronitondb-sandbox at `ffa1bc742d`. The same code stands at the same lines in Apache Cassandra cassandra-5.0 at `76550e9314`, the base of the line, and at `47227d98bf`, and at lines 706 and 724 in Apache Cassandra cassandra-6.0 at `a02931dea8` and trunk at `45c325a01b`.
-3. Plain lower case words, `heap` and `non-heap`, are shown by no surface of the JVM.
+3. Plain lower case words, `heap` and `non-heap`, are shown by neither of the two surfaces read for items 1 and 2, the `Type` attribute of the MBean and the display text. No other surface of the JVM was read.
 
 ## Considered options
 
@@ -62,7 +62,7 @@ Chosen option: "`HEAP` and `NON_HEAP`", because the view then holds the text an 
 
 - Good: an operator who compares the view with JMX sees the same text, and a script joins the two without a mapping.
 - Good: each value is one word with no space, which is simple to filter on.
-- Bad: the text is upper case, unlike most text values in the tables of `system_views`.
+- Bad: the text is upper case. How the other tables of `system_views` write their text values was not read, so this record does not say whether that is usual there.
 - Bad: the text differs from the line Apache Cassandra logs at startup for the same pool, which shows the display text.
 - Bad: the two values are kept for the whole line once a release ships them ([PRINCIPLE-082](../../../process/principles.md#principle-082)).
 

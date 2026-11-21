@@ -29,7 +29,7 @@ limitations under the License.
 | Reviewer | The project's review App |
 | Author | Architect: chronitondb-agent |
 | Decision maker | The maintainer who merges the pull request |
-| References | Issue #161. The feature spec `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md` and its decision records `DEC-JVMEM-0001` to `DEC-JVMEM-0010` under `docs/design/JVMEM-jvm-memory-pools-view/decisions/`. |
+| References | Issue #161. The feature spec `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md` and its decision records `DEC-JVMEM-0001` to `DEC-JVMEM-0011` under `docs/design/JVMEM-jvm-memory-pools-view/decisions/`. |
 
 A review record has no version. Its history is the commits of this file.
 
@@ -42,6 +42,8 @@ Only the project's own automation keeps this record: it is the committed record 
 - [1. Rounds](#1-rounds)
 - [2. Anomaly list](#2-anomaly-list)
 - [3. Decisions](#3-decisions)
+  - [D1. Is the view with no hold back an exception to two principles, or do they not apply to it](#d1-is-the-view-with-no-hold-back-an-exception-to-two-principles-or-do-they-not-apply-to-it)
+  - [D2. Does a read of the view make the Touches row name a request path](#d2-does-a-read-of-the-view-make-the-touches-row-name-a-request-path)
 - [4. Limits](#4-limits)
 - [5. Exit decision](#5-exit-decision)
 
@@ -57,11 +59,11 @@ One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A f
 
 | Id | Location | Description | Source | Classification | Disposition |
 |---|---|---|---|---|---|
-| R1-1 | Item 3 of `Decision outcome`, `docs/design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md:67` at `f83b59022b` | The record chooses no hold back and does not say whether that departs from PRINCIPLE-003 and the edge of PRINCIPLE-089. Section 11 leaves the point to a design record, which cannot settle it. | compatibility | Minor | Open: the maintainers decide whether the record states an exception to PRINCIPLE-003 and PRINCIPLE-089 or a reading that they do not apply to a virtual table. |
+| R1-1 | Item 3 of `Decision outcome`, `docs/design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md:67` at `f83b59022b` | The record chooses no hold back and does not say whether that departs from PRINCIPLE-003 and the edge of PRINCIPLE-089. Section 11 leaves the point to a design record, which cannot settle it. | compatibility | Minor | Fixed in `ec285c4163` |
 | R1-2 | Case 2 of `2.2 Building blocks`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:139` at `f83b59022b` | A plain aggregate with no page size is one read with no limit. The 10000 rows hold for `GROUP BY` only. Fact 17 and DEC-JVMEM-0008 carry the same statement. | correctness | Major | Fixed in `9dc090163b` |
 | R1-3 | Item 4 of `2.5 Cross cutting concepts`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:187` at `f83b59022b` | Three behaviours are stated inexactly: the DEBUG line holds for subnets, the heap histogram property changes the handling of an out of memory error, and a JVM can make a call throw. DEC-JVMEM-0010 carries the same statements. | docs | Major | Fixed in `f48f3be590` |
 | R1-4 | Item 4 of `2.5 Cross cutting concepts`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:187` at `f83b59022b` | The text says one or two ERROR lines. Each log call is given the exception, so each entry carries a stack trace. | correctness | Minor | Fixed in `041f3e6b7b` |
-| R1-5 | The Touches row of `Feature spec: JVM memory pools view in CQL`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:33` at `f83b59022b` | Needs verification: the reads of a statement with `IN` grow with the names listed, which may be a request path under classification.md. | correctness | Minor | Open: the maintainers decide whether the Touches row names a request path. |
+| R1-5 | The Touches row of `Feature spec: JVM memory pools view in CQL`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:33` at `f83b59022b` | Needs verification: the reads of a statement with `IN` grow with the names listed, which may be a request path under classification.md. | correctness | Minor | Accepted: decision D2 keeps the Touches row as it is. Decision record DEC-JVMEM-0011 states the decision, added in `95049e31a0`. |
 | R1-6 | Item 1 of `7.4 Rollback path`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:323` at `f83b59022b` | The pointer to item 2 of the list below reaches "Nothing else is removed". It means the second of the four places where a grant row is read. | correctness | Minor | Fixed in `6419c3d0d2` |
 | R1-7 | Facts 14 and 17 of `12. Prior art`, `docs/design/JVMEM-jvm-memory-pools-view/feature-spec.md:413` at `f83b59022b`, and line 416 | `Config.java:876` and `SelectStatement.java:773` in the Apache Cassandra columns name no symbol. | correctness | Minor | Fixed in `c0d4940222` and `9dc090163b` |
 | R1-8 | Item 3 of the context and one consequence, `Context and problem statement`, `docs/design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md:46` at `f83b59022b` | "Shown by no surface of the JVM" and "unlike most text values" name no code that was read. | docs | Minor | Fixed in `5371654e96` |
@@ -76,7 +78,21 @@ One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A f
 
 ## 3. Decisions
 
-No decisions.
+### D1. Is the view with no hold back an exception to two principles, or do they not apply to it
+
+- **Raised by:** R1-1.
+- **Options:** A. An exception to PRINCIPLE-003 and to the edge of PRINCIPLE-089, stated as one in decision record DEC-JVMEM-0001, for this view only. B. A reading that the two principles do not apply to a table of a virtual keyspace.
+- **Chosen:** A. An exception to PRINCIPLE-003 and to the edge of PRINCIPLE-089, stated as one in decision record DEC-JVMEM-0001, for this view only.
+- **Reason:** The principles stay as written. The edge of PRINCIPLE-089 calls anything added to such a keyspace schema state on every node, so a reading that leaves a virtual table out goes against its words.
+- **Decided by:** a maintainer, `millerjp`, 2026-11-21, `DEC-JVMEM-0001` in `docs/design/JVMEM-jvm-memory-pools-view/decisions/`.
+
+### D2. Does a read of the view make the Touches row name a request path
+
+- **Raised by:** R1-5.
+- **Options:** A. No. The Touches row stays as it is, a public interface and a new feature. B. Yes. The row adds a request path, the spec plans a benchmark of the read, and the review of the code runs the performance checklist.
+- **Chosen:** A. No. The Touches row stays as it is, a public interface and a new feature.
+- **Reason:** The cost of one read grows neither with the data a node holds nor with the traffic it serves. A statement with `IN` costs one such read for each name that its client lists.
+- **Decided by:** a maintainer, `millerjp`, 2026-11-21, `DEC-JVMEM-0011` in `docs/design/JVMEM-jvm-memory-pools-view/decisions/`.
 
 ## 4. Limits
 

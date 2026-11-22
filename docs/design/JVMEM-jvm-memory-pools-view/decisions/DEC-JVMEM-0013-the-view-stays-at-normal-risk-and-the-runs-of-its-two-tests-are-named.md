@@ -86,5 +86,5 @@ Chosen option: "The runs are named", because the feature then does not wait for 
 
 - The [delivery plan](../delivery-plan.md): exit criterion 4 of milestone 1, and in section 6 the entries on where the two tests run, with facts C and J.
 - The [plan](../plan.md): criterion 26 of item 1 and criterion 25 of item 2, which put both tests into the test run before each commit.
-- The [feature spec](../feature-spec.md): its Risk row, and problems 1 and 2 of section 4 with their tests in section 4.1.
+- The [feature spec](../feature-spec.md): its Risk row, and problems 1 and 2 of section 4 with their tests in section 4.1. The feature spec cites DEC-JVMEM-0003 in its References row, its Risk row, section 10 and section 11. It is an approved document, so it is brought to this record through change control, in a pull request of its own that cites this record, and work that depends on the changed text waits for that pull request ([additive.md](../../../process/additive.md#change-control-after-a-merge)).
 - [PRINCIPLE-069](../../../process/principles.md#principle-069): the risk of a change is the worst it could cause, and a maintainer may change the class of a change at any time.

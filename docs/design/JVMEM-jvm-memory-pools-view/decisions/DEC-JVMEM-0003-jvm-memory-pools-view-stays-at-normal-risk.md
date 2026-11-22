@@ -20,7 +20,7 @@ limitations under the License.
 | Field | Value |
 |---|---|
 | Document type | Record (ISO/IEC/IEEE 15289), MADR |
-| Status | Accepted |
+| Status | Superseded by DEC-JVMEM-0013 |
 | Date | 2026-11-20 |
 | Deciders | The maintainers |
 | References | Issue #161, the [feature spec](../feature-spec.md), [classification.md](../../../process/classification.md#risk), [PRINCIPLE-069](../../../process/principles.md#principle-069), [PRINCIPLE-072](../../../process/principles.md#principle-072) |

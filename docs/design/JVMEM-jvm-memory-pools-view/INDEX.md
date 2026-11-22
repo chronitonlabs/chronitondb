@@ -33,7 +33,7 @@ The documents of the feature `JVMEM`: those of this directory, and the design re
 |---|---|---|---|---|---|
 | [DEC-JVMEM-0001](decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md) | The JVM memory pools view has no switch and is not held back | Accepted | 2026-11-21 | `observability` | None |
 | [DEC-JVMEM-0002](decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md) | A memory pool with no maximum shows -1 as its maximum | Accepted | 2026-11-20 | `observability` | None |
-| [DEC-JVMEM-0003](decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) | The JVM memory pools view stays at Normal risk with two faults named | Accepted | 2026-11-20 | `observability` | None |
+| [DEC-JVMEM-0003](decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) | The JVM memory pools view stays at Normal risk with two faults named | Superseded by DEC-JVMEM-0013 | 2026-11-20 | `observability` | None |
 | [DEC-JVMEM-0004](decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md) | The view is named jvm_memory_pools and its size columns end in _bytes | Accepted | 2026-11-20 | `observability` | None |
 | [DEC-JVMEM-0005](decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md) | The type column shows HEAP and NON_HEAP, as JMX does | Accepted | 2026-11-20 | `observability` | None |
 | [DEC-JVMEM-0006](decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md) | A grant left on the view after moving back is documented, and permission code is unchanged | Accepted | 2026-11-20 | `observability` | None |
@@ -43,3 +43,4 @@ The documents of the feature `JVMEM`: those of this directory, and the design re
 | [DEC-JVMEM-0010](decisions/DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md) | The view catches nothing that a call to the JVM throws | Accepted | 2026-11-21 | `observability` | None |
 | [DEC-JVMEM-0011](decisions/DEC-JVMEM-0011-a-read-of-the-view-is-no-request-path.md) | A read of the view is no request path in the feature's class | Accepted | 2026-11-21 | `observability` | None |
 | [DEC-JVMEM-0012](decisions/DEC-JVMEM-0012-the-test-runs-the-gate-needs-are-built-outside-the-feature.md) | The test runs that the gate needs are built outside the feature | Accepted | 2026-11-22 | `observability`, `build-and-test` | None |
+| [DEC-JVMEM-0013](decisions/DEC-JVMEM-0013-the-view-stays-at-normal-risk-and-the-runs-of-its-two-tests-are-named.md) | The JVM memory pools view stays at Normal risk, and the runs of its two tests are named | Accepted | 2026-11-22 | `observability` | DEC-JVMEM-0003 |

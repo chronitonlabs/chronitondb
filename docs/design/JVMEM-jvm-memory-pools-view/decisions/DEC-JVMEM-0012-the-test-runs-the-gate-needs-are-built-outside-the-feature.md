@@ -64,7 +64,7 @@ Chosen option: "The maintainers, as work of its own", because the feature then s
 1. The two parts of continuous integration that section 6 of the delivery plan names MUST NOT be items of this feature. The maintainers plan and open them as work of its own on the line, in the area `build-and-test`.
 2. The plan of the feature keeps its two items, and the reach of the feature stays one area.
 3. The gate of milestone 1 waits for both parts. The milestone report MUST NOT recommend go before both parts exist and the tests of exit criteria 2, 3 and 5 of the delivery plan have run in them, which is exit criterion 10.
-4. This record decides who builds the two parts, and nothing else. It does not decide where the two tests of [DEC-JVMEM-0003](DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) run before the first part exists.
+4. This record decides who builds the two parts, and nothing else. [DEC-JVMEM-0013](DEC-JVMEM-0013-the-view-stays-at-normal-risk-and-the-runs-of-its-two-tests-are-named.md) decides in which runs the two tests that catch the faults of the view pass before the first part exists.
 
 ### Consequences
 

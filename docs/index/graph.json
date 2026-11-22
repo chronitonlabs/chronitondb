@@ -234,7 +234,7 @@
    "isPartOf": [
     "../design/JVMEM-jvm-memory-pools-view/"
    ],
-   "status": "Accepted",
+   "status": "Superseded by DEC-JVMEM-0013",
    "title": "The JVM memory pools view stays at Normal risk with two faults named",
    "type": "Decision record"
   },
@@ -390,6 +390,26 @@
    ],
    "status": "Accepted",
    "title": "The test runs that the gate needs are built outside the feature",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0013-the-view-stays-at-normal-risk-and-the-runs-of-its-two-tests-are-named.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-22",
+   "identifier": "DEC-JVMEM-0013",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "replaces": [
+    "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md"
+   ],
+   "status": "Accepted",
+   "title": "The JVM memory pools view stays at Normal risk, and the runs of its two tests are named",
    "type": "Decision record"
   },
   {

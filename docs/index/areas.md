@@ -58,7 +58,7 @@ None.
 | [JVM memory pools view in CQL](../design/JVMEM-jvm-memory-pools-view/delivery-plan.md) | Delivery plan | Draft | 1 |
 | [DEC-JVMEM-0001. The JVM memory pools view has no switch and is not held back](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0002. A memory pool with no maximum shows -1 as its maximum](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md) | Decision record | Accepted |  |
-| [DEC-JVMEM-0003. The JVM memory pools view stays at Normal risk with two faults named](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0003. The JVM memory pools view stays at Normal risk with two faults named](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) | Decision record | Superseded by DEC-JVMEM-0013 |  |
 | [DEC-JVMEM-0004. The view is named jvm_memory_pools and its size columns end in _bytes](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0004-view-is-named-jvm-memory-pools.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0005. The type column shows HEAP and NON_HEAP, as JMX does](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0005-type-column-shows-heap-and-non-heap-as-jmx-does.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0006. A grant left on the view after moving back is documented, and permission code is unchanged](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md) | Decision record | Accepted |  |
@@ -68,6 +68,7 @@ None.
 | [DEC-JVMEM-0010. The view catches nothing that a call to the JVM throws](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0011. A read of the view is no request path in the feature's class](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0011-a-read-of-the-view-is-no-request-path.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0012. The test runs that the gate needs are built outside the feature](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0012-the-test-runs-the-gate-needs-are-built-outside-the-feature.md) | Decision record | Accepted |  |
+| [DEC-JVMEM-0013. The JVM memory pools view stays at Normal risk, and the runs of its two tests are named](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0013-the-view-stays-at-normal-risk-and-the-runs-of-its-two-tests-are-named.md) | Decision record | Accepted |  |
 
 ## `configuration`
 

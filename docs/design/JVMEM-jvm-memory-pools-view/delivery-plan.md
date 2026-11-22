@@ -129,7 +129,7 @@ This is the test plan of the feature in the sense of ISO/IEC/IEEE 29119. It rest
 
 1. **JDK.** The line builds on Java 17 only (fact A). Section 4.1 says the tests run on each JDK the line's build supports, and on this line that is Java 17. Re-plan trigger 5 covers a change of that.
 2. **Configuration.** The project's own tests run on the options that `test-latest` and the latest configuration of the in-JVM distributed tests set ([testing.md](../../process/testing.md#test-levels), [PRINCIPLE-067](../../process/principles.md#principle-067), fact B). The view class reads no setting (criterion 18 of item 1), so no other test configuration applies to it. The tests of Apache Cassandra that exit criterion 5 names run on the same options and the same JDK as the project's own tests: the line builds on no other JDK (fact A), and the project supports no setup but those options ([PRINCIPLE-067](../../process/principles.md#principle-067)).
-3. **The build machines.** Until continuous integration runs the tests, each test runs on the project's build machines with the commands of the checks every commit passes, in a checkout of the line at the last merge of the milestone ([additive.md](../../process/additive.md#milestone-gates)).
+3. **The build machines.** Until continuous integration runs the tests, each test runs on the project's build machines with the commands of the checks every commit passes, in a checkout of the line at the last merge of the milestone ([additive.md](../../process/additive.md#milestone-gates)). Such a run can show that the tests of exit criteria 2, 3 and 5 pass. It does not meet exit criterion 10, which asks that the same tests have run in continuous integration, so the report of a milestone whose tests ran on the build machines only recommends no-go.
 4. **Continuous integration.** The checks that run on a pull request to the line today run no test of the build (fact C).
 
 **Where each exit criterion runs.**
@@ -137,10 +137,10 @@ This is the test plan of the feature in the sense of ISO/IEC/IEEE 29119. It rest
 | Exit criterion | Where it runs |
 |---|---|
 | 1. Both pull requests merged, checks passed, reviews clean | Read from GitHub. |
-| 2. The tests of item 1 | On the build machines until the parts below exist, then in continuous integration. |
-| 3. The validation tests of item 2 | On the build machines until the parts below exist, then in continuous integration. |
+| 2. The tests of item 1 | On the build machines until the parts below exist, then in continuous integration. Only the run in continuous integration meets exit criterion 10. |
+| 3. The validation tests of item 2 | On the build machines until the parts below exist, then in continuous integration. Only the run in continuous integration meets exit criterion 10. |
 | 4. The two tests of DEC-JVMEM-0003 | With criterion 2. |
-| 5. The unchanged tests of Apache Cassandra, those of facts D, E and H and those the design records name | On the build machines until the parts below exist, then in continuous integration. |
+| 5. The unchanged tests of Apache Cassandra, those of facts D, E and H and those the design records name | On the build machines until the parts below exist, then in continuous integration. Only the run in continuous integration meets exit criterion 10. |
 | 6. The two tests of a grant row left behind | With criteria 2 and 3. |
 | 7. Requirements delivered | A read of the merged code against section 3, for the milestone report. |
 | 8. The reference page as one whole | A read of the merged page, for the milestone report. |

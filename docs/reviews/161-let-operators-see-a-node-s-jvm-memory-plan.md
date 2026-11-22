@@ -24,7 +24,7 @@ limitations under the License.
 | Status | Open |
 | Work product | Plan and delivery plan: `docs/design/JVMEM-jvm-memory-pools-view/plan.md` |
 | Pull request | #166 |
-| Version reviewed | `83664ea0f4` |
+| Version reviewed | `d988ad69e1` |
 | Review type | Technical review (ISO/IEC 20246) |
 | Reviewer | The project's review App |
 | Author | Architect: chronitondb-agent |
@@ -50,6 +50,7 @@ Only the project's own automation keeps this record: it is the committed record 
 | Round | Date | Version reviewed | Scope | Verdict | Blockers | Majors | Minors | Nits |
 |---|---|---|---|---|---|---|---|---|
 | 1 | 2026-11-22 | `83664ea0f4` | The whole change | Changes requested | 0 | 1 | 13 | 3 |
+| 2 | 2026-11-22 | `d988ad69e1` | The changes since round 1 | Changes requested | 0 | 1 | 7 | 0 |
 
 ## 2. Anomaly list
 
@@ -74,6 +75,14 @@ One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A f
 | R1-15 | Fact C of `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:163` at `83664ea0f4` | The job `ant-check` is at line 15 of the workflow file. Line 28, which the fact cites, is its run step. | reviewer | Nit | Fixed in `1311ed368c` |
 | R1-16 | Fact G of `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:167` at `83664ea0f4` | `CoordinatorHelper.unsafeExecuteInternal` has two overloads, and the fact does not say which one it cites. It is the one that takes `Dispatcher.RequestTime`. | docs | Nit | Fixed in `0b650fda39` and `24d6810c6e` |
 | R1-17 | Fact C of `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:163` at `83664ea0f4` | The shape workflow runs `ant resolver-retrieve-build` a second time, at line 127, which the fact leaves out. | docs | Nit | Fixed in `a927ced5ff` |
+| R2-1 | Entry 4 of "Where the two tests of DEC-JVMEM-0003 run" in `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:155` at `d988ad69e1`, and the paragraph after the entries in `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:157` at `d988ad69e1`. Follows R1-1 | DEC-JVMEM-0003, an approved record, has both start tests run on every build of the feature. The plan says no build after a merge of other work runs them, and neither names that departure nor routes it to change control. | correctness, docs, compatibility, plan consistency | Major | Open: the maintainers' decision, by change control, on whether item 3 of the outcome of DEC-JVMEM-0003 changes or the first part of continuous integration is merged before item 1. What the full run before an import holds is added in `8160884db7` |
+| R2-2 | Exit criterion 4 of `Milestone 1: The view`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:65` at `d988ad69e1`, and criterion 26 of `Item 1: The view, its hook, its tests and its reference page`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:91` at `d988ad69e1` | Criterion 26 and entry 1 of section 6 ask for both tests only from the commit that adds them. A commit that adds the view to the hook before the tests is a build of the feature with neither test. | correctness, docs | Minor | Fixed in `de53145dc5` |
+| R2-3 | Criterion 24 of `Item 2: End to end tests of the view on a cluster`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:145` at `d988ad69e1` | The criterion expects the same error as for a table of Apache Cassandra in `system_views`. `ClientState.ensurePermissionOnResourceChain` writes a message that names the resource, so the two messages differ by the name of the table. | correctness | Minor | Fixed in `04126022d5` |
+| R2-4 | The row of FREQ-JVMEM-002 in `3. Traceability`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:175` at `d988ad69e1`, and criterion 15 of `Item 2: End to end tests of the view on a cluster`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:136` at `d988ad69e1` | FREQ-JVMEM-002 holds a row for every pool whichever rows the statement asks for. Only criterion 15, a read of another pool by name that fails, shows that part. It is neither tagged with the requirement nor in its row. | plan consistency | Minor | Fixed in `eaf2ebee02` |
+| R2-5 | Exit criteria 2, 3, 5 and 10 of `Milestone 1: The view`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:63` at `d988ad69e1`, and the paragraph on the parts of continuous integration in `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:164` at `d988ad69e1` | Exit criteria 2, 3 and 5 run at the last merge of the milestone. Parts of continuous integration that are merged after item 2 cannot run at that commit, so the gate cannot pass without a new plan. | plan consistency | Minor | Fixed in `cb5515dad8` |
+| R2-6 | The note on criterion 17 in `1. Items`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:106` at `d988ad69e1`, and limit 2 of `2. Validation items`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:162` at `d988ad69e1` | The note says the tests of criterion 7 show that the view catches nothing. A view that catches, writes a log line and throws the same object again passes criteria 7 and 22. | plan consistency | Minor | Fixed in `c64989090a` |
+| R2-7 | Limit 7 of `2. Validation items`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:167` at `d988ad69e1` | The limit says one test of item 1 alone proves no value is kept. That test reads the object of the view class, so a value kept in a static field or another object passes it. | plan consistency | Minor | Fixed in `d0fd18aba3` |
+| R2-8 | Criterion 22 of `Item 2: End to end tests of the view on a cluster`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:143` at `d988ad69e1` | The first outcome names no kind of role. A superuser passes a permission check whatever the row does, and a role with no grant on the other table fails it although the row did nothing. | plan consistency | Minor | Fixed in `03713c6b6e` |
 
 1. **Fixed in `<hash>`**: the commit that fixes the finding, a commit of the pull request's branch. Several commits are joined with "and". A finding on the pull request's title or body is "Fixed in the pull request title" or "body".
 2. **Accepted: `<reason>`**: the work product stays as it is, for the reason given. The reviewer judges the reason in the next round.

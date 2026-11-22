@@ -63,19 +63,19 @@ The feature has two items: one build item and one validation item. The feature h
 
 - **Delivers:** FREQ-JVMEM-001, FREQ-JVMEM-002, FREQ-JVMEM-003, FREQ-JVMEM-004, FREQ-JVMEM-005, FREQ-JVMEM-006, FREQ-JVMEM-007, FREQ-JVMEM-008, FREQ-JVMEM-009, FREQ-JVMEM-010, FREQ-JVMEM-011, FREQ-JVMEM-012, FREQ-JVMEM-013, FREQ-JVMEM-014, FREQ-JVMEM-015, FREQ-JVMEM-016, FREQ-JVMEM-017, FREQ-JVMEM-018, FREQ-JVMEM-019, FREQ-JVMEM-020
 - **Acceptance criteria:**
-  1. The item MUST add the view class to the package `org.chronitondb.virtual`, with the table, the columns and the types of section 2.2, and with no import that section 2.7 does not allow.
-  2. The item MUST add the view to the tables of `system_views` by the one hook of section 2.7, with the delta entry of that change in the same pull request.
+  1. The item MUST add the view class to the package `org.chronitondb.virtual`, with the table, the columns and the types of section 2.2, and with no import that section 2.7 does not allow (FREQ-JVMEM-001).
+  2. The item MUST add the view to the tables of `system_views` by the one hook of section 2.7, with the delta entry of that change in the same pull request (FREQ-JVMEM-001, FREQ-JVMEM-011).
   3. When a test node starts with the default configuration and a statement reads the view, the node MUST answer with the rows of the view, as the first test of problem 1 in section 4.1 checks (FREQ-JVMEM-001).
   4. When a read runs, the view MUST hold the rows that FREQ-JVMEM-002 to FREQ-JVMEM-007 and FREQ-JVMEM-014 require, and each test that problem 2 in section 4.1 names proves it.
-  5. When a statement reads every row of the view, one row by its name, or two rows by their names with `IN` on a test node, the node MUST answer with no error, which are the reads that problem 3 in section 4.1 adds to the unit tests of problem 2.
+  5. When a statement reads every row of the view, one row by its name, or two rows by their names with `IN` on a test node, the node MUST answer with no error, which are the reads that problem 3 in section 4.1 adds to the unit tests of problem 2 (FREQ-JVMEM-002).
   6. When a test reads the view twice and changes between the two reads the usage of a memory pool that it supplies, the second answer MUST hold the changed sizes, which is the last test of problem 3 in section 4.1 with a pool of the test's own (FREQ-JVMEM-007).
   7. If a call that the view makes to the JVM throws an exception, or an error of the JVM that is no out of memory error, while a read builds its rows, whether the call for the list of memory pools or a call to the bean of one memory pool, then the read MUST fail with what was thrown, uncaught by the view, whichever rows the statement asks for (FREQ-JVMEM-018).
   8. While no statement reads the view, both before the first read of the view and after a read has ended, the feature MUST run no thread and no scheduled task and keep no value of a memory pool, as the test of problem 9 in section 4.1 checks, which the item extends to look for a thread and a scheduled task after a read too (FREQ-JVMEM-008).
   9. The node MUST apply to a statement on the view the permission check of FREQ-JVMEM-009, with no check of the feature's own, as the first test of problem 5 in section 4.1 checks (FREQ-JVMEM-009).
-  10. The item MUST add the test of a grant row left behind that problem 7 in section 4.1 names, with its four places, in which the warm-up of the permissions cache runs after the row is in the auth tables ([DEC-JVMEM-0006](decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md)).
+  10. The item MUST add the test of a grant row left behind that problem 7 in section 4.1 names, with its four places, in which the warm-up of the permissions cache runs after the row is in the auth tables (FREQ-JVMEM-016, [DEC-JVMEM-0006](decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md)).
   11. The item MUST leave every other table of `system_views` and every other surface that FREQ-JVMEM-011 names as they were, as the test of problem 4 in section 4.1 and the unchanged suites of Apache Cassandra that exit criterion 5 of the [delivery plan](delivery-plan.md#milestone-1-the-view) names check. The test of problem 4 expects each name of a list that is written in the test, which holds every table of `system_views` on a node of the line at the commit before this item is merged, and it takes no expected name from the running node.
   12. The item MUST add the reference page of the view under `docs/`, with every statement that FREQ-JVMEM-012, FREQ-JVMEM-013, FREQ-JVMEM-015, FREQ-JVMEM-016, FREQ-JVMEM-019 and FREQ-JVMEM-020 require, in the same pull request as the view class and the hook ([PRINCIPLE-077](../../process/principles.md#principle-077)).
-  13. The documentation tests that problems 3, 6, 7, 8 and 10 in section 4.1 name MUST pass on the reference page as the item merges it.
+  13. The documentation tests that problems 3, 6, 7, 8 and 10 in section 4.1 name MUST pass on the reference page as the item merges it (FREQ-JVMEM-012, FREQ-JVMEM-013, FREQ-JVMEM-015, FREQ-JVMEM-016, FREQ-JVMEM-019, FREQ-JVMEM-020).
   14. The documentation tests MUST also check that the reference page gives the type of each column as `system_virtual_schema.columns` of a test node has it, gives a meaning for each column, names `HEAP` and `NON_HEAP` as the two values of `type`, and states the meaning of -1 in `max_bytes` and the meaning of null in the three size columns (FREQ-JVMEM-012).
   15. The view class MUST take the memory pools of a read through one place that a test of the project can replace with pools of its own, in a unit test and on one node of the cluster of an in-JVM distributed test, so that the tests of FREQ-JVMEM-005, FREQ-JVMEM-006, FREQ-JVMEM-007, FREQ-JVMEM-014 and FREQ-JVMEM-018 in both items can run.
   16. The item MUST merge the view class, the hook, its tests and the reference page in one pull request, so that the line never holds the view without them ([PRINCIPLE-020](../../process/principles.md#principle-020)).
@@ -133,7 +133,7 @@ Criterion 15 is the one interface between the two items. Needed by the tests of 
   14. If a node of the cluster has a memory pool whose usage is null, which the test supplies through the place of criterion 15 of item 1, then a read of the view through CQL on that node MUST return the row of that pool with its name, its type and null in the three sizes (FREQ-JVMEM-014).
   15. If the call for the list of memory pools, or a call to the bean of a memory pool that the test supplies, throws an exception or an error of the JVM that is no out of memory error on a node of the cluster, then a read of the whole view and a read of another pool by its name, each run inside that node with no connection of a client, MUST each fail with a throwable that holds the class and the message of what was thrown, in itself or among its causes (FREQ-JVMEM-018, FREQ-JVMEM-019).
   16. When a client reads the whole view on a node of the cluster with a page size below the number of memory pools, while the JVM does not change its list of pools, the pages together MUST hold every memory pool exactly once (FREQ-JVMEM-002, FREQ-JVMEM-015).
-  17. When a statement names 2 memory pools with `IN` on a node of the cluster, the node MUST return the row of each of the 2 pools (FREQ-JVMEM-015).
+  17. When a statement names 2 memory pools with `IN` on a node of the cluster, the node MUST return the row of each of the 2 pools (FREQ-JVMEM-002, FREQ-JVMEM-015).
   18. The validation tests MUST read the reference page as item 1 merged it and check it against a node of the cluster: the name of the view, each column name and each column type against `system_virtual_schema`, each value of `type` that a read returns against the two values the page names, and each CQL statement that the page gives for a node that has the view against the result the page states for such a node (FREQ-JVMEM-012, FREQ-JVMEM-013, FREQ-JVMEM-016, FREQ-JVMEM-020).
   19. When a node of the cluster has a memory pool that the test supplies and the other node has none, a read of the view through CQL on the other node MUST return no row of that pool (FREQ-JVMEM-007).
   20. The validation tests MUST check that the reference page as item 1 merged it holds each statement that FREQ-JVMEM-012, FREQ-JVMEM-013, FREQ-JVMEM-015, FREQ-JVMEM-016, FREQ-JVMEM-019 and FREQ-JVMEM-020 require of the documentation, in tests that are written from those requirements and not from the documentation tests of item 1.
@@ -169,7 +169,7 @@ Every feature requirement has a validation test, which the gate of a milestone n
 | FREQ | Items | Validation item |
 |---|---|---|
 | FREQ-JVMEM-001 | Item 1, criteria 1, 2, 3, 18 and 25 | Item 2, criterion 1, within limit 8 of section 2 of this plan |
-| FREQ-JVMEM-002 | Item 1, criteria 4 and 5 | Item 2, criteria 2, 15, 16, 17 and 21 |
+| FREQ-JVMEM-002 | Item 1, criteria 4 and 5 | Item 2, criteria 2, 16, 17 and 21 |
 | FREQ-JVMEM-003 | Item 1, criterion 4 | Item 2, criterion 2 |
 | FREQ-JVMEM-004 | Item 1, criterion 4 | Item 2, criterion 2 |
 | FREQ-JVMEM-005 | Item 1, criteria 4, 15 and 20 | Item 2, criterion 3 |
@@ -180,11 +180,11 @@ Every feature requirement has a validation test, which the gate of a milestone n
 | FREQ-JVMEM-010 | Item 1, criterion 23 | Item 2, criterion 10 |
 | FREQ-JVMEM-011 | Item 1, criteria 2, 11 and 21 | Item 2, criteria 11 and 12, within limit 4 of section 2 of this plan |
 | FREQ-JVMEM-012 | Item 1, criteria 12, 13 and 14 | Item 2, criteria 18 and 20, within limit 5 of section 2 of this plan |
-| FREQ-JVMEM-013 | Item 1, criteria 12 and 13 | Item 2, criteria 13, 18 and 20, within limit 1 of section 2 of this plan |
+| FREQ-JVMEM-013 | Item 1, criteria 12 and 13 | Item 2, criteria 18 and 20, within limit 1 of section 2 of this plan |
 | FREQ-JVMEM-014 | Item 1, criteria 4 and 15 | Item 2, criterion 14 |
-| FREQ-JVMEM-015 | Item 1, criteria 5, 12 and 13 | Item 2, criteria 16, 17, 20 and 21, within limit 3 of section 2 of this plan |
+| FREQ-JVMEM-015 | Item 1, criteria 12 and 13 | Item 2, criteria 16, 17, 20 and 21, within limit 3 of section 2 of this plan |
 | FREQ-JVMEM-016 | Item 1, criteria 10, 12 and 13 | Item 2, criteria 13, 18, 20 and 22, within limit 1 of section 2 of this plan |
 | FREQ-JVMEM-017 | Item 1, criterion 24 | Item 2, criteria 13, 23 and 24 |
 | FREQ-JVMEM-018 | Item 1, criteria 7, 15, 17 and 22 | Item 2, criterion 15, within limit 2 of section 2 of this plan |
 | FREQ-JVMEM-019 | Item 1, criteria 12 and 13 | Item 2, criteria 15 and 20, within limit 2 of section 2 of this plan |
-| FREQ-JVMEM-020 | Item 1, criteria 12 and 13 | Item 2, criteria 15, 18 and 20, within limit 2 of section 2 of this plan |
+| FREQ-JVMEM-020 | Item 1, criteria 12 and 13 | Item 2, criteria 18 and 20, within limit 2 of section 2 of this plan |

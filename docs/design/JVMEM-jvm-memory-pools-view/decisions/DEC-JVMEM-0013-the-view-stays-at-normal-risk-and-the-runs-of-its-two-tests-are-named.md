@@ -65,10 +65,10 @@ Chosen option: "The runs are named", because the feature then does not wait for 
 
 1. The work on the JVM memory pools view stays at Normal risk. The label on the issue is not changed.
 2. The feature spec MUST name both faults in its Risk row and in its section on where problems could occur, each with the test that catches it.
-3. The test that starts a node and reads the view, and the test that compares the view with the memory pools of the same JVM, MUST pass in each of these runs:
+3. The test that starts a node and reads the view, and the test that compares the view with the memory pools of the same JVM, MUST be among the tests of each of these runs:
    1. The test run before each commit of the pull request of an item of the feature, from the commit that adds the view to the tables of `system_views` on. A commit before that one builds no node that holds the view.
    2. The run of the tests of the feature on the line at the gate of its final milestone.
-   3. Each run of the first part of continuous integration, on a pull request to the line and on the line itself, from the day that part exists.
+   3. Each run of the first part of continuous integration on a commit that builds a node which holds the view, on a pull request to the line and on the line itself, from the day that part exists.
 4. Until the first part of continuous integration exists, a pull request of other work of the project, which is no import from Apache Cassandra, MAY be merged to the line with no run of the two tests.
 5. This record changes nothing of the gate. Item 3 of the outcome of [DEC-JVMEM-0012](DEC-JVMEM-0012-the-test-runs-the-gate-needs-are-built-outside-the-feature.md) holds it to both parts of continuous integration.
 6. This is a departure from the Correctness and Availability rows of the class table in [classification.md](../../../process/classification.md#risk), made for this view only. It changes no rule of that page, and the class of other work is decided by its own facts.

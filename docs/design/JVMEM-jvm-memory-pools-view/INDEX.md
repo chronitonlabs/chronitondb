@@ -42,3 +42,4 @@ The documents of the feature `JVMEM`: those of this directory, and the design re
 | [DEC-JVMEM-0009](decisions/DEC-JVMEM-0009-an-error-for-one-pool-fails-every-read.md) | Every read builds the row of every pool, and a JVM error for one pool fails every read | Accepted | 2026-11-20 | `observability` | None |
 | [DEC-JVMEM-0010](decisions/DEC-JVMEM-0010-the-view-catches-nothing-a-call-to-the-jvm-throws.md) | The view catches nothing that a call to the JVM throws | Accepted | 2026-11-21 | `observability` | None |
 | [DEC-JVMEM-0011](decisions/DEC-JVMEM-0011-a-read-of-the-view-is-no-request-path.md) | A read of the view is no request path in the feature's class | Accepted | 2026-11-21 | `observability` | None |
+| [DEC-JVMEM-0012](decisions/DEC-JVMEM-0012-the-test-runs-the-gate-needs-are-built-outside-the-feature.md) | The test runs that the gate needs are built outside the feature | Accepted | 2026-11-22 | `observability`, `build-and-test` | None |

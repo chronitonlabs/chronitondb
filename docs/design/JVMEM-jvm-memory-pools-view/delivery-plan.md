@@ -101,7 +101,7 @@ The limit is 1. Item 2 depends on item 1, so the two items cannot be in progress
 5. Risk R2 of section 9 happens: the line starts to build on a JDK other than Java 17, or a test finds a JDK or a collector that reports its memory pools in a way the view does not show as section 2.2 says.
 6. An import from Apache Cassandra changes code that a fact of section 12 cites before the item that rests on that fact is merged.
 7. A decision of the maintainers changes the feature spec, the class of the feature or the line.
-8. The parts of continuous integration that section 6 names do not exist when item 2 is merged. The milestone report then recommends no-go and asks the maintainers. The order of the merges needs no change to this plan: when both parts exist, exit criteria 2, 3 and 5 run at the gate commit, as milestone 1 defines it, and a new report reads that run.
+8. The parts of continuous integration that section 6 names do not exist when item 2 is merged. The milestone report then recommends no-go. [DEC-JVMEM-0012](decisions/DEC-JVMEM-0012-the-test-runs-the-gate-needs-are-built-outside-the-feature.md) has the gate wait for both parts, so the wait changes nothing in this plan and starts no change control: when both parts exist, exit criteria 2, 3 and 5 run at the gate commit, as milestone 1 defines it, and a new report reads that run. The plan is changed, through change control, only where the maintainers then decide something other than to wait.
 9. The line gets its scenario module before the design record of an item is merged. Section 4.1 plans the tests without one.
 
 A re-plan goes through change control, as [additive.md](../../process/additive.md#change-control-after-a-merge) says.

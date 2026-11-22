@@ -130,7 +130,7 @@ This is the test plan of the feature in the sense of ISO/IEC/IEEE 29119. It rest
 
 1. **JDK.** The line builds on Java 17 only (fact A). Section 4.1 says the tests run on each JDK the line's build supports, and on this line that is Java 17. Re-plan trigger 5 covers a change of that.
 2. **Configuration.** The project's own tests run on the options that `test-latest` and the latest configuration of the in-JVM distributed tests set ([testing.md](../../process/testing.md#test-levels), [PRINCIPLE-067](../../process/principles.md#principle-067), fact B). The view class reads no setting (criterion 25 of item 1), so no other test configuration applies to it. The tests of Apache Cassandra that exit criterion 5 names run on the same options and the same JDK as the project's own tests: the line builds on no other JDK (fact A), and the project supports no setup but those options ([PRINCIPLE-067](../../process/principles.md#principle-067)).
-3. **The build machines.** Until continuous integration runs the tests, each test runs on the project's build machines with the commands of the checks every commit passes, in a checkout of the line at the last merge of the milestone ([additive.md](../../process/additive.md#milestone-gates)). Such a run can show that the tests of exit criteria 2, 3 and 5 pass. It does not meet exit criterion 10, which asks that the same tests have run in continuous integration, so the report of a milestone whose tests ran on the build machines only recommends no-go. Where a part of continuous integration is merged after item 2, the tests run again in continuous integration at the gate commit, and that run is the one exit criteria 2, 3, 5 and 10 read.
+3. **The build machines.** Until continuous integration runs the tests, the tests that exit criteria 2, 3 and 5 name can run on the project's build machines, with the commands of the checks every commit passes, in a checkout of the line at the merge of item 2 ([additive.md](../../process/additive.md#milestone-gates)). Such a run shows whether those tests pass at that commit. It is no run of exit criteria 2, 3 and 5, which run in continuous integration at the gate commit, and it does not meet exit criterion 10. So the report of a milestone whose tests ran on the build machines only gives that run as what is known so far and recommends no-go.
 4. **Continuous integration.** The checks that run on a pull request to the line today run no test of the build (fact C).
 
 **Where each exit criterion runs.**
@@ -138,10 +138,10 @@ This is the test plan of the feature in the sense of ISO/IEC/IEEE 29119. It rest
 | Exit criterion | Where it runs |
 |---|---|
 | 1. Both pull requests merged, checks passed, reviews clean | Read from GitHub. |
-| 2. The tests of item 1 | On the build machines until the parts below exist, then in continuous integration. Only the run in continuous integration meets exit criterion 10. |
-| 3. The validation tests of item 2 | On the build machines until the parts below exist, then in continuous integration. Only the run in continuous integration meets exit criterion 10. |
+| 2. The tests of item 1 | In continuous integration, at the gate commit. Until both parts below exist, a run on the build machines shows whether the tests pass, and it is no run of this criterion. |
+| 3. The validation tests of item 2 | In continuous integration, at the gate commit. Until both parts below exist, a run on the build machines shows whether the tests pass, and it is no run of this criterion. |
 | 4. The two tests of DEC-JVMEM-0013 | Read from the test logs of both pull requests, and with criterion 2. The paragraph below this table says in which runs the two tests pass. |
-| 5. The unchanged tests of Apache Cassandra, those of facts D, E and H and those the design records name | On the build machines until the parts below exist, then in continuous integration. Only the run in continuous integration meets exit criterion 10. |
+| 5. The unchanged tests of Apache Cassandra, those of facts D, E and H and those the design records name | In continuous integration, at the gate commit. Until both parts below exist, a run on the build machines shows whether the tests pass, and it is no run of this criterion. |
 | 6. The two tests of a grant row left behind | With criteria 2 and 3. |
 | 7. Requirements delivered | A read of the merged code against section 3, for the milestone report. |
 | 8. The reference page as one whole | A read of the merged page, for the milestone report. |

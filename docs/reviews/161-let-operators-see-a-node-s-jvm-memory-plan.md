@@ -42,6 +42,7 @@ Only the project's own automation keeps this record: it is the committed record 
 - [1. Rounds](#1-rounds)
 - [2. Anomaly list](#2-anomaly-list)
 - [3. Decisions](#3-decisions)
+  - [D1. May a merge of other work go without the two tests of the view until continuous integration runs them](#d1-may-a-merge-of-other-work-go-without-the-two-tests-of-the-view-until-continuous-integration-runs-them)
 - [4. Limits](#4-limits)
 - [5. Exit decision](#5-exit-decision)
 
@@ -75,7 +76,7 @@ One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A f
 | R1-15 | Fact C of `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:163` at `83664ea0f4` | The job `ant-check` is at line 15 of the workflow file. Line 28, which the fact cites, is its run step. | reviewer | Nit | Fixed in `1311ed368c` |
 | R1-16 | Fact G of `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:167` at `83664ea0f4` | `CoordinatorHelper.unsafeExecuteInternal` has two overloads, and the fact does not say which one it cites. It is the one that takes `Dispatcher.RequestTime`. | docs | Nit | Fixed in `0b650fda39` and `24d6810c6e` |
 | R1-17 | Fact C of `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:163` at `83664ea0f4` | The shape workflow runs `ant resolver-retrieve-build` a second time, at line 127, which the fact leaves out. | docs | Nit | Fixed in `a927ced5ff` |
-| R2-1 | Entry 4 of "Where the two tests of DEC-JVMEM-0003 run" in `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:155` at `d988ad69e1`, and the paragraph after the entries in `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:157` at `d988ad69e1`. Follows R1-1 | DEC-JVMEM-0003, an approved record, has both start tests run on every build of the feature. The plan says no build after a merge of other work runs them, and neither names that departure nor routes it to change control. | correctness, docs, compatibility, plan consistency | Major | Open: the maintainers' decision, by change control, on whether item 3 of the outcome of DEC-JVMEM-0003 changes or the first part of continuous integration is merged before item 1. What the full run before an import holds is added in `8160884db7` |
+| R2-1 | Entry 4 of "Where the two tests of DEC-JVMEM-0003 run" in `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:155` at `d988ad69e1`, and the paragraph after the entries in `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:157` at `d988ad69e1`. Follows R1-1 | DEC-JVMEM-0003, an approved record, has both start tests run on every build of the feature. The plan says no build after a merge of other work runs them, and neither names that departure nor routes it to change control. | correctness, docs, compatibility, plan consistency | Major | Fixed in `8160884db7`, `f2d4aed3f0` and `abfc02e19d` |
 | R2-2 | Exit criterion 4 of `Milestone 1: The view`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:65` at `d988ad69e1`, and criterion 26 of `Item 1: The view, its hook, its tests and its reference page`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:91` at `d988ad69e1` | Criterion 26 and entry 1 of section 6 ask for both tests only from the commit that adds them. A commit that adds the view to the hook before the tests is a build of the feature with neither test. | correctness, docs | Minor | Fixed in `de53145dc5` |
 | R2-3 | Criterion 24 of `Item 2: End to end tests of the view on a cluster`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:145` at `d988ad69e1` | The criterion expects the same error as for a table of Apache Cassandra in `system_views`. `ClientState.ensurePermissionOnResourceChain` writes a message that names the resource, so the two messages differ by the name of the table. | correctness | Minor | Fixed in `04126022d5` |
 | R2-4 | The row of FREQ-JVMEM-002 in `3. Traceability`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:175` at `d988ad69e1`, and criterion 15 of `Item 2: End to end tests of the view on a cluster`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:136` at `d988ad69e1` | FREQ-JVMEM-002 holds a row for every pool whichever rows the statement asks for. Only criterion 15, a read of another pool by name that fails, shows that part. It is neither tagged with the requirement nor in its row. | plan consistency | Minor | Fixed in `eaf2ebee02` |
@@ -91,7 +92,13 @@ One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A f
 
 ## 3. Decisions
 
-No decisions.
+### D1. May a merge of other work go without the two tests of the view until continuous integration runs them
+
+- **Raised by:** R2-1.
+- **Options:** A. Yes. A new decision record replaces DEC-JVMEM-0003, keeps Normal risk and names the runs that hold both tests until the first part of continuous integration exists. B. No. DEC-JVMEM-0003 stands as written, and item 1 waits until the first part of continuous integration is merged on the line.
+- **Chosen:** A. Yes. A new decision record replaces DEC-JVMEM-0003, keeps Normal risk and names the runs that hold both tests until the first part of continuous integration exists.
+- **Reason:** The feature does not then wait for work that has no plan yet. The view stores nothing and sends nothing, a fault that such a merge brings is found by the next run that holds both tests, and the gate needs both tests in continuous integration.
+- **Decided by:** a maintainer, `millerjp`, 2026-11-22, `DEC-JVMEM-0013` in `docs/design/JVMEM-jvm-memory-pools-view/decisions/`.
 
 ## 4. Limits
 

@@ -133,13 +133,15 @@ Criterion 15 is the one interface between the two items. Needed by the tests of 
   20. The validation tests MUST check that the reference page as item 1 merged it holds each statement that FREQ-JVMEM-012, FREQ-JVMEM-013, FREQ-JVMEM-015, FREQ-JVMEM-016, FREQ-JVMEM-019 and FREQ-JVMEM-020 require of the documentation, in tests that are written from those requirements and not from the documentation tests of item 1.
   21. When a client sends `SELECT count(*)` on the view to a node of the cluster with a page size below the number of memory pools, while the JVM does not change its list of pools, the node MUST return the number of memory pools (FREQ-JVMEM-002, FREQ-JVMEM-015).
   22. When a test writes into the auth tables of a cluster, with authentication, authorization and the warm-up of the auth caches on, a grant row that names a table of `system_views` that no node has, and then starts a node of the cluster again, each of the four places of section 7.4 MUST do what that section says of it (FREQ-JVMEM-016).
+  23. When a role that is no superuser, to which a superuser granted `SELECT` and `AUTHORIZE` on the view by name, sends `GRANT SELECT ON system_views.jvm_memory_pools` to another role and then the `REVOKE` of that grant, on a cluster with authentication and authorization on, the node MUST accept both statements, so that the listing of section 7.4 shows the grant after the first and no row of the other role after the second (FREQ-JVMEM-017).
+  24. If a role that is no superuser, which has `SELECT` on the view by name and no `AUTHORIZE` on the view or on a resource above it, sends a `GRANT` or a `REVOKE` of `SELECT` on the view on that cluster, then the node MUST refuse the statement with the error that it gives that role for the same statement on a table of Apache Cassandra in `system_views` on which the role has the same grants (FREQ-JVMEM-017).
 - **Depends on:** 1
 - **Line:** chronitondb-sandbox
 - **Milestone:** 1
 - **Parallel:** No. It starts when item 1 is merged.
 - **Item type:** validation item
 
-The tests of this item send their statements to a node of a started cluster. The tests of criterion 15 run their statements inside the node, as the coordinator of an in-JVM cluster does, with no connection of a client (fact G of the [delivery plan](delivery-plan.md#6-test-plan)). So they see what the read threw, and they assert nothing of what Apache Cassandra answers and logs on a client's connection for a failed read: item 4 of section 2.5 and section 4.1 say that no test of the feature covers that code. Criterion 15 does not tell a view that passes on what was thrown from a view that catches it and throws something of its own with what it caught as the cause. Criterion 17 of item 1 forbids the second, and the review of the view class holds it. No test of this item throws an out of memory error.
+The tests of this item send their statements to a node of a started cluster. The tests of criterion 15 run their statements inside the node, as the coordinator of an in-JVM cluster does, with no connection of a client (fact G of the [delivery plan](delivery-plan.md#6-test-plan)). So they see what the read threw, and they assert nothing of what Apache Cassandra answers and logs on a client's connection for a failed read: item 4 of section 2.5 and section 4.1 say that no test of the feature covers that code. Criterion 15 does not tell a view that passes on what was thrown from a view that catches it and throws something of its own with what it caught as the cause. Criterion 17 of item 1 forbids the second, and the review of the view class holds it. No test of this item throws an out of memory error. Criteria 23 and 24 send a `GRANT` and a `REVOKE` as a role that is no superuser, with `AUTHORIZE` and without it (fact 19). A check of the feature's own on such a role would pass every test that sends them as a superuser, so criterion 13 alone does not show that the feature adds none.
 
 ## 2. Validation items
 
@@ -176,7 +178,7 @@ Every feature requirement has a validation test, which the gate of a milestone n
 | FREQ-JVMEM-014 | Item 1, criteria 4 and 15 | Item 2, criterion 14 |
 | FREQ-JVMEM-015 | Item 1, criteria 5, 12 and 13 | Item 2, criteria 16, 17, 20 and 21, within limit 3 of section 2 of this plan |
 | FREQ-JVMEM-016 | Item 1, criteria 10, 12 and 13 | Item 2, criteria 13, 18, 20 and 22, within limit 1 of section 2 of this plan |
-| FREQ-JVMEM-017 | Item 1, criterion 9 | Item 2, criterion 13 |
+| FREQ-JVMEM-017 | Item 1, criterion 9 | Item 2, criteria 13, 23 and 24 |
 | FREQ-JVMEM-018 | Item 1, criteria 7, 15 and 17 | Item 2, criterion 15, within limit 2 of section 2 of this plan |
 | FREQ-JVMEM-019 | Item 1, criteria 12 and 13 | Item 2, criteria 15 and 20, within limit 2 of section 2 of this plan |
 | FREQ-JVMEM-020 | Item 1, criteria 12 and 13 | Item 2, criteria 15, 18 and 20, within limit 2 of section 2 of this plan |

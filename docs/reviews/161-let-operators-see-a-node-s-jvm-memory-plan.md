@@ -21,10 +21,10 @@ limitations under the License.
 |---|---|
 | Title | Review record: plan and delivery plan of #161 Let operators see a node's JVM memory pools from CQL |
 | Document type | Record (ISO/IEC/IEEE 15289) |
-| Status | Open |
+| Status | Closed |
 | Work product | Plan and delivery plan: `docs/design/JVMEM-jvm-memory-pools-view/plan.md` |
 | Pull request | #166 |
-| Version reviewed | `d988ad69e1` |
+| Version reviewed | `2de7a287ac` |
 | Review type | Technical review (ISO/IEC 20246) |
 | Reviewer | The project's review App |
 | Author | Architect: chronitondb-agent |
@@ -52,6 +52,7 @@ Only the project's own automation keeps this record: it is the committed record 
 |---|---|---|---|---|---|---|---|---|
 | 1 | 2026-11-22 | `83664ea0f4` | The whole change | Changes requested | 0 | 1 | 13 | 3 |
 | 2 | 2026-11-22 | `d988ad69e1` | The changes since round 1 | Changes requested | 0 | 1 | 7 | 0 |
+| 3 | 2026-11-23 | `2de7a287ac` | The changes since round 2 | Clean | 0 | 0 | 9 | 2 |
 
 ## 2. Anomaly list
 
@@ -84,6 +85,17 @@ One row per finding, in the reviewer's order. The id is `R<round>-<number>`. A f
 | R2-6 | The note on criterion 17 in `1. Items`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:106` at `d988ad69e1`, and limit 2 of `2. Validation items`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:162` at `d988ad69e1` | The note says the tests of criterion 7 show that the view catches nothing. A view that catches, writes a log line and throws the same object again passes criteria 7 and 22. | plan consistency | Minor | Fixed in `c64989090a` |
 | R2-7 | Limit 7 of `2. Validation items`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:167` at `d988ad69e1` | The limit says one test of item 1 alone proves no value is kept. That test reads the object of the view class, so a value kept in a static field or another object passes it. | plan consistency | Minor | Fixed in `d0fd18aba3` |
 | R2-8 | Criterion 22 of `Item 2: End to end tests of the view on a cluster`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:143` at `d988ad69e1` | The first outcome names no kind of role. A superuser passes a permission check whatever the row does, and a role with no grant on the other table fails it although the row did nothing. | plan consistency | Minor | Fixed in `03713c6b6e` |
+| R3-1 | "The gate commit" of `Milestone 1: The view`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:61` at `2de7a287ac` | The gate commit is the first commit at which both parts of continuous integration ran the tests, whether they pass or not. A failure there that is fixed later ties exit criteria 2, 3 and 5 to a failing commit. | correctness, plan consistency | Minor | Fixed in `07d5c1b184` |
+| R3-2 | Exit criterion 4 of `Milestone 1: The view`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:66` at `2de7a287ac` | The criterion asks both tests to pass in every run of the first part on the line since item 1. One failed run that is fixed later fails it for good. DEC-JVMEM-0013 asks only that they are among the tests. | correctness, plan consistency | Minor | Fixed in `e2ac8516b5` |
+| R3-3 | Exit criterion 4 of `Milestone 1: The view`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:66` at `2de7a287ac` | The criterion states how a check on a pull request of other work behaves when one of the two tests fails. No item and no record plans that check or makes it required. | plan consistency | Minor | Fixed in `1343c6f5a1` |
+| R3-4 | Re-plan trigger 1 of `5. Re-plan triggers`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:97` at `2de7a287ac`, and re-plan trigger 8 of `5. Re-plan triggers`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:104` at `2de7a287ac` | With both parts of continuous integration missing at the merge of item 2, trigger 1 starts change control, since a criterion cannot run where the test plan says, and trigger 8 says that none starts. | plan consistency | Minor | Fixed in `d2cdc981c5` |
+| R3-5 | Exit criterion 5 of `Milestone 1: The view`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:67` at `2de7a287ac` | The sentences on an import cover a class that an import changes or adds. An import that removes or renames a named class leaves the criterion naming a class that the gate commit does not have. | correctness | Minor | Fixed in `8b58a6ac53` |
+| R3-6 | Items 3 and 4 of `Decision outcome` of DEC-JVMEM-0013, `docs/design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0013-the-view-stays-at-normal-risk-and-the-runs-of-its-two-tests-are-named.md:68` at `2de7a287ac` | The bound of the record leans on the full test runs before an import and before a release candidate. Item 3 does not name them, and item 4 says nothing that an import must do. | correctness, docs | Minor | Fixed in `8027b92542` |
+| R3-7 | "Depends on" of `Item 1: The view, its hook, its tests and its reference page`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:92` at `2de7a287ac`, and the paragraph on the parts of continuous integration in `6. Test plan`, `docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md:165` at `2de7a287ac` | DEC-JVMEM-0013 has dependent work wait for the change control of the feature spec. The plan says that item 1 depends on nothing, and the delivery plan that the items do not wait. | docs, correctness, plan consistency | Minor | Fixed in `7d5d31264e` |
+| R3-8 | Criterion 26 of `Item 1: The view, its hook, its tests and its reference page`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:91` at `2de7a287ac`, and criterion 25 of `Item 2: End to end tests of the view on a cluster`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:147` at `2de7a287ac` | The test log of each commit must hold both tests, and a merge of the line into the branch is a commit too. The plan does not say whether such a merge needs a test log. | plan consistency | Minor | Fixed in `24a2102828` |
+| R3-9 | The row of FREQ-JVMEM-002 in `3. Traceability`, `docs/design/JVMEM-jvm-memory-pools-view/plan.md:176` at `2de7a287ac` | The build column names criteria 4 and 5 of item 1 and leaves out criterion 7, the one test of item 1 that reads another pool by its name. | plan consistency | Minor | Fixed in `c343a1b1c0` |
+| R3-10 | The Date row under `DEC-JVMEM-0013. The JVM memory pools view stays at Normal risk, and the runs of its two tests are named`, `docs/design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0013-the-view-stays-at-normal-risk-and-the-runs-of-its-two-tests-are-named.md:24` at `2de7a287ac` | The record is dated 2026-11-22, a day before the maintainers decided D1 on 2026-11-23. The generated index pages repeat that date. | docs, correctness | Nit | Fixed in `09397c55e9` |
+| R3-11 | The pull request body, "Shown by review" | The entry leaves out the note on criterion 24 of item 1: the review shows that the feature adds no check of its own to a `GRANT` or a `REVOKE`. | docs | Nit | Fixed in the pull request body |
 
 1. **Fixed in `<hash>`**: the commit that fixes the finding, a commit of the pull request's branch. Several commits are joined with "and". A finding on the pull request's title or body is "Fixed in the pull request title" or "body".
 2. **Accepted: `<reason>`**: the work product stays as it is, for the reason given. The reviewer judges the reason in the next round.
@@ -106,4 +118,6 @@ None.
 
 ## 5. Exit decision
 
-Open.
+Accept: round 3 on `2de7a287ac` found no blocker and no major, and every finding has a disposition. The maintainers decide by merging.
+
+Confirmation: the commits after `2de7a287ac` fix R3-1, R3-2, R3-3, R3-4, R3-5, R3-6, R3-7, R3-8, R3-9 and R3-10 and close this record.

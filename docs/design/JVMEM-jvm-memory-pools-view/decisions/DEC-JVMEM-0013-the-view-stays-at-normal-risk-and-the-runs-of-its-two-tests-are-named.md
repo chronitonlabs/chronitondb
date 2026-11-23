@@ -21,7 +21,7 @@ limitations under the License.
 |---|---|
 | Document type | Record (ISO/IEC/IEEE 15289), MADR |
 | Status | Accepted |
-| Date | 2026-11-22 |
+| Date | 2026-11-23 |
 | Deciders | The maintainers |
 | References | Issue #161, the [feature spec](../feature-spec.md), the [delivery plan](../delivery-plan.md), the [plan](../plan.md), [DEC-JVMEM-0012](DEC-JVMEM-0012-the-test-runs-the-gate-needs-are-built-outside-the-feature.md), [classification.md](../../../process/classification.md#risk), [testing.md](../../../process/testing.md#when-each-test-runs), [PRINCIPLE-054](../../../process/principles.md#principle-054), [PRINCIPLE-069](../../../process/principles.md#principle-069), [PRINCIPLE-072](../../../process/principles.md#principle-072) |
 | Areas | observability |

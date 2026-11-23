@@ -234,7 +234,7 @@
    "isPartOf": [
     "../design/JVMEM-jvm-memory-pools-view/"
    ],
-   "status": "Accepted",
+   "status": "Superseded by DEC-JVMEM-0013",
    "title": "The JVM memory pools view stays at Normal risk with two faults named",
    "type": "Decision record"
   },
@@ -375,6 +375,62 @@
    "type": "Decision record"
   },
   {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0012-the-test-runs-the-gate-needs-are-built-outside-the-feature.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#build-and-test",
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-22",
+   "identifier": "DEC-JVMEM-0012",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "status": "Accepted",
+   "title": "The test runs that the gate needs are built outside the feature",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0013-the-view-stays-at-normal-risk-and-the-runs-of-its-two-tests-are-named.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "date": "2026-11-23",
+   "identifier": "DEC-JVMEM-0013",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "replaces": [
+    "../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md"
+   ],
+   "status": "Accepted",
+   "title": "The JVM memory pools view stays at Normal risk, and the runs of its two tests are named",
+   "type": "Decision record"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/delivery-plan.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "identifier": "docs/design/JVMEM-jvm-memory-pools-view/delivery-plan.md",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "line": "chronitondb-sandbox",
+   "status": "Draft",
+   "title": "JVM memory pools view in CQL",
+   "type": "Delivery plan",
+   "version": "1"
+  },
+  {
    "@id": "../design/JVMEM-jvm-memory-pools-view/feature-spec.md",
    "@type": [
     "oslc_rm:RequirementCollection",
@@ -391,6 +447,24 @@
    "status": "Draft",
    "title": "JVM memory pools view in CQL",
    "type": "Feature spec",
+   "version": "1"
+  },
+  {
+   "@id": "../design/JVMEM-jvm-memory-pools-view/plan.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "identifier": "docs/design/JVMEM-jvm-memory-pools-view/plan.md",
+   "isPartOf": [
+    "../design/JVMEM-jvm-memory-pools-view/"
+   ],
+   "line": "chronitondb-sandbox",
+   "status": "Draft",
+   "title": "JVM memory pools view in CQL",
+   "type": "Plan",
    "version": "1"
   },
   {
@@ -416,6 +490,14 @@
    "version": "1"
   },
   {
+   "@id": "../process/areas.md#build-and-test",
+   "@type": [
+    "skos:Concept"
+   ],
+   "inScheme": "../process/areas.md",
+   "prefLabel": "build-and-test"
+  },
+  {
    "@id": "../process/areas.md#observability",
    "@type": [
     "skos:Concept"
@@ -439,6 +521,16 @@
    "identifier": "docs/reviews/112-warn-at-startup-when-the-commit-log-design.md",
    "status": "Closed",
    "title": "design record of #112 Warn at startup when the commit log shares a disk with the data directories",
+   "type": "Review record"
+  },
+  {
+   "@id": "../reviews/161-let-operators-see-a-node-s-jvm-memory-plan.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/reviews/161-let-operators-see-a-node-s-jvm-memory-plan.md",
+   "status": "Closed",
+   "title": "plan and delivery plan of #161 Let operators see a node's JVM memory pools from CQL",
    "type": "Review record"
   },
   {

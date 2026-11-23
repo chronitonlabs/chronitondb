@@ -94,7 +94,7 @@ The limit is 1. Item 2 depends on item 1, so the two items cannot be in progress
 
 ## 5. Re-plan triggers
 
-1. An exit criterion of milestone 1 fails, or cannot run where section 6 says it runs.
+1. An exit criterion of milestone 1 fails, or cannot run where section 6 says it runs. The one case that is not under this trigger is that of trigger 8: an exit criterion that cannot run only because a part of continuous integration that section 6 names does not exist yet.
 2. The design record of item 1 finds that the view cannot be delivered whole in one pull request, that it needs a change to a file of Apache Cassandra other than the hook of section 2.7, or that a test cannot supply a memory pool on one node of an in-JVM cluster only, as criterion 19 of item 1 needs.
 3. The design record of an item finds that a test of Apache Cassandra asserts behaviour that the view changes, or pins a listing in which the view would alter or remove a line that is there.
 4. Risk R1 of section 9 happens: an import from Apache Cassandra brings a table of the same name, or changes the hook file so that the hook no longer fits.

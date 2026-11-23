@@ -69,7 +69,7 @@ The feature has two items: one build item and one validation item. The feature h
   4. When a read runs, the view MUST hold the rows that FREQ-JVMEM-002 to FREQ-JVMEM-007 and FREQ-JVMEM-014 require, and each test that problem 2 in section 4.1 names proves it.
   5. When a statement reads every row of the view, one row by its name, or two rows by their names with `IN` on a test node, the node MUST answer with no error, which are the reads that problem 3 in section 4.1 adds to the unit tests of problem 2 (FREQ-JVMEM-002).
   6. When a test reads the view twice and changes between the two reads the usage of a memory pool that it supplies, the second answer MUST hold the changed sizes, which is the last test of problem 3 in section 4.1 with a pool of the test's own (FREQ-JVMEM-007).
-  7. If a call that the view makes to the JVM throws an exception, or an error of the JVM that is no out of memory error, while a read builds its rows, whether the call for the list of memory pools or a call to the bean of one memory pool, then the read MUST fail with what was thrown, uncaught by the view, whichever rows the statement asks for (FREQ-JVMEM-018).
+  7. If a call that the view makes to the JVM throws an exception, or an error of the JVM that is no out of memory error, while a read builds its rows, whether the call for the list of memory pools or a call to the bean of one memory pool, then the read MUST fail with what was thrown, uncaught by the view, whichever rows the statement asks for (FREQ-JVMEM-002, FREQ-JVMEM-018).
   8. While no statement reads the view, both before the first read of the view and after a read has ended, the feature MUST run no thread and no scheduled task and keep no value of a memory pool, as the test of problem 9 in section 4.1 checks, which the item extends to look for a thread and a scheduled task after a read too (FREQ-JVMEM-008).
   9. The node MUST apply to a statement on the view the permission check of FREQ-JVMEM-009, with no check of the feature's own, as the first test of problem 5 in section 4.1 checks (FREQ-JVMEM-009).
   10. The item MUST add the test of a grant row left behind that problem 7 in section 4.1 names, with its four places, in which the warm-up of the permissions cache runs after the row is in the auth tables, and in which the role that the row names is no superuser and holds on the other table the grant that its statement there needs (FREQ-JVMEM-016, [DEC-JVMEM-0006](decisions/DEC-JVMEM-0006-a-grant-left-on-the-view-is-documented.md)).
@@ -175,7 +175,7 @@ Every feature requirement has a validation test, which the gate of a milestone n
 | FREQ | Items | Validation item |
 |---|---|---|
 | FREQ-JVMEM-001 | Item 1, criteria 1, 2, 3, 18 and 25 | Item 2, criterion 1, within limit 8 of section 2 of this plan |
-| FREQ-JVMEM-002 | Item 1, criteria 4 and 5 | Item 2, criteria 2, 15, 16, 17 and 21 |
+| FREQ-JVMEM-002 | Item 1, criteria 4, 5 and 7 | Item 2, criteria 2, 15, 16, 17 and 21 |
 | FREQ-JVMEM-003 | Item 1, criterion 4 | Item 2, criterion 2 |
 | FREQ-JVMEM-004 | Item 1, criterion 4 | Item 2, criterion 2 |
 | FREQ-JVMEM-005 | Item 1, criteria 4, 15 and 20 | Item 2, criterion 3 |

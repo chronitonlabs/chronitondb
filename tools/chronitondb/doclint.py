@@ -30,6 +30,7 @@ before they commit.
     doclint.py delta --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE]
     doclint.py stock-tests --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE] [--issue STATE]
     doclint.py stock-tests-issue [--branch NAME] [--body FILE]
+    doclint.py tier --repo DIR --base REF [--templates REF] [--source SRC]
 
 SRC is where the documents are read: "index" (the default, the staged
 version), "worktree", or a commit. REF is where the rules are read, the line
@@ -44,6 +45,7 @@ The type of each PATH comes from where it lives:
     docs/design/<dir>/plan.md              plan
     docs/design/<dir>/delivery-plan.md     delivery plan
     docs/design/<dir>/ac-coverage.md       coverage file
+    docs/design/<dir>/short-record.md      short record
     docs/design/<dir>/milestones/*.md      milestone report
     docs/design/<dir>/*.md                 design record or fix record, by
                                            its first heading ("# Design:",
@@ -183,6 +185,16 @@ A milestone report is also checked for: each row of its Requirements
 delivered table has the status delivered, not delivered, or delivered in
 part, as planned, and the report of the feature's final milestone, the
 highest milestone of the delivery plan, has no row delivered in part.
+
+A short record is also checked for: its Tier row is the first line tier
+prints for the change at SRC against REF, and that line names the short
+path. Each of its sections holds text. Section 2 defines its items as
+REQ-n lines, each id once, each with one EARS shape, one BCP 14 keyword
+and a source, as a feature requirement is checked. Section 4 has TEST-n
+lines, each id once, each naming at least one REQ-n, every REQ-n it names
+is one section 2 defines, and every REQ-n of section 2 is named in
+section 4. Section 5 never says Not applicable, none or low, and never
+opens by playing the risk down.
 
 A research report is also checked for: its file name is
 docs/research/<issue>-<slug>.md, the slug lower case words joined by
@@ -377,6 +389,18 @@ file that is deleted, renamed, binary, a symbolic link or changed in its
 type passes only in an import. It prints "stock-test PATH: <way>" on
 stdout for each file that passes, and "stock-tests N checked M failed".
 
+tier prints the tier of the change at SRC since its merge base with REF,
+from the files it touches (branching-and-review.md, Two tiers). The paths
+are read from the table under the heading "The paths of the floor" of
+docs/process/classification.md at the rules ref, --templates, which is
+REF when not given. A path there ending in "/" is a directory, a path
+with "*" a pattern, any other path one file. A change that touches a file
+on those paths, a renamed file by its old path or its new one, takes the
+full path. Any other change takes the short path. The first line is the
+tier and why, the line a short record's Tier row holds. A line "floor PATH
+(AREA)" follows for each file that set the full path. With no such table
+at the rules ref the tier is full. It exits 0 once it has printed the tier.
+
 Findings go to stderr as "PATH:LINE: reason", exit 1 when there is one.
 A usage error exits 2.
 """
@@ -501,6 +525,7 @@ TEMPLATES = {
     "release-proposal": "docs/process/templates/release-proposal.md",
     "ac-coverage": "docs/process/templates/ac-coverage.md",
     "research-report": "docs/process/templates/research-report.md",
+    "short-record": "docs/process/templates/short-record.md",
     "review-record": "docs/process/templates/review-record.md",
     "decision": "docs/decisions/README.md",
 }
@@ -563,6 +588,8 @@ def doc_type(path, text):
                 return "delivery-plan"
             if name == "ac-coverage.md":
                 return "ac-coverage"
+            if name == "short-record.md":
+                return "short-record"
             first = first_heading(text)
             if first.startswith("Design:"):
                 return "design-record"
@@ -607,6 +634,155 @@ def check_research(doc, path):
     value, line = fields["References"]
     if not re.search(r"(?<![0-9A-Za-z])#%s(?![0-9])" % match.group(1), value):
         doc.error(line, "the References row names the spike's issue as #%s, the number in the file name" % match.group(1))
+
+
+CLASSIFICATION = "docs/process/classification.md"
+FLOOR_PATHS = "The paths of the floor"
+SHORT_TIER = "Short: no file the change touches is on the paths of the Critical floor"
+REQ_ITEM = re.compile(r"^\s*(?:(?:[-*+]|[0-9]+[.)])\s+)?[*_`]*(REQ-[0-9]+)(?![0-9])[*_`]*\s*:?\s*(.*)$")
+TEST_ITEM = re.compile(r"^\s*(?:(?:[-*+]|[0-9]+[.)])\s+)?[*_`]*(TEST-[0-9]+)(?![0-9])[*_`]*\s*:?\s*(.*)$")
+REQ_ID = re.compile(r"\bREQ-[0-9]+(?![0-9])")
+
+
+def floor_paths_at(repo, ref):
+    """The paths of the Critical floor at ref as (path, area), in the
+    page's order: the path in backticks in the first column of the table
+    under the heading "The paths of the floor" of classification.md, its
+    area in the second. None when the page or the table is not there."""
+    text = git(repo, "show", "%s:%s" % (ref, CLASSIFICATION))
+    if text is None:
+        return None
+    doc = Markdown(CLASSIFICATION, text)
+    for level, title, index in doc.headings:
+        if title == FLOOR_PATHS:
+            start, end = doc.span(level, index)
+            found = []
+            for _, cells in first_table(doc, start, end):
+                match = re.match(r"^`([^`]+)`$", cells[0]) if cells else None
+                if match:
+                    found.append((match.group(1), cells[1] if len(cells) > 1 else ""))
+            return found or None
+    return None
+
+
+def tier_of(repo, base, where, rules_ref):
+    """The tier of the change at where since its merge base with base, as
+    (line, files): the line a short record's Tier row holds, and each
+    (path, area) on the paths of the floor at rules_ref. None for the line
+    when the change cannot be read."""
+    touched = changes(repo, base, where)
+    if touched is None:
+        return None, []
+    paths = floor_paths_at(repo, rules_ref)
+    if paths is None:
+        return "Full: no paths of the Critical floor in %s on %s, so the change takes the full path" % (CLASSIFICATION, rules_ref), []
+    files = []
+    for _, path, old in touched:
+        for name in (old, path):
+            if not name or name in [found for found, _ in files]:
+                continue
+            for floor, area in paths:
+                if is_own(name, [floor]):
+                    files.append((name, area))
+                    break
+    if not files:
+        return SHORT_TIER, []
+    return "Full: %d %s the change touches %s on the paths of the Critical floor" % (
+        len(files), "file" if len(files) == 1 else "files", "is" if len(files) == 1 else "are"), files
+
+
+def run_tier(args):
+    repo, base, rules_ref, where = None, None, None, "index"
+    index = 0
+    while index < len(args):
+        if args[index] in ("--repo", "--base", "--templates", "--source") and index + 1 < len(args):
+            value = args[index + 1]
+            if args[index] == "--repo":
+                repo = value
+            elif args[index] == "--base":
+                base = value
+            elif args[index] == "--templates":
+                rules_ref = value
+            else:
+                where = value
+            index += 2
+            continue
+        sys.stderr.write(__doc__)
+        return 2
+    if not repo or not base:
+        sys.stderr.write(__doc__)
+        return 2
+    line, files = tier_of(repo, base, where, rules_ref or base)
+    if line is None:
+        sys.stderr.write("the change at %s since its merge base with %s cannot be read\n" % (where, base))
+        return 2
+    print(line)
+    for path, area in files:
+        print("floor %s (%s)" % (path, area))
+    return 0
+
+
+def check_short_record(doc, repo, templates, where):
+    """A short record against the short path (branching-and-review.md):
+    its Tier row is the line tier prints for the change and names the
+    short path, each section holds text, section 2 defines REQ-n items in
+    the form of a requirement, and the TEST-n lines of section 4 trace to
+    them, every one of them named there."""
+    fields, _ = control_table(doc)
+    if fields and "Tier" in fields:
+        value, row = fields["Tier"]
+        line, files = tier_of(repo, templates, where, templates)
+        if value and not outer_braces(value):
+            if line is None:
+                doc.error(row, "the change cannot be read against %s, so the Tier row cannot be checked" % templates)
+            elif not line.startswith("Short:"):
+                named = ", ".join(path for path, _ in files) or "nothing"
+                doc.error(row, "the tier of the change is '%s' (%s). A change on the full path takes the full path's documents and has no short record (branching-and-review.md, Two tiers)" % (line, named))
+            elif value != line:
+                doc.error(row, "the Tier row is '%s'. It is the line 'doclint.py tier' prints for the change: '%s'" % (value, line))
+    sections = {number: index for _, number, _, index in numbered_sections(doc)}
+    for number, index in sorted(sections.items()):
+        if "." not in number and not own_lines(doc, index):
+            doc.error(index, "section %s is empty" % number)
+    defined = {}
+    if "2" in sections:
+        for index, line in text_lines(doc, section_span(doc, "2")):
+            match = REQ_ITEM.match(line)
+            if not match:
+                continue
+            rid = match.group(1)
+            if rid in defined:
+                doc.error(index, "%s is defined twice in section 2. Each id is defined once" % rid)
+                continue
+            defined[rid] = index
+            check_requirement(doc, index, rid, match.group(2).strip(), "an item")
+        if not defined:
+            doc.error(sections["2"], "section 2 defines no item. Each item is a line that opens with its id REQ-n")
+    if "4" in sections:
+        named, tests = set(), set()
+        for index, line in text_lines(doc, section_span(doc, "4")):
+            ids = set(REQ_ID.findall(line))
+            named |= ids
+            match = TEST_ITEM.match(line)
+            if not match:
+                continue
+            if match.group(1) in tests:
+                doc.error(index, "%s is defined twice in section 4. Each id is defined once" % match.group(1))
+            tests.add(match.group(1))
+            if not ids:
+                doc.error(index, "%s names no REQ-n of section 2. Each test names the items it proves" % match.group(1))
+            for rid in sorted(ids - set(defined)):
+                doc.error(index, "%s names %s, which section 2 does not define" % (match.group(1), rid))
+        if not tests:
+            doc.error(sections["4"], "section 4 has no test. Each test is a line that opens with its id TEST-n")
+        for rid in sorted(set(defined) - named, key=lambda name: int(name.split("-")[1])):
+            doc.error(defined[rid], "%s is named by no test of section 4" % rid)
+    if "5" in sections:
+        state = not_applicable_of(doc, sections["5"])
+        if state is not None:
+            doc.error(sections["5"], "section 5 says Not applicable. A short record writes it in full (classification.md)")
+        else:
+            check_risk_text(doc, sections["5"], "section 5")
 
 
 def control_table(doc):
@@ -2949,7 +3125,7 @@ INDEX_NOTE = "This page is generated by `tools/chronitondb/doclint.py indexes --
 # The kind of a document is the word before the colon of its title, as its
 # template writes it. These read better with their noun.
 KIND_NAMES = {"Design": "Design record", "Fix": "Fix record", "Import": "Import record", "Release": "Release proposal", "Delta": "Delta entry"}
-KIND_ORDER = ("Feature spec", "Plan", "Delivery plan", "Milestone report", "Design record", "Fix record", "Import record",
+KIND_ORDER = ("Feature spec", "Plan", "Delivery plan", "Milestone report", "Design record", "Fix record", "Short record", "Import record",
               "Research report", "Line plan", "Release proposal", "Delta entry", "Review record")
 NO_AREA = "Documents with no Areas row"
 EXCEPTIONS_SECTION = "Exceptions to principles"
@@ -3684,6 +3860,8 @@ def main(argv):
         return run_history(argv[1:])
     if argv and argv[0] == "indexes":
         return run_indexes(argv[1:])
+    if argv and argv[0] == "tier":
+        return run_tier(argv[1:])
     if argv and argv[0] == "settings":
         repo, base, where = None, None, "index"
         args = argv[1:]
@@ -3857,6 +4035,8 @@ def main(argv):
                 check_milestone(doc, path, source)
             elif kind == "research-report":
                 check_research(doc, path)
+            elif kind == "short-record":
+                check_short_record(doc, repo, templates, where)
             elif kind == "delta-entry":
                 if "delta-template" not in rules:
                     rules["delta-template"] = Markdown("delta-entry.md", template_text)

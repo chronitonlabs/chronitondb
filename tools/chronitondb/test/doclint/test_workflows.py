@@ -188,6 +188,56 @@ class Title(Steps):
         self.assertIn("title passed", out)
 
 
+class ChangedTests(Steps):
+    """The changed tests step: the test classes a pull request adds or
+    changes under test/unit and test/distributed, and nothing to run when
+    it changes none."""
+
+    STEP = "The test classes the pull request adds or changes"
+
+    def setUp(self):
+        super().setUp()
+        self.put("workspace/build.xml", read("build.xml"))
+        self.put("workspace/test/unit/org/apache/cassandra/db/KeptTest.java", "class KeptTest {}\n")
+        self.output = os.path.join(self.temp, "output")
+        self.put("output", "")
+        for args in (["init", "-q"], ["add", "-A"], ["commit", "-q", "-m", "line"], ["update-ref", "refs/remotes/origin/line", "HEAD"]):
+            self.git(*args)
+
+    def git(self, *args):
+        subprocess.run(["git", "-C", self.workspace, "-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false",
+                        "-c", "core.hooksPath=/dev/null"] + list(args), check=True, capture_output=True)
+
+    def classes(self):
+        rc, out, err = self.step("chronitondb-changed-tests.yml", self.STEP, more={"GITHUB_OUTPUT": self.output})
+        with open(self.output, encoding="utf-8") as handle:
+            return rc, out, err, dict(line.split("=", 1) for line in handle.read().splitlines())
+
+    def test_the_added_and_changed_test_classes_are_picked_by_path(self):
+        self.put("workspace/test/unit/org/apache/cassandra/db/KeptTest.java", "class KeptTest { }\n")
+        self.put("workspace/test/unit/org/apache/cassandra/db/WidgetTest.java", "class WidgetTest {}\n")
+        self.put("workspace/test/unit/org/apache/cassandra/db/WidgetHelper.java", "class WidgetHelper {}\n")
+        self.put("workspace/test/distributed/org/apache/cassandra/distributed/test/WidgetTest.java", "class WidgetTest {}\n")
+        self.put("workspace/test/distributed/org/apache/cassandra/distributed/upgrade/WidgetUpgradeTest.java", "class WidgetUpgradeTest {}\n")
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "tests")
+        rc, out, err, found = self.classes()
+        self.assertEqual((rc, err), (0, ""))
+        self.assertEqual(found["unit"], "org.apache.cassandra.db.KeptTest org.apache.cassandra.db.WidgetTest")
+        self.assertEqual(found["distributed"], "org.apache.cassandra.distributed.test.WidgetTest")
+        self.assertEqual((found["java"], found["run"]), ("17", "yes"))
+        self.assertIn("Left out test/distributed/org/apache/cassandra/distributed/upgrade/WidgetUpgradeTest.java", out)
+
+    def test_with_no_test_class_changed_there_is_nothing_to_run(self):
+        self.put("workspace/src/java/org/apache/cassandra/db/Widget.java", "class Widget {}\n")
+        self.git("rm", "-q", "test/unit/org/apache/cassandra/db/KeptTest.java")
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "code")
+        rc, out, err, found = self.classes()
+        self.assertEqual((rc, err, found), (0, "", {"run": "no"}))
+        self.assertIn("adds or changes no test class", out)
+
+
 class Workflows(unittest.TestCase):
     """What every workflow of the project keeps to, so that code a pull
     request brings never runs with more than a read only token."""

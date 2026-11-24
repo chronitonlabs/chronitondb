@@ -34,7 +34,7 @@ A spike issue carries documentation labels while it is researched. On do it, a d
 
 ## Pick the path for a change
 
-Every change has one maintenance category from ISO/IEC/IEEE 14764:2022. The category and the size of the change pick the path.
+Every change has one maintenance category from ISO/IEC/IEEE 14764:2022. First the files a change touches pick its tier, the short path or the full path: see [branching-and-review.md](branching-and-review.md#two-tiers). On the full path the category and the size of the change pick the path.
 
 | Category | What it is | Path | Page |
 |---|---|---|---|
@@ -52,7 +52,7 @@ A change that comes from Apache Cassandra follows [upstream.md](upstream.md). A 
 
 When the category is unclear, open an issue that says what should change. The maintainers set the category.
 
-Each change also has a class, its risk and its size, carried by one `risk:`, one `size:` and one `reach:` label on the issue and on each pull request. The class sets how deep the documents go, which checks and reviews the change gets and which approval steps it passes. See [classification.md](classification.md).
+Each change also has a class, its risk and its size, carried by one `risk:`, one `size:` and one `reach:` label on the issue and on each pull request. On the full path the class sets how deep the documents go, which checks and reviews the change gets and which approval steps it passes. See [classification.md](classification.md).
 
 ## Roles
 
@@ -104,7 +104,7 @@ The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. 
 
 1. **Line**: a long lived branch that ships releases, one per Apache Cassandra major version. Today `chronitondb-5.0` and `chronitondb-6.0`.
 2. **Stock**: code or behaviour exactly as Apache Cassandra has it. A claim about code says Apache Cassandra instead, with its branch and commit. See [conventions.md](conventions.md#claims-about-code).
-3. **Item**: one unit of work with one public GitHub issue, one design record or fix record, and one pull request per line it targets. A security fix has no public issue until disclosure. It is tracked in its private advisory.
+3. **Item**: one unit of work with one public GitHub issue, one design record, fix record or short record, and one pull request per line it targets. A security fix has no public issue until disclosure. It is tracked in its private advisory.
 4. **Feature spec**: the top level description of a large feature, with feature requirements `FREQ-<KEY>-nnn`.
 5. **Plan**: the list of items that deliver a feature spec.
 6. **Delivery plan**: the order of the items in milestones, with exit criteria.

@@ -67,8 +67,6 @@ The Tier row records the tier the change took and why. It is the first line that
 
 {One line per test: an id `TEST-n`, the test class and method, and each `REQ-n` of section 2 it proves. For example: TEST-1: WidgetTableTest.testColumns proves REQ-1. Every `REQ-n` of section 2 is named here.}
 
-{A fix to stock that changes a pre-existing test file of Apache Cassandra names here each existing test method it changes and says what each asserts after the fix, one line each: `Changed stock test: <path> <method>: <what it asserts after the fix>`, the path from the repository root. New test methods need no entry. The pull request description repeats the list at its top. The maintainers approve the list by the merge, and the `stock-tests` check holds the change to it. See [branching-and-review.md](../branching-and-review.md#the-short-path). A change that alters no stock test leaves this paragraph out.}
-
 ## 5. Where problems could occur
 
 {Where the change could go wrong if a part of it is wrong, worst case first: what a user or an operator would see, on which request path, and from which part of the change. Never "None" or "Low", and never an argument that the change is safe. After the section of the same name in Ubuntu's stable release update template.}

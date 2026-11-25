@@ -125,6 +125,8 @@ The tier of a change is read from this table: a change that touches a file on th
 | `src/java/org/apache/cassandra/cql3/statements/ListUsersStatement.java` | Authentication and authorisation |
 | `src/java/org/apache/cassandra/cql3/functions/UDFByteCodeVerifier.java` | Authentication and authorisation |
 | `src/java/org/apache/cassandra/cql3/functions/UDFunction.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/functions/JavaBasedUDFunction.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/functions/UDFExecutorService.java` | Authentication and authorisation |
 | `src/java/org/apache/cassandra/config/EncryptionOptions.java` | Encryption |
 | `src/java/org/apache/cassandra/utils/binlog/` | Audit logging |
 | `src/java/org/apache/cassandra/db/Mutation.java` | Decoding of bytes from the network |

@@ -96,7 +96,7 @@ These checks run on every pull request to a line. Each MUST pass before a mainta
 | `subjectlint-tests` | The unit tests of the subject checker, as the pull request changes it |
 | `documents` | The process documents and feature keys the pull request changes: the template rules, the Contents index of each document (see [conventions.md](conventions.md#contents-index-of-process-documents)), its revision history (see [conventions.md](conventions.md#versions-and-revision-history)), the id and place of each new decision record, the areas and the source each document names (see [areas.md](areas.md)), the generated indexes and the document graph (see [conventions.md](conventions.md#generated-indexes) and [conventions.md](conventions.md#the-document-graph)), the clarification markers and the feature key and requirement id rules in [additive.md](additive.md#feature-keys-and-requirement-ids). The checker and the templates come from the line, never from the pull request |
 | `doclint-tests` | The unit tests of the process document checker, as the pull request changes it |
-| `stock-tests` | A pull request that changes a pre-existing test file of Apache Cassandra does so in one of the four ways of [PRINCIPLE-013](principles.md#principle-013), by an import or with the merged record of its own issue that permits the change, while that issue is open and the permit is unused. See [testing.md](testing.md#policy). The checker and the records come from the line, never from the pull request |
+| `stock-tests` | A pull request that changes a pre-existing test file of Apache Cassandra does so in one of the four ways of [PRINCIPLE-013](principles.md#principle-013), by an import or with the merged record of its own issue that permits the change, while that issue is open and the permit is unused. A fix to stock on the short path takes its permit from the short record in the pull request, for the existing test methods the record names, when the tier read from the line is Short and the issue carries the kind label of a fix. See [testing.md](testing.md#policy). The checker, the paths of the floor and every other record come from the line, never from the pull request |
 | `delta-register` | A pull request that changes a stock file adds or updates its entry in the [delta register](../delta/README.md#keeping-it-current), and each entry it adds or changes is in its template's form with its index row. The checker and the rules come from the line, never from the pull request |
 | `import-history` | A pull request from an `import/` branch of this repository brings Apache Cassandra's own history, or one commit taken unchanged, and changes no other file of Apache Cassandra. A conflict resolved by hand waits for a maintainer's approving review. See [upstream.md](upstream.md#the-import-history-check). The checker and the rules come from the line, never from the pull request |
 | `importlint-tests` | The unit tests of the import history checker, as the pull request changes it |
@@ -125,20 +125,27 @@ A change to a sensitive path requests a review from the code owners in `.github/
 
 ## Two tiers
 
-The files a change touches pick its tier. A change that touches a file on [the paths of the Critical floor](classification.md#the-paths-of-the-floor) takes the full path. Any other change takes the short path. The full path is the process the other sections and pages describe. The short path follows Ubuntu's stable release update: one record in a fixed form, one independent review, and a merge by someone other than the author.
+The files a change touches pick its tier. A change that touches a file on [the paths of the Critical floor](classification.md#the-paths-of-the-floor) takes the full path. The full path is the process the other sections and pages describe. The short path follows Ubuntu's stable release update: one record in a fixed form, one independent review, and a merge by someone other than the author.
 
-1. A program decides the tier: `tools/chronitondb/doclint.py tier --repo . --base origin/<line>` prints it and the files that set it.
-2. A maintainer MAY raise a change to the full path at any time. Nobody lowers a change to the short path.
-3. The class labels stay as [classification.md](classification.md#labels) sets them. On the short path the tier picks the stages, not the class.
+The short path is for a change to code, tests or the files that guard the process that touches no path of the floor and has no lighter path of its own. Low risk work, a change to documentation only, a dependency patch-version update, a release proposal and an import from Apache Cassandra keep their own paths and rules, and need no short record.
+
+1. A program gives its answer: `tools/chronitondb/doclint.py tier --repo . --base origin/<line>` prints the tier and the files that set it. It reads the paths of the floor from the line before the change, never from the pull request, so a pull request that edits the table cannot lower its own tier.
+2. The tier of a change is the higher of the program's answer and any raise by a maintainer. A maintainer MAY raise a change to the full path at any time. Nobody lowers the tier.
+3. A change whose risk is Critical takes the full path, whatever the program answers, as [classification.md](classification.md#stages-and-approvals) says. The class labels stay as [classification.md](classification.md#labels) sets them. On the short path the tier picks the stages, not the class.
+4. The files that guard the process, as [classification.md](classification.md#the-floor) lists them, are not on the floor. A change to them on the short path is held by three controls:
+   1. The ruleset of each line requires an approving review from a code owner, and `.github/CODEOWNERS` names the maintainers as the owners of these files.
+   2. The review of the short path includes a security read.
+   3. The tier is read from the line before the change, never from the pull request.
 
 ### The short path
 
 1. Before writing, the author asks the maintainers the visible choices of the change, such as names, defaults and what an operator sees. The author asks once, in one batch, and records each answer in the short record.
 2. The change is one pull request. It carries the short record, the code and the tests together. The short record is written from [templates/short-record.md](templates/short-record.md) and lives where [conventions.md](conventions.md#where-things-live) says.
-3. One independent review covers the record, the code and the tests. It includes a security read. The reviewer is never the author.
-4. The reviews posted on the pull request are the review record. No review record file is kept. The reviewer posts its findings. The author answers each with the commit that fixes it. The reviewer posts its final verdict on the head commit.
-5. A confirmation pass is needed only when the author changes something after a clean verdict. It runs as [Review rounds](#review-rounds) says.
-6. A maintainer merges.
+3. A fix to stock MAY change a pre-existing test file of Apache Cassandra. Its short record names each existing test method the fix changes, and what each asserts after the fix, in section 4. The pull request description repeats the list at its top, with the decisions it asks for. The reviewer checks that no other existing test method changed. The maintainers approve the list by the merge. The `stock-tests` check takes this permit from the short record only on the short path: see [testing.md](testing.md#policy). Feature work does not change a stock test file.
+4. One independent review covers the record, the code and the tests. It includes a security read. The reviewer is never the author.
+5. The reviews posted on the pull request are the review record. No review record file is kept. The reviewer posts its findings. The author answers each with the commit that fixes it. The reviewer posts its final verdict on the head commit.
+6. A confirmation pass is needed only when the author changes something after a clean verdict. It runs as [Review rounds](#review-rounds) says.
+7. A maintainer merges.
 
 ## Reviews
 

@@ -34,7 +34,7 @@ A spike issue carries documentation labels while it is researched. On do it, a d
 
 ## Pick the path for a change
 
-Every change has one maintenance category from ISO/IEC/IEEE 14764:2022. First the files a change touches pick its tier, the short path or the full path: see [branching-and-review.md](branching-and-review.md#two-tiers). On the full path the category and the size of the change pick the path.
+Every change has one maintenance category from ISO/IEC/IEEE 14764:2022. The category and the size of the change pick the path. Some changes take the short path in place of the path the table gives: see [branching-and-review.md](branching-and-review.md#two-tiers).
 
 | Category | What it is | Path | Page |
 |---|---|---|---|
@@ -52,7 +52,7 @@ A change that comes from Apache Cassandra follows [upstream.md](upstream.md). A 
 
 When the category is unclear, open an issue that says what should change. The maintainers set the category.
 
-Each change also has a class, its risk and its size, carried by one `risk:`, one `size:` and one `reach:` label on the issue and on each pull request. On the full path the class sets how deep the documents go, which checks and reviews the change gets and which approval steps it passes. See [classification.md](classification.md).
+Each change also has a class, its risk and its size, carried by one `risk:`, one `size:` and one `reach:` label on the issue and on each pull request. The class sets how deep the documents go, which checks and reviews the change gets and which approval steps it passes. See [classification.md](classification.md).
 
 ## Roles
 

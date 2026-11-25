@@ -88,7 +88,7 @@ The maintainers MAY say that a given change is not Critical: in answer to the cl
 
 ### The paths of the floor
 
-The tier of a change is read from this table: a change that touches a file on these paths takes the full path. See [branching-and-review.md](branching-and-review.md#two-tiers). A path that ends in `/` is a directory and covers every file under it. Any other path is one file. The table does not narrow the floor, which is about what code does. Code of the project that takes part in an area of the floor outside these paths is on the floor all the same. The program cannot see that, so the reviewer reports it and a maintainer raises the change to the full path. A change to this table is a change to this page, which the maintainers decide.
+The tier of a change is read from this table: a change that touches a file on these paths takes the full path. See [branching-and-review.md](branching-and-review.md#two-tiers). A path that ends in `/` is a directory and covers every file under it. A path with `*` is a pattern, and `*` matches any characters, `/` among them. Any other path is one file. The table does not narrow the floor, which is about what code does. Code of the project that takes part in an area of the floor outside these paths is on the floor all the same. The program cannot see that, so the reviewer reports it and a maintainer raises the change to the full path. A change to this table is a change to this page, which the maintainers decide.
 
 | Path | Area of the floor |
 |---|---|
@@ -114,10 +114,34 @@ The tier of a change is read from this table: a change that touches a file on th
 | `src/java/org/apache/cassandra/streaming/` | Streaming |
 | `src/java/org/apache/cassandra/db/streaming/` | Streaming |
 | `src/java/org/apache/cassandra/db/compaction/` | Compaction |
+| `src/java/org/chronitondb/auth/` | Authentication and authorisation |
+| `src/java/org/chronitondb/*/auth/*` | Authentication and authorisation |
+| `src/java/org/chronitondb/net/` | Decoding of bytes from the network |
+| `src/java/org/chronitondb/*/net/*` | Decoding of bytes from the network |
+| `src/java/org/apache/cassandra/cql3/statements/Auth*Statement.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/statements/*Role*Statement.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/statements/*Permission*Statement.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/statements/*Identity*Statement.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/statements/ListUsersStatement.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/functions/UDFByteCodeVerifier.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/functions/UDFunction.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/config/EncryptionOptions.java` | Encryption |
+| `src/java/org/apache/cassandra/utils/binlog/` | Audit logging |
+| `src/java/org/apache/cassandra/db/Mutation.java` | Decoding of bytes from the network |
+| `src/java/org/apache/cassandra/db/partitions/` | Data on disk |
+| `src/java/org/apache/cassandra/db/SerializationHeader.java` | Data on disk |
+| `src/java/org/apache/cassandra/service/CacheService.java` | Data on disk |
+| `src/java/org/apache/cassandra/utils/BloomFilterSerializer.java` | Data on disk |
+| `src/java/org/apache/cassandra/utils/obs/` | Data on disk |
+| `src/java/org/apache/cassandra/utils/MerkleTree.java` | Repair |
+| `src/java/org/apache/cassandra/utils/MerkleTrees.java` | Repair |
+| `src/java/org/apache/cassandra/service/paxos/cleanup/` | Repair |
+| `src/java/org/apache/cassandra/dht/RangeStreamer.java` | Streaming |
+| `src/java/org/apache/cassandra/dht/BootStrapper.java` | Streaming |
 
 ### Where problems could occur
 
-Every feature spec, fix record, short record, design record that is not covered by its feature spec, and pull request body of Low risk work on the full path carries a section "Where problems could occur" with its test plan, after the section of the same name in Ubuntu's stable release update template. It says where the change could go wrong if a part of it is wrong, worst case first: what a user or operator would see, on which request path, and from which part of the change. It is never "None" or "Low", and never an argument that the change is safe. The test plan names, for each problem, the test that would catch it, or why no test can and how it is watched instead. The rule is [PRINCIPLE-072](principles.md#principle-072).
+Every feature spec, fix record, short record, design record that is not covered by its feature spec, and pull request body of Low risk work carries a section "Where problems could occur" with its test plan, after the section of the same name in Ubuntu's stable release update template. It says where the change could go wrong if a part of it is wrong, worst case first: what a user or operator would see, on which request path, and from which part of the change. It is never "None" or "Low", and never an argument that the change is safe. The test plan names, for each problem, the test that would catch it, or why no test can and how it is watched instead. The rule is [PRINCIPLE-072](principles.md#principle-072).
 
 ### Release critical findings
 

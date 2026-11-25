@@ -58,7 +58,7 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Forwarded | Not needed. It is a feature of ChronitonDB, and features are offered to Apache Cassandra only when the maintainers decide. |
 | Added | 2026-11-25 |
 | Last-Update | 2026-11-25 |
-| Pull requests | `chronitondb-sandbox`: the pull request that adds this entry, not merged yet. |
+| Pull requests | `chronitondb-sandbox`: [#171](https://github.com/chronitonlabs/chronitondb/pull/171), not merged yet. |
 
 ## What
 

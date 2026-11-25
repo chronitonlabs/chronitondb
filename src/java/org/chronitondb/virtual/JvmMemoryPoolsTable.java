@@ -92,6 +92,8 @@ public final class JvmMemoryPoolsTable extends AbstractVirtualTable
 
     private static void addRow(SimpleDataSet result, String name, MemoryPoolMXBean pool)
     {
+        // Any type that is not HEAP shows as NON_HEAP, so the column keeps its two values
+        // even if a later JDK adds a value to MemoryType. getType().name() would show that new value.
         String type = pool.getType() == MemoryType.HEAP ? MemoryType.HEAP.name() : MemoryType.NON_HEAP.name();
         // One call for the three sizes, so they belong to one moment. A pool the JVM reports no usage for keeps null sizes.
         MemoryUsage usage = pool.getUsage();

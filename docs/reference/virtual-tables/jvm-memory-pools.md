@@ -128,7 +128,7 @@ An out of memory error during a read of the table goes to the node's own handlin
 
 A statement that the node refuses is no failed read. [Who may read the table](#who-may-read-the-table) gives the refusals of a statement with no grant and of a write, and [Nodes without the table](#nodes-without-the-table) the refusals of a node that does not have the table.
 
-What the node answers and logs was read in the code of three commits: ChronitonDB `chronitondb-sandbox` at `ffa1bc742d`, its base, Apache Cassandra `cassandra-5.0` at `76550e9314`, and Apache Cassandra `cassandra-5.0` at `47227d98bf`. None of the three commits is a release. This page says what the node answers and logs for the code of those three commits, and for no other code. A release is cut from another commit, so it is other code, and so is another release of Apache Cassandra.
+What the node answers and logs was read in the code of three commits: ChronitonDB™ `chronitondb-sandbox` at `ffa1bc742d`, its base, Apache Cassandra® `cassandra-5.0` at `76550e9314`, and Apache Cassandra `cassandra-5.0` at `47227d98bf`. None of the three commits is a release. This page says what the node answers and logs for the code of those three commits, and for no other code. A release is cut from another commit, so it is other code, and so is another release of Apache Cassandra.
 
 ## Nodes without the table
 

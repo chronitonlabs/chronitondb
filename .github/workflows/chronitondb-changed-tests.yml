@@ -17,11 +17,16 @@
 # adds or changes, run with the build's own targets: testsome for a class
 # under test/unit, test-jvm-dtest-some for a class under test/distributed.
 # A test class is a file whose name ends in Test.java, as the build runs
-# no other. An upgrade test is left out, since it needs the jars of older
-# versions. Nothing else runs: no whole suite and no matrix. When the pull
+# no other. An abstract class named so is passed too, and the build's
+# test runner skips it. An upgrade test is left out, since it needs the
+# jars of older versions. Nothing else runs: no whole suite and no matrix. When the pull
 # request adds or changes no test class the job says so and passes. The
 # JDK is the one the build file of the base branch names as its default.
-# Every action is pinned to a commit.
+# A new push to the pull request cancels the run it supersedes. A run is
+# bounded at 120 minutes: the build takes about ten, and the build's own
+# timeouts are 8 minutes for a unit test class and 15 for an in-JVM
+# distributed test class, so about a dozen classes fit. Every action is
+# pinned to a commit.
 name: ChronitonDB changed tests
 
 on:
@@ -32,9 +37,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: changed-tests-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   changed-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

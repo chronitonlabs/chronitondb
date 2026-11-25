@@ -19,7 +19,9 @@
 # permits on the base branch: the fix record that plans the file as test,
 # the Pinned listing line of a design record or fix record, and the Stock
 # test change line of an accepted decision record. It never reads them
-# from the pull request, so a pull request cannot write its own permit. The
+# from the pull request, so a pull request cannot write its own permit,
+# apart from the short record of a fix to stock on the short path, whose
+# tier the checker reads from the floor table of the base branch. The
 # checker and the table that tells the project's own files from stock
 # files also come from the base branch. The pull request's files are only
 # read as data. Before the checker is on the line it says so and passes. It

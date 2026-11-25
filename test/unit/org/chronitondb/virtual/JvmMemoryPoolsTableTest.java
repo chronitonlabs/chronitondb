@@ -50,6 +50,7 @@ import com.datastax.driver.core.SimpleStatement;
 import org.apache.cassandra.concurrent.ExecutorFactory;
 import org.apache.cassandra.cql3.CQLTester;
 import org.apache.cassandra.cql3.QueryProcessor;
+import org.apache.cassandra.db.DecoratedKey;
 import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.db.virtual.VirtualKeyspace;
 import org.apache.cassandra.db.virtual.VirtualKeyspaceRegistry;
@@ -319,46 +320,29 @@ public class JvmMemoryPoolsTableTest extends CQLTester
     // What a call to the JVM throws reaches the read as it was thrown.
 
     @Test
-    public void testExceptionForOnePoolFailsAReadOfAnotherPool()
+    public void testFailureForOnePoolFailsAReadOfAnotherPool()
     {
-        RuntimeException thrown = new IllegalStateException("usage of one pool");
-        useTestPools(throwingPool("Broken", thrown), pool("Fine", MemoryType.HEAP, new MemoryUsage(0, 1, 2, 3)));
-
-        assertFailsWith(thrown, "SELECT * FROM " + TEST_VIEW + " WHERE name = 'Fine'");
+        for (Throwable thrown : exceptionAndError("usage of one pool"))
+        {
+            useTestPools(throwingPool("Broken", thrown), pool("Fine", MemoryType.HEAP, new MemoryUsage(0, 1, 2, 3)));
+            assertFailsWith(thrown, "SELECT * FROM " + TEST_VIEW + " WHERE name = 'Fine'");
+        }
     }
 
     @Test
-    public void testErrorForOnePoolFailsAReadOfAnotherPool()
+    public void testFailureFromTheListOfPoolsFailsAReadOfOnePool()
     {
-        Error thrown = new StackOverflowError("usage of one pool");
-        useTestPools(throwingPool("Broken", thrown), pool("Fine", MemoryType.HEAP, new MemoryUsage(0, 1, 2, 3)));
-
-        assertFailsWith(thrown, "SELECT * FROM " + TEST_VIEW + " WHERE name = 'Fine'");
-    }
-
-    @Test
-    public void testExceptionFromTheListOfPoolsFailsAReadOfOnePool()
-    {
-        RuntimeException thrown = new IllegalStateException("list of pools");
-        useTestPools(throwingList(thrown));
-
-        assertFailsWith(thrown, "SELECT * FROM " + TEST_VIEW + " WHERE name = 'Fine'");
-    }
-
-    @Test
-    public void testErrorFromTheListOfPoolsFailsAReadOfOnePool()
-    {
-        Error thrown = new StackOverflowError("list of pools");
-        useTestPools(throwingList(thrown));
-
-        assertFailsWith(thrown, "SELECT * FROM " + TEST_VIEW + " WHERE name = 'Fine'");
+        for (Throwable thrown : exceptionAndError("list of pools"))
+        {
+            useTestPools(throwingList(thrown));
+            assertFailsWith(thrown, "SELECT * FROM " + TEST_VIEW + " WHERE name = 'Fine'");
+        }
     }
 
     @Test
     public void testDirectReadPassesOnTheObjectThatWasThrown()
     {
-        Throwable[] thrown = { new IllegalStateException("thrown"), new StackOverflowError("thrown") };
-        for (Throwable t : thrown)
+        for (Throwable t : exceptionAndError("thrown"))
         {
             JvmMemoryPoolsTable fromPool = new JvmMemoryPoolsTable(TEST_KEYSPACE, () -> ImmutableList.of(throwingPool("Broken", t)));
             assertThat(catchThrowable(fromPool::data)).isSameAs(t);
@@ -560,6 +544,14 @@ public class JvmMemoryPoolsTableTest extends CQLTester
         return () -> { throw sneaky(thrown); };
     }
 
+    /**
+     * An exception and an error of the JVM that is no out of memory error, both with the given message.
+     */
+    private static Throwable[] exceptionAndError(String message)
+    {
+        return new Throwable[]{ new IllegalStateException(message), new StackOverflowError(message) };
+    }
+
     private static RuntimeException sneaky(Throwable thrown)
     {
         if (thrown instanceof RuntimeException)
@@ -567,7 +559,7 @@ public class JvmMemoryPoolsTableTest extends CQLTester
         throw (Error) thrown;
     }
 
-    private static org.apache.cassandra.db.DecoratedKey key(JvmMemoryPoolsTable table, String name)
+    private static DecoratedKey key(JvmMemoryPoolsTable table, String name)
     {
         return table.metadata().partitioner.decorateKey(UTF8Type.instance.decompose(name));
     }

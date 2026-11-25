@@ -126,8 +126,8 @@ Every unit test class of the project runs on the options of `test-latest`, and t
 - TEST-7: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testSecondReadTakesTheValuesOfTheSecondRead` proves REQ-7.
 - TEST-8: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testWritesAndTruncationAreRefused` proves REQ-10.
 - TEST-9: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testSystemViewsListsEveryStockTableAndTheView` proves REQ-11. Its list of the stock tables is written in the test, from the line before this change, and two stock tables that a test node with no CIDR authorizer cannot read are not read.
-- TEST-10: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testExceptionForOnePoolFailsAReadOfAnotherPool` and `testErrorForOnePoolFailsAReadOfAnotherPool` prove REQ-2 and REQ-18.
-- TEST-11: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testExceptionFromTheListOfPoolsFailsAReadOfOnePool` and `testErrorFromTheListOfPoolsFailsAReadOfOnePool` prove REQ-18.
+- TEST-10: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testFailureForOnePoolFailsAReadOfAnotherPool` proves REQ-2 and REQ-18, for an exception and for an error of the JVM.
+- TEST-11: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testFailureFromTheListOfPoolsFailsAReadOfOnePool` proves REQ-18, for an exception and for an error of the JVM.
 - TEST-12: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testDirectReadPassesOnTheObjectThatWasThrown` proves REQ-18.
 - TEST-13: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testBuildingTheViewMakesNoCallForThePools` proves REQ-1.
 - TEST-14: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testNoThreadNoTaskAndNoKeptValue` proves REQ-8: after reads no thread of the JVM runs code of the feature, no thread is left in the thread group of the thread that read, the view class names no class that starts a thread or schedules a task, and no field of the view changes.

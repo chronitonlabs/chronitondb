@@ -19,6 +19,7 @@ package org.chronitondb.virtual;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.After;
@@ -153,7 +154,7 @@ public class JvmMemoryPoolsPermissionsTest extends CQLTester
         {
             AuthCacheService.instance.warmCaches();
             Set<Permission> loaded = null;
-            for (java.util.Map.Entry<Pair<AuthenticatedUser, IResource>, Set<Permission>> entry : AuthenticatedUser.permissionsCache.getAll().entrySet())
+            for (Map.Entry<Pair<AuthenticatedUser, IResource>, Set<Permission>> entry : AuthenticatedUser.permissionsCache.getAll().entrySet())
             {
                 if (entry.getKey().left.getName().equals(role) && entry.getKey().right.equals(resource))
                     loaded = entry.getValue();

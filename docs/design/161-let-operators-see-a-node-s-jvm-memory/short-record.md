@@ -28,6 +28,7 @@ limitations under the License.
 | References | Issue #161. The [feature spec](../JVMEM-jvm-memory-pools-view/feature-spec.md), item 1 of the [plan](../JVMEM-jvm-memory-pools-view/plan.md) and the [delivery plan](../JVMEM-jvm-memory-pools-view/delivery-plan.md). Decision records [DEC-JVMEM-0001](../JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md) to [DEC-JVMEM-0013](../JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0013-the-view-stays-at-normal-risk-and-the-runs-of-its-two-tests-are-named.md). The delta entry [jvm-memory-pools-view.md](../../delta/jvm-memory-pools-view.md). The reference page [jvm-memory-pools.md](../../reference/virtual-tables/jvm-memory-pools.md). |
 | Areas | observability |
 | Tier | Short: no file the change touches is on the paths of the Critical floor |
+| Exceptions | PRINCIPLE-003, PRINCIPLE-089 |
 
 Revision history, one row for each version:
 
@@ -98,7 +99,7 @@ How the change answers what section 11 of the feature spec leaves to the design 
    3. **What the log holds if it fires on every request.** The class name, the message, which names the pool, and the stack trace. The name of a pool is the JVM's, and the entries hold no user data ([PRINCIPLE-035](../../process/principles.md#principle-035)).
 4. **The runs of the two tests of DEC-JVMEM-0013.** `JvmMemoryPoolsTableTest.testNodeHoldsTheViewAndAnswersARead` and `JvmMemoryPoolsTableTest.testViewShowsThePoolsOfTheSameJvm`. Both pass in the test log of each commit of this pull request, from the commit that adds the hook, which is the first commit.
 5. **A statement answered from more than one read when one read fails.** Each read builds every row, so the read that fails throws, and the statement fails with it. This change does not change how Apache Cassandra ends such a statement, and no test of it covers that.
-6. **Exceptions.** PRINCIPLE-003 and PRINCIPLE-089, as section 1 says.
+6. **Exceptions.** The Exceptions row names PRINCIPLE-003 and PRINCIPLE-089, as binding 4 of DEC-JVMEM-0001 asks. In their place the table is present on every node of a release that has it, from startup, with no switch and no hold back, for this table only. The reason is that of section 1 and DEC-JVMEM-0001: the table does no work until it is read, keeps no memory, and nodes share nothing of it.
 
 The one place a test supplies pools of its own is the public constructor `JvmMemoryPoolsTable(String, Supplier)`. No setting, system property, MBean, statement or command reaches it. The constructor and the static initialiser make no call to `java.lang.management`, the class reads no setting, and the code that builds the rows holds no catch. No pre-existing test file of Apache Cassandra changes: no stock test pins the complete list of the tables of `system_views`.
 

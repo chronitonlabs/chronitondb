@@ -72,3 +72,12 @@ Every document under `docs/` that carries the common header, by kind. The decisi
 | [design record of #112 Warn at startup when the commit log shares a disk with the data directories](../reviews/112-warn-at-startup-when-the-commit-log-design.md) | Closed |  |  |
 | [plan and delivery plan of #161 Let operators see a node's JVM memory pools from CQL](../reviews/161-let-operators-see-a-node-s-jvm-memory-plan.md) | Closed |  |  |
 | [feature spec of #161 Let operators see a node's JVM memory pools from CQL](../reviews/161-let-operators-see-a-node-s-jvm-memory-spec.md) | Closed |  |  |
+
+## Exceptions to principles
+
+Every record whose `Exceptions` row names a principle of [principles.md](../process/principles.md), under each principle it departs from. The record gives the reason.
+
+| Principle | Record | Kind | Status | Version |
+|---|---|---|---|---|
+| [PRINCIPLE-003](../process/principles.md#principle-003) | [#161 Let operators see a node's JVM memory pools from CQL](../design/161-let-operators-see-a-node-s-jvm-memory/short-record.md) | Short record | Draft | 1 |
+| [PRINCIPLE-089](../process/principles.md#principle-089) | [#161 Let operators see a node's JVM memory pools from CQL](../design/161-let-operators-see-a-node-s-jvm-memory/short-record.md) | Short record | Draft | 1 |

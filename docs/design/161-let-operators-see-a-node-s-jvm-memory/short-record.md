@@ -86,7 +86,7 @@ The table is built by `JvmMemoryPoolsTable` in `src/java/org/chronitondb/virtual
 - REQ-18: If a call that the table makes to the JVM throws while a read builds its rows, then the table MUST NOT catch what was thrown, whichever rows the statement asks for. Source: FREQ-JVMEM-018.
 - REQ-19: The reference page MUST say that an exception, or an error of the JVM that is no out of memory error, for one memory pool fails every read of the table while it lasts. Source: FREQ-JVMEM-019.
 - REQ-20: The reference page MUST say that the table passes on what a call to the JVM throws, what the node then answers and logs, the three commits for whose code it says that, that it says so for no other code, and of an out of memory error only that it goes to the node's own handling. Source: FREQ-JVMEM-020.
-- REQ-21: If the JVM lists more than one memory pool under one name during a read, then the read MUST fail with `IllegalStateException` and the message `the JVM lists more than one memory pool named <name>`, whichever rows the statement asks for. Source: decision 2 of section 3.
+- REQ-21: If the JVM lists more than one memory pool under one name during a read, then the read MUST fail with `IllegalStateException` and the message `the JVM lists more than one memory pool named <name>`, whichever rows the statement asks for, unless a call to the JVM throws during the read before the view takes the name of the second pool of that name. Source: decision 2 of section 3.
 - REQ-22: The reference page MUST be `docs/reference/virtual-tables/jvm-memory-pools.md`. Source: decision 3 of section 3.
 
 How the change answers what section 11 of the feature spec leaves to the design of the item:

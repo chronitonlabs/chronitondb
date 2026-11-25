@@ -149,6 +149,8 @@ Every unit test class of the project runs on the options of `test-latest`, and t
 - TEST-26: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testNoPoolGivesNoRow` proves REQ-2 for a JVM that lists no pool and for a name that no pool has.
 - TEST-27: `org.chronitondb.virtual.JvmMemoryPoolsPageTest.testExampleStatementsRunAndTheSampleShowsTheColumnsInTheirOrder` proves REQ-12 for the example: its statements run, and its sample shows the columns in the order a node returns them.
 
+No tracing test applies, because a read of the table takes no decision and no fallback and adds no step of its own to a request: it builds its rows by calls to the JVM, and Apache Cassandra's tracing of the read is unchanged. So the change adds no trace event ([PRINCIPLE-033](../../process/principles.md#principle-033)).
+
 What no test shows, and the review of the code reads instead: that the code which builds the rows holds no catch (REQ-18), that the static initialiser and the constructor make no call to `java.lang.management` (REQ-1), that no static field and no other object of the package keeps a value of a memory pool, and that the code starts no thread in a thread group other than that of the thread that reads (REQ-8), that the class reads no setting (REQ-1), and that only the code of a test reaches the constructor that takes pools (REQ-7). That the meanings on the page are those of the feature spec is read at the gate of the milestone.
 
 The tests of Apache Cassandra that exit criterion 5 of the delivery plan names run unchanged at the gate of the milestone.

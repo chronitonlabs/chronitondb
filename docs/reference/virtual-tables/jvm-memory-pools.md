@@ -1,3 +1,7 @@
+---
+title: JVM memory pools view
+description: The virtual table system_views.jvm_memory_pools, its columns, who may read it, what a failed read answers and logs, and the step before moving back.
+---
 <!--
 Copyright 2026 AxonOps Limited
 SPDX-License-Identifier: Apache-2.0

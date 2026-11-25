@@ -69,7 +69,7 @@ public class JvmMemoryPoolsPageTest extends CQLTester
     @Test
     public void testPageNamesEveryColumnWithItsTypeAndKind() throws IOException
     {
-        assertThat(page()).startsWith("<!--").contains("# system_views.jvm_memory_pools\n");
+        assertThat(page()).startsWith("---\ntitle: ").contains("\ndescription: ").contains("\n---\n<!--").contains("# system_views.jvm_memory_pools\n");
 
         Map<String, String> onPage = new HashMap<>();
         Matcher row = COLUMN_ROW.matcher(page());

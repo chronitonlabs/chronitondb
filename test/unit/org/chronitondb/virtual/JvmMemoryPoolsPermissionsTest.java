@@ -52,7 +52,7 @@ public class JvmMemoryPoolsPermissionsTest extends CQLTester
     private static final String VIEW = "system_views." + JvmMemoryPoolsTable.TABLE_NAME;
     private static final String VIEW_RESOURCE = "<table " + VIEW + '>';
     private static final String PASSWORD = "secret";
-    private static final String[] ROLES = { "on_view", "on_keyspace", "no_grant", "granted", "leftover" };
+    private static final String[] ROLES = { "on_view", "on_keyspace", "on_all_keyspaces", "no_grant", "granted", "leftover" };
 
     @BeforeClass
     public static void setUpClass()
@@ -84,12 +84,18 @@ public class JvmMemoryPoolsPermissionsTest extends CQLTester
         executeNet("GRANT SELECT ON " + VIEW + " TO on_view");
         createRole("on_keyspace");
         executeNet("GRANT SELECT ON KEYSPACE system_views TO on_keyspace");
+        createRole("on_all_keyspaces");
+        executeNet("GRANT SELECT ON ALL KEYSPACES TO on_all_keyspaces");
         createRole("no_grant");
 
         useUser("on_view", PASSWORD);
         assertThat(executeNet("SELECT * FROM " + VIEW).all()).isNotEmpty();
         useUser("on_keyspace", PASSWORD);
         assertThat(executeNet("SELECT * FROM " + VIEW).all()).isNotEmpty();
+        useUser("on_all_keyspaces", PASSWORD);
+        assertThatThrownBy(() -> executeNet("SELECT * FROM " + VIEW))
+            .isInstanceOf(UnauthorizedException.class)
+            .hasMessageContaining("User on_all_keyspaces has no SELECT permission on " + VIEW_RESOURCE);
         useUser("no_grant", PASSWORD);
         assertThatThrownBy(() -> executeNet("SELECT * FROM " + VIEW))
             .isInstanceOf(UnauthorizedException.class)

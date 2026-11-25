@@ -132,7 +132,7 @@ Every unit test class of the project runs on the options of `test-latest`, and t
 - TEST-13: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testBuildingTheViewMakesNoCallForThePools` proves REQ-1.
 - TEST-14: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testNoThreadNoTaskAndNoKeptValue` proves REQ-8: after reads no thread of the JVM runs code of the feature, no thread is left in the thread group of the thread that read, the view class names no class that starts a thread or schedules a task, and no field of the view changes.
 - TEST-15: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testRepeatedPoolNameFailsTheRead` proves REQ-21.
-- TEST-16: `org.chronitondb.virtual.JvmMemoryPoolsPermissionsTest.testReadNeedsTheGrantsOfATableOfSystemViews` proves REQ-9.
+- TEST-16: `org.chronitondb.virtual.JvmMemoryPoolsPermissionsTest.testReadNeedsTheGrantsOfATableOfSystemViews` proves REQ-9: a grant on the table or on `system_views` lets a role read it, and a grant on all keyspaces does not.
 - TEST-17: `org.chronitondb.virtual.JvmMemoryPoolsPermissionsTest.testGrantAndRevokeOnTheViewByName` proves REQ-17.
 - TEST-18: `org.chronitondb.virtual.JvmMemoryPoolsPermissionsTest.testGrantRowForATableTheNodeDoesNotHave` proves REQ-16, for the four places where a grant row is read.
 - TEST-19: `org.chronitondb.virtual.JvmMemoryPoolsPageTest.testPageNamesEveryColumnWithItsTypeAndKind` and `testPageGivesTheValuesOfTypeAndTheMeaningOfMinusOneAndNull` prove REQ-12 and REQ-22.

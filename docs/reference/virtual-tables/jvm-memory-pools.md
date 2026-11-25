@@ -100,7 +100,7 @@ A tool that needs the sizes of one moment SHOULD send `SELECT * FROM system_view
 
 ## Who may read the table
 
-The table follows the permission check that every table of `system_views` has. A superuser may read it. Another role needs `SELECT` on the table, on the keyspace `system_views` or on all keyspaces. A statement that writes to the table is refused with `Modification is not supported by table system_views.jvm_memory_pools`, and `TRUNCATE` with `Truncation is not supported by table system_views.jvm_memory_pools`.
+The table follows the permission check that every table of `system_views` has. A superuser may read it. Another role needs `SELECT` on the table or on the keyspace `system_views`. A grant of `SELECT` on all keyspaces does not let a role read it, since such a grant reaches no table of a system keyspace. A statement that writes to the table is refused with `Modification is not supported by table system_views.jvm_memory_pools`, and `TRUNCATE` with `Truncation is not supported by table system_views.jvm_memory_pools`.
 
 The rows hold sizes of the node's JVM and no user data.
 

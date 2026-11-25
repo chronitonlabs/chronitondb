@@ -18,14 +18,10 @@
 package org.chronitondb.virtual.test;
 
 import java.io.IOException;
-import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.lang.management.MemoryUsage;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.AfterClass;
@@ -42,6 +38,7 @@ import org.apache.cassandra.distributed.test.TestBaseImpl;
 import org.chronitondb.virtual.JvmMemoryPoolsTable;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.chronitondb.virtual.JvmMemoryPoolsTableTest.TestPools.pool;
 
 /**
  * Each node of a cluster answers a read of the view from its own pools.
@@ -87,35 +84,5 @@ public class JvmMemoryPoolsNodesTest extends TestBaseImpl
         for (Object[] row : cluster.coordinator(2).execute("SELECT name FROM system_views.jvm_memory_pools", ConsistencyLevel.ONE))
             second.add(row[0]);
         assertThat(second).isNotEmpty().doesNotContain(POOL);
-    }
-
-    /**
-     * A memory pool of the test's own. The view needs only its name, its type and its usage,
-     * and every other call fails the test.
-     */
-    static MemoryPoolMXBean pool(String name, MemoryType type, Supplier<MemoryUsage> usage)
-    {
-        InvocationHandler handler = (proxy, method, args) -> {
-            switch (method.getName())
-            {
-                case "getName":
-                case "toString":
-                    return name;
-                case "getType":
-                    return type;
-                case "getUsage":
-                    return usage.get();
-                default:
-                    throw new AssertionError("The view called " + method.getName() + ", which it does not need");
-            }
-        };
-        return (MemoryPoolMXBean) Proxy.newProxyInstance(MemoryPoolMXBean.class.getClassLoader(),
-                                                         new Class<?>[]{ MemoryPoolMXBean.class },
-                                                         handler);
-    }
-
-    static MemoryPoolMXBean pool(String name, MemoryType type, MemoryUsage usage)
-    {
-        return pool(name, type, () -> usage);
     }
 }

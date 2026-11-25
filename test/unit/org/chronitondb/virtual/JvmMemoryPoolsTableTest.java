@@ -59,6 +59,7 @@ import org.apache.cassandra.service.CassandraDaemon;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.chronitondb.virtual.JvmMemoryPoolsTableTest.TestPools.pool;
 
 /**
  * The view on a test node: its definition, its rows against the pools of the same JVM,
@@ -475,33 +476,45 @@ public class JvmMemoryPoolsTableTest extends CQLTester
     // Helpers.
 
     /**
-     * A memory pool of the test's own. The view needs only its name, its type and its usage,
-     * and every other call fails the test.
+     * Memory pools of a test's own, for this class and for the test of the view on a cluster.
+     * The pools are built in a class of their own, so a node of a cluster can build them
+     * without loading this test class.
      */
-    static MemoryPoolMXBean pool(String name, MemoryType type, Supplier<MemoryUsage> usage)
+    public static final class TestPools
     {
-        InvocationHandler handler = (proxy, method, args) -> {
-            switch (method.getName())
-            {
-                case "getName":
-                case "toString":
-                    return name;
-                case "getType":
-                    return type;
-                case "getUsage":
-                    return usage.get();
-                default:
-                    throw new AssertionError("The view called " + method.getName() + ", which it does not need");
-            }
-        };
-        return (MemoryPoolMXBean) Proxy.newProxyInstance(MemoryPoolMXBean.class.getClassLoader(),
-                                                         new Class<?>[]{ MemoryPoolMXBean.class },
-                                                         handler);
-    }
+        private TestPools()
+        {
+        }
 
-    static MemoryPoolMXBean pool(String name, MemoryType type, MemoryUsage usage)
-    {
-        return pool(name, type, () -> usage);
+        /**
+         * A memory pool of the test's own. The view needs only its name, its type and its usage,
+         * and every other call fails the test.
+         */
+        public static MemoryPoolMXBean pool(String name, MemoryType type, Supplier<MemoryUsage> usage)
+        {
+            InvocationHandler handler = (proxy, method, args) -> {
+                switch (method.getName())
+                {
+                    case "getName":
+                    case "toString":
+                        return name;
+                    case "getType":
+                        return type;
+                    case "getUsage":
+                        return usage.get();
+                    default:
+                        throw new AssertionError("The view called " + method.getName() + ", which it does not need");
+                }
+            };
+            return (MemoryPoolMXBean) Proxy.newProxyInstance(MemoryPoolMXBean.class.getClassLoader(),
+                                                             new Class<?>[]{ MemoryPoolMXBean.class },
+                                                             handler);
+        }
+
+        public static MemoryPoolMXBean pool(String name, MemoryType type, MemoryUsage usage)
+        {
+            return pool(name, type, () -> usage);
+        }
     }
 
     /**

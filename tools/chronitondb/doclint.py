@@ -30,7 +30,7 @@ before they commit.
     doclint.py delta --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE]
     doclint.py stock-tests --repo DIR --base REF [--source SRC] [--branch NAME] [--body FILE] [--issue STATE]
     doclint.py stock-tests-issue [--branch NAME] [--body FILE]
-    doclint.py tier --repo DIR --base REF [--templates REF] [--source SRC]
+    doclint.py tier --repo DIR --base REF [--source SRC]
 
 SRC is where the documents are read: "index" (the default, the staged
 version), "worktree", or a commit. REF is where the rules are read, the line
@@ -370,6 +370,16 @@ file passes by one of:
      <explanation>" with the file's path, the pull request's issue and a
      written explanation: eight different words or more, each of two
      letters or more, with no placeholder in it, such as TBD or todo
+  5. a fix to stock on the short path: the change at SRC holds the short
+     record of the pull request's issue, docs/design/<issue>-<slug>/
+     short-record.md, the tier of the change read at REF is Short, STATE
+     shows a label kind:corrective, kind:emergency or kind:preventive,
+     and section 4 of the record names the file and each existing test
+     method the change alters on a line "Changed stock test: <path>
+     <method>: <what it asserts after the fix>". The change alters no
+     other existing method of the Java test class and no line outside a
+     method but an import or a blank line. A method it adds needs no
+     entry. This is the one permit read from the change
 
 A record permits the change of its own issue only. The pull request's
 issue is the issue of NAME when NAME is given: NAME is then a work branch,
@@ -392,14 +402,15 @@ stdout for each file that passes, and "stock-tests N checked M failed".
 tier prints the tier of the change at SRC since its merge base with REF,
 from the files it touches (branching-and-review.md, Two tiers). The paths
 are read from the table under the heading "The paths of the floor" of
-docs/process/classification.md at the rules ref, --templates, which is
-REF when not given. A path there ending in "/" is a directory, a path
+docs/process/classification.md at REF, the line before the change, never
+at SRC, so a change that edits the table cannot lower its own tier. A
+path there ending in "/" is a directory, a path
 with "*" a pattern, any other path one file. A change that touches a file
 on those paths, a renamed file by its old path or its new one, takes the
 full path. Any other change takes the short path. The first line is the
 tier and why, the line a short record's Tier row holds. A line "floor PATH
 (AREA)" follows for each file that set the full path. With no such table
-at the rules ref the tier is full. It exits 0 once it has printed the tier.
+at REF the tier is full. It exits 0 once it has printed the tier.
 
 Findings go to stderr as "PATH:LINE: reason", exit 1 when there is one.
 A usage error exits 2.
@@ -665,11 +676,14 @@ def floor_paths_at(repo, ref):
     return None
 
 
-def tier_of(repo, base, where, rules_ref):
+def tier_of(repo, base, where):
     """The tier of the change at where since its merge base with base, as
     (line, files): the line a short record's Tier row holds, and each
-    (path, area) on the paths of the floor at rules_ref. None for the line
-    when the change cannot be read."""
+    (path, area) on the paths of the floor. The paths are read at base, the
+    line before the change, never at where, so a change that edits the
+    table cannot lower its own tier. None for the line when the change
+    cannot be read."""
+    rules_ref = base
     touched = changes(repo, base, where)
     if touched is None:
         return None, []
@@ -692,17 +706,15 @@ def tier_of(repo, base, where, rules_ref):
 
 
 def run_tier(args):
-    repo, base, rules_ref, where = None, None, None, "index"
+    repo, base, where = None, None, "index"
     index = 0
     while index < len(args):
-        if args[index] in ("--repo", "--base", "--templates", "--source") and index + 1 < len(args):
+        if args[index] in ("--repo", "--base", "--source") and index + 1 < len(args):
             value = args[index + 1]
             if args[index] == "--repo":
                 repo = value
             elif args[index] == "--base":
                 base = value
-            elif args[index] == "--templates":
-                rules_ref = value
             else:
                 where = value
             index += 2
@@ -712,7 +724,7 @@ def run_tier(args):
     if not repo or not base:
         sys.stderr.write(__doc__)
         return 2
-    line, files = tier_of(repo, base, where, rules_ref or base)
+    line, files = tier_of(repo, base, where)
     if line is None:
         sys.stderr.write("the change at %s since its merge base with %s cannot be read\n" % (where, base))
         return 2
@@ -731,7 +743,7 @@ def check_short_record(doc, repo, templates, where):
     fields, _ = control_table(doc)
     if fields and "Tier" in fields:
         value, row = fields["Tier"]
-        line, files = tier_of(repo, templates, where, templates)
+        line, files = tier_of(repo, templates, where)
         if value and not outer_braces(value):
             if line is None:
                 doc.error(row, "the change cannot be read against %s, so the Tier row cannot be checked" % templates)
@@ -1871,9 +1883,11 @@ APACHE_IMPORT = re.compile(r"^import/(?:cassandra-[0-9]|CASSANDRA-[1-9])")
 SYMLINK = "120000"
 FOUR_WAYS = ("A pre-existing test file of Apache Cassandra changes in four ways only (docs/process/principles.md, PRINCIPLE-013): "
              "in an import from Apache Cassandra, in a fix to stock whose merged fix record lists the file as 'test' in its Planned file list, "
+             "or on the short path whose short record in this pull request names each existing test method the fix alters on a line "
+             "'Changed stock test: <path> <method>: <what it asserts after the fix>' in its Test plan, "
              "by lines added to a listing that the merged design record or fix record names on a line 'Pinned listing: <path>', "
              "or with an accepted decision record that has the line 'Approved stock test change: <path> for #<issue>, because <explanation>', the explanation in eight different words of two letters or more, with no placeholder such as TBD. "
-             "The record merges first, in its own pull request, and this pull request names its issue on a line 'Fixes #<issue>' "
+             "Any other record merges first, in its own pull request, and this pull request names its issue on a line 'Fixes #<issue>' "
              "or 'Part of #<issue>'. A record permits the change of its own issue only: the issue of the work branch, "
              "<name>/<issue>-<slug>/<line>, for a branch of this repository, and the one issue the description names for a fork. "
              "The issue is open, and a permit is used up once a change to the file has reached the line after the record. "
@@ -2179,6 +2193,7 @@ def check_stock_tests(repo, base, where, branch, body, state=None):
     planned, pinned, approved = test_permits(repo, base)
     line = first_parents(repo, base)
     errors, passed = [], []
+    short = None
 
     def permit(found, old):
         """The record that permits the change of a file for the issue of
@@ -2237,6 +2252,21 @@ def check_stock_tests(repo, base, where, branch, body, state=None):
                 passed.append((old, "%s names it as a pinned listing and the change only adds lines of the listing" % record))
             continue
         used = record or used
+        if short is None:
+            short = short_record_permit(repo, base, where, issue, state)
+        record, methods, why = short
+        if record and old in methods:
+            if why:
+                errors.append("%s: the short record %s names the file, and %s" % (old, record, why))
+                continue
+            refusals = method_refusals(repo, merge_base, where, old, methods[old])
+            if refusals is None:
+                errors.append("%s: the change to the file cannot be read, so the methods it alters cannot be checked against the short record %s" % (old, record))
+            elif refusals:
+                errors.extend("%s: %s. The short record %s names %s" % (old, refusal, record, ", ".join(sorted(methods[old]))) for refusal in refusals)
+            else:
+                passed.append((old, "the short record %s names each existing test method the change alters" % record))
+            continue
         if used and not line:
             errors.append("%s: the history of %s cannot be read here, so the permit of %s cannot be told unused. Fetch the whole line first" % (old, base, used))
         elif used:
@@ -2251,6 +2281,173 @@ def check_stock_tests(repo, base, where, branch, body, state=None):
     if errors:
         errors.append(FOUR_WAYS)
     return errors, passed, len(touched)
+
+
+# The permit of a short record: a fix to stock on the short path names in
+# section 4 of its short record each existing test method it alters
+# (testing.md, Policy 4). The record is read in the change, since the short
+# path is one pull request, and it counts only for a fix whose tier, read
+# from the line, is Short.
+FIX_KINDS = ("kind:corrective", "kind:emergency", "kind:preventive")
+CHANGED_STOCK_TEST = re.compile(r"^ {0,3}Changed stock test: ([^\s{}`]+) ([A-Za-z_$][\w$]*): (\S.*)$")
+SHORT_RECORD_PATH = re.compile(r"^docs/design/([0-9]+)-[^/]+/short-record\.md$")
+DIFF_HUNK = re.compile(r"^@@ -([0-9]+)(?:,([0-9]+))? \+([0-9]+)(?:,([0-9]+))? @@")
+JAVA_METHOD = re.compile(r"^\s*(?:@[\w.]+(?:\([^)]*\))?\s+)*(?:(?:public|protected|private|static|final|synchronized|abstract|native|default|strictfp)\s+)*"
+                         r"(?:<[^>]*>\s+)?[\w.$]+(?:<[^>]*>)?(?:\[\])*\s+([A-Za-z_$][\w$]*)\s*\(")
+NOT_METHOD = ("if", "for", "while", "switch", "catch", "return", "new", "else", "throw", "synchronized", "do", "try")
+OUTSIDE_METHOD = re.compile(r"^\s*(?:import\s+[\w.*]+\s*;\s*)?$")
+
+
+def short_record_permit(repo, base, where, issue, state):
+    """(record, methods, why) for the short record of the pull request's
+    issue in the change: its path, the existing test methods it names by
+    stock test file, and why its permit does not count, None when it does.
+    It counts when the tier of the change, read at base, is Short and the
+    issue carries a kind label of a fix. (None, {}, None) when the change
+    holds no short record of the issue."""
+    if not issue:
+        return None, {}, None
+    touched = changes(repo, base, where) or []
+    record = next((path for _, path, _ in touched if SHORT_RECORD_PATH.match(path or "") and SHORT_RECORD_PATH.match(path).group(1) == issue), None)
+    text = Source(repo, where).read(record) if record else None
+    if text is None:
+        return None, {}, None
+    doc = Markdown(record, text)
+    span = section_span(doc, "4")
+    methods = {}
+    for _, line in text_lines(doc, span) if span else []:
+        match = CHANGED_STOCK_TEST.match(line)
+        if match:
+            methods.setdefault(match.group(1), set()).add(match.group(2))
+    tier, _ = tier_of(repo, base, where)
+    if tier is None or not tier.startswith("Short:"):
+        return record, methods, ("the tier of the change, read from %s, is '%s'. Only a change on the short path takes its permit from its short record" % (base, tier or "unreadable"))
+    labels = [label.get("name") if isinstance(label, dict) else label for label in (state.get("labels") or [])] if isinstance(state, dict) else None
+    if labels is None:
+        return record, methods, "the labels of #%s cannot be read, so the change cannot be told a fix to stock" % issue
+    if not any(kind in labels for kind in FIX_KINDS):
+        return record, methods, ("the issue #%s carries none of the labels %s, so the change is no fix to stock. "
+                                 "A fork feature puts its tests in its own files" % (issue, ", ".join(FIX_KINDS)))
+    return record, methods, None
+
+
+def java_methods(text):
+    """(name, first line, last line) of each method of a Java file, lines
+    counted from 1, the annotations above a method included. Braces in
+    strings, characters and comments are passed over. A method inside a
+    method, such as one of an anonymous class, is part of the outer one."""
+    code, in_comment = [], False
+    for line in text.split("\n"):
+        kept, index = "", 0
+        while index < len(line):
+            if in_comment:
+                end = line.find("*/", index)
+                if end < 0:
+                    break
+                in_comment, index = False, end + 2
+            elif line.startswith("/*", index):
+                in_comment, index = True, index + 2
+            elif line.startswith("//", index):
+                break
+            elif line[index] in "\"'":
+                quote, index = line[index], index + 1
+                while index < len(line) and line[index] != quote:
+                    index += 2 if line[index] == "\\" else 1
+                kept, index = kept + quote + quote, index + 1
+            else:
+                kept, index = kept + line[index], index + 1
+        code.append(kept)
+    found, index = [], 0
+    while index < len(code):
+        match = JAVA_METHOD.match(code[index])
+        last = None
+        if match and match.group(1) not in NOT_METHOD:
+            depth, row, done = None, index, False
+            while row < len(code) and not done:
+                for char in code[row]:
+                    if depth is None and char == ";":
+                        done = True
+                        break
+                    if char == "{":
+                        depth = (depth or 0) + 1
+                    elif char == "}" and depth:
+                        depth -= 1
+                        if depth == 0:
+                            last, done = row, True
+                            break
+                row += 1
+        if last is None:
+            index += 1
+            continue
+        first = index
+        while first > 0 and code[first - 1].strip().startswith("@"):
+            first -= 1
+        found.append((match.group(1), first + 1, last + 1))
+        index = last + 1
+    return found
+
+
+def method_at(methods, number):
+    return next((name for name, first, last in methods if first <= number <= last), None)
+
+
+def method_refusals(repo, merge_base, where, path, named):
+    """Why the change to a stock test file goes beyond the existing test
+    methods its short record names: each existing method it alters that
+    is not named, and each line it alters outside any method that is not
+    an import or blank. A method the change adds needs no entry. None when
+    the change cannot be read."""
+    if not path.endswith(".java"):
+        return ["the file is no Java class, and a short record names methods of a Java test class only"]
+    args = ["diff", "-U0", "--no-color", "--no-ext-diff", "--no-textconv", "--no-renames"]
+    if where == "index":
+        args.append("--cached")
+    args.append(merge_base)
+    if where not in ("index", "worktree"):
+        args.append(where)
+    out = git(repo, *(args + ["--", path]))
+    before = git(repo, "show", "%s:%s" % (merge_base, path))
+    after = Source(repo, where).read(path)
+    if out is None or before is None or after is None:
+        return None
+    old_methods, new_methods = java_methods(before), java_methods(after)
+    old_lines, new_lines = before.split("\n"), after.split("\n")
+    existing = {name for name, _, _ in old_methods}
+    altered, outside = set(), 0
+    old_number = new_number = None
+    for line in out.split("\n"):
+        hunk = DIFF_HUNK.match(line)
+        if hunk:
+            old_number, new_number = int(hunk.group(1)), int(hunk.group(3))
+            # A hunk that removes nothing or adds nothing is placed after the
+            # line its start names.
+            if hunk.group(2) == "0":
+                old_number += 1
+            if hunk.group(4) == "0":
+                new_number += 1
+            continue
+        if old_number is None:
+            continue
+        if line.startswith("-"):
+            name = method_at(old_methods, old_number)
+            text = old_lines[old_number - 1] if old_number - 1 < len(old_lines) else ""
+            old_number += 1
+        elif line.startswith("+"):
+            name = method_at(new_methods, new_number)
+            text = new_lines[new_number - 1] if new_number - 1 < len(new_lines) else ""
+            new_number += 1
+            if name and name not in existing:
+                continue
+        else:
+            continue
+        if name:
+            altered.add(name)
+        elif not OUTSIDE_METHOD.match(text):
+            outside += 1
+    refusals = ["the change alters the existing test method %s, which the short record does not name" % name for name in sorted(altered - set(named))]
+    if outside:
+        refusals.append("the change alters %d line(s) outside any test method that are no import" % outside)
+    return refusals
 
 
 MILESTONE_STATUSES = ("delivered", "not delivered", "delivered in part, as planned")

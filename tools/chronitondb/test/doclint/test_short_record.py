@@ -78,7 +78,7 @@ def filled_record(tier=doclint.SHORT_TIER, sections=None):
     text = text.replace("{RFC 3339 date}", "2026-11-20").replace("{the id of the decision record behind this version, or None}", "None")
     text = text.replace("{the address `tools/chronitondb/doclint.py history --write` puts here}", "https://github.com/example/product/commits/line/" + RECORD)
     for title, body in dict(SECTIONS, **(sections or {})).items():
-        text = re.sub(r"(## %s\n\n)\{.*?\}\n" % re.escape(title), lambda match: match.group(1) + body + "\n", text, flags=re.S)
+        text = re.sub(r"(## %s\n\n)\{.*?\}\n(?=\n## |$)" % re.escape(title), lambda match: match.group(1) + body + "\n", text, flags=re.S)
     return text
 
 
@@ -192,10 +192,30 @@ class ShortRecord(unittest.TestCase):
     def test_with_no_paths_on_the_line_the_tier_is_full(self):
         self.put("docs/process/classification.md", "# Classification of work\n")
         self.git("commit", "-q", "-a", "-m", "no paths")
-        self.git("branch", "-f", "rules")
-        rc, out, _ = self.tier("--templates", "rules")
+        self.git("branch", "-f", "line")
+        self.put(OTHER_FILE, "class WidgetTable {}\n")
+        rc, out, _ = self.tier()
         self.assertEqual(rc, 0)
         self.assertTrue(out.startswith("Full: no paths of the Critical floor"), out)
+
+    def test_a_change_that_removes_its_own_path_from_the_table_is_still_full(self):
+        self.put(FLOOR_FILE, "class Widget {}\n")
+        table = page("classification.md").replace("| `src/java/org/apache/cassandra/db/compaction/` | Compaction |\n", "")
+        self.assertNotEqual(table, page("classification.md"))
+        self.put("docs/process/classification.md", table)
+        self.put(RECORD, filled_record())
+        rc, out, _ = self.tier()
+        self.assertEqual((rc, out.split("\n")[0]), (0, "Full: 1 file the change touches is on the paths of the Critical floor"))
+        self.assertIn("floor %s (Compaction)" % FLOOR_FILE, out)
+        rc, _, err = self.document()
+        self.assertEqual(rc, 1)
+        self.assertIn("the tier of the change is 'Full: 1 file", err)
+
+    def test_a_pattern_of_the_table_matches_across_directories(self):
+        self.put("src/java/org/chronitondb/widget/auth/Login.java", "class Login {}\n")
+        rc, out, _ = self.tier()
+        self.assertEqual(rc, 0)
+        self.assertIn("floor src/java/org/chronitondb/widget/auth/Login.java (Authentication and authorisation)", out)
 
     def test_the_tier_without_a_base_is_a_usage_error(self):
         rc, _, _ = run("tier", "--repo", self.repo)

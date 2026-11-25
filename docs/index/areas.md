@@ -56,6 +56,7 @@ None.
 | [JVM memory pools view in CQL](../design/JVMEM-jvm-memory-pools-view/feature-spec.md) | Feature spec | Draft | 1 |
 | [JVM memory pools view in CQL](../design/JVMEM-jvm-memory-pools-view/plan.md) | Plan | Draft | 1 |
 | [JVM memory pools view in CQL](../design/JVMEM-jvm-memory-pools-view/delivery-plan.md) | Delivery plan | Draft | 1 |
+| [#161 Let operators see a node's JVM memory pools from CQL](../design/161-let-operators-see-a-node-s-jvm-memory/short-record.md) | Short record | Draft | 1 |
 | [DEC-JVMEM-0001. The JVM memory pools view has no switch and is not held back](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0001-jvm-memory-pools-view-has-no-switch.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0002. A memory pool with no maximum shows -1 as its maximum](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0002-a-pool-with-no-maximum-shows-minus-one.md) | Decision record | Accepted |  |
 | [DEC-JVMEM-0003. The JVM memory pools view stays at Normal risk with two faults named](../design/JVMEM-jvm-memory-pools-view/decisions/DEC-JVMEM-0003-jvm-memory-pools-view-stays-at-normal-risk.md) | Decision record | Superseded by DEC-JVMEM-0013 |  |
@@ -111,6 +112,7 @@ Documents of a kind that has no `Areas` row, and documents merged before the row
 | [Apache GitHub checks run on pull requests to the lines](../delta/github-checks-on-pull-requests.md) | Delta entry | Current | 4 |
 | [Apache's pull request template removed](../delta/github-pull-request-template-removed.md) | Delta entry | Current | 1 |
 | [One Java version per line](../delta/java-version-per-line.md) | Delta entry | Current | 3 |
+| [JVM memory pools view in system_views](../delta/jvm-memory-pools-view.md) | Delta entry | Current | 1 |
 | [run-ci routes 6.0 versions on the 5.0 line](../delta/run-ci-6.0-version-routing.md) | Delta entry | Current | 3 |
 | [run-ci accepts this repository](../delta/run-ci-accepts-chronitondb.md) | Delta entry | Current | 3 |
 | [design record of #112 Warn at startup when the commit log shares a disk with the data directories](../reviews/112-warn-at-startup-when-the-commit-log-design.md) | Review record | Closed |  |

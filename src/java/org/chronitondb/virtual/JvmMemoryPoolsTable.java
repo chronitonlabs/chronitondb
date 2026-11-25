@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.cassandra.db.marshal.LongType;
 import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.db.virtual.AbstractVirtualTable;
@@ -57,6 +59,7 @@ public final class JvmMemoryPoolsTable extends AbstractVirtualTable
     /**
      * Builds the view on pools that a test supplies. Only test code calls this.
      */
+    @VisibleForTesting
     public JvmMemoryPoolsTable(String keyspace, Supplier<? extends List<? extends MemoryPoolMXBean>> pools)
     {
         super(TableMetadata.builder(keyspace, TABLE_NAME)

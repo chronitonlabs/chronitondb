@@ -60,7 +60,7 @@ Which pools a node has depends on its JDK and its garbage collector. The table s
 
 ## Example
 
-A read on a node with OpenJDK 17, the G1 collector and a 512 MiB heap:
+A sample of a read on a node with OpenJDK 17, the G1 collector and a 512 MiB heap. The pools and their sizes differ from node to node and from read to read:
 
 ```
 cqlsh> SELECT * FROM system_views.jvm_memory_pools;

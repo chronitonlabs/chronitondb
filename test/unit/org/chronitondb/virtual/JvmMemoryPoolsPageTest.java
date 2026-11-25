@@ -22,8 +22,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -32,6 +34,7 @@ import java.util.regex.Pattern;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Row;
 import org.apache.cassandra.cql3.CQLTester;
 import org.apache.cassandra.service.CassandraDaemon;
@@ -88,6 +91,34 @@ public class JvmMemoryPoolsPageTest extends CQLTester
 
         assertThat(onNode).hasSize(5);
         assertThat(onPage).isEqualTo(onNode);
+    }
+
+    @Test
+    public void testExampleStatementsRunAndTheSampleShowsTheColumnsInTheirOrder() throws IOException
+    {
+        String example = section("## Example");
+        assertThat(example).contains("A sample of a read");
+
+        List<String> statements = new ArrayList<>();
+        for (String line : example.split("\n"))
+        {
+            String statement = line.startsWith("cqlsh> ") ? line.substring("cqlsh> ".length()) : line;
+            if (statement.startsWith("SELECT "))
+                statements.add(statement);
+        }
+        assertThat(statements).hasSize(2);
+        for (String statement : statements)
+            executeNet(statement);
+
+        List<String> columns = new ArrayList<>();
+        for (ColumnDefinitions.Definition column : executeNet("SELECT * FROM system_views.jvm_memory_pools").getColumnDefinitions())
+            columns.add(column.getName());
+        Matcher header = Pattern.compile("^ name +\\|.*$", Pattern.MULTILINE).matcher(example);
+        assertThat(header.find()).as("the header of the sample").isTrue();
+        List<String> shown = new ArrayList<>();
+        for (String name : header.group().split("\\|"))
+            shown.add(name.trim());
+        assertThat(shown).isEqualTo(columns);
     }
 
     @Test

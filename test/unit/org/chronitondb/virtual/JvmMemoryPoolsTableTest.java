@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableList;
@@ -46,6 +47,7 @@ import org.junit.Test;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.SimpleStatement;
+import org.apache.cassandra.concurrent.ExecutorFactory;
 import org.apache.cassandra.cql3.CQLTester;
 import org.apache.cassandra.cql3.QueryProcessor;
 import org.apache.cassandra.db.marshal.UTF8Type;
@@ -390,6 +392,7 @@ public class JvmMemoryPoolsTableTest extends CQLTester
         register(table);
         assertThat(executeNet("SELECT * FROM " + TEST_VIEW).all()).isNotEmpty();
         assertThat(executeNet("SELECT * FROM " + VIEW).all()).isNotEmpty();
+        assertReadsLeaveNoThread(table);
 
         Map<Field, Object> after = instanceFields(table);
         assertThat(after.keySet()).isEqualTo(before.keySet());
@@ -409,6 +412,37 @@ public class JvmMemoryPoolsTableTest extends CQLTester
                 assertThat(frame.getClassName()).as("a frame of thread %s", thread.getKey().getName())
                                                 .doesNotStartWith("org.chronitondb.");
         }
+    }
+
+    /**
+     * Reads the view from a thread of a new thread group, then checks that the group holds no thread.
+     * The reader is started by a factory of threads that puts its threads in that group.
+     * A thread that a read starts joins the group of the thread that starts it, unless the code names another group,
+     * so a thread that a read leaves behind stays in the group, idle or not.
+     */
+    private static void assertReadsLeaveNoThread(JvmMemoryPoolsTable table) throws InterruptedException
+    {
+        ThreadGroup group = new ThreadGroup("memory pools view reads");
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+        Thread reader = new ExecutorFactory.Default(null, group, null).startThread("memory pools view reader", () -> {
+            try
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    table.data();
+                    QueryProcessor.executeInternal("SELECT * FROM " + TEST_VIEW);
+                }
+            }
+            catch (Throwable t)
+            {
+                failure.set(t);
+            }
+        });
+        reader.join();
+        assertThat(failure.get()).as("a failure of the reads").isNull();
+        Thread[] left = new Thread[8];
+        int count = group.enumerate(left, true);
+        assertThat(count).as("threads left in the group of the reads").isZero();
     }
 
     /**

@@ -130,7 +130,7 @@ Every unit test class of the project runs on the options of `test-latest`, and t
 - TEST-11: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testExceptionFromTheListOfPoolsFailsAReadOfOnePool` and `testErrorFromTheListOfPoolsFailsAReadOfOnePool` prove REQ-18.
 - TEST-12: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testDirectReadPassesOnTheObjectThatWasThrown` proves REQ-18.
 - TEST-13: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testBuildingTheViewMakesNoCallForThePools` proves REQ-1.
-- TEST-14: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testNoThreadNoTaskAndNoKeptValue` proves REQ-8.
+- TEST-14: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testNoThreadNoTaskAndNoKeptValue` proves REQ-8: after reads no thread of the JVM runs code of the feature, no thread is left in the thread group of the thread that read, the view class names no class that starts a thread or schedules a task, and no field of the view changes.
 - TEST-15: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testRepeatedPoolNameFailsTheRead` proves REQ-21.
 - TEST-16: `org.chronitondb.virtual.JvmMemoryPoolsPermissionsTest.testReadNeedsTheGrantsOfATableOfSystemViews` proves REQ-9.
 - TEST-17: `org.chronitondb.virtual.JvmMemoryPoolsPermissionsTest.testGrantAndRevokeOnTheViewByName` proves REQ-17.
@@ -144,7 +144,7 @@ Every unit test class of the project runs on the options of `test-latest`, and t
 - TEST-25: `org.chronitondb.virtual.test.JvmMemoryPoolsNodesTest.testPoolGivenToOneNodeShowsOnThatNodeOnly` proves REQ-7 on a cluster of two nodes.
 - TEST-26: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testNoPoolGivesNoRow` proves REQ-2 for a JVM that lists no pool and for a name that no pool has.
 
-What no test shows, and the review of the code reads instead: that the code which builds the rows holds no catch (REQ-18), that the static initialiser and the constructor make no call to `java.lang.management` (REQ-1), that no static field and no other object of the package keeps a value of a memory pool (REQ-8), that the class reads no setting (REQ-1), and that only the code of a test reaches the constructor that takes pools (REQ-7). That the meanings on the page are those of the feature spec is read at the gate of the milestone.
+What no test shows, and the review of the code reads instead: that the code which builds the rows holds no catch (REQ-18), that the static initialiser and the constructor make no call to `java.lang.management` (REQ-1), that no static field and no other object of the package keeps a value of a memory pool, and that the code starts no thread in a thread group other than that of the thread that reads (REQ-8), that the class reads no setting (REQ-1), and that only the code of a test reaches the constructor that takes pools (REQ-7). That the meanings on the page are those of the feature spec is read at the gate of the milestone.
 
 The tests of Apache Cassandra that exit criterion 5 of the delivery plan names run unchanged at the gate of the milestone.
 

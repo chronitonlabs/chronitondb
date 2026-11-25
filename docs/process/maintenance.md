@@ -17,7 +17,7 @@ limitations under the License.
 
 # Maintenance
 
-This page covers corrective, emergency, preventive, adaptive and perfective changes, the categories of ISO/IEC/IEEE 14764:2022 other than additive. New features are in [additive.md](additive.md). Changes that come from Apache Cassandra are in [upstream.md](upstream.md).
+This page covers corrective, emergency, preventive, adaptive and perfective changes, the categories of ISO/IEC/IEEE 14764:2022 other than additive. New features are in [additive.md](additive.md). Changes that come from Apache Cassandra are in [upstream.md](upstream.md). This page describes the full path. A change on the short path follows [the short path](branching-and-review.md#the-short-path) in its place.
 
 Every change is one item with one public GitHub issue. A security fix has no public issue until disclosure. It is tracked in its private advisory. A maintainer approves an item's design record or fix record, and later its pull request, by merging. The reviewer reviews each of those pull requests first, where the project's own automation wrote it or a maintainer accepted it for review. A maintainer reviews any other directly: [branching-and-review.md](branching-and-review.md#reviews).
 

@@ -204,6 +204,17 @@ Exit 0 when nothing is found, 1 on a finding, 2 on a usage error.
 
 A file is ChronitonDB's own when it falls under a path of the table Where things live in [conventions.md](../../docs/process/conventions.md#where-things-live), read from the line. Every other file is a stock file. A change that adds, edits, deletes or renames a stock file adds or changes an entry under `docs/delta/`, unless its branch imports a whole Apache release or Apache's branch (`import/cassandra-<...>`), or its description has a line `No delta entry: <reason>`. That line is for a feature's change that touches only stock log lines and the switch check round them. The checker reads only that it is there, the reviewer judges it against the change, and any other use of it is a decision of the maintainers at review. The checker takes the branch name as given. CI gives it only when the head branch is in this repository, never for the branch of a fork, whose author chooses its name. An import that starts on a fork is pushed to an import branch of this repository by a maintainer, and its pull request is opened from there. Each entry it adds or changes passes the delta entry rules of `document`, with an Origin commit link, its index row with the same Area and Lines, and on an update a new Last-Update. No entry is renamed or deleted. It prints `stock PATH` for each stock file it finds.
 
+### The tier of a change
+
+`doclint.py tier` prints the tier of a change, as [branching-and-review.md](../../docs/process/branching-and-review.md#two-tiers) defines it, from the files the change touches since its merge base with `--base`. The paths are read from the table of [the paths of the floor](../../docs/process/classification.md#the-paths-of-the-floor) at `--base`, the line before the change, never from the change, so a change that edits the table cannot lower its own tier. A change that touches a file on those paths, a renamed file by its old path or its new one, takes the full path. Any other change takes the short path. The first line is the line a short record's Tier row holds. A line follows for each file that set the full path. It exits 0 once it has printed the tier.
+
+    tools/chronitondb/doclint.py tier --repo . --base origin/chronitondb-5.0 --source HEAD
+
+    Full: 1 file the change touches is on the paths of the Critical floor
+    floor src/java/org/apache/cassandra/db/compaction/CompactionTask.java (Compaction)
+
+`document` checks a short record's Tier row against the same line, and refuses a short record for a change on the full path.
+
 ### Stock test files
 
 `doclint.py stock-tests` is the check of [testing.md](../../docs/process/testing.md#policy), Policy 4, run by the CI workflow `.github/workflows/chronitondb-stock-tests.yml` on every pull request into a `chronitondb-*` branch, with this file taken from the base branch.

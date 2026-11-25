@@ -673,7 +673,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 **Every change says where problems could occur.** A change says where it could go wrong if a part of it is wrong, worst case first, and names the test that would catch each problem. The answer is never "None" or "Low", and never an argument that the change is safe.
 
-1. **Applies to.** Every feature spec, every fix record, every design record that its feature spec does not cover, and the pull request of Low risk work.
+1. **Applies to.** Every feature spec, every fix record, every short record, every design record that its feature spec does not cover, and the pull request of Low risk work.
 2. **Edge.** A problem that no test can catch says why, and how it is watched instead.
 3. **See.** [classification.md](classification.md#where-problems-could-occur).
 

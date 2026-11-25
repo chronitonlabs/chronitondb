@@ -86,9 +86,64 @@ The Critical floor is about what code does, not who wrote it or where it lives. 
 
 The maintainers MAY say that a given change is not Critical: in answer to the class and scope question before drafting, or, when the floor first fires on a pull request, in answer to the floor question there. The floor fires when a pull request whose risk is below Critical is found to touch an area of this floor, and the floor question asks the maintainers whether to raise the risk or keep it. Where the Touches row names an area of this floor and the risk is lower, the reason in the Risk row names that answer of the maintainers. See [Stages and approvals](#stages-and-approvals). The rule of this floor, with its edge for an import from Apache Cassandra, is [PRINCIPLE-071](principles.md#principle-071).
 
+### The paths of the floor
+
+The tier of a change is read from this table: a change that touches a file on these paths takes the full path. See [branching-and-review.md](branching-and-review.md#two-tiers). A path that ends in `/` is a directory and covers every file under it. A path with `*` is a pattern, and `*` matches any characters, `/` among them. Any other path is one file. The table does not narrow the floor, which is about what code does. Code of the project that takes part in an area of the floor outside these paths is on the floor all the same. The program cannot see that, so the reviewer reports it and a maintainer raises the change to the full path. A change to this table is a change to this page, which the maintainers decide.
+
+| Path | Area of the floor |
+|---|---|
+| `src/java/org/apache/cassandra/auth/` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/service/ClientState.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/security/` | Encryption |
+| `src/java/org/apache/cassandra/audit/` | Audit logging |
+| `src/java/org/apache/cassandra/transport/` | Decoding of bytes from the network |
+| `src/java/org/apache/cassandra/net/` | Decoding of bytes from the network |
+| `src/java/org/apache/cassandra/gms/` | Decoding of bytes from the network |
+| `src/java/org/apache/cassandra/io/` | Data on disk |
+| `src/java/org/apache/cassandra/db/commitlog/` | Data on disk |
+| `src/java/org/apache/cassandra/db/lifecycle/` | Data on disk |
+| `src/java/org/apache/cassandra/db/memtable/` | Data on disk |
+| `src/java/org/apache/cassandra/db/rows/` | Data on disk |
+| `src/java/org/apache/cassandra/hints/` | Data on disk |
+| `src/java/org/apache/cassandra/cache/` | Data on disk |
+| `src/java/org/apache/cassandra/index/sai/disk/` | Data on disk |
+| `src/java/org/apache/cassandra/index/sasi/disk/` | Data on disk |
+| `src/java/org/apache/cassandra/repair/` | Repair |
+| `src/java/org/apache/cassandra/db/repair/` | Repair |
+| `src/java/org/apache/cassandra/service/ActiveRepairService.java` | Repair |
+| `src/java/org/apache/cassandra/streaming/` | Streaming |
+| `src/java/org/apache/cassandra/db/streaming/` | Streaming |
+| `src/java/org/apache/cassandra/db/compaction/` | Compaction |
+| `src/java/org/chronitondb/auth/` | Authentication and authorisation |
+| `src/java/org/chronitondb/*/auth/*` | Authentication and authorisation |
+| `src/java/org/chronitondb/net/` | Decoding of bytes from the network |
+| `src/java/org/chronitondb/*/net/*` | Decoding of bytes from the network |
+| `src/java/org/apache/cassandra/cql3/statements/Auth*Statement.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/statements/*Role*Statement.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/statements/*Permission*Statement.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/statements/*Identity*Statement.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/statements/ListUsersStatement.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/functions/UDFByteCodeVerifier.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/functions/UDFunction.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/functions/JavaBasedUDFunction.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/cql3/functions/UDFExecutorService.java` | Authentication and authorisation |
+| `src/java/org/apache/cassandra/config/EncryptionOptions.java` | Encryption |
+| `src/java/org/apache/cassandra/utils/binlog/` | Audit logging |
+| `src/java/org/apache/cassandra/db/Mutation.java` | Decoding of bytes from the network |
+| `src/java/org/apache/cassandra/db/partitions/` | Data on disk |
+| `src/java/org/apache/cassandra/db/SerializationHeader.java` | Data on disk |
+| `src/java/org/apache/cassandra/service/CacheService.java` | Data on disk |
+| `src/java/org/apache/cassandra/utils/BloomFilterSerializer.java` | Data on disk |
+| `src/java/org/apache/cassandra/utils/obs/` | Data on disk |
+| `src/java/org/apache/cassandra/utils/MerkleTree.java` | Repair |
+| `src/java/org/apache/cassandra/utils/MerkleTrees.java` | Repair |
+| `src/java/org/apache/cassandra/service/paxos/cleanup/` | Repair |
+| `src/java/org/apache/cassandra/dht/RangeStreamer.java` | Streaming |
+| `src/java/org/apache/cassandra/dht/BootStrapper.java` | Streaming |
+
 ### Where problems could occur
 
-Every feature spec, fix record, design record that is not covered by its feature spec, and pull request body of Low risk work carries a section "Where problems could occur" with its test plan, after the section of the same name in Ubuntu's stable release update template. It says where the change could go wrong if a part of it is wrong, worst case first: what a user or operator would see, on which request path, and from which part of the change. It is never "None" or "Low", and never an argument that the change is safe. The test plan names, for each problem, the test that would catch it, or why no test can and how it is watched instead. The rule is [PRINCIPLE-072](principles.md#principle-072).
+Every feature spec, fix record, short record, design record that is not covered by its feature spec, and pull request body of Low risk work carries a section "Where problems could occur" with its test plan, after the section of the same name in Ubuntu's stable release update template. It says where the change could go wrong if a part of it is wrong, worst case first: what a user or operator would see, on which request path, and from which part of the change. It is never "None" or "Low", and never an argument that the change is safe. The test plan names, for each problem, the test that would catch it, or why no test can and how it is watched instead. The rule is [PRINCIPLE-072](principles.md#principle-072).
 
 ### Release critical findings
 
@@ -113,6 +168,8 @@ The size of a change is Cassandra's JIRA Complexity, plus its reach.
 Reach follows Debian, which separates a single upload from a transition that moves many packages together, and Fedora, which separates a Self-Contained change from a System-Wide one. Complexity sets the depth of the documents. Reach sets the plan and the coordination. The plan's list of packages touched is checked against the reach.
 
 ## What each class changes
+
+This section describes the full path. A change on the short path takes [the short path](branching-and-review.md#the-short-path) in its place.
 
 ### The sections of a feature spec
 
@@ -164,9 +221,9 @@ A one-item change takes the same stages with its design record or fix record in 
 
 The class is three label families on the issue, mirrored on each of its pull requests: one `risk:` label, one `size:` label and one `reach:` label.
 
-1. For new work, the requirements analyst proposes the class in plain words in its requirements brief, and a maintainer sets the three labels when confirming the brief. The requirements analyst sets no label. Corrective work that a maintainer assigns straight to the designer is classified by the designer. Other work is classified by the first contributor or role to pick up the issue, for a Low risk fix the developer. The reasons for the class stand in the Risk, Size and Reach rows of the work's spec or record: the worst Bug Category, the floor if it applied, and why that size and reach. Where a maintainer set labels that differ from the proposal, the author of the spec or record asks the maintainer for the reasons.
+1. For new work, the requirements analyst proposes the class in plain words in its requirements brief, and a maintainer sets the three labels when confirming the brief. The requirements analyst sets no label. Corrective work that a maintainer assigns straight to the designer is classified by the designer. Other work is classified by the first contributor or role to pick up the issue, for a Low risk fix the developer. On the full path, the reasons for the class stand in the Risk, Size and Reach rows of the work's spec or record: the worst Bug Category, the floor if it applied, and why that size and reach. Where a maintainer set labels that differ from the proposal, the author of the spec or record asks the maintainer for the reasons.
 2. The reviewer checks the labels at every review, against the change and the reasons.
-3. A maintainer confirms the class: through the class and scope answer for Critical work, at the spec merge for Normal work, at the pull request merge for Low work. A maintainer may change any label at any time, and the change takes effect from the next step of the work.
+3. A maintainer confirms the class: on the short path at the pull request merge, and on the full path through the class and scope answer for Critical work, at the spec merge for Normal work, at the pull request merge for Low work. A maintainer may change any label at any time, and the change takes effect from the next step of the work.
 4. Work that carries no class yet, or a family with no label or with two, is treated as the strictest value of that family: Critical, Byzantine and Cross-cutting.
 5. The required `class-label` check refuses a pull request that does not carry exactly one label of each family, as the kind label check does for the maintenance category. A release proposal or promotion pull request, which changes only `docs/releases/`, has no class, as it has no kind.
 6. The class is not the only label an issue carries. Its areas are `area:<name>` labels and how the change came in is one `source:<name>` label, both from the closed lists of [areas.md](areas.md). They change no rule of the class. They are proposed and set as the class is, and they let work be filtered by any mix of kind, class, line, area and source.

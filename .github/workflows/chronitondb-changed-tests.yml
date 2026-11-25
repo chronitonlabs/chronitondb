@@ -1,0 +1,135 @@
+# Copyright 2026 AxonOps Limited
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The unit test classes and in-JVM distributed test classes a pull request
+# adds or changes, run with the build's own targets: testsome for a class
+# under test/unit, test-jvm-dtest-some for a class under test/distributed.
+# A test class is a file whose name ends in Test.java, as the build runs
+# no other. An abstract class named so is passed too, and the build's
+# test runner skips it. An upgrade test is left out, since it needs the
+# jars of older versions. Nothing else runs: no whole suite and no matrix. When the pull
+# request adds or changes no test class the job says so and passes. The
+# JDK is the one the build file of the base branch names as its default.
+# A new push to the pull request cancels the run it supersedes. A run is
+# bounded at 120 minutes: the build takes about ten, and the build's own
+# timeouts are 8 minutes for a unit test class and 15 for an in-JVM
+# distributed test class, so about a dozen classes fit. Every action is
+# pinned to a commit.
+name: ChronitonDB changed tests
+
+on:
+  pull_request:
+    branches:
+      - 'chronitondb-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: changed-tests-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changed-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: The test classes the pull request adds or changes
+        id: classes
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          unit=""
+          distributed=""
+          while read -r path
+          do
+            case "$path" in
+              */upgrade/*)
+                echo "Left out $path: an upgrade test needs the jars of older versions."
+                continue
+                ;;
+              test/unit/*Test.java)
+                class="${path#test/unit/}"
+                unit="$unit ${class%.java}"
+                ;;
+              test/distributed/*Test.java)
+                class="${path#test/distributed/}"
+                distributed="$distributed ${class%.java}"
+                ;;
+            esac
+          done < <(git diff --name-only --diff-filter=ACMR "origin/$BASE...HEAD" -- test/unit test/distributed)
+          unit="$(echo "${unit//\//.}" | xargs)"
+          distributed="$(echo "${distributed//\//.}" | xargs)"
+          if [ -z "$unit" ] && [ -z "$distributed" ]
+          then
+            echo "The pull request adds or changes no test class under test/unit or test/distributed, so there is nothing to run."
+            echo "run=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Unit test classes: ${unit:-none}"
+          echo "In-JVM distributed test classes: ${distributed:-none}"
+          java="$(git show "origin/$BASE:build.xml" | sed -n -E 's/^[[:space:]]*<property name="java\.default" value="([0-9]+)"[[:space:]]*\/>.*$/\1/p' | head -n 1)"
+          if [ -z "$java" ]
+          then
+            echo "::error::build.xml on $BASE names no java.default, so the JDK of the line cannot be read."
+            exit 1
+          fi
+          {
+            echo "unit=$unit"
+            echo "distributed=$distributed"
+            echo "java=$java"
+            echo "run=yes"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: The JDK of the line
+        if: steps.classes.outputs.run == 'yes'
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: ${{ steps.classes.outputs.java }}
+
+      - name: Build the tests
+        if: steps.classes.outputs.run == 'yes'
+        run: ant build-test
+
+      - name: Unit tests
+        if: steps.classes.outputs.run == 'yes' && steps.classes.outputs.unit != ''
+        env:
+          CLASSES: ${{ steps.classes.outputs.unit }}
+        run: |
+          rc=0
+          for class in $CLASSES
+          do
+            ant testsome -Dno-build-test=true -Dtest.name="$class" || rc=1
+          done
+          exit "$rc"
+
+      - name: In-JVM distributed tests
+        if: steps.classes.outputs.run == 'yes' && steps.classes.outputs.distributed != ''
+        env:
+          CLASSES: ${{ steps.classes.outputs.distributed }}
+        run: |
+          rc=0
+          for class in $CLASSES
+          do
+            ant test-jvm-dtest-some -Dno-build-test=true -Dtest.name="$class" || rc=1
+          done
+          exit "$rc"

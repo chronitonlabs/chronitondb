@@ -34,7 +34,7 @@ A spike issue carries documentation labels while it is researched. On do it, a d
 
 ## Pick the path for a change
 
-Every change has one maintenance category from ISO/IEC/IEEE 14764:2022. The category and the size of the change pick the path.
+Every change has one maintenance category from ISO/IEC/IEEE 14764:2022. The category and the size of the change pick the path. Some changes take the short path in place of the path the table gives: see [branching-and-review.md](branching-and-review.md#two-tiers).
 
 | Category | What it is | Path | Page |
 |---|---|---|---|
@@ -104,7 +104,7 @@ The top level `CONTRIBUTING.md` in this repository is Apache Cassandra's guide. 
 
 1. **Line**: a long lived branch that ships releases, one per Apache Cassandra major version. Today `chronitondb-5.0` and `chronitondb-6.0`.
 2. **Stock**: code or behaviour exactly as Apache Cassandra has it. A claim about code says Apache Cassandra instead, with its branch and commit. See [conventions.md](conventions.md#claims-about-code).
-3. **Item**: one unit of work with one public GitHub issue, one design record or fix record, and one pull request per line it targets. A security fix has no public issue until disclosure. It is tracked in its private advisory.
+3. **Item**: one unit of work with one public GitHub issue, one design record, fix record or short record, and one pull request per line it targets. A security fix has no public issue until disclosure. It is tracked in its private advisory.
 4. **Feature spec**: the top level description of a large feature, with feature requirements `FREQ-<KEY>-nnn`.
 5. **Plan**: the list of items that deliver a feature spec.
 6. **Delivery plan**: the order of the items in milestones, with exit criteria.

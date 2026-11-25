@@ -17,7 +17,7 @@ limitations under the License.
 
 # New features (additive maintenance)
 
-A new feature is additive maintenance in ISO/IEC/IEEE 14764:2022. A feature that needs several items takes three levels of specification. A feature that fits in one item takes the one-item path. On both paths the work starts from the requirements brief that the requirements analyst writes and a maintainer confirms. The brief stays where the maintainer confirmed it. The architect writes its content into the feature requirements of the feature spec, and on the one-item path the designer writes it into the requirements of the design record. Each requirement taken from it carries `Source: stakeholder need`. A record never links to the brief itself. See [roles.md](roles.md#requirements-analyst).
+A new feature is additive maintenance in ISO/IEC/IEEE 14764:2022. A feature that needs several items takes three levels of specification. A feature that fits in one item takes the one-item path. Both belong to the full path. A feature whose change takes the short path follows [the short path](branching-and-review.md#the-short-path) in their place. On both paths the work starts from the requirements brief that the requirements analyst writes and a maintainer confirms. The brief stays where the maintainer confirmed it. The architect writes its content into the feature requirements of the feature spec, and on the one-item path the designer writes it into the requirements of the design record. Each requirement taken from it carries `Source: stakeholder need`. A record never links to the brief itself. See [roles.md](roles.md#requirements-analyst).
 
 ## Work intake
 

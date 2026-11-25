@@ -109,6 +109,7 @@ Our own pull requests are squash merged, and the title becomes the subject of th
 | Feature spec, plan and delivery plan of a feature | `docs/design/<KEY>-<slug>/` |
 | Milestone reports of a feature | `docs/design/<KEY>-<slug>/milestones/` |
 | Design record or fix record of one item, with its coverage file | `docs/design/<issue>-<slug>/`, or `docs/design/<KEY>-<slug>/` for a fork feature that fits one item |
+| Short record of a change on the short path | `docs/design/<issue>-<slug>/short-record.md` |
 | Decision records of one feature | `docs/design/<KEY>-<slug>/decisions/DEC-<KEY>-nnnn-<slug>.md` |
 | Decision records of work with no feature key | `docs/design/<issue>-<slug>/decisions/DEC-<issue>-nnnn-<slug>.md` |
 | Decision records of the whole project | `docs/decisions/DEC-GOV-nnnn-<slug>.md`. The records there named by a number alone, `NNNN-<slug>.md`, were merged before records had ids |

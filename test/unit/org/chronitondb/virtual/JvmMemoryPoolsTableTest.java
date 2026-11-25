@@ -286,6 +286,20 @@ public class JvmMemoryPoolsTableTest extends CQLTester
     }
 
     @Test
+    public void testNoPoolGivesNoRow()
+    {
+        useTestPools();
+        assertThat(executeNet("SELECT * FROM " + TEST_VIEW).all()).isEmpty();
+        assertThat(executeNet("SELECT * FROM " + TEST_VIEW + " WHERE name = 'Absent'").all()).isEmpty();
+
+        useTestPools(pool("Present", MemoryType.HEAP, new MemoryUsage(0, 1, 2, 3)));
+        assertThat(executeNet("SELECT * FROM " + TEST_VIEW + " WHERE name = 'Absent'").all()).isEmpty();
+        assertThat(executeNet("SELECT * FROM " + TEST_VIEW + " WHERE name IN ('Absent', 'Present')").all())
+            .extracting(row -> row.getString("name"))
+            .containsExactly("Present");
+    }
+
+    @Test
     public void testRepeatedPoolNameFailsTheRead()
     {
         useTestPools(pool("Metaspace", MemoryType.NON_HEAP, new MemoryUsage(0, 1, 2, 3)),

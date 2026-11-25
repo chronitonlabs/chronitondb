@@ -142,6 +142,7 @@ Every unit test class of the project runs on the options of `test-latest`, and t
 - TEST-23: `org.chronitondb.virtual.JvmMemoryPoolsPageTest.testPageSaysAFailureForOnePoolFailsEveryRead` proves REQ-19.
 - TEST-24: `org.chronitondb.virtual.JvmMemoryPoolsPageTest.testPageSaysWhatTheNodeAnswersAndLogsForAFailedRead` proves REQ-20.
 - TEST-25: `org.chronitondb.virtual.test.JvmMemoryPoolsNodesTest.testPoolGivenToOneNodeShowsOnThatNodeOnly` proves REQ-7 on a cluster of two nodes.
+- TEST-26: `org.chronitondb.virtual.JvmMemoryPoolsTableTest.testNoPoolGivesNoRow` proves REQ-2 for a JVM that lists no pool and for a name that no pool has.
 
 What no test shows, and the review of the code reads instead: that the code which builds the rows holds no catch (REQ-18), that the static initialiser and the constructor make no call to `java.lang.management` (REQ-1), that no static field and no other object of the package keeps a value of a memory pool (REQ-8), that the class reads no setting (REQ-1), and that only the code of a test reaches the constructor that takes pools (REQ-7). That the meanings on the page are those of the feature spec is read at the gate of the milestone.
 

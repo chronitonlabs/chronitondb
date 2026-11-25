@@ -23,7 +23,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,11 +45,11 @@ public class JvmMemoryPoolsPageTest extends CQLTester
 {
     private static final Path PAGE = Paths.get("docs", "reference", "virtual-tables", "jvm-memory-pools.md");
     private static final Pattern COLUMN_ROW = Pattern.compile("^\\| `([a-z_]+)` \\| `([a-z]+)` \\| ([a-z ]+) \\| (.*) \\|$", Pattern.MULTILINE);
-    private static final String[] COMMITS = { "ChronitonDB `chronitondb-sandbox` at `ffa1bc742d`",
-                                              "Apache Cassandra `cassandra-5.0` at `76550e9314`",
-                                              "Apache Cassandra `cassandra-5.0` at `47227d98bf`" };
-    private static final String OUT_OF_MEMORY = "An out of memory error during a read of the table goes to the node's own handling " +
-                                                "of an out of memory error, as on any request.";
+    /**
+     * A commit the page names for code it was read in: the project, its branch and the commit, in any wording round it.
+     */
+    private static final Pattern COMMIT = Pattern.compile("(ChronitonDB|Apache Cassandra)\\S* `[a-z0-9.-]+` at `([0-9a-f]{7,40})`");
+    private static final String OUT_OF_MEMORY = "the node's own handling of an out of memory error, as on any request";
 
     private static String page;
 
@@ -91,78 +93,92 @@ public class JvmMemoryPoolsPageTest extends CQLTester
     @Test
     public void testPageGivesTheValuesOfTypeAndTheMeaningOfMinusOneAndNull() throws IOException
     {
-        assertThat(page()).contains("`HEAP` for a pool of heap memory, `NON_HEAP` for any other pool. These are the two values of the column")
-                          .contains("**-1 in `max_bytes`.** The JVM reports a usage for the pool and defines no maximum for it.")
-                          .contains("**null in `used_bytes`, `committed_bytes` and `max_bytes`.** The JVM lists the pool and reports no usage for it");
+        String columns = section("## Columns");
+        Matcher type = Pattern.compile("^\\| `type` \\|.*$", Pattern.MULTILINE).matcher(columns);
+        assertThat(type.find()).as("the row of the type column").isTrue();
+        assertThat(type.group()).contains("`HEAP`").contains("`NON_HEAP`");
+        assertThat(columns).contains("**-1 in `max_bytes`.**")
+                           .contains("**null in `used_bytes`, `committed_bytes` and `max_bytes`.**");
     }
 
     @Test
     public void testPageSaysWhatANodeWithoutTheViewAnswersAndNamesTheStep() throws IOException
     {
-        assertThat(page()).contains("## Nodes without the table")
-                          .contains("refuses a read of it with `table jvm_memory_pools does not exist`")
-                          .contains("## Moving back")
-                          .contains("**The step.** Before the last node that has the table moves back");
+        assertThat(section("## Nodes without the table")).contains("`table jvm_memory_pools does not exist`");
+        assertThat(section("## Moving back")).contains("**The step.**");
     }
 
     @Test
     public void testPageSaysOneStatementCanTakeMoreThanOneRead() throws IOException
     {
-        assertThat(page()).contains("One statement can be answered from more than one read. These are the cases that were read in the code. They are not the whole list:")
-                          .contains("1. **Pages a client fetches.**")
-                          .contains("2. **Pages the node fetches for an aggregate.**")
-                          .contains("3. **Several names.**")
-                          .contains("One statement was read in the code as exactly one read: `SELECT * FROM system_views.jvm_memory_pools`, " +
-                                    "sent with no page size or with a page size above the number of pools.")
-                          .contains("1. **Different moments.**")
-                          .contains("2. **A pool can be missing.**");
+        String reads = section("## One statement and its reads");
+        assertThat(reads).contains("more than one read")
+                         .contains("**Pages a client fetches.**")
+                         .contains("**Pages the node fetches for an aggregate.**")
+                         .contains("**Several names.**")
+                         .contains("exactly one read: `SELECT * FROM system_views.jvm_memory_pools`")
+                         .contains("**Different moments.**")
+                         .contains("**A pool can be missing.**");
     }
 
     @Test
     public void testPageSaysHowToRemoveTheGrantsAndWhatOneLeftBehindDoes() throws IOException
     {
-        assertThat(page()).contains("LIST ALL PERMISSIONS ON system_views.jvm_memory_pools NORECURSIVE;")
-                          .contains("revokes every permission of each")
-                          .contains("REVOKE ALL PERMISSIONS ON system_views.jvm_memory_pools FROM <role>;")
-                          .contains("The operator MUST send both statements as a superuser, to a node that has the table")
-                          .contains("**A grant left behind.**")
-                          .contains("1. It gives its role nothing.")
-                          .contains("It is removed by `DROP ROLE` of its role")
-                          .contains("This page says what a row left behind does for the code of those three commits, and for no other code.");
-        assertNamesTheThreeCommitsAfter("**A grant left behind.**");
+        String back = section("## Moving back");
+        assertThat(back).contains("LIST ALL PERMISSIONS ON system_views.jvm_memory_pools NORECURSIVE;")
+                        .contains("REVOKE ALL PERMISSIONS ON system_views.jvm_memory_pools FROM <role>;")
+                        .contains("as a superuser")
+                        .contains("**A grant left behind.**")
+                        .contains("`DROP ROLE`")
+                        .contains("for no other code");
+        assertNamesThreeCommits(back.substring(back.indexOf("**A grant left behind.**")));
     }
 
     @Test
     public void testPageSaysAFailureForOnePoolFailsEveryRead() throws IOException
     {
-        assertThat(page()).contains("An exception, or an error of the JVM that is no out of memory error, that the JVM raises for one memory pool " +
-                                    "fails every read of the table while it lasts, a read of another pool by its name included.");
+        assertThat(section("## When a read fails")).containsPattern("for one memory pool[^.]*fails every read");
     }
 
     @Test
     public void testPageSaysWhatTheNodeAnswersAndLogsForAFailedRead() throws IOException
     {
-        assertThat(page()).contains("The table catches nothing that a call to the JVM throws while a read builds its rows.")
-                          .contains("1. **Answered.** An exception is answered with a server error")
-                          .contains("2. **Logged.** The node logs an exception at ERROR")
-                          .contains("This page says what the node answers and logs for the code of those three commits, and for no other code.")
-                          .contains(OUT_OF_MEMORY);
-        assertNamesTheThreeCommitsAfter("## When a read fails");
+        String fails = section("## When a read fails");
+        assertThat(fails).contains("catches nothing")
+                         .contains("server error")
+                         .contains("at ERROR")
+                         .contains("`client_error_reporting_exclusions`")
+                         .contains("for no other code")
+                         .contains(OUT_OF_MEMORY);
+        assertNamesThreeCommits(fails);
 
-        for (String sentence : page().replace('\n', ' ').split("(?<=\\.) "))
+        // Of an out of memory error the page says only where it goes.
+        for (String line : page().split("\n"))
         {
-            if (!sentence.contains("out of memory error")
-                || sentence.contains("no out of memory error")
-                || sentence.contains("where no cause of what was thrown is an out of memory error"))
-                continue;
-            assertThat(sentence.trim()).as("a sentence on an out of memory error").isEqualTo(OUT_OF_MEMORY);
+            String rest = line.replace("no out of memory error", "")
+                              .replace("no cause of what was thrown is an out of memory error", "");
+            if (rest.contains("out of memory error"))
+                assertThat(line).as("a line on an out of memory error").contains(OUT_OF_MEMORY);
         }
     }
 
-    private static void assertNamesTheThreeCommitsAfter(String heading) throws IOException
+    /**
+     * The part of the page under a heading, up to the next heading of the same level.
+     */
+    private static String section(String heading) throws IOException
     {
-        String section = page().substring(page().indexOf(heading));
-        for (String commit : COMMITS)
-            assertThat(section).contains(commit);
+        int start = page().indexOf("\n" + heading + "\n");
+        assertThat(start).as("the heading %s", heading).isNotNegative();
+        int end = page().indexOf("\n## ", start + heading.length() + 2);
+        return end < 0 ? page().substring(start) : page().substring(start, end);
+    }
+
+    private static void assertNamesThreeCommits(String text)
+    {
+        Set<String> commits = new HashSet<>();
+        Matcher commit = COMMIT.matcher(text);
+        while (commit.find())
+            commits.add(commit.group(2));
+        assertThat(commits).as("the commits the text names").hasSize(3);
     }
 }

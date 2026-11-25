@@ -112,14 +112,21 @@ The rows hold sizes of the node's JVM and no user data.
 
 The table catches nothing that a call to the JVM throws while a read builds its rows. That holds for the call for the list of pools and for each call to the bean of one pool, and for an exception as for an error of the JVM. What was thrown goes to the node's own handling of a failed request, which this table does not change.
 
-An exception, or an error of the JVM that is no out of memory error, that the JVM raises for one memory pool fails every read of the table while it lasts, a read of another pool by its name included. The reason is that every read builds the row of every pool. A JVM that lists more than one memory pool under one name fails every read too, with the server error `java.lang.IllegalStateException: the JVM lists more than one memory pool named <name>`, so that no pool is hidden behind another of the same name.
+An exception, or an error of the JVM that is no out of memory error, that the JVM raises for one memory pool fails every read of the table while it lasts, a read of another pool by its name included. The reason is that every read builds the row of every pool. A JVM that lists more than one memory pool under one name fails every read too, so that no pool is hidden behind another of the same name.
 
-For a statement that a client sends, where no cause of what was thrown is an out of memory error, the node answers and logs as follows:
+Each failure of a read, for a statement that a client sends, where no cause of what was thrown is an out of memory error:
 
-1. **Answered.** An exception is answered with a server error whose message is the class name and the message of the exception, in the form that Java's `toString` gives. An error of the JVM that is no out of memory error is answered with a server error of the same form.
-2. **Logged.** The node logs an exception at ERROR, each time with its stack trace: in two log entries for a statement that the client sends as text, as `cqlsh` does, and in one for a prepared statement. It logs an error of the JVM that is no out of memory error once with its stack trace, at ERROR, or at DEBUG where the address of the client lies in a subnet that the setting `client_error_reporting_exclusions` lists. Each entry is logged for a request of a client that fails, so a tool that polls the table adds ERROR entries to the log while the fault lasts. The entries hold what was thrown and no user data.
+| Failure | What the client gets | What the node logs |
+|---|---|---|
+| A call to the JVM throws an exception, for the list of pools or for one pool | A server error whose message is the class name and the message of the exception, in the form that Java's `toString` gives | The exception at ERROR, each time with its stack trace: in two log entries for a statement that the client sends as text, as `cqlsh` does, and in one for a prepared statement |
+| The JVM lists more than one memory pool under one name | The server error `java.lang.IllegalStateException: the JVM lists more than one memory pool named <name>` | The same entries as for an exception |
+| A call to the JVM throws an error of the JVM that is no out of memory error | A server error of the same form as for an exception | The error once with its stack trace, at ERROR, or at DEBUG where the address of the client lies in a subnet that the setting `client_error_reporting_exclusions` lists |
+
+Each entry is logged for a request of a client that fails, so a tool that polls the table adds ERROR entries to the log while the fault lasts. The entries hold what was thrown and no user data.
 
 An out of memory error during a read of the table goes to the node's own handling of an out of memory error, as on any request.
+
+A statement that the node refuses is no failed read. [Who may read the table](#who-may-read-the-table) gives the refusals of a statement with no grant and of a write, and [Nodes without the table](#nodes-without-the-table) the refusals of a node that does not have the table.
 
 What the node answers and logs was read in the code of three commits: ChronitonDB `chronitondb-sandbox` at `ffa1bc742d`, its base, Apache Cassandra `cassandra-5.0` at `76550e9314`, and Apache Cassandra `cassandra-5.0` at `47227d98bf`. None of the three commits is a release. This page says what the node answers and logs for the code of those three commits, and for no other code. A release is cut from another commit, so it is other code, and so is another release of Apache Cassandra.
 

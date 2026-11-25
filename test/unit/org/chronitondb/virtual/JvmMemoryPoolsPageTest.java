@@ -144,7 +144,9 @@ public class JvmMemoryPoolsPageTest extends CQLTester
     public void testPageSaysWhatTheNodeAnswersAndLogsForAFailedRead() throws IOException
     {
         String fails = section("## When a read fails");
-        assertThat(fails).contains("catches nothing")
+        assertThat(fails).contains("| Failure | What the client gets | What the node logs |")
+                         .contains("`java.lang.IllegalStateException: the JVM lists more than one memory pool named <name>`")
+                         .contains("catches nothing")
                          .contains("server error")
                          .contains("at ERROR")
                          .contains("`client_error_reporting_exclusions`")

@@ -212,6 +212,7 @@ public class JvmMemoryPoolsTableTest extends CQLTester
 
         List<String> expected = new ArrayList<>(STOCK_SYSTEM_VIEWS);
         expected.add(JvmMemoryPoolsTable.TABLE_NAME);
+        expected.add(JvmGarbageCollectorsTable.TABLE_NAME);
         assertThat(names).containsExactlyInAnyOrderElementsOf(expected);
 
         for (String table : STOCK_SYSTEM_VIEWS)

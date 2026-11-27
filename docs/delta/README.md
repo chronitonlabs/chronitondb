@@ -68,4 +68,5 @@ Ordered by area, then by name.
 | [Apache GitHub checks run on pull requests to the lines](github-checks-on-pull-requests.md) | Continuous integration | 5.0, 6.0 | Not needed | 2026-10-31 | 2026-11-15 | none |
 | [Apache workflow actions pinned to commits](github-actions-pinned.md) | Continuous integration | 5.0, 6.0 | Not needed | 2026-10-30 | 2026-11-04 | none |
 | [Apache's pull request template removed](github-pull-request-template-removed.md) | GitHub | 5.0, 6.0 | Not needed | 2026-10-27 | 2026-11-15 | none |
+| [JVM garbage collectors view in system_views](jvm-garbage-collectors-view.md) | Virtual tables | sandbox | Not needed | 2026-11-27 | 2026-11-27 | [#172](https://github.com/chronitonlabs/chronitondb/issues/172) |
 | [JVM memory pools view in system_views](jvm-memory-pools-view.md) | Virtual tables | sandbox | Not needed | 2026-11-25 | 2026-11-25 | [#161](https://github.com/chronitonlabs/chronitondb/issues/161) |

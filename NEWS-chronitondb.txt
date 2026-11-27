@@ -28,11 +28,17 @@ New features
    the node that answers the read: the name and the type of each pool, and its used,
    committed and maximum size in bytes. It is read only and has no setting. See
    docs/reference/virtual-tables/jvm-memory-pools.md.
+ - The virtual table system_views.jvm_garbage_collectors shows the garbage collectors of
+   the JVM of the node that answers the read: the name of each collector, the number of
+   collections it has run and their total time in milliseconds. It is read only and has
+   no setting. See docs/reference/virtual-tables/jvm-garbage-collectors.md.
 
 Upgrading
 ---------
  - During a rolling upgrade, a node that does not have the table yet refuses a read of it
    with "table jvm_memory_pools does not exist".
+ - During a rolling upgrade, a node that does not have the table yet refuses a read of
+   system_views.jvm_garbage_collectors with "table jvm_garbage_collectors does not exist".
 
 Moving back
 -----------
@@ -42,3 +48,8 @@ Moving back
    listed run REVOKE ALL PERMISSIONS ON system_views.jvm_memory_pools FROM <role>.
    A node without the table refuses both statements. What a grant left behind does is on
    the reference page of the table.
+ - Before the last node that has system_views.jvm_garbage_collectors moves back to a
+   release without it, list the grants on the table as a superuser, on a node that has
+   it, with LIST ALL PERMISSIONS ON system_views.jvm_garbage_collectors NORECURSIVE, and
+   for each role listed run REVOKE ALL PERMISSIONS ON system_views.jvm_garbage_collectors
+   FROM <role>. A node without the table refuses both statements.

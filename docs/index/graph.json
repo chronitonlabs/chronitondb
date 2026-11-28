@@ -181,6 +181,17 @@
    "version": "3"
   },
   {
+   "@id": "../delta/upgrade-tests-on-java-17.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/delta/upgrade-tests-on-java-17.md",
+   "status": "Current",
+   "title": "Upgrade tests run on Java 17",
+   "type": "Delta entry",
+   "version": "1"
+  },
+  {
    "@id": "../design/161-let-operators-see-a-node-s-jvm-memory/short-record.md",
    "@type": [
     "schema:DigitalDocument"

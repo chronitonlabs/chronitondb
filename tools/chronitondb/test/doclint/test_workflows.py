@@ -219,14 +219,34 @@ class ChangedTests(Steps):
         self.put("workspace/test/unit/org/apache/cassandra/db/WidgetHelper.java", "class WidgetHelper {}\n")
         self.put("workspace/test/distributed/org/apache/cassandra/distributed/test/WidgetTest.java", "class WidgetTest {}\n")
         self.put("workspace/test/distributed/org/apache/cassandra/distributed/upgrade/WidgetUpgradeTest.java", "class WidgetUpgradeTest {}\n")
+        self.put("workspace/test/distributed/org/chronitondb/tools/python/widget_test.py", "class TestWidget:\n    pass\n")
+        self.put("workspace/test/distributed/org/chronitondb/tools/python/widget_helper.py", "WIDGET = 1\n")
         self.git("add", "-A")
         self.git("commit", "-q", "-m", "tests")
         rc, out, err, found = self.classes()
         self.assertEqual((rc, err), (0, ""))
         self.assertEqual(found["unit"], "org.apache.cassandra.db.KeptTest org.apache.cassandra.db.WidgetTest")
         self.assertEqual(found["distributed"], "org.apache.cassandra.distributed.test.WidgetTest")
+        self.assertEqual(found["upgrade"], "org.apache.cassandra.distributed.upgrade.WidgetUpgradeTest")
+        self.assertEqual(found["python"], "test/distributed/org/chronitondb/tools/python/widget_test.py")
         self.assertEqual((found["java"], found["run"]), ("17", "yes"))
-        self.assertIn("Left out test/distributed/org/apache/cassandra/distributed/upgrade/WidgetUpgradeTest.java", out)
+        self.assertIn("Upgrade test classes: org.apache.cassandra.distributed.upgrade.WidgetUpgradeTest", out)
+
+    def test_an_upgrade_test_alone_is_run(self):
+        self.put("workspace/test/distributed/org/chronitondb/cluster/upgrade/WidgetUpgradeTest.java", "class WidgetUpgradeTest {}\n")
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "tests")
+        rc, _, err, found = self.classes()
+        self.assertEqual((rc, err), (0, ""))
+        self.assertEqual((found["unit"], found["distributed"], found["python"]), ("", "", ""))
+        self.assertEqual((found["upgrade"], found["run"]), ("org.chronitondb.cluster.upgrade.WidgetUpgradeTest", "yes"))
+
+    def test_the_exact_jdk_is_the_pin_of_the_default_of_the_line(self):
+        rc, _, err = self.step("chronitondb-changed-tests.yml", "The exact JDK of the line",
+                               more={"GITHUB_OUTPUT": self.output, "JDK_17": "17.0.1+1", "JDK_21": "21.0.1+1"})
+        self.assertEqual((rc, err), (0, ""))
+        with open(self.output, encoding="utf-8") as handle:
+            self.assertEqual(handle.read(), "jdk=17.0.1+1\n")
 
     def test_with_no_test_class_changed_there_is_nothing_to_run(self):
         self.put("workspace/src/java/org/apache/cassandra/db/Widget.java", "class Widget {}\n")

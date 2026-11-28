@@ -1,0 +1,141 @@
+# Copyright 2026 AxonOps Limited
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The in-JVM dtest jar of the latest Apache Cassandra 5.0 release, where the
+# line's upgrade path starts. It is built from the release tag of
+# apache/cassandra, pinned by the tag, the tag object and the commit, with
+# JDK 17, and kept as dtest-apache-<version>.jar in a cache keyed by the
+# version and the commit. A run that finds the cache builds nothing. The
+# tag carries no signature of its own, so the pins of the tag object and
+# the commit are what hold it. Another workflow calls this one and restores
+# the jar with the outputs cache-key and path. A push to a line that changes
+# this file builds the jar on the line, so pull requests to that line read
+# the cache of the line and the jar is built once per version. Every action
+# is pinned to a commit and every tool to an exact version.
+name: ChronitonDB Apache dtest jar
+
+on:
+  workflow_call:
+    outputs:
+      version:
+        description: The Apache Cassandra release the jar is built from.
+        value: ${{ jobs.apache-dtest-jar.outputs.version }}
+      cache-key:
+        description: The key of the cache that holds the jar.
+        value: ${{ jobs.apache-dtest-jar.outputs.cache-key }}
+      path:
+        description: The directory the cache holds, with dtest-apache-<version>.jar in it.
+        value: ${{ jobs.apache-dtest-jar.outputs.path }}
+  push:
+    branches:
+      - 'chronitondb-*'
+    paths:
+      - '.github/workflows/chronitondb-apache-dtest-jar.yml'
+
+permissions:
+  contents: read
+
+env:
+  # The latest Apache Cassandra 5.0 release on 2026-11-28.
+  APACHE_VERSION: '5.0.9'
+  APACHE_TAG: 'cassandra-5.0.9'
+  APACHE_TAG_OBJECT: 'ffab9e742d7e5d49ce1790a70850deb21a574686'
+  APACHE_COMMIT: 'b5f2a54210d541339c2e7c17a794195cac0e67c2'
+  JDK_VERSION: '17.0.21+9'
+  ANT_VERSION: '1.10.15'
+  ANT_SHA512: 'd78427aff207592c024ff1552dc04f7b57065a195c42d398fcffe7a0145e8d00cd46786f5aa52e77ab0fdf81334f065eb8011eecd2b48f7228e97ff4cb20d16c'
+
+jobs:
+  apache-dtest-jar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      version: ${{ steps.names.outputs.version }}
+      cache-key: ${{ steps.names.outputs.cache-key }}
+      path: ${{ steps.names.outputs.path }}
+    steps:
+      - name: The names of the jar and its cache
+        id: names
+        run: |
+          {
+            echo "version=$APACHE_VERSION"
+            echo "cache-key=dtest-apache-$APACHE_VERSION-$APACHE_COMMIT-jdk$JDK_VERSION"
+            echo "path=$RUNNER_TEMP/apache-dtest-jar"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: The cached jar
+        id: cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: ${{ steps.names.outputs.cache-key }}
+          path: ${{ steps.names.outputs.path }}
+
+      - name: The release tag names the pinned commit
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          refs="$(git ls-remote https://github.com/apache/cassandra.git "refs/tags/$APACHE_TAG" "refs/tags/$APACHE_TAG^{}")"
+          printf '%s\n' "$refs"
+          tag_object="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$APACHE_TAG" '$2 == ref { print $1 }')"
+          commit="$(printf '%s\n' "$refs" | awk -v ref="refs/tags/$APACHE_TAG^{}" '$2 == ref { print $1 }')"
+          if [ "$tag_object" != "$APACHE_TAG_OBJECT" ] || [ "$commit" != "$APACHE_COMMIT" ]
+          then
+            echo "::error::The tag $APACHE_TAG of apache/cassandra is $tag_object on commit $commit, and the pins are $APACHE_TAG_OBJECT on $APACHE_COMMIT."
+            exit 1
+          fi
+
+      - name: Checkout the release
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: apache/cassandra
+          ref: ${{ env.APACHE_COMMIT }}
+          path: apache-cassandra
+
+      - name: JDK 17
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: ${{ env.JDK_VERSION }}
+
+      - name: Ant
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/ant.tar.gz" "https://archive.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.tar.gz"
+          echo "$ANT_SHA512  $RUNNER_TEMP/ant.tar.gz" | sha512sum -c -
+          tar -xzf "$RUNNER_TEMP/ant.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-ant-$ANT_VERSION/bin" >> "$GITHUB_PATH"
+
+      - name: Build the dtest jar of the release
+        if: steps.cache.outputs.cache-hit != 'true'
+        working-directory: apache-cassandra
+        env:
+          JAR_DIR: ${{ steps.names.outputs.path }}
+        run: |
+          ant -version
+          java -version
+          test "$(git rev-parse HEAD)" = "$APACHE_COMMIT"
+          ant jar dtest-jar -Dno-checkstyle=true
+          mkdir -p "$JAR_DIR"
+          cp "build/dtest-$APACHE_VERSION.jar" "$JAR_DIR/dtest-apache-$APACHE_VERSION.jar"
+          ls -l "$JAR_DIR"
+
+      - name: Keep the jar
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: ${{ steps.names.outputs.cache-key }}
+          path: ${{ steps.names.outputs.path }}

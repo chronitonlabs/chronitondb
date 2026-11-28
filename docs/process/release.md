@@ -54,7 +54,7 @@ A feature becomes switchable at its final milestone gate. Before that, its switc
 
 ## How a release is made
 
-Every release takes two maintainer approvals, and each one is the merge of a pull request, like every approval in this project: the release proposal, before the candidate is built, and the promotion, after the soak and verification. The tester takes both pull requests before their review, as on every path, and states the exception of rule 9 of [Test depth](testing.md#test-depth) where a pull request has nothing to test: [branching-and-review.md](branching-and-review.md#reviews). The reviewer reviews both pull requests first.
+Every release takes two maintainer approvals, and each one is the merge of a pull request, like every approval in this project: the release proposal, before the candidate is built, and the promotion, after the soak and verification. The reviewer reviews both pull requests first.
 
 1. **Proposal.** When a release is due, the release engineer opens its issue and a release proposal pull request that adds `docs/releases/<version>.md` from [the release proposal template](templates/release-proposal.md): the version, the exact commit on the line it is built from, what goes in, from the commits on the line, with the way in and the way back, the defaults that changed, the milestone gates passed and the security fixes due.
 2. **First approval.** A maintainer merges the proposal pull request. Nothing is built, tagged or published before that merge.

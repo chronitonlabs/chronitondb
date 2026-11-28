@@ -75,9 +75,9 @@ The developer owns the implementation of one approved item.
 
 ## Tester
 
-The tester owns the sufficiency of the tests of one change, after the developer's code and before the review. It works on every pull request on every path, the lighter paths included, by the rules of [testing.md](testing.md#test-depth). On a change with nothing to test, such as a change to documentation only, it states the exception of rule 9 of [testing.md](testing.md#test-depth) in the pull request's description and hands the change on. The tester is never the author of the change.
+The tester owns the sufficiency of the tests of one change, after the developer's code and before the review. It works on every pull request that changes code or tests, on every path, the lighter paths included, by the rules of [testing.md](testing.md#test-depth). A pull request that changes only documents, such as a feature spec, a design record, a release proposal, a VEX statement or process or user documentation, goes straight to its review and never reaches the tester. The tester is never the author of the change.
 
-1. Takes the change from its author once the code and the author's own tests are written: the developer, or on a lighter path the author that path names, such as the integrator for an import or the release engineer for a release proposal.
+1. Takes the change from its author once the code and the author's own tests are written: the developer, or on a lighter path the author that path names, such as the integrator for an import.
 2. Writes into the record's test plan the rows of the surface matrix that apply and why the others do not, the impact analysis and the edge cases: section 4 of the short record on the short path, and the pull request's description on every other path.
 3. Adds the tests that are missing: tests through running nodes, tests of each area the impact analysis names and of each edge case, upgrade and rollback tests, and Python distributed tests where they apply, in Apache Cassandra's own harnesses.
 4. Runs every test of the test plan and the existing tests the impact analysis names, with the repeats [testing.md](testing.md#test-depth) asks for, and attaches the results and the coverage to the pull request.

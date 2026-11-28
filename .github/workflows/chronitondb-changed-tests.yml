@@ -409,6 +409,16 @@ jobs:
           cat build/jacoco/changed-methods.md >> "$GITHUB_STEP_SUMMARY"
           cat build/jacoco/changed-methods.md
 
+      # The in-JVM dtests write their logs under directories named <main>,
+      # a name an artifact cannot hold, so the logs go in one archive.
+      - name: Pack the logs
+        if: ${{ !cancelled() && matrix.run == 'yes' }}
+        run: |
+          if [ -d build/test/logs ]
+          then
+            tar -C build/test -cJf build/test-logs.tar.xz logs
+          fi
+
       - name: Keep the results
         if: ${{ !cancelled() && matrix.run == 'yes' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -416,7 +426,7 @@ jobs:
           name: ${{ matrix.set }}-test-results
           path: |
             build/test/output/
-            build/test/logs/
+            build/test-logs.tar.xz
             build/jacoco/report.xml
             build/jacoco/report.csv
             build/jacoco/changed-methods.md

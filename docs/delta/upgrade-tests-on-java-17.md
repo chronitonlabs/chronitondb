@@ -58,7 +58,7 @@ The fields follow Debian's [DEP-3 patch header convention](https://dep-team.page
 | Forwarded | Not needed. Apache Cassandra's own upgrade paths start at 4.0 and 4.1, which do not run on Java 17, and the line's path starts at a 5.0 release. |
 | Added | 2026-11-28 |
 | Last-Update | 2026-11-28 |
-| Pull requests | `chronitondb-sandbox`: not opened yet. |
+| Pull requests | `chronitondb-sandbox`: [#175](https://github.com/chronitonlabs/chronitondb/pull/175), not merged yet. |
 
 ## What
 

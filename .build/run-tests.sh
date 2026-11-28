@@ -226,9 +226,17 @@ _build_all_dtest_jars() {
     pushd ${TMP_DIR}/cassandra-dtest-jars >/dev/null
     # Note: cassandra-5.0.7 tag is used instead of cassandra-5.0 branch to enable
     # testing upgrades from 5.0.7 to the current local build for autorepair feature
-    for branch in cassandra-4.0 cassandra-4.1 cassandra-5.0.7 ; do
+    # ChronitonDB: cassandra-5.0.9 is the latest Apache Cassandra 5.0 release, where the line's upgrade path starts
+    for branch in cassandra-4.0 cassandra-4.1 cassandra-5.0.7 cassandra-5.0.9 ; do
         git clean -qxdff && git reset --hard HEAD  || echo "WARNING: could not reset/clean ${TMP_DIR}/cassandra-dtest-jars… continuing…"
         git checkout --quiet $branch
+        # ChronitonDB: the same jdk runs every version on an upgrade path, so a version that does not support it is not built.
+        # A build.xml with no java.supported is older than 5.0, and those versions run on jdk 8 and 11
+        branch_java_supported=$(grep 'property\s*name="java.supported"' build.xml |sed -ne 's/.*value="\([^"]*\)".*/\1/p')
+        if [[ ",${branch_java_supported:-8,11}," != *",${java_version},"* ]] ; then
+            echo "Skipping dtest jar build for branch ${branch} as it does not support JDK${java_version}"
+            continue
+        fi
         dtest_jar_version=$(grep 'property\s*name=\"base.version\"' build.xml |sed -ne 's/.*value=\"\([^"]*\)\".*/\1/p')
         if [ -f "${DIST_DIR}/dtest-${dtest_jar_version}.jar" ] ; then
             echo "Skipping dtest jar build for branch ${branch} as ${DIST_DIR}/dtest-${dtest_jar_version}.jar already exists"
@@ -425,9 +433,8 @@ _main() {
   local -r version=$(grep 'property\s*name=\"base.version\"' build.xml |sed -ne 's/.*value=\"\([^"]*\)\".*/\1/p')
   local -r java_version_default=`grep 'property\s*name="java.default"' build.xml |sed -ne 's/.*value="\([^"]*\)".*/\1/p'`
 
-  if [ "${java_version}" -eq 17 ] && [[ "${target}" == "jvm-dtest-upgrade" ]] ; then
-    error 1 "Invalid JDK${java_version}. Only overlapping supported JDKs can be used when upgrading, as the same jdk must be used over the upgrade path."
-  fi
+  # ChronitonDB: jdk 17 is allowed for upgrades. _build_all_dtest_jars builds only the versions that support the jdk
+  # in use, as the same jdk must be used over the upgrade path
 
   # check project is already built. no cleaning is done, so jenkins unstash works, beware.
   [[ -f "${DIST_DIR}/apache-cassandra-${version}.jar" ]] || [[ -f "${DIST_DIR}/apache-cassandra-${version}-SNAPSHOT.jar" ]] || { error 1 "Project must be built first. Use \`ant jar\`. Build directory is ${DIST_DIR} with: $(ls ${DIST_DIR} | xargs)"; }

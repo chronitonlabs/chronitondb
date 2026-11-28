@@ -117,6 +117,7 @@ Documents of a kind that has no `Areas` row, and documents merged before the row
 | [JVM memory pools view in system_views](../delta/jvm-memory-pools-view.md) | Delta entry | Current | 1 |
 | [run-ci routes 6.0 versions on the 5.0 line](../delta/run-ci-6.0-version-routing.md) | Delta entry | Current | 3 |
 | [run-ci accepts this repository](../delta/run-ci-accepts-chronitondb.md) | Delta entry | Current | 3 |
+| [Upgrade tests run on Java 17](../delta/upgrade-tests-on-java-17.md) | Delta entry | Current | 1 |
 | [design record of #112 Warn at startup when the commit log shares a disk with the data directories](../reviews/112-warn-at-startup-when-the-commit-log-design.md) | Review record | Closed |  |
 | [plan and delivery plan of #161 Let operators see a node's JVM memory pools from CQL](../reviews/161-let-operators-see-a-node-s-jvm-memory-plan.md) | Review record | Closed |  |
 | [feature spec of #161 Let operators see a node's JVM memory pools from CQL](../reviews/161-let-operators-see-a-node-s-jvm-memory-spec.md) | Review record | Closed |  |

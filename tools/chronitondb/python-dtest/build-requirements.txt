@@ -1,0 +1,29 @@
+# Copyright 2026 AxonOps Limited
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The packages that build the Python dtest requirements from source, for
+# Python 3.11, each pinned to an exact version and its hashes. They are
+# installed first, so that requirements.txt installs with no build
+# isolation and nothing is fetched without a hash. The hashes are those
+# PyPI gives for every file of each version.
+pbr==6.1.1 \
+    --hash=sha256:38d4daea5d9fa63b3f626131b9d34947fd0c8be9b05a29276870580050a25a76 \
+    --hash=sha256:93ea72ce6989eb2eed99d0f75721474f69ad88128afdef5ac377eb797c4bf76b
+wheel==0.45.1 \
+    --hash=sha256:661e1abd9198507b1409a20c02106d9670b2576e916d58f520316666abca6729 \
+    --hash=sha256:708e7481cc80179af0e556bbf0cc00b8444c7321e2700b8d8580231d13017248
+setuptools==70.3.0 \
+    --hash=sha256:f171bab1dfbc86b132997f26a119f6056a57950d058587841a0082e8830f9dc5 \
+    --hash=sha256:fe384da74336c398e0d956d1cae0669bc02eed936cdb1d49b57de1990dc11ffc

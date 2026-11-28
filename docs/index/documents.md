@@ -66,6 +66,7 @@ Every document under `docs/` that carries the common header, by kind. The decisi
 | [JVM memory pools view in system_views](../delta/jvm-memory-pools-view.md) | Current | 1 |  |
 | [run-ci routes 6.0 versions on the 5.0 line](../delta/run-ci-6.0-version-routing.md) | Current | 3 |  |
 | [run-ci accepts this repository](../delta/run-ci-accepts-chronitondb.md) | Current | 3 |  |
+| [Upgrade tests run on Java 17](../delta/upgrade-tests-on-java-17.md) | Current | 1 |  |
 
 ## Review record
 

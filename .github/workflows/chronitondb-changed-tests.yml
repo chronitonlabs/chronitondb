@@ -13,20 +13,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# The unit test classes and in-JVM distributed test classes a pull request
-# adds or changes, run with the build's own targets: testsome for a class
-# under test/unit, test-jvm-dtest-some for a class under test/distributed.
-# A test class is a file whose name ends in Test.java, as the build runs
-# no other. An abstract class named so is passed too, and the build's
-# test runner skips it. An upgrade test is left out, since it needs the
-# jars of older versions. Nothing else runs: no whole suite and no matrix. When the pull
-# request adds or changes no test class the job says so and passes. The
-# JDK is the one the build file of the base branch names as its default.
-# A new push to the pull request cancels the run it supersedes. A run is
-# bounded at 120 minutes: the build takes about ten, and the build's own
-# timeouts are 8 minutes for a unit test class and 15 for an in-JVM
-# distributed test class, so about a dozen classes fit. Every action is
-# pinned to a commit.
+# The tests a pull request adds or changes, and the existing tests its
+# short record names, run with the build's own targets: testsome for a
+# class under test/unit, test-jvm-dtest-some for a class under
+# test/distributed, an upgrade test among them. A test class is a file whose
+# name ends in Test.java, as the build runs no other. An abstract class
+# named so is passed too, and the build's test runner skips it. Nothing else
+# runs: no whole suite, no matrix of versions and no repeats.
+#
+# An upgrade test is a class under a directory named upgrade in
+# test/distributed. It runs on the JDK of the line, from the jar of the
+# latest Apache Cassandra 5.0 release that chronitondb-apache-dtest-jar.yml
+# builds as dtest-apache-<version>.jar. The stock runner of the upgrade
+# tests, Versions.find of the in-JVM dtest API, reads only jars named
+# dtest-<version>.jar in build, so the jar is placed there under that name.
+# A jar of that name already in build stops the run, since it would be the
+# line's own jar of the same version.
+#
+# The existing tests are the test classes named in the column Proving tests
+# of the impact analysis table, in section 4 of each short record the pull
+# request adds or changes (tools/chronitondb/testplan.py). They run in a
+# job of their own, as many as fit in its time, and the job names each class
+# it left out. A class of the change that does not fit fails its job.
+#
+# A Python dtest of the line is a file test/distributed/org/chronitondb/
+# <area>/python/<name>_test.py. It runs from Apache Cassandra's
+# cassandra-dtest and ccm, each pinned to a commit, with the Python
+# requirements pinned to exact versions and hashes in
+# tools/chronitondb/python-dtest. The file is copied into the cassandra-dtest
+# checkout as chronitondb_<area>_<name>_test.py, where its conftest.py and the
+# module dtest are found. ccm builds nothing: the job builds the line with
+# ant jar, and ccm runs the nodes from that checkout, passed as
+# --cassandra-dir.
+#
+# The JDK is the one the build file of the base branch names as its
+# default, at the exact version below. The job of the changed classes runs
+# them with the JaCoCo agent and adds the line and branch coverage of each
+# changed method under src/java, and the CRAP score of each changed method
+# of ChronitonDB, to the run's summary and to its results. When the pull
+# request adds or changes no test and its records name none, the jobs say so
+# and pass. A new push to the pull request cancels the run it supersedes. A
+# job is bounded at 120 minutes: the build takes about ten, and the build's
+# own timeouts are 8 minutes for a unit test class and 15 for an in-JVM
+# distributed test class. Every action is pinned to a commit and every tool
+# to an exact version.
 name: ChronitonDB changed tests
 
 on:
@@ -41,16 +71,50 @@ concurrency:
   group: changed-tests-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
+env:
+  JDK_17: '17.0.21+9'
+  JDK_21: '21.0.13+9'
+  ANT_VERSION: '1.10.15'
+  ANT_SHA512: 'd78427aff207592c024ff1552dc04f7b57065a195c42d398fcffe7a0145e8d00cd46786f5aa52e77ab0fdf81334f065eb8011eecd2b48f7228e97ff4cb20d16c'
+  PYTHON_VERSION: '3.11.18'
+  # apache/cassandra-dtest, the head of trunk on 2026-11-04.
+  DTEST_COMMIT: '7d8aaaace3115d06f1de263b6d038c1bacf8b721'
+  # apache/cassandra-ccm, the head of trunk on 2026-11-16.
+  CCM_COMMIT: '18b4dcffdced4b3183dd99a22c78e4b4d567c697'
+  # datastax/python-driver, the head of the branch cassandra-test that
+  # cassandra-dtest names, on 2021-03-02.
+  DRIVER_COMMIT: 'e075df0775954876ac49fdbedf30c1c7fab15762'
+
 jobs:
-  changed-tests:
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
+  select:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      run: ${{ steps.classes.outputs.run }}
+      unit: ${{ steps.classes.outputs.unit }}
+      distributed: ${{ steps.classes.outputs.distributed }}
+      upgrade: ${{ steps.classes.outputs.upgrade }}
+      python: ${{ steps.classes.outputs.python }}
+      impact-run: ${{ steps.impact.outputs.run }}
+      impact-unit: ${{ steps.impact.outputs.unit }}
+      impact-distributed: ${{ steps.impact.outputs.distributed }}
+      impact-upgrade: ${{ steps.impact.outputs.upgrade }}
+      needs-jar: ${{ steps.impact.outputs.needs-jar }}
+      jdk: ${{ steps.jdk.outputs.jdk }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Tests of the test plan reader
+        run: python3 -m unittest discover -s tools/chronitondb/test/testplan -v
 
       - name: The test classes the pull request adds or changes
         id: classes
@@ -59,12 +123,18 @@ jobs:
         run: |
           unit=""
           distributed=""
+          upgrade=""
+          python=""
           while read -r path
           do
             case "$path" in
-              */upgrade/*)
-                echo "Left out $path: an upgrade test needs the jars of older versions."
-                continue
+              test/distributed/*/upgrade/*Test.java)
+                echo "Left out $path from the in-JVM distributed test classes. It is an upgrade test and runs with the jar of the Apache Cassandra release."
+                class="${path#test/distributed/}"
+                upgrade="$upgrade ${class%.java}"
+                ;;
+              test/distributed/org/chronitondb/*/python/*_test.py)
+                python="$python $path"
                 ;;
               test/unit/*Test.java)
                 class="${path#test/unit/}"
@@ -78,14 +148,18 @@ jobs:
           done < <(git diff --name-only --diff-filter=ACMR "origin/$BASE...HEAD" -- test/unit test/distributed)
           unit="$(echo "${unit//\//.}" | xargs)"
           distributed="$(echo "${distributed//\//.}" | xargs)"
-          if [ -z "$unit" ] && [ -z "$distributed" ]
+          upgrade="$(echo "${upgrade//\//.}" | xargs)"
+          python="$(echo "$python" | xargs)"
+          if [ -z "$unit" ] && [ -z "$distributed" ] && [ -z "$upgrade" ] && [ -z "$python" ]
           then
-            echo "The pull request adds or changes no test class under test/unit or test/distributed, so there is nothing to run."
+            echo "The pull request adds or changes no test class under test/unit or test/distributed and no Python dtest, so there is nothing of its own to run."
             echo "run=no" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "Unit test classes: ${unit:-none}"
           echo "In-JVM distributed test classes: ${distributed:-none}"
+          echo "Upgrade test classes: ${upgrade:-none}"
+          echo "Python dtests: ${python:-none}"
           java="$(git show "origin/$BASE:build.xml" | sed -n -E 's/^[[:space:]]*<property name="java\.default" value="([0-9]+)"[[:space:]]*\/>.*$/\1/p' | head -n 1)"
           if [ -z "$java" ]
           then
@@ -95,41 +169,376 @@ jobs:
           {
             echo "unit=$unit"
             echo "distributed=$distributed"
+            echo "upgrade=$upgrade"
+            echo "python=$python"
             echo "java=$java"
             echo "run=yes"
           } >> "$GITHUB_OUTPUT"
 
+      - name: The existing test classes the short records name
+        id: impact
+        env:
+          BASE: ${{ github.base_ref }}
+          CHANGED_UNIT: ${{ steps.classes.outputs.unit }}
+          CHANGED_DISTRIBUTED: ${{ steps.classes.outputs.distributed }}
+          CHANGED_UPGRADE: ${{ steps.classes.outputs.upgrade }}
+        run: |
+          listed="$RUNNER_TEMP/impact.txt"
+          rc=0
+          python3 tools/chronitondb/testplan.py impact --repo . --base "origin/$BASE" > "$listed" || rc=$?
+          changed=" $CHANGED_UNIT $CHANGED_DISTRIBUTED $CHANGED_UPGRADE "
+          unit=""
+          distributed=""
+          upgrade=""
+          while read -r kind class
+          do
+            case "$changed" in
+              *" $class "*)
+                echo "$class is named by a record and runs with the classes the pull request changes."
+                continue
+                ;;
+            esac
+            case "$kind" in
+              unit) unit="$unit $class" ;;
+              distributed) distributed="$distributed $class" ;;
+              upgrade) upgrade="$upgrade $class" ;;
+            esac
+          done < "$listed"
+          unit="$(echo "$unit" | xargs)"
+          distributed="$(echo "$distributed" | xargs)"
+          upgrade="$(echo "$upgrade" | xargs)"
+          run=no
+          if [ -n "$unit$distributed$upgrade" ]
+          then
+            run=yes
+          fi
+          needs_jar=no
+          if [ -n "$CHANGED_UPGRADE$upgrade" ]
+          then
+            needs_jar=yes
+          fi
+          echo "Existing unit test classes the records name: ${unit:-none}"
+          echo "Existing in-JVM distributed test classes the records name: ${distributed:-none}"
+          echo "Existing upgrade test classes the records name: ${upgrade:-none}"
+          {
+            echo "unit=$unit"
+            echo "distributed=$distributed"
+            echo "upgrade=$upgrade"
+            echo "run=$run"
+            echo "needs-jar=$needs_jar"
+          } >> "$GITHUB_OUTPUT"
+          exit "$rc"
+
+      - name: The exact JDK of the line
+        id: jdk
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          java="$(git show "origin/$BASE:build.xml" | sed -n -E 's/^[[:space:]]*<property name="java\.default" value="([0-9]+)"[[:space:]]*\/>.*$/\1/p' | head -n 1)"
+          case "$java" in
+            17) jdk="$JDK_17" ;;
+            21) jdk="$JDK_21" ;;
+            *)
+              echo "::error::build.xml on $BASE names java.default '$java', and this workflow pins no exact JDK for it."
+              exit 1
+              ;;
+          esac
+          echo "JDK $jdk"
+          echo "jdk=$jdk" >> "$GITHUB_OUTPUT"
+
+  apache-dtest-jar:
+    needs: select
+    if: needs.select.outputs.needs-jar == 'yes'
+    uses: ./.github/workflows/chronitondb-apache-dtest-jar.yml
+
+  tests:
+    name: ${{ matrix.title }}
+    needs: [select, apache-dtest-jar]
+    if: ${{ !cancelled() && needs.select.result == 'success' && (needs.apache-dtest-jar.result == 'success' || needs.apache-dtest-jar.result == 'skipped') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - set: changed
+            title: The test classes the pull request adds or changes
+            run: ${{ (needs.select.outputs.unit != '' || needs.select.outputs.distributed != '' || needs.select.outputs.upgrade != '') && 'yes' || 'no' }}
+            unit: ${{ needs.select.outputs.unit }}
+            distributed: ${{ needs.select.outputs.distributed }}
+            upgrade: ${{ needs.select.outputs.upgrade }}
+            coverage: 'yes'
+            left-out: error
+          - set: impact
+            title: The existing test classes the short records name
+            run: ${{ needs.select.outputs.impact-run }}
+            unit: ${{ needs.select.outputs.impact-unit }}
+            distributed: ${{ needs.select.outputs.impact-distributed }}
+            upgrade: ${{ needs.select.outputs.impact-upgrade }}
+            coverage: 'no'
+            left-out: warning
+    steps:
+      - name: The start of the job
+        env:
+          RUN: ${{ matrix.run }}
+        run: |
+          echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+          if [ "$RUN" != yes ]
+          then
+            echo "There is no test class in this set, so there is nothing to run."
+          fi
+
+      - name: Checkout
+        if: matrix.run == 'yes'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
       - name: The JDK of the line
-        if: steps.classes.outputs.run == 'yes'
+        if: matrix.run == 'yes'
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
-          java-version: ${{ steps.classes.outputs.java }}
+          java-version: ${{ needs.select.outputs.jdk }}
+
+      - name: Python
+        if: matrix.run == 'yes' && matrix.coverage == 'yes'
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Ant
+        if: matrix.run == 'yes'
+        run: |
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/ant.tar.gz" "https://archive.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.tar.gz"
+          echo "$ANT_SHA512  $RUNNER_TEMP/ant.tar.gz" | sha512sum -c -
+          tar -xzf "$RUNNER_TEMP/ant.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-ant-$ANT_VERSION/bin" >> "$GITHUB_PATH"
 
       - name: Build the tests
-        if: steps.classes.outputs.run == 'yes'
-        run: ant build-test
-
-      - name: Unit tests
-        if: steps.classes.outputs.run == 'yes' && steps.classes.outputs.unit != ''
-        env:
-          CLASSES: ${{ steps.classes.outputs.unit }}
+        if: matrix.run == 'yes'
         run: |
+          ant -version
+          java -version
+          ant build-test
+
+      - name: The jar of the Apache Cassandra release
+        if: matrix.run == 'yes' && matrix.upgrade != ''
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          key: ${{ needs.apache-dtest-jar.outputs.cache-key }}
+          path: ${{ needs.apache-dtest-jar.outputs.path }}
+          fail-on-cache-miss: true
+
+      - name: Place the jar where the upgrade test runner finds it
+        if: matrix.run == 'yes' && matrix.upgrade != ''
+        env:
+          JAR_DIR: ${{ needs.apache-dtest-jar.outputs.path }}
+          VERSION: ${{ needs.apache-dtest-jar.outputs.version }}
+        run: |
+          if [ -e "build/dtest-$VERSION.jar" ]
+          then
+            echo "::error::build/dtest-$VERSION.jar is there already, so the jar of Apache Cassandra $VERSION cannot take that name."
+            exit 1
+          fi
+          cp "$JAR_DIR/dtest-apache-$VERSION.jar" "build/dtest-$VERSION.jar"
+          ls -l build/dtest-*.jar
+
+      - name: Run the test classes
+        if: matrix.run == 'yes'
+        env:
+          UNIT: ${{ matrix.unit }}
+          DISTRIBUTED: ${{ matrix.distributed }}
+          UPGRADE: ${{ matrix.upgrade }}
+          COVERAGE: ${{ matrix.coverage }}
+          LEFT_OUT: ${{ matrix.left-out }}
+        run: |
+          timeout_of() {
+            sed -n -E "s/^[[:space:]]*<property name=\"$1\" value=\"([0-9]+)\"[[:space:]]*\/>.*$/\1/p" build.xml | head -n 1
+          }
+          unit_timeout=$(( $(timeout_of 'test\.timeout') / 1000 ))
+          distributed_timeout=$(( $(timeout_of 'test\.distributed\.timeout') / 1000 ))
+          # 15 minutes of the 120 are kept for the coverage report and the upload.
+          deadline=$(( JOB_START + 105 * 60 ))
+          jacoco=""
+          if [ "$COVERAGE" = yes ]
+          then
+            jacoco="-Dusejacoco=yes"
+          fi
           rc=0
-          for class in $CLASSES
+          left=""
+          run_class() {
+            if [ $(( $(date +%s) + $2 )) -gt "$deadline" ]
+            then
+              left="$left $3"
+              return
+            fi
+            ant "$1" -Dno-build-test=true -Dtest.name="$3" ${jacoco:+"$jacoco"} || rc=1
+          }
+          for class in $UNIT
           do
-            ant testsome -Dno-build-test=true -Dtest.name="$class" || rc=1
+            run_class testsome "$unit_timeout" "$class"
           done
+          for class in $DISTRIBUTED $UPGRADE
+          do
+            run_class test-jvm-dtest-some "$distributed_timeout" "$class"
+          done
+          if [ -n "$left" ]
+          then
+            echo "::$LEFT_OUT::Left out, as the job would pass its time limit before they end:$left"
+            echo "Left out, as the job would pass its time limit before they end:$left" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$LEFT_OUT" = error ]
+            then
+              rc=1
+            fi
+          fi
           exit "$rc"
 
-      - name: In-JVM distributed tests
-        if: steps.classes.outputs.run == 'yes' && steps.classes.outputs.distributed != ''
+      - name: Coverage of the changed methods
+        if: ${{ !cancelled() && matrix.run == 'yes' && matrix.coverage == 'yes' }}
         env:
-          CLASSES: ${{ steps.classes.outputs.distributed }}
+          BASE: ${{ github.base_ref }}
         run: |
-          rc=0
-          for class in $CLASSES
+          if [ ! -s build/jacoco/partials/partial.exec ]
+          then
+            echo "No coverage was recorded, so there is no report." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          ant jacoco-report
+          python3 tools/chronitondb/testplan.py coverage --repo . --base "origin/$BASE" --report build/jacoco/report.xml > build/jacoco/changed-methods.md
+          cat build/jacoco/changed-methods.md >> "$GITHUB_STEP_SUMMARY"
+          cat build/jacoco/changed-methods.md
+
+      # The in-JVM dtests write their logs under directories named <main>,
+      # a name an artifact cannot hold, so the logs go in one archive.
+      - name: Pack the logs
+        if: ${{ !cancelled() && matrix.run == 'yes' }}
+        run: |
+          if [ -d build/test/logs ]
+          then
+            tar -C build/test -cJf build/test-logs.tar.xz logs
+          fi
+
+      - name: Keep the results
+        if: ${{ !cancelled() && matrix.run == 'yes' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ matrix.set }}-test-results
+          path: |
+            build/test/output/
+            build/test-logs.tar.xz
+            build/jacoco/report.xml
+            build/jacoco/report.csv
+            build/jacoco/changed-methods.md
+          if-no-files-found: warn
+
+  python-dtests:
+    needs: select
+    if: needs.select.outputs.python != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          path: cassandra
+
+      - name: Checkout cassandra-dtest
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: apache/cassandra-dtest
+          ref: ${{ env.DTEST_COMMIT }}
+          path: cassandra-dtest
+
+      - name: Checkout ccm
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: apache/cassandra-ccm
+          ref: ${{ env.CCM_COMMIT }}
+          path: cassandra-ccm
+
+      - name: Checkout the driver
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          repository: datastax/python-driver
+          ref: ${{ env.DRIVER_COMMIT }}
+          path: python-driver
+
+      - name: The JDK of the line
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: ${{ needs.select.outputs.jdk }}
+
+      - name: Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Ant
+        run: |
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/ant.tar.gz" "https://archive.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.tar.gz"
+          echo "$ANT_SHA512  $RUNNER_TEMP/ant.tar.gz" | sha512sum -c -
+          tar -xzf "$RUNNER_TEMP/ant.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-ant-$ANT_VERSION/bin" >> "$GITHUB_PATH"
+
+      - name: The Python requirements
+        env:
+          CASS_DRIVER_NO_EXTENSIONS: 'true'
+          CASS_DRIVER_NO_CYTHON: 'true'
+          PBR_VERSION: '3.1.6'
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          pip="$RUNNER_TEMP/venv/bin/pip"
+          "$pip" install --no-cache-dir --require-hashes --no-deps -r cassandra/tools/chronitondb/python-dtest/build-requirements.txt
+          "$pip" install --no-cache-dir --require-hashes --no-build-isolation -r cassandra/tools/chronitondb/python-dtest/requirements.txt
+          "$pip" install --no-cache-dir --no-deps --no-build-isolation ./python-driver ./cassandra-ccm
+          "$pip" check
+          "$pip" freeze
+          echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
+
+      - name: Build the line
+        working-directory: cassandra
+        run: |
+          ant -version
+          java -version
+          ant jar
+
+      - name: Run the Python dtests
+        env:
+          FILES: ${{ needs.select.outputs.python }}
+          PYTHONIOENCODING: 'utf-8'
+          PYTHONUNBUFFERED: 'true'
+          CASS_DRIVER_NO_EXTENSIONS: 'true'
+          CASS_DRIVER_NO_CYTHON: 'true'
+          CCM_MAX_HEAP_SIZE: '1024M'
+          CCM_HEAP_NEWSIZE: '512M'
+          CASSANDRA_SKIP_SYNC: 'true'
+        run: |
+          mkdir -p python-dtest-results
+          tests=()
+          for path in $FILES
           do
-            ant test-jvm-dtest-some -Dno-build-test=true -Dtest.name="$class" || rc=1
+            rest="${path#test/distributed/org/chronitondb/}"
+            area="${rest%%/*}"
+            name="chronitondb_${area}_${path##*/}"
+            cp "cassandra/$path" "cassandra-dtest/$name"
+            tests+=("$name")
           done
-          exit "$rc"
+          cd cassandra-dtest
+          pytest -vv --log-cli-level=INFO -s --junit-xml="$GITHUB_WORKSPACE/python-dtest-results/python-dtests.xml" \
+            --cassandra-dir="$GITHUB_WORKSPACE/cassandra" --keep-failed-test-dir --skip-resource-intensive-tests \
+            --use-vnodes --num-tokens=16 "${tests[@]}"
+
+      - name: Keep the results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: python-dtest-results
+          path: python-dtest-results/
+          if-no-files-found: warn

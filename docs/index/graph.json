@@ -137,6 +137,17 @@
    "version": "3"
   },
   {
+   "@id": "../delta/jvm-garbage-collectors-view.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "identifier": "docs/delta/jvm-garbage-collectors-view.md",
+   "status": "Current",
+   "title": "JVM garbage collectors view in system_views",
+   "type": "Delta entry",
+   "version": "1"
+  },
+  {
    "@id": "../delta/jvm-memory-pools-view.md",
    "@type": [
     "schema:DigitalDocument"
@@ -180,6 +191,20 @@
    "identifier": "docs/design/161-let-operators-see-a-node-s-jvm-memory/short-record.md",
    "status": "Draft",
    "title": "#161 Let operators see a node's JVM memory pools from CQL",
+   "type": "Short record",
+   "version": "1"
+  },
+  {
+   "@id": "../design/172-let-operators-see-a-node-s-jvm-garbage/short-record.md",
+   "@type": [
+    "schema:DigitalDocument"
+   ],
+   "areas": [
+    "../process/areas.md#observability"
+   ],
+   "identifier": "docs/design/172-let-operators-see-a-node-s-jvm-garbage/short-record.md",
+   "status": "Draft",
+   "title": "#172 Let operators see a node's JVM garbage collectors from CQL",
    "type": "Short record",
    "version": "1"
   },

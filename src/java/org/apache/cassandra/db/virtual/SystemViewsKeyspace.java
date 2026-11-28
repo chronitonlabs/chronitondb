@@ -20,6 +20,7 @@ package org.apache.cassandra.db.virtual;
 import com.google.common.collect.ImmutableList;
 
 import org.apache.cassandra.index.sai.virtual.StorageAttachedIndexTables;
+import org.chronitondb.virtual.JvmGarbageCollectorsTable;
 import org.chronitondb.virtual.JvmMemoryPoolsTable;
 
 import static org.apache.cassandra.schema.SchemaConstants.VIRTUAL_VIEWS;
@@ -57,6 +58,7 @@ public final class SystemViewsKeyspace extends VirtualKeyspace
                     .addAll(CIDRFilteringMetricsTable.getAll(VIRTUAL_VIEWS))
                     .addAll(StorageAttachedIndexTables.getAll(VIRTUAL_VIEWS))
                     .add(new JvmMemoryPoolsTable(VIRTUAL_VIEWS))
+                    .add(new JvmGarbageCollectorsTable(VIRTUAL_VIEWS))
                     .build());
     }
 }

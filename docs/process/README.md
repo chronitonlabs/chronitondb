@@ -56,16 +56,17 @@ Each change also has a class, its risk and its size, carried by one `risk:`, one
 
 ## Roles
 
-The maintainers decide stakeholder needs, scope, priority, releases and security disclosure, and approve every step by merging its pull request. Eight roles do the work:
+The maintainers decide stakeholder needs, scope, priority, releases and security disclosure, and approve every step by merging its pull request. Nine roles do the work:
 
 1. The requirements analyst asks the maintainers what new work is for and writes the requirements brief they confirm, and the decision brief of an idea.
 2. The architect writes the feature spec, the plan, the delivery plan and the milestone reports of a large feature, and the research report of a spike.
 3. The designer writes the design record or fix record of one item.
 4. The developer writes the code, its tests and its documentation.
-5. The reviewer reviews every pull request the project's own automation wrote or a maintainer accepted for review, and posts its verdict on it, one short review for each round. A maintainer reviews any other pull request directly.
-6. The integrator keeps the lines current with Apache Cassandra and prepares the import pull requests.
-7. The security engineer watches every shipped library for vulnerabilities and triages private reports.
-8. The release engineer proposes each release and runs the release pipeline once a maintainer approves it.
+5. The tester takes every pull request that changes code or tests, on every path, after its author, makes its tests sufficient, adds the tests that are missing and runs them all before the review.
+6. The reviewer reviews every pull request the project's own automation wrote or a maintainer accepted for review, and posts its verdict on it, one short review for each round. A maintainer reviews any other pull request directly.
+7. The integrator keeps the lines current with Apache Cassandra and prepares the import pull requests.
+8. The security engineer watches every shipped library for vulnerabilities and triages private reports.
+9. The release engineer proposes each release and runs the release pipeline once a maintainer approves it.
 
 A role MAY be carried out by a person or by an automated agent. Approvals are always made by a maintainer, or by a committer for a pull request within their area or line. [roles.md](roles.md) has the detail, and [governance.md](governance.md) says how someone becomes a committer or a maintainer.
 

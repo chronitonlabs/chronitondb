@@ -213,7 +213,7 @@ The author of the spec names what the change touches in the Touches row, and the
 |---|---|
 | Critical | Before drafting, the author asks the maintainers one question that confirms the class and the scope, unless the work came with a requirements brief the maintainers confirmed, whose confirmation is the class and scope answer. Then the spec, the plan and the code, each merged by a maintainer. The security engineer reviews every code pull request. A release that carries the change needs the full upgrade and mixed-version tests |
 | Normal | The spec, the plan and the code, each merged by a maintainer. The maintainer confirms the class when merging the spec |
-| Low | No spec or plan stage. The work goes straight to a pull request whose body carries Where problems could occur and its test plan. A maintainer merges it |
+| Low | No spec or plan stage. The work goes straight to a pull request whose body carries Where problems could occur and its test plan. The tester takes it before its review when it changes code or tests. A maintainer merges it |
 
 A one-item change takes the same stages with its design record or fix record in place of the spec and plan. A change to documentation only needs no design record at any risk level. The review and the maintainer's merge still apply, and a change to a process page or template is still at least Normal risk, so it takes the checks of Normal risk. See [maintenance.md](maintenance.md#documentation-only-changes). Only maintainers and committers merge, each within their rights, at every level. See [governance.md](governance.md).
 

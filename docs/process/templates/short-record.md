@@ -65,7 +65,15 @@ The Tier row records the tier the change took and why. It is the first line that
 
 ## 4. Test plan
 
-{One line per test: an id `TEST-n`, the test class and method, and each `REQ-n` of section 2 it proves. For example: TEST-1: WidgetTableTest.testColumns proves REQ-1. Every `REQ-n` of section 2 is named here.}
+{Five parts in this order, by the rules of [Test depth](../testing.md#test-depth). The author lists its own tests in the fourth part. The [tester](../roles.md#tester) writes the other parts after the author's code and tests, and adds its own tests to the fourth. The first part is the surface matrix: each row of rule 3 that the change touches, and for each other row why it does not apply.}
+
+{The impact analysis, as a table with the columns Area or surface reached, How the change reaches it, Proving tests and Existing or new. One row for each area of [areas.md](../areas.md) and each shared surface the changed code reaches: the callers of each changed stock method, each stock listing or registry the change adds to and each path the change runs on.}
+
+{The edge cases, one line each: the requirement or the area it belongs to, the case, and the test that proves it or the reason it cannot occur.}
+
+{The tests, one line per test: an id `TEST-n`, the test class and method, its level, each `REQ-n` of section 2 whose change it covers, the row of the impact analysis or the edge case it proves where it proves one, and who wrote it, the author or the tester. For example: TEST-1: WidgetTableTest.testColumns, in-JVM distributed, proves REQ-1, written by the author. Every `REQ-n` of section 2 is named here.}
+
+{The exceptions under rule 9 of Test depth, one line each with its reason, or the one line "No exceptions".}
 
 ## 5. Where problems could occur
 

@@ -142,10 +142,11 @@ The short path is for a change to code, tests or the files that guard the proces
 1. Before writing, the author asks the maintainers the visible choices of the change, such as names, defaults and what an operator sees. The author asks once, in one batch, and records each answer in the short record.
 2. The change is one pull request. It carries the short record, the code and the tests together. The short record is written from [templates/short-record.md](templates/short-record.md) and lives where [conventions.md](conventions.md#where-things-live) says.
 3. A short path change that must change a pre-existing test file of Apache Cassandra gets that change permitted first, in its own small pull request, as [testing.md](testing.md#policy) says.
-4. One independent review covers the record, the code and the tests. It includes a security read. The reviewer is never the author.
-5. The reviews posted on the pull request are the review record. No review record file is kept. The reviewer posts its findings. The author answers each with the commit that fixes it. The reviewer posts its final verdict on the head commit.
-6. A confirmation pass is needed only when the author changes something after a clean verdict. It runs as [Review rounds](#review-rounds) says.
-7. A maintainer merges.
+4. The author writes the code and its own tests, then hands the change to the [tester](roles.md#tester). The tester writes the surface matrix, the impact analysis and the edge cases into section 4 of the short record, adds the tests that are missing, runs every test with the repeats and attaches the evidence and coverage, as [testing.md](testing.md#test-depth) says. The tester then hands the change to the reviewer.
+5. One independent review covers the record, the code and the tests. It includes a security read. The reviewer is never the author.
+6. The reviews posted on the pull request are the review record. No review record file is kept. The reviewer posts its findings. The author answers each with the commit that fixes it. The reviewer posts its final verdict on the head commit.
+7. A confirmation pass is needed only when the author changes something after a clean verdict. It runs as [Review rounds](#review-rounds) says.
+8. A maintainer merges.
 
 ## Reviews
 
@@ -166,11 +167,12 @@ The table says who reviews a pull request that the review roles review. On any o
 ### The inspection of a code pull request
 
 1. The pull request opens as a draft.
-2. The reviewer inspects it against the approved design record, or the short record it carries on the short path, and the review checklists: correctness, concurrency, security, compatibility, tests, observability, performance, documentation, compliance and maintainability, and a set of known bug patterns adapted from Apache Cassandra's own targeted review.
-3. Each finding has a severity: blocker, major, minor or nit.
-4. The reviewer posts its verdict as one short review, with the count of findings at each severity, and gives the author the findings. A review is clean when it says the pull request is ready, every checklist it ran passed, and no blocker and no major finding is open.
-5. Where a review record is kept, the author closes it after the clean review, and the reviewer reads the commits made since in one confirmation pass: see [Review rounds](#review-rounds). The clean verdict on the commit the pull request is at marks the pull request ready.
-6. A maintainer then approves and merges, or requests changes with the rework listed.
+2. The developer writes the code and its own tests, then hands the pull request to the [tester](roles.md#tester). The tester writes the surface matrix, the impact analysis and the edge cases into the pull request's description, adds the tests that are missing, runs every test with the repeats and attaches the evidence and coverage, as [testing.md](testing.md#test-depth) says. The tester then hands the pull request to the reviewer.
+3. The reviewer inspects it against the approved design record, or the short record it carries on the short path, and the review checklists: correctness, concurrency, security, compatibility, tests, observability, performance, documentation, compliance and maintainability, and a set of known bug patterns adapted from Apache Cassandra's own targeted review.
+4. Each finding has a severity: blocker, major, minor or nit.
+5. The reviewer posts its verdict as one short review, with the count of findings at each severity, and gives the author the findings. A review is clean when it says the pull request is ready, every checklist it ran passed, and no blocker and no major finding is open.
+6. Where a review record is kept, the author closes it after the clean review, and the reviewer reads the commits made since in one confirmation pass: see [Review rounds](#review-rounds). The clean verdict on the commit the pull request is at marks the pull request ready.
+7. A maintainer then approves and merges, or requests changes with the rework listed.
 
 ### Two review standards, picked by file
 

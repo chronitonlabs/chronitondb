@@ -17,7 +17,7 @@ limitations under the License.
 
 # Roles
 
-The maintainers and eight roles carry the work. The roles follow the technical processes of ISO/IEC/IEEE 12207, including its integration and transition processes. A role MAY be carried out by a person or by an automated agent. Approvals are always made by a maintainer, or by a committer for a pull request within their area or line.
+The maintainers and nine roles carry the work. The roles follow the technical processes of ISO/IEC/IEEE 12207, including its integration and transition processes. A role MAY be carried out by a person or by an automated agent. Approvals are always made by a maintainer, or by a committer for a pull request within their area or line.
 
 ## Maintainer
 
@@ -72,6 +72,19 @@ The developer owns the implementation of one approved item.
 3. Opens the pull request as a draft with its review record, and answers each review finding by a commit or in the record.
 4. Edits only the files the approved design record lists. A file outside the list needs the design record updated first.
 5. Opens the public GitHub issue of a documentation only change, which has no designer.
+
+## Tester
+
+The tester owns the sufficiency of the tests of one change, after the developer's code and before the review. It works on every change on the short path and on every code pull request on the full path, by the rules of [testing.md](testing.md#test-depth). The tester is never the developer of the change.
+
+1. Takes the change from the developer once the code and the developer's own tests are written.
+2. Writes into the record's test plan the rows of the surface matrix that apply and why the others do not, the impact analysis and the edge cases: section 4 of the short record on the short path, and the code pull request's description on the full path.
+3. Adds the tests that are missing: tests through running nodes, tests of each area the impact analysis names and of each edge case, upgrade and rollback tests, and Python distributed tests where they apply, in Apache Cassandra's own harnesses.
+4. Runs every test of the test plan and the existing tests the impact analysis names, with the repeats [testing.md](testing.md#test-depth) asks for, and attaches the results and the coverage to the pull request.
+5. Changes test files and the test plan of the record only. A pre-existing test file of Apache Cassandra changes only as [testing.md](testing.md#policy) allows. On the full path, a test file outside the approved design record's planned file list needs the design record updated first, as for the developer.
+6. Never changes production code. Never weakens or deletes a test the developer wrote.
+7. Sends a production defect it finds back to the developer as a failing test on the change's branch. The developer fixes the code, and the tester runs the tests again.
+8. Hands the change to the reviewer once every rule of [testing.md](testing.md#test-depth) is met or each exception is stated with its reason. In the review the tester is an author of the tests it added and of the test plan, and answers each finding on them by a commit.
 
 ## Reviewer
 
@@ -128,4 +141,4 @@ The release engineer turns the lines into releases, after the transition process
 3. The work items of an approved plan are requested by the maintainer who approved the plan. Items opened from a scheduled check are requested by the maintainer who set up that check.
 4. Anyone who finds a possible security vulnerability stops the public part of the work on it and tells the maintainers privately. See [security.md](security.md).
 5. Until the project's automation can open GitHub issues, a maintainer opens the issue that a role carried out by an automated agent would open.
-6. Once a maintainer confirms the requirements brief or approves a step, the next step starts without further request. The order is fixed: the confirmed requirements brief, then the feature spec, then the plan with its delivery plan, then the items of the current milestone. On the one-item path the confirmed brief comes before the design record. For each item: design record, implementation, review, merge.
+6. Once a maintainer confirms the requirements brief or approves a step, the next step starts without further request. The order is fixed: the confirmed requirements brief, then the feature spec, then the plan with its delivery plan, then the items of the current milestone. On the one-item path the confirmed brief comes before the design record. For each item: design record, implementation, testing, review, merge.

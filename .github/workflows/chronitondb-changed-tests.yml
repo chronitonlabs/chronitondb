@@ -129,6 +129,7 @@ jobs:
           do
             case "$path" in
               test/distributed/*/upgrade/*Test.java)
+                echo "Left out $path from the in-JVM distributed test classes. It is an upgrade test and runs with the jar of the Apache Cassandra release."
                 class="${path#test/distributed/}"
                 upgrade="$upgrade ${class%.java}"
                 ;;

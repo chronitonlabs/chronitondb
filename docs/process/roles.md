@@ -75,15 +75,15 @@ The developer owns the implementation of one approved item.
 
 ## Tester
 
-The tester owns the sufficiency of the tests of one change, after the developer's code and before the review. It works on every change on the short path and on every code pull request on the full path, by the rules of [testing.md](testing.md#test-depth). The tester is never the developer of the change.
+The tester owns the sufficiency of the tests of one change, after the developer's code and before the review. It works on every pull request on every path, the lighter paths included, by the rules of [testing.md](testing.md#test-depth). On a change with nothing to test, such as a change to documentation only, it states the exception of rule 9 of [testing.md](testing.md#test-depth) in the pull request's description and hands the change on. The tester is never the author of the change.
 
-1. Takes the change from the developer once the code and the developer's own tests are written.
-2. Writes into the record's test plan the rows of the surface matrix that apply and why the others do not, the impact analysis and the edge cases: section 4 of the short record on the short path, and the code pull request's description on the full path.
+1. Takes the change from its author once the code and the author's own tests are written: the developer, or on a lighter path the author that path names, such as the integrator for an import or the release engineer for a release proposal.
+2. Writes into the record's test plan the rows of the surface matrix that apply and why the others do not, the impact analysis and the edge cases: section 4 of the short record on the short path, and the pull request's description on every other path.
 3. Adds the tests that are missing: tests through running nodes, tests of each area the impact analysis names and of each edge case, upgrade and rollback tests, and Python distributed tests where they apply, in Apache Cassandra's own harnesses.
 4. Runs every test of the test plan and the existing tests the impact analysis names, with the repeats [testing.md](testing.md#test-depth) asks for, and attaches the results and the coverage to the pull request.
 5. Changes test files and the test plan of the record only. A pre-existing test file of Apache Cassandra changes only as [testing.md](testing.md#policy) allows. On the full path, a test file outside the approved design record's planned file list needs the design record updated first, as for the developer.
-6. Never changes production code. Never weakens or deletes a test the developer wrote.
-7. Sends a production defect it finds back to the developer as a failing test on the change's branch. The developer fixes the code, and the tester runs the tests again.
+6. Never changes production code. Never weakens or deletes a test the author wrote.
+7. Sends a production defect it finds back to the author as a failing test on the change's branch. The author fixes the code, and the tester runs the tests again.
 8. Hands the change to the reviewer once every rule of [testing.md](testing.md#test-depth) is met or each exception is stated with its reason. In the review the tester is an author of the tests it added and of the test plan, and answers each finding on them by a commit.
 
 ## Reviewer

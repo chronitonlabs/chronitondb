@@ -21,7 +21,7 @@ This page covers corrective, emergency, preventive, adaptive and perfective chan
 
 Every change is one item with one public GitHub issue. A security fix has no public issue until disclosure. It is tracked in its private advisory. A maintainer approves an item's design record or fix record, and later its pull request, by merging. The reviewer reviews each of those pull requests first, where the project's own automation wrote it or a maintainer accepted it for review. A maintainer reviews any other directly: [branching-and-review.md](branching-and-review.md#reviews).
 
-Low risk work needs no design record or fix record: it goes straight to a pull request whose body carries Where problems could occur and its test plan. Work is Low risk when the worst it could cause is a wrong document, a wrong package or a failing test, and nothing a running node does can change. This is usually documentation, packaging or tests only. A change to source carries a test that covers it, and one that claims no behaviour change is Low only when its tests show the behaviour is the same. A change to a file that guards the process, such as CI, the build file or the process pages, is never Low. See [classification.md](classification.md#the-floor). A change to documentation only needs no design record at any risk level. See [Documentation only changes](#documentation-only-changes).
+Low risk work needs no design record or fix record: it goes straight to a pull request whose body carries Where problems could occur and its test plan. The tester takes that pull request before its review, as on every path: [branching-and-review.md](branching-and-review.md#reviews). Work is Low risk when the worst it could cause is a wrong document, a wrong package or a failing test, and nothing a running node does can change. This is usually documentation, packaging or tests only. A change to source carries a test that covers it, and one that claims no behaviour change is Low only when its tests show the behaviour is the same. A change to a file that guards the process, such as CI, the build file or the process pages, is never Low. See [classification.md](classification.md#the-floor). A change to documentation only needs no design record at any risk level. See [Documentation only changes](#documentation-only-changes).
 
 ## Corrective: fixing a fault
 
@@ -58,7 +58,7 @@ An additive feature small enough for one item takes this same path. It has a fea
 
 ### Documentation only changes
 
-A change to documentation only is perfective. It needs no design record at any risk level. The review and the maintainer's merge still apply: the reviewer checks the pull request against the documentation rules in [conventions.md](conventions.md), and a maintainer merges it. A change to a process page or template is still at least Normal risk, so it takes the checks of Normal risk. See [classification.md](classification.md#the-floor). A change to a rule on a process page is also read by one reviewer who did not write it, against the four questions of [governance.md](governance.md#changes-to-this-page).
+A change to documentation only is perfective. It needs no design record at any risk level. The tester, the review and the maintainer's merge still apply: the tester states the exception of rule 9 of [Test depth](testing.md#test-depth) and hands it on, the reviewer checks the pull request against the documentation rules in [conventions.md](conventions.md), and a maintainer merges it. A change to a process page or template is still at least Normal risk, so it takes the checks of Normal risk. See [classification.md](classification.md#the-floor). A change to a rule on a process page is also read by one reviewer who did not write it, against the four questions of [governance.md](governance.md#changes-to-this-page).
 
 ## Dependency patch-version updates
 
@@ -76,7 +76,7 @@ Every library update takes the same path through the security engineer, also one
 1. Checks the new version: its licence, the new dependencies it brings in, and its known vulnerabilities.
 2. Names the exact `NOTICE.txt` and `LICENSE.txt` text the update needs, or no change, and updates the VEX statements. The developer writes that text in the update's pull request, and the reviewer checks it matches. The SBOM of the next release records the change.
 3. Names the test classes that cover every use of the library in ChronitonDB, not only the code a vulnerability touches.
-4. Hands the item to the developer, with no fix record. The named tests MUST run and pass before the update merges.
+4. Hands the item to the developer, with no fix record. The named tests MUST run and pass before the update merges. The tester takes the update's pull request before its review, as on every path, and runs them: [branching-and-review.md](branching-and-review.md#reviews).
 
 When a vulnerability in a shipped library is fixed by a patch-version update, the security engineer opens a corrective item, or an emergency item when the vulnerability is serious. When a maintainer wants an update that is not a security fix, the maintainer opens the item and assigns it to the security engineer. Whoever opens a dependency update item also opens its public GitHub issue. See [security.md](security.md#watching-shipped-libraries-and-apache).
 
